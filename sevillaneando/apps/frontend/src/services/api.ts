@@ -9,14 +9,27 @@ export function setAuthToken(token: string) {
   api.defaults.headers.common.Authorization = `Bearer ${token}`;
 }
 
-function parsePoint(location?: string) {
+function parsePoint(location?: string | any) {
   if (!location) return null;
-  // Accepts "SRID=4326;POINT(lon lat)" or "POINT(lon lat)"
-  const match = location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
-  if (!match) return null;
-  const lon = parseFloat(match[1]);
-  const lat = parseFloat(match[2]);
-  if (Number.isFinite(lat) && Number.isFinite(lon)) return { latitude: lat, longitude: lon };
+  
+  // Si es un objeto GeoJSON de PostGIS
+  if (typeof location === 'object' && location.coordinates) {
+    const [lon, lat] = location.coordinates;
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      return { latitude: lat, longitude: lon };
+    }
+  }
+  
+  // Si es una cadena WKT
+  if (typeof location === 'string') {
+    // Accepts "SRID=4326;POINT(lon lat)" or "POINT(lon lat)"
+    const match = location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
+    if (!match) return null;
+    const lon = parseFloat(match[1]);
+    const lat = parseFloat(match[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) return { latitude: lat, longitude: lon };
+  }
+  
   return null;
 }
 

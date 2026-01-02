@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "node16",
     "lib": [
       "dom",
       "dom.iterable",
@@ -11,10 +11,11 @@
     "jsx": "react-native",
     "noEmit": true,
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "customConditions": ["react-native"],
     "types": [
       "react",
       "react-native",

@@ -12,7 +12,7 @@ async function bootstrap() {
   // Ejecutar seed
   const dataSource = app.get(DataSource);
   const eventRepo = dataSource.getRepository(Event);
-  await seedEvents(eventRepo);
+  await seedEvents(eventRepo, dataSource);
   
   const port = process.env.PORT || 3000;
   await app.listen(port);

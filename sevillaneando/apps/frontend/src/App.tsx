@@ -1,9 +1,17 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { LogBox } from 'react-native';
 import { HomeScreen } from './screens/HomeScreen';
 import { EventDetailScreen } from './screens/EventDetailScreen';
 import type { Event } from './types/event';
+
+// Suprimir warnings específicos
+LogBox.ignoreLogs([
+  'You are initializing Firebase Auth',
+  'SafeAreaView has been deprecated',
+  'Non-serializable values were found in the navigation state'
+]);
 
 export type RootStackParamList = {
   Home: undefined;
