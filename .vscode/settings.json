@@ -1,0 +1,16 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "files.exclude": {
+        "**/node_modules/**/android/build": true,
+        "**/node_modules/**/.cxx": true
+    },
+    "java.project.sourcePaths": [],
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "java.import.gradle.enabled": false,
+    "java.autobuild.enabled": false,
+    "java.server.launchMode": "LightWeight",
+    "files.watcherExclude": {
+        "**/node_modules/**/android/**": true,
+        "**/.git/**": true
+    }
+}
