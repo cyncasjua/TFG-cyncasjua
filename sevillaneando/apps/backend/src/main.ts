@@ -7,7 +7,10 @@ import { seedEvents } from './database/seed';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+  app.useGlobalPipes(new ValidationPipe({ 
+    whitelist: true, 
+    transform: true  
+  }));
   
   // Ejecutar seed
   const dataSource = app.get(DataSource);

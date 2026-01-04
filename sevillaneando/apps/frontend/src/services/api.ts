@@ -6,13 +6,16 @@ const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 export const api = axios.create({ baseURL });
 
 export function setAuthToken(token: string) {
-  api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  if (!token) {
+    delete api.defaults.headers.common.Authorization;
+  } else {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  }
 }
 
 function parsePoint(location?: string | any) {
   if (!location) return null;
   
-  // Si es un objeto GeoJSON de PostGIS
   if (typeof location === 'object' && location.coordinates) {
     const [lon, lat] = location.coordinates;
     if (Number.isFinite(lat) && Number.isFinite(lon)) {
@@ -20,7 +23,6 @@ function parsePoint(location?: string | any) {
     }
   }
   
-  // Si es una cadena WKT
   if (typeof location === 'string') {
     // Accepts "SRID=4326;POINT(lon lat)" or "POINT(lon lat)"
     const match = location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);

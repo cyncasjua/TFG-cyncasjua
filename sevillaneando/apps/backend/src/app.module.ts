@@ -3,7 +3,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from './events/events.module';
 import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from './database/database.module';
 import { Event } from './events/event.entity';
+import { User } from './users/user.entity';
+import { UsersModule } from './users/users.module';
+import { SeedService } from './database/seed.service';
 
 @Module({
   imports: [
@@ -17,12 +21,18 @@ import { Event } from './events/event.entity';
         username: config.get('DATABASE_USER', 'postgres'),
         password: config.get('DATABASE_PASSWORD', 'postgres'),
         database: config.get('DATABASE_NAME', 'sevillaneando'),
-        entities: [Event],
-        synchronize: true, // solo para desarrollo
+        entities: [Event, User],
+        synchronize: true, 
       })
     }),
+    DatabaseModule,
     EventsModule,
+    UsersModule,
     AuthModule
   ]
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private readonly seedService: SeedService) {
+    this.seedService.seed().catch(console.error);
+  }
+}
