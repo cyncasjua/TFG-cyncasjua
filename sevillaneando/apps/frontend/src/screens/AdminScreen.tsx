@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Modal,
   Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ThemedButton, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';

@@ -88,12 +88,6 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace 'com.anonymous.sevillaneando'
-    
-    lintOptions {
-        abortOnError false
-        checkReleaseBuilds false
-    }
-    
     defaultConfig {
         applicationId 'com.anonymous.sevillaneando'
         minSdkVersion rootProject.ext.minSdkVersion
@@ -135,15 +129,6 @@ android {
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
-    }
-    lint {
-        disable 'UnsafeOptInUsageError'
-        disable 'MissingDimensionActivityDeviceFeatures'
-        abortOnError false
-        baseline = file("lint-baseline.xml")
-        // Disable all lint errors for react-native-maps which has compatibility issues
-        ignoreWarnings true
-        checkDependencies false
     }
 }
 

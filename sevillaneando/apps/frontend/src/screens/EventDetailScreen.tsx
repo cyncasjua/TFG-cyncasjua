@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Linking, Platform, SafeAreaView, StyleSheet } from 'react-native';
+import { Linking, Platform, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
