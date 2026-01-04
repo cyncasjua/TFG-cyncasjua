@@ -14,7 +14,7 @@ export const ThemedCard = ({ style, ...props }: ViewProps) => {
       style={[
         {
           backgroundColor: colors.card,
-          borderRadius: 8,
+          borderRadius: 16,
           padding: 16,
           borderWidth: 1,
           borderColor: colors.border

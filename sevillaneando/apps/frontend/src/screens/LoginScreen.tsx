@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -41,9 +41,15 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Inicia sesión</ThemedTitle>
-      <ThemedTextSecondary style={styles.subtitle}>Accede con tu cuenta para continuar.</ThemedTextSecondary>
+    <ImageBackground 
+      source={require('../../assets/icon.png')} 
+      style={[styles.background, { backgroundColor: colors.background }]}
+      imageStyle={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container}>
+        <ThemedTitle style={styles.title}>Inicia sesión</ThemedTitle>
+        <ThemedTextSecondary style={styles.subtitle}>Accede con tu cuenta para continuar.</ThemedTextSecondary>
 
       <ThemedView style={styles.form}>
         <TextInput
@@ -84,18 +90,21 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
         <ThemedText style={[styles.link, { color: colors.primary }]}>¿No tienes cuenta? Regístrate aquí</ThemedText>
       </TouchableOpacity>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: { flex: 1 },
+  backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 100 }] },
   container: { flex: 1, padding: 20, justifyContent: 'center' },
   title: { marginBottom: 6, textAlign: 'center' },
   subtitle: { textAlign: 'center', marginBottom: 20 },
-  form: { gap: 12, marginBottom: 20 },
-  input: { borderRadius: 10, padding: 14, borderWidth: 1 },
+  form: { gap: 12, marginBottom: 20, borderRadius: 20, padding: 16 },
+  input: { borderRadius: 25, padding: 14, borderWidth: 1 },
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
-  checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 4, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
+  checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 12, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
   checkmark: { fontWeight: 'bold', fontSize: 16 },
   checkboxLabel: { fontSize: 14 },
   error: { textAlign: 'center' },

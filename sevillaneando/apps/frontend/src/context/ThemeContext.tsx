@@ -26,7 +26,7 @@ const lightColors: Colors = {
   card: '#F5F5F5',
   text: '#000000',
   textSecondary: '#666666',
-  primary: '#007AFF',
+  primary: '#8B5CF6',
   border: '#E5E5E5',
   error: '#FF3B30',
   success: '#34C759'
@@ -37,7 +37,7 @@ const darkColors: Colors = {
   card: '#1C1C1E',
   text: '#FFFFFF',
   textSecondary: '#999999',
-  primary: '#0A84FF',
+  primary: '#A78BFA',
   border: '#38383A',
   error: '#FF453A',
   success: '#32D74B'
