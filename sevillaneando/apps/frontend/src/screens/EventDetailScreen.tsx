@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
-import { Linking, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Platform, SafeAreaView, StyleSheet } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
+import { useTheme } from '../hooks/useTheme';
+import { ThemedButton, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import type { Event } from '../types/event';
 import { storage } from '../firebase/config';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
@@ -26,6 +28,7 @@ function parsePoint(event: Event) {
 export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const { event } = route.params;
   const { evaluateImage } = useNsfwGuard();
+  const { colors } = useTheme();
 
   const coords = useMemo(() => parsePoint(event), [event]);
 
@@ -54,19 +57,19 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
 
   if (!coords) {
     return (
-      <SafeAreaView style={styles.centered}>
-        <Text>No hay coordenadas para este evento.</Text>
+      <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ThemedText>No hay coordenadas para este evento.</ThemedText>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{event.title}</Text>
-      <Text style={styles.subtitle}>{event.address}</Text>
-      <Text style={styles.description}>{event.description}</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ThemedTitle style={styles.title}>{event.title}</ThemedTitle>
+      <ThemedTextSecondary style={styles.subtitle}>{event.address}</ThemedTextSecondary>
+      <ThemedText style={styles.description}>{event.description}</ThemedText>
 
-      <View style={styles.mapContainer}>
+      <ThemedView style={[styles.mapContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <MapView
           style={StyleSheet.absoluteFillObject}
           initialRegion={{
@@ -79,38 +82,29 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
           <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
           <Marker coordinate={coords} title={event.title} />
         </MapView>
-      </View>
+      </ThemedView>
 
-      <TouchableOpacity style={styles.button} onPress={openExternalNavigation}>
-        <Text style={styles.buttonText}>Abrir en Google/Apple Maps</Text>
-      </TouchableOpacity>
+      <ThemedButton title="Abrir en Google/Apple Maps" onPress={openExternalNavigation} />
 
-      <TouchableOpacity
-        style={styles.secondaryButton}
+      <ThemedButton
+        title="Probar moderación NSFW (demo)"
+        variant="secondary"
         onPress={async () => {
           const safe = await evaluateImage('https://example.com/demo.jpg');
           console.log('Imagen segura:', safe);
         }}
-      >
-        <Text style={styles.secondaryButtonText}>Probar moderación NSFW (demo)</Text>
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity style={styles.secondaryButton} onPress={uploadProbe}>
-        <Text style={styles.secondaryButtonText}>Probar subida a Storage</Text>
-      </TouchableOpacity>
+      <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12, backgroundColor: '#f7f7f7' },
+  container: { flex: 1, padding: 16, gap: 12 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 22, fontWeight: '800', color: '#111' },
-  subtitle: { fontSize: 14, color: '#444' },
-  description: { fontSize: 14, color: '#333', lineHeight: 20 },
-  mapContainer: { height: 260, borderRadius: 12, overflow: 'hidden', backgroundColor: '#ddd' },
-  button: { backgroundColor: '#1d4ed8', padding: 14, borderRadius: 10, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: '700' },
-  secondaryButton: { padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#d0d7de', alignItems: 'center' },
-  secondaryButtonText: { color: '#1d4ed8', fontWeight: '700' }
+  title: { fontSize: 22, fontWeight: '800' },
+  subtitle: { fontSize: 14 },
+  description: { fontSize: 14, lineHeight: 20 },
+  mapContainer: { height: 260, borderRadius: 12, overflow: 'hidden', borderWidth: 1 }
 });

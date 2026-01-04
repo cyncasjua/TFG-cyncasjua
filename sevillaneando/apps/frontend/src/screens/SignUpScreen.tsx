@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword , updateProfile} from 'firebase/auth';
 import { auth } from '../firebase/config';
+import { useTheme } from '../hooks/useTheme';
+import { ThemedButton, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import type { AuthStackParamList } from '../App';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
 export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
+  const { colors } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,17 +50,18 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Crear cuenta</Text>
-      <Text style={styles.subtitle}>Únete a Sevillaneando</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ThemedTitle style={styles.title}>Crear cuenta</ThemedTitle>
+      <ThemedTextSecondary style={styles.subtitle}>Únete a Sevillaneando</ThemedTextSecondary>
 
-      <View style={styles.form}>
+      <ThemedView style={styles.form}>
         <TextInput
           value={nombre}
           onChangeText={setNombre}
           placeholder="Nombre completo"
           autoCapitalize="words"
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+          placeholderTextColor={colors.textSecondary}
         />
         <TextInput
           value={email}
@@ -65,43 +69,42 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
           placeholder="Email"
           autoCapitalize="none"
           keyboardType="email-address"
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+          placeholderTextColor={colors.textSecondary}
         />
         <TextInput
           value={password}
           onChangeText={setPassword}
           placeholder="Contraseña"
           secureTextEntry
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+          placeholderTextColor={colors.textSecondary}
         />
         <TextInput
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirmar contraseña"
           secureTextEntry
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+          placeholderTextColor={colors.textSecondary}
         />
-        {error && <Text style={styles.error}>{error}</Text>}
-        <TouchableOpacity style={styles.button} onPress={onSubmit} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Registrarse</Text>}
-        </TouchableOpacity>
-      </View>
+        {error && <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>}
+        <ThemedButton title={loading ? 'Creando cuenta...' : 'Registrarse'} onPress={onSubmit} disabled={loading} />
+      </ThemedView>
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>¿Ya tienes cuenta? Inicia sesión</Text>
+        <ThemedText style={[styles.link, { color: colors.primary }]}>¿Ya tienes cuenta? Inicia sesión</ThemedText>
       </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center', backgroundColor: '#f7f7f7' },
-  title: { fontSize: 24, fontWeight: '800', color: '#111', marginBottom: 6, textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#444', textAlign: 'center', marginBottom: 20 },
+  container: { flex: 1, padding: 20, justifyContent: 'center' },
+  title: { marginBottom: 6, textAlign: 'center' },
+  subtitle: { textAlign: 'center', marginBottom: 20 },
   form: { gap: 12, marginBottom: 20 },
-  input: { backgroundColor: '#fff', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#e5e7eb' },
-  button: { backgroundColor: '#1d4ed8', padding: 14, borderRadius: 10, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: '700' },
-  error: { color: '#b91c1c', textAlign: 'center' },
-  link: { color: '#1d4ed8', textAlign: 'center', fontWeight: '600' }
+  input: { borderRadius: 10, padding: 14, borderWidth: 1 },
+  error: { textAlign: 'center' },
+  link: { textAlign: 'center', fontWeight: '600' }
 });

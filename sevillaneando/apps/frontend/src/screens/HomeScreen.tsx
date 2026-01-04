@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getEvents } from '../services/api';
 import { events as fallbackEvents } from '../seed/events';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
+import { ThemedView, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
+import { useTheme } from '../hooks/useTheme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -14,6 +16,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { role, logout } = useAuth();
+  const { colors, setTheme, theme } = useTheme();
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -44,70 +47,89 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.muted}>Cargando eventos...</Text>
-      </SafeAreaView>
+      <ThemedView style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando eventos...</ThemedTextSecondary>
+      </ThemedView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Eventos en Sevilla</Text>
-          <Text style={styles.role}>Rol actual: {role}</Text>
-        </View>
-        <View style={styles.headerButtons}>
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedView>
+          <ThemedTitle>Eventos en Sevilla</ThemedTitle>
+          <ThemedTextSecondary style={{ marginTop: 4 }}>Rol actual: {role}</ThemedTextSecondary>
+        </ThemedView>
+        <ThemedView style={styles.headerButtons}>
           {role === 'admin' && (
-            <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('Admin')}>
-              <Text style={styles.adminButtonText}>Admin</Text>
-            </TouchableOpacity>
+            <ThemedButton 
+              title="Admin" 
+              variant="primary"
+              onPress={() => navigation.navigate('Admin')}
+              style={styles.smallButton}
+              textStyle={styles.smallButtonText}
+            />
           )}
-          <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-            <Text style={styles.logoutText}>Cerrar sesión</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      {error && <Text style={styles.warning}>{error}</Text>}
+          <ThemedButton 
+            title="Cerrar sesión" 
+            variant="danger"
+            onPress={onLogout}
+            style={styles.smallButton}
+            textStyle={styles.smallButtonText}
+          />
+        </ThemedView>
+      </ThemedView>
+      <ThemedView style={styles.themeRow}>
+        <ThemedTextSecondary style={{ marginRight: 8 }}>Tema:</ThemedTextSecondary>
+        <ThemedButton
+          title="Claro"
+          variant={theme === 'light' ? 'primary' : 'secondary'}
+          onPress={() => setTheme('light')}
+          style={styles.tinyButton}
+          textStyle={styles.tinyButtonText}
+        />
+        <ThemedButton
+          title="Oscuro"
+          variant={theme === 'dark' ? 'primary' : 'secondary'}
+          onPress={() => setTheme('dark')}
+          style={styles.tinyButton}
+          textStyle={styles.tinyButtonText}
+        />
+      </ThemedView>
+      {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate('EventDetail', { event: item })}
-          >
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardSubtitle}>{item.address}</Text>
-            <Text style={styles.cardDescription} numberOfLines={2}>
-              {item.description}
-            </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
+            <ThemedCard>
+              <ThemedText style={styles.cardTitle}>{item.title}</ThemedText>
+              <ThemedTextSecondary style={{ marginBottom: 6 }}>{item.address}</ThemedTextSecondary>
+              <ThemedTextSecondary numberOfLines={2}>
+                {item.description}
+              </ThemedTextSecondary>
+            </ThemedCard>
           </TouchableOpacity>
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={<Text>No hay eventos disponibles.</Text>}
+        ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
+        ListEmptyComponent={<ThemedText>No hay eventos disponibles.</ThemedText>}
       />
-    </SafeAreaView>
+    </ThemedView>
   );
 };
 
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f7f7f7' },
+  container: { flex: 1, padding: 16 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  muted: { marginTop: 8, color: '#444' },
-  warning: { color: '#b45309', marginBottom: 8 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  title: { fontSize: 22, fontWeight: '700', color: '#111' },
-  role: { fontSize: 12, color: '#555', marginTop: 4 },
-  headerButtons: { flexDirection: 'row', gap: 8 },
-  adminButton: { backgroundColor: '#6366f1', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 },
-  adminButtonText: { color: '#fff', fontWeight: '600', fontSize: 12 },
-  logoutButton: { backgroundColor: '#dc2626', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 },
-  logoutText: { color: '#fff', fontWeight: '600', fontSize: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 10, padding: 14, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
-  cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4, color: '#1a1a1a' },
-  cardSubtitle: { fontSize: 14, color: '#444', marginBottom: 6 },
-  cardDescription: { fontSize: 13, color: '#555' },
+  headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
+  smallButton: { paddingHorizontal: 14, paddingVertical: 8 },
+  smallButtonText: { fontSize: 12 },
+  themeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  tinyButton: { paddingHorizontal: 10, paddingVertical: 6 },
+  tinyButtonText: { fontSize: 12 },
+  cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
   separator: { height: 12 }
 });

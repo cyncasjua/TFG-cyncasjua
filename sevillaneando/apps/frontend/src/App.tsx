@@ -8,6 +8,7 @@ import { LoginScreen } from './screens/LoginScreen';
 import { SignUpScreen } from './screens/SignUpScreen';
 import { AdminScreen } from './screens/AdminScreen';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import type { Event } from './types/event';
 
@@ -65,9 +66,11 @@ const Navigator = () => {
 };
 
 const App = () => (
-  <AuthProvider>
-    <Navigator />
-  </AuthProvider>
+  <ThemeProvider>
+    <AuthProvider>
+      <Navigator />
+    </AuthProvider>
+  </ThemeProvider>
 );
 
 export default App;
