@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolEnum, User } from './user.entity';
+import { ChangePasswordDto } from './dto/update-password';
+import * as bcrypt from 'bcryptjs';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class UsersService {
@@ -10,20 +13,16 @@ export class UsersService {
   async ensureFromFirebase(payload: { uid: string; email?: string | null; name?: string | null }): Promise<User> {
     const { uid, email, name } = payload;
     
-    // Busca primero por firebaseUid (si ya se sincronizó)
     let user = await this.usersRepo.findOne({ where: { firebaseUid: uid } });
     
-    // Si no encuentra por UID pero hay email, busca por email (caso seed)
     if (!user && email) {
       user = await this.usersRepo.findOne({ where: { email } });
       if (user) {
-        // Actualiza el firebaseUid si cambió
         user.firebaseUid = uid;
         await this.usersRepo.save(user);
       }
     }
     
-    // Si aún no existe, crea nuevo
     if (!user) {
       user = this.usersRepo.create({
         firebaseUid: uid,
@@ -37,7 +36,6 @@ export class UsersService {
       });
       await this.usersRepo.save(user);
     } else {
-      // Sincroniza email/nombre si cambian en Firebase
       let changed = false;
       if (email && user.email !== email) {
         user.email = email;
@@ -68,4 +66,38 @@ export class UsersService {
     user.rol = rol;
     return this.usersRepo.save(user);
   }
+
+  
+  async updateProfile(firebaseUid: string, data: { 
+    nombre?: string; 
+    email?: string; 
+    ubicacion?: string;
+    fotoPerfil?: string;
+    intereses?: string[];
+  }): Promise<User> {
+    const user = await this.usersRepo.findOneOrFail({ where: { firebaseUid } });
+    if (data.nombre !== undefined) user.nombre = data.nombre;
+    if (data.email !== undefined) user.email = data.email;
+    if (data.ubicacion !== undefined) user.ubicacion = data.ubicacion;
+    if (data.fotoPerfil !== undefined) user.fotoPerfil = data.fotoPerfil;
+    if (data.intereses !== undefined) user.intereses = data.intereses;
+    return this.usersRepo.save(user);
+  }
+
+  async deleteByFirebaseUid(firebaseUid: string): Promise<void> {
+    await this.usersRepo.delete({ firebaseUid });
+  }
+
+    async deleteCompletelyById(id: string): Promise<void> {
+    const user = await this.usersRepo.findOne({ where: { id } });
+    if (!user) return;
+    if (user.firebaseUid) {
+      try {
+        await admin.auth().deleteUser(user.firebaseUid);
+      } catch (e) {
+      }
+    }
+    await this.usersRepo.delete({ id });
+  }
+
 }

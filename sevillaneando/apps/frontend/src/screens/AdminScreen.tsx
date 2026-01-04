@@ -68,6 +68,34 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
   }
 };
 
+const deleteUser = async (userId: string) => {
+  Alert.alert(
+    'Confirmar borrado',
+    '¿Estás seguro de que quieres borrar esta cuenta? Esta acción no se puede deshacer.',
+    [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Borrar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setChangingRole(true);
+            await api.delete(`/users/${userId}`);
+            setUsers((prev) => prev.filter((u) => u.id !== userId));
+            setShowModal(false);
+            Alert.alert('Éxito', 'Usuario borrado correctamente.');
+          } catch (err: any) {
+            const errorMsg = err?.response?.data?.message || err?.message || 'No se pudo borrar el usuario.';
+            Alert.alert('Error', errorMsg);
+          } finally {
+            setChangingRole(false);
+          }
+        }
+      }
+    ]
+  );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
@@ -90,14 +118,22 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
               <ThemedTextSecondary style={styles.userEmail}>{item.email}</ThemedTextSecondary>
               <ThemedText style={[styles.userRole, { color: colors.primary }]}>Rol: {item.rol}</ThemedText>
             </ThemedView>
-            <ThemedButton
-              title="Editar rol"
-              onPress={() => {
-                setSelectedUser(item);
-                setShowModal(true);
-              }}
-              style={styles.editButton}
-            />
+            <ThemedView>
+              <ThemedButton
+                title="Editar rol"
+                onPress={() => {
+                  setSelectedUser(item);
+                  setShowModal(true);
+                }}
+                style={styles.editButton}
+              />
+              <ThemedButton
+                title="Borrar"
+                variant="danger"
+                onPress={() => deleteUser(item.id)}
+                style={[styles.editButton, { marginTop: 6 }]}
+              />
+            </ThemedView>
           </ThemedCard>
         )}
       />
@@ -118,6 +154,14 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
                   style={styles.roleOption}
                 />
               ))}
+
+              <ThemedButton
+                title="Borrar usuario"
+                variant="danger"
+                onPress={() => deleteUser(selectedUser.id)}
+                disabled={changingRole}
+                style={styles.roleOption}
+              />
 
               <ThemedButton title="Cerrar" variant="secondary" onPress={() => setShowModal(false)} style={styles.closeButton} />
             </ThemedCard>

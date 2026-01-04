@@ -48,7 +48,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('light');
 
-  // Cargar preferencia guardada
   useEffect(() => {
     const loadPreference = async () => {
       try {

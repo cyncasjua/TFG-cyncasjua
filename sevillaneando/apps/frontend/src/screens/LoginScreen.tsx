@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedButton, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import type { AuthStackParamList } from '../App';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -25,7 +26,6 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await login(email.trim(), password);
       
-      // Guardar preferencia de mantener sesión
       await AsyncStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
       if (rememberMe) {
         await AsyncStorage.setItem('savedEmail', email.trim());
@@ -37,6 +37,20 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       setError(message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Introduce tu email para recuperar la contraseña.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(getAuth(), email.trim());
+      setError(null);
+      alert('Te hemos enviado un email para restablecer tu contraseña. Si no lo ves, revisa la carpeta de spam.');
+    } catch (err: any) {
+      setError('No se pudo enviar el email de recuperación.');
     }
   };
 
@@ -87,8 +101,16 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
         <ThemedButton title={loading ? 'Entrando...' : 'Entrar'} onPress={onSubmit} disabled={loading} />
       </ThemedView>
 
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <ThemedText style={[styles.link, { color: colors.primary }]}>¿No tienes cuenta? Regístrate aquí</ThemedText>
+      <TouchableOpacity onPress={handleForgotPassword} style={{ marginTop: 16 }}>
+        <ThemedText style={[styles.link, { color: colors.primary }]}>
+          ¿Has olvidado tu contraseña?
+        </ThemedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={{ marginTop: 32 }}>
+        <ThemedText style={[styles.link, { color: colors.primary }]}>
+          ¿No tienes cuenta? Regístrate aquí
+        </ThemedText>
       </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>

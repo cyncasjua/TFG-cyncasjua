@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User, getIdTokenResult } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, getIdTokenResult } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { api, setAuthToken } from '../services/api';
+import type { User as AppUser } from '../types/user'; 
 
 export type UserRole = 'admin' | 'moderator' | 'user';
 
 type AuthContextValue = {
-  user: User | null;
+  user: AppUser | null;
+  setUser: (user: AppUser | null) => void;
   role: UserRole;
   loading: boolean;
+  token: string;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -16,29 +19,30 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [role, setRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string>('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (current) => {
-      setUser(current);
       if (current) {
         const tokenResult = await getIdTokenResult(current, true);
-        const token = tokenResult.token;
-        setAuthToken(token);
+        setAuthToken(tokenResult.token);
+        setToken(tokenResult.token);
 
-        // Obtener rol desde la BD
         try {
-          const res = await api.get<any>('/users/me');
-          const userRole = (res.data?.rol as UserRole | undefined) ?? 'user';
-          setRole(userRole);
+          const res = await api.get<AppUser>('/users/me');
+          setUser(res.data);
+          setRole(res.data.rol ?? 'user');
         } catch (err) {
-          console.warn('No se pudo obtener rol desde BD, usando default:', err);
+          setUser(null);
           setRole('user');
         }
       } else {
+        setUser(null);
         setAuthToken('');
+        setToken('');
         setRole('user');
       }
       setLoading(false);
@@ -50,8 +54,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   const value = useMemo(
     () => ({
       user,
+      setUser,
       role,
       loading,
+      token,
       login: async (email: string, password: string) => {
         await signInWithEmailAndPassword(auth, email, password);
       },
@@ -59,7 +65,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
         await signOut(auth);
       }
     }),
-    [user, role, loading]
+    [user, role, loading, token]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

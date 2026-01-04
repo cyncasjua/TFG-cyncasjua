@@ -13,8 +13,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import type { Event } from './types/event';
+import { EditProfileScreen } from './screens/EditProfileScreen';
+import { EditPasswordScreen } from './screens/EditPasswordScreen';
 
-// Suprimir warnings específicos
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
   'SafeAreaView has been deprecated',
@@ -25,6 +26,8 @@ export type RootStackParamList = {
   Home: undefined;
   EventDetail: { event: Event };
   Admin: undefined;
+  EditProfile: undefined;
+  EditPassword: undefined;
 };
 
 export type AuthStackParamList = {
@@ -34,6 +37,7 @@ export type AuthStackParamList = {
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+
 
 const Navigator = () => {
   const { user, loading, role } = useAuth();
@@ -78,6 +82,9 @@ const Navigator = () => {
           {role === 'admin' && (
             <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />
           )}
+          <AppStack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar perfil' }} />
+          <AppStack.Screen name="EditPassword" component={EditPasswordScreen} options={{ title: 'Cambiar contraseña' }} />
+
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

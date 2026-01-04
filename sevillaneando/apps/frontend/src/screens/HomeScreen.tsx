@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/useAuth';
 import { ThemedView, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
-import { AdminScreen } from './AdminScreen';
+import {ProfileHeader} from './ProfileHeader';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -68,18 +68,15 @@ return (
     resizeMode="cover"
   >
     <ThemedView style={styles.container}>
-      {/* Botón de menú en la esquina superior izquierda */}
       <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
         <MaterialIcons name="menu" size={32} color="#6c2eb7" />
       </TouchableOpacity>
 
-      {/* Encabezado separado del botón */}
       <ThemedView style={styles.header}>
         <ThemedTitle>Eventos en Sevilla</ThemedTitle>
         <ThemedTextSecondary style={{ marginTop: 4 }}>Rol actual: {role}</ThemedTextSecondary>
       </ThemedView>
 
-      {/* Botón de admin arriba si el usuario es admin */}
       {role === 'admin' && (
         <TouchableOpacity
           style={styles.adminButton}
@@ -108,11 +105,14 @@ return (
         ListEmptyComponent={<ThemedText>No hay eventos disponibles.</ThemedText>}
       />
 
-      {/* Menú lateral tipo modal */}
       {menuVisible && (
         <ThemedView style={styles.menuOverlay}>
           <ThemedView style={[styles.menuContainer, { backgroundColor: colors.card }]}>
-            <ThemedTitle style={styles.menuTitle}>Menú</ThemedTitle>
+              <ThemedTitle style={styles.menuTitle}>Menú</ThemedTitle>
+              <ProfileHeader onPress={() => {
+                setMenuVisible(false);
+                navigation.navigate('EditProfile');
+              }} />
             <ThemedView style={styles.menuSection}>
               <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
               <ThemedView style={styles.themeRow}>
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: 'center' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
-    marginTop: 60, // separa el header del botón de menú
+    marginTop: 60, 
     marginBottom: 12,
     alignItems: 'flex-start',
   },
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 2, height: 0 },
     justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    alignItems: 'center', 
   },
   menuTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 18 },
   menuSection: { marginBottom: 24 },
