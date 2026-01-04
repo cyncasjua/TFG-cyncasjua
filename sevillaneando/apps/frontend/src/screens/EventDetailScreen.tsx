@@ -1,7 +1,28 @@
 import React, { useMemo } from 'react';
-import { Linking, Platform, StyleSheet } from 'react-native';
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16, gap: 12 },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 22, fontWeight: '800' },
+  subtitle: { fontSize: 14 },
+  description: { fontSize: 14, lineHeight: 20 },
+  mapContainer: { height: 260, borderRadius: 30, overflow: 'hidden', borderWidth: 1 },
+  background: { flex: 1, padding: 16, gap: 12 },
+  backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 40 }] },
+});
+
+const uploadProbe = async () => {
+  try {
+    const storageRef = ref(storage, 'demo.txt');
+    await uploadString(storageRef, 'Contenido de prueba', 'raw');
+    const url = await getDownloadURL(storageRef);
+    console.log('Archivo subido:', url);
+  } catch (error) {
+    console.error('Error al subir archivo:', error);
+  }
+};
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { Linking, Platform, StyleSheet, ImageBackground } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
@@ -30,19 +51,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const { event } = route.params;
   const { evaluateImage } = useNsfwGuard();
   const { colors } = useTheme();
-
   const coords = useMemo(() => parsePoint(event), [event]);
-
-  const uploadProbe = async () => {
-    try {
-      const objectRef = ref(storage, `probe/${Date.now()}.txt`);
-      await uploadString(objectRef, 'sevillaneando storage probe', 'raw');
-      const url = await getDownloadURL(objectRef);
-      console.log('Storage probe URL:', url);
-    } catch (err) {
-      console.error('Fallo la subida a Storage', err);
-    }
-  };
 
   const openExternalNavigation = () => {
     if (!coords) return;
@@ -58,19 +67,19 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
 
   if (!coords) {
     return (
-      <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}> 
         <ThemedText>No hay coordenadas para este evento.</ThemedText>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
       <ThemedTitle style={styles.title}>{event.title}</ThemedTitle>
       <ThemedTextSecondary style={styles.subtitle}>{event.address}</ThemedTextSecondary>
       <ThemedText style={styles.description}>{event.description}</ThemedText>
 
-      <ThemedView style={[styles.mapContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <ThemedView style={[styles.mapContainer, { backgroundColor: colors.card, borderColor: colors.border }]}> 
         <MapView
           style={StyleSheet.absoluteFillObject}
           initialRegion={{
@@ -101,11 +110,3 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 22, fontWeight: '800' },
-  subtitle: { fontSize: 14 },
-  description: { fontSize: 14, lineHeight: 20 },
-  mapContainer: { height: 260, borderRadius: 12, overflow: 'hidden', borderWidth: 1 }
-});

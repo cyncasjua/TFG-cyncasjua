@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, LogBox, Text } from 'react-native';
+import { ActivityIndicator, LogBox, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HomeScreen } from './screens/HomeScreen';
 import { EventDetailScreen } from './screens/EventDetailScreen';
@@ -11,6 +11,7 @@ import { AdminScreen } from './screens/AdminScreen';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
+import { useTheme } from './hooks/useTheme';
 import type { Event } from './types/event';
 
 // Suprimir warnings específicos
@@ -36,12 +37,13 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 
 const Navigator = () => {
   const { user, loading, role } = useAuth();
+  const { colors } = useTheme();
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 8 }}>Comprobando sesión...</Text>
+      <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 8, color: colors.text }}>Comprobando sesión...</Text>
       </SafeAreaView>
     );
   }
@@ -49,8 +51,29 @@ const Navigator = () => {
   return (
     <NavigationContainer>
       {user ? (
-        <AppStack.Navigator>
-          <AppStack.Screen name="Home" component={HomeScreen} options={{ title: 'Sevillaneando' }} />
+        <AppStack.Navigator
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: colors.background,
+            },
+            headerTintColor: colors.text,
+            headerTitleStyle: {
+              color: colors.text,
+            },
+          }}
+        >
+          <AppStack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{
+              headerTitle: () => (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Image source={require('../assets/icon.png')} style={{ width: 28, height: 28, marginRight: 8 }} />
+                  <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Sevillaneando</Text>
+                </View>
+              )
+            }}
+          />
           <AppStack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Detalle del evento' }} />
           {role === 'admin' && (
             <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />

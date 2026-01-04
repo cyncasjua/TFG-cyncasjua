@@ -4,7 +4,8 @@ import {
   FlatList,
   StyleSheet,
   Modal,
-  Alert
+  Alert,
+  ImageBackground
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -52,7 +53,7 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
       prev.map((u) => (u.id === userId ? { ...u, rol: newRole } : u))
     );
     setShowModal(false);
-    Alert.alert('Éxito', `Rol actualizado a ${newRole}.`);
+    Alert.alert('\u00c9xito', `Rol actualizado a ${newRole}.`);
   } catch (err: any) {
     const errorMsg = err?.response?.data?.message || err?.message || 'No se pudo cambiar el rol.';
     console.error('Error completo:', {
@@ -69,14 +70,14 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
       <ThemedTitle style={styles.title}>Gestión de Usuarios</ThemedTitle>
 
       <FlatList
@@ -103,7 +104,7 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
 
       {selectedUser && (
         <Modal visible={showModal} transparent animationType="slide" onRequestClose={() => setShowModal(false)}>
-          <ThemedView style={[styles.modalOverlay, { backgroundColor: `${colors.text}80` }]}>
+          <ThemedView style={[styles.modalOverlay, { backgroundColor: `${colors.text}80` }]}> 
             <ThemedCard style={styles.modalContent}>
               <ThemedTitle style={styles.modalTitle}>Cambiar rol de {selectedUser.nombre}</ThemedTitle>
 
@@ -128,6 +129,8 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
 };
 
 const styles = StyleSheet.create({
+  background: { flex: 1, padding: 16 },
+  backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 40 }] },
   container: { flex: 1, padding: 16 },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 16 },
   userCard: { marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -137,7 +140,7 @@ const styles = StyleSheet.create({
   userRole: { fontSize: 12, fontWeight: '600' },
   editButton: { paddingHorizontal: 12, paddingVertical: 8 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 30 },
+  modalContent: { borderTopLeftRadius: 35, borderTopRightRadius: 35, padding: 20, paddingBottom: 30 },
   modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16 },
   roleOption: { marginBottom: 10 },
   closeButton: { marginTop: 12 }

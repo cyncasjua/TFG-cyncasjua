@@ -97,14 +97,14 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 100 }] },
+  backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 40 }] },
   container: { flex: 1, padding: 20, justifyContent: 'center' },
   title: { marginBottom: 6, textAlign: 'center' },
   subtitle: { textAlign: 'center', marginBottom: 20 },
-  form: { gap: 12, marginBottom: 20, borderRadius: 20, padding: 16 },
-  input: { borderRadius: 25, padding: 14, borderWidth: 1 },
+  form: { gap: 12, marginBottom: 20, borderRadius: 30, padding: 16 },
+  input: { borderRadius: 50, padding: 14, borderWidth: 1 },
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
-  checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 12, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
+  checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 50, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
   checkmark: { fontWeight: 'bold', fontSize: 16 },
   checkboxLabel: { fontSize: 14 },
   error: { textAlign: 'center' },
