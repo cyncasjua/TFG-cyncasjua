@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Event } from '../events/event.entity';
+import { Resena } from '../entities/resena.entity';
 
 export enum RolEnum {
   ADMIN = 'admin',
@@ -34,4 +36,18 @@ export class User {
 
   @Column({ type: 'varchar', length: 128, unique: true })
   firebaseUid!: string;
+
+  @OneToMany(() => Event, event => event.creador)
+  eventos!: Event[];
+
+  @OneToMany(() => Resena, resena => resena.autor)
+  resenas!: Resena[];
+
+  iniciarSesion() {}
+  cerrarSesion() {}
+  verEventos() {}
+  subirFoto() {}
+  editarPerfil() {}
+  añadirEvento() {}
+  añadirReseña() {}
 }

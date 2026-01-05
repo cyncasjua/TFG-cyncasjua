@@ -8,6 +8,13 @@ import { Event } from './events/event.entity';
 import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
 import { SeedService } from './database/seed.service';
+import { Categoria } from './entities/categoria.entity';
+import { Imagen } from './entities/imagen.entity';
+import { Resena } from './entities/resena.entity';
+import { Ruta } from './entities/ruta.entity';
+import { Coordenadas } from './entities/coordenadas.entity';
+import { Notificacion } from './entities/notificacion.entity';
+import { Recomendacion } from './entities/recomendacion.entity';
 
 @Module({
   imports: [
@@ -21,7 +28,17 @@ import { SeedService } from './database/seed.service';
         username: config.get('DATABASE_USER', 'postgres'),
         password: config.get('DATABASE_PASSWORD', 'postgres'),
         database: config.get('DATABASE_NAME', 'sevillaneando'),
-        entities: [Event, User],
+        entities: [
+          Event,
+          User,
+          Categoria,
+          Imagen,
+          Resena,
+          Ruta,
+          Coordenadas,
+          Notificacion,
+          Recomendacion
+        ],
         synchronize: true, 
       })
     }),

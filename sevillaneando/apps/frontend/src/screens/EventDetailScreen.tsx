@@ -39,9 +39,19 @@ function parsePoint(event: Event) {
     return { latitude: event.latitude, longitude: event.longitude };
   }
   if (event.location) {
-    const match = event.location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
-    if (match) {
-      return { latitude: parseFloat(match[2]), longitude: parseFloat(match[1]) };
+    if (typeof event.location === 'string') {
+      const locationStr: string = event.location;
+      const match = locationStr.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
+      if (match) {
+        return { latitude: parseFloat(match[2]), longitude: parseFloat(match[1]) };
+      }
+    } else if (
+      typeof event.location === 'object' &&
+      event.location.type === 'Point' &&
+      Array.isArray(event.location.coordinates) &&
+      event.location.coordinates.length === 2
+    ) {
+      return { latitude: event.location.coordinates[1], longitude: event.location.coordinates[0] };
     }
   }
   return null;
@@ -75,10 +85,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-      <ThemedTitle style={styles.title}>{event.title}</ThemedTitle>
-      <ThemedTextSecondary style={styles.subtitle}>{event.address}</ThemedTextSecondary>
-      <ThemedText style={styles.description}>{event.description}</ThemedText>
-
+    <ThemedTitle style={styles.title}>{event.title}</ThemedTitle>
+    <ThemedTextSecondary style={styles.subtitle}>{event.address}</ThemedTextSecondary>
+    <ThemedText style={styles.description}>{event.description}</ThemedText>
+    <ThemedTextSecondary>Fecha inicio: {new Date(event.fechaInicio).toLocaleString()}</ThemedTextSecondary>
+    <ThemedTextSecondary>Fecha fin: {new Date(event.fechaFin).toLocaleString()}</ThemedTextSecondary>
+    <ThemedTextSecondary>Precio: {event.precio} €</ThemedTextSecondary>
+    <ThemedTextSecondary>Categoría: {event.categoria?.nombre}</ThemedTextSecondary>
+    <ThemedTextSecondary>Estado: {event.estado}</ThemedTextSecondary>
+    <ThemedTextSecondary>Organizador: {event.creador?.nombre}</ThemedTextSecondary>
       <ThemedView style={[styles.mapContainer, { backgroundColor: colors.card, borderColor: colors.border }]}> 
         <MapView
           style={StyleSheet.absoluteFillObject}

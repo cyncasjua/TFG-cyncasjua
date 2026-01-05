@@ -29,8 +29,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       setError(null);
       try {
-        const remote = await getEvents();
-        setItems(remote);
+        //const remote = await getEvents();
+        //setItems(remote);
+        setItems(fallbackEvents);
+        console.log(items);
       } catch (err) {
         console.error('No se pudieron cargar eventos remotos', err);
         setError('Mostrando eventos de ejemplo (sin conexión con backend).');
@@ -95,9 +97,12 @@ return (
             <ThemedCard>
               <ThemedText style={styles.cardTitle}>{item.title}</ThemedText>
               <ThemedTextSecondary style={{ marginBottom: 6 }}>{item.address}</ThemedTextSecondary>
-              <ThemedTextSecondary numberOfLines={2}>
-                {item.description}
-              </ThemedTextSecondary>
+              <ThemedTextSecondary numberOfLines={2}>{item.description}</ThemedTextSecondary>
+              <ThemedTextSecondary>Fecha: {new Date(item.fechaInicio).toLocaleString()} - {new Date(item.fechaFin).toLocaleString()}</ThemedTextSecondary>
+              <ThemedTextSecondary>Precio: {item.precio} €</ThemedTextSecondary>
+              <ThemedTextSecondary>Categoría: {item.categoria?.nombre}</ThemedTextSecondary>
+              <ThemedTextSecondary>Estado: {item.estado}</ThemedTextSecondary>
+              <ThemedTextSecondary>Organizador: {item.creador?.nombre}</ThemedTextSecondary>
             </ThemedCard>
           </TouchableOpacity>
         )}
