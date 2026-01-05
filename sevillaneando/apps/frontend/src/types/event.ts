@@ -12,4 +12,5 @@ export interface Event {
   creador: { id: string; nombre: string; email: string };
   latitude?: number;
   longitude?: number;
+  imagen?: string;
 }

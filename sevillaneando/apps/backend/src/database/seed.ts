@@ -14,7 +14,6 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
 
     console.log('🌱 Iniciando seed de eventos de prueba...');
 
-    // Crear categoría de prueba si no existe
     let categoria = await dataSource.getRepository(Categoria).findOne({ where: {} });
     if (!categoria) {
       categoria = dataSource.getRepository(Categoria).create({
@@ -25,7 +24,6 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
       console.log('✅ Categoría de prueba creada');
     }
 
-    // Crear usuario de prueba si no existe
     let creador = await dataSource.getRepository(User).findOne({ where: {} });
     if (!creador) {
       creador = dataSource.getRepository(User).create({
@@ -37,42 +35,49 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
       console.log('✅ Usuario de prueba creado');
     }
 
+    interface GeoJsonPoint {
+      type: 'Point';
+      coordinates: [number, number]; 
+    }
     const testEvents = [
       {
         title: 'Feria de Abril',
         description: 'Celebra la tradición sevillana con casetas, música y gastronomía local.',
         address: 'Recinto Ferial, Sevilla',
-        location: { type: 'Point', coordinates: [-6.0014, 37.3772] },
+        location: { type: 'Point', coordinates: [-6.0014, 37.3772] } as GeoJsonPoint,
         fechaInicio: new Date('2026-04-10T18:00:00'),
         fechaFin: new Date('2026-04-17T23:59:00'),
         precio: 0,
         categoria,
         estado: EstadoEnum.Pendiente,
-        creador
+        creador,
+        imagen: 'https://legacy.visitasevilla.es/sites/default/files/styles/card_extended_page/public/extended_page/img_card_right/feria-de-abril-bloque-1.jpg?itok=83C_2NQm'
       },
       {
         title: 'Concierto en la Plaza de España',
         description: 'Música al aire libre con artistas locales e internacionales.',
         address: 'Plaza de España, Sevilla',
-        location: { type: 'Point', coordinates: [-5.9869, 37.3775] },
+        location: { type: 'Point', coordinates: [-5.9869, 37.3775] } as GeoJsonPoint,
         fechaInicio: new Date('2026-05-01T20:00:00'),
         fechaFin: new Date('2026-05-01T23:00:00'),
         precio: 15,
         categoria,
         estado: EstadoEnum.Pendiente,
-        creador
+        creador,
+        imagen: 'https://s1.abcstatics.com/abc/www/multimedia/sevilla/2022/10/26/plaza-espana-sevilla-RGatPHKYapyCsuC8b7DAh8L-1240x768@abc.jpg'
       },
       {
         title: 'Ruta gastronómica por Triana',
         description: 'Tapas y flamenco en uno de los barrios más emblemáticos de Sevilla.',
         address: 'Barrio de Triana, Sevilla',
-        location: { type: 'Point', coordinates: [-6.0077, 37.3822] },
+        location: { type: 'Point', coordinates: [-6.0077, 37.3822] } as GeoJsonPoint,
         fechaInicio: new Date('2026-06-05T12:00:00'),
         fechaFin: new Date('2026-06-05T18:00:00'),
         precio: 25,
         categoria,
         estado: EstadoEnum.Pendiente,
-        creador
+        creador,
+        imagen: 'https://sevillavisita.com/wp-content/uploads/2019/12/Portada-Tour-guiado-Triana.jpg'
       }
     ];
 

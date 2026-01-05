@@ -15,14 +15,14 @@ export function setAuthToken(token: string) {
 
 function parsePoint(location?: string | any) {
   if (!location) return null;
-  
+
   if (typeof location === 'object' && location.coordinates) {
     const [lon, lat] = location.coordinates;
     if (Number.isFinite(lat) && Number.isFinite(lon)) {
       return { latitude: lat, longitude: lon };
     }
   }
-  
+
   if (typeof location === 'string') {
     // Accepts "SRID=4326;POINT(lon lat)" or "POINT(lon lat)"
     const match = location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
@@ -31,7 +31,7 @@ function parsePoint(location?: string | any) {
     const lat = parseFloat(match[2]);
     if (Number.isFinite(lat) && Number.isFinite(lon)) return { latitude: lat, longitude: lon };
   }
-  
+
   return null;
 }
 
@@ -45,8 +45,15 @@ export async function getEvents(): Promise<Event[]> {
       description: event.description,
       address: event.address,
       location: event.location,
-      latitude: coords?.latitude ?? event.latitude,
-      longitude: coords?.longitude ?? event.longitude
-    } satisfies Event;
+      fechaInicio: event.fechaInicio,
+      fechaFin: event.fechaFin,
+      precio: event.precio,
+      categoria: event.categoria,
+      estado: event.estado,
+      creador: event.creador,
+      latitude: coords?.latitude,
+      longitude: coords?.longitude,
+      imagen: event.imagen
+    } as Event;
   });
 }

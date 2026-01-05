@@ -64,6 +64,8 @@ const Navigator = () => {
             headerTitleStyle: {
               color: colors.text,
             },
+            animation: 'fade', 
+            animationTypeForReplace: 'pop', 
           }}
         >
           <AppStack.Screen

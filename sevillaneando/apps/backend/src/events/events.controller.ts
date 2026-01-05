@@ -1,43 +1,35 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { FirebaseAuthGuard } from '../auth/firebase.guard';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
+import { Event } from './event.entity';
 
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
   @Post()
-  create(@Body() dto: CreateEventDto) {
+  async create(@Body() dto: CreateEventDto): Promise<Event> {
     return this.eventsService.create(dto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<Event[]> {
     return this.eventsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<Event> {
     return this.eventsService.findOne(id);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
     return this.eventsService.update(id, dto);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin')
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.eventsService.remove(id);
   }
 }

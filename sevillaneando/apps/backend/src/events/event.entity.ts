@@ -5,6 +5,11 @@ import { EstadoEnum } from '../enums/estado.enum';
 import { Coordenadas } from '../entities/coordenadas.entity';
 import { Imagen } from '../entities/imagen.entity';
 
+interface GeoJsonPoint {
+  type: 'Point';
+  coordinates: [number, number]; // [longitude, latitude]
+}
+
 @Entity({ name: 'events' })
 export class Event {
   @PrimaryGeneratedColumn('uuid')
@@ -19,9 +24,8 @@ export class Event {
   @Column({ type: 'varchar', length: 255 })
   address!: string;
 
-  // Uso de tipo geography para PostGIS (lat, lon)
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
-  location!: object;
+  location!: GeoJsonPoint;
 
   @Column('timestamp')
   fechaInicio!: Date;
@@ -44,8 +48,11 @@ export class Event {
   @ManyToOne(() => User, user => user.eventos)
   creador!: User;
 
-  @OneToMany(() => Imagen, imagen => imagen.evento)
-  imagenes!: Imagen[];
+  /*@OneToMany(() => Imagen, imagen => imagen.evento)
+  imagenes!: Imagen[];*/
+
+  @Column({ type: 'varchar', length: 512, nullable: true })
+  imagen?: string;
 
   aprobarEvento() {
     this.estado = EstadoEnum.Aprobado;

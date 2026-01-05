@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/useAuth';
 import { ThemedView, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
-import {ProfileHeader} from './ProfileHeader';
+import { ProfileHeader } from './ProfileHeader';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -29,14 +29,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       setError(null);
       try {
-        //const remote = await getEvents();
-        //setItems(remote);
-        setItems(fallbackEvents);
-        console.log(items);
+        const remote = await getEvents();
+        setItems(remote);
+        //setItems(fallbackEvents);
       } catch (err) {
         console.error('No se pudieron cargar eventos remotos', err);
         setError('Mostrando eventos de ejemplo (sin conexión con backend).');
-        setItems(fallbackEvents);
+        //setItems(fallbackEvents);
       } finally {
         setLoading(false);
       }
@@ -62,98 +61,180 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     );
   }
 
-return (
-  <ImageBackground
-    source={require('../../assets/icon.png')}
-    style={[styles.background, { backgroundColor: colors.background }]}
-    imageStyle={styles.backgroundImage}
-    resizeMode="cover"
-  >
-    <ThemedView style={styles.container}>
-      <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
-        <MaterialIcons name="menu" size={32} color="#6c2eb7" />
-      </TouchableOpacity>
-
-      <ThemedView style={styles.header}>
-        <ThemedTitle>Eventos en Sevilla</ThemedTitle>
-        <ThemedTextSecondary style={{ marginTop: 4 }}>Rol actual: {role}</ThemedTextSecondary>
-      </ThemedView>
-
-      {role === 'admin' && (
-        <TouchableOpacity
-          style={styles.adminButton}
-          onPress={() => navigation.navigate('Admin')}
-        >
-          <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
+  return (
+    <ImageBackground
+      source={require('../../assets/icon.png')}
+      style={[styles.background, { backgroundColor: colors.background }]}
+      imageStyle={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <ThemedView style={styles.container}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
+          <MaterialIcons name="menu" size={32} color="#6c2eb7" />
         </TouchableOpacity>
-      )}
 
-      {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
-            <ThemedCard>
-              <ThemedText style={styles.cardTitle}>{item.title}</ThemedText>
-              <ThemedTextSecondary style={{ marginBottom: 6 }}>{item.address}</ThemedTextSecondary>
-              <ThemedTextSecondary numberOfLines={2}>{item.description}</ThemedTextSecondary>
-              <ThemedTextSecondary>Fecha: {new Date(item.fechaInicio).toLocaleString()} - {new Date(item.fechaFin).toLocaleString()}</ThemedTextSecondary>
-              <ThemedTextSecondary>Precio: {item.precio} €</ThemedTextSecondary>
-              <ThemedTextSecondary>Categoría: {item.categoria?.nombre}</ThemedTextSecondary>
-              <ThemedTextSecondary>Estado: {item.estado}</ThemedTextSecondary>
-              <ThemedTextSecondary>Organizador: {item.creador?.nombre}</ThemedTextSecondary>
-            </ThemedCard>
+        <ThemedView style={styles.header}>
+          <ThemedTitle>Eventos en Sevilla</ThemedTitle>
+          <ThemedTextSecondary style={{ marginTop: 4 }}>Rol actual: {role}</ThemedTextSecondary>
+        </ThemedView>
+
+        {role === 'admin' && (
+          <TouchableOpacity
+            style={styles.adminButton}
+            onPress={() => navigation.navigate('Admin')}
+          >
+            <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
           </TouchableOpacity>
         )}
-        ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
-        ListEmptyComponent={<ThemedText>No hay eventos disponibles.</ThemedText>}
-      />
 
-      {menuVisible && (
-        <ThemedView style={styles.menuOverlay}>
-          <ThemedView style={[styles.menuContainer, { backgroundColor: colors.card }]}>
+        {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => {
+            console.log('Imagen del evento:', item.imagen);
+            return (
+            <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
+              <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+                <ImageBackground
+                  source={
+                    item.imagen
+                      ? { uri: item.imagen }
+                      : require('../../assets/splash.png')
+                  }
+                  style={{ height: 120, justifyContent: 'flex-end' }}
+                  imageStyle={{ opacity: 0.2 }}
+                  resizeMode="cover"
+                >
+                  <ThemedText
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      color: theme === 'dark' ? '#fff' : '#222',
+                      marginBottom: 2,
+                      marginLeft: 14,
+                      textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
+                      textShadowOffset: { width: 0, height: 2 },
+                      textShadowRadius: 6,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.title}
+                  </ThemedText>
+                  <ThemedTextSecondary
+                    style={{
+                      fontSize: 13,
+                      color: theme === 'dark' ? '#eee' : '#444',
+                      marginLeft: 14,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    <MaterialIcons name="place" size={16} color="#ffd700" />{' '}
+                    {item.address}
+                  </ThemedTextSecondary>
+                </ImageBackground>
+                <ThemedView style={{ padding: 12 }}>
+                  <ThemedTextSecondary numberOfLines={2} style={{ marginBottom: 6 }}>
+                    {item.description}
+                  </ThemedTextSecondary>
+                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <MaterialIcons name="event" size={16} color="#6c2eb7" />
+                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                      {new Date(item.fechaInicio).toLocaleDateString()} - {new Date(item.fechaFin).toLocaleDateString()}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <MaterialIcons name="category" size={16} color="#6c2eb7" />
+                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                      {item.categoria?.nombre}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <MaterialIcons name="person" size={16} color="#6c2eb7" />
+                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                      {item.creador?.nombre}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <MaterialIcons name="check-circle" size={16} color={item.estado === 'Aprobado' ? '#4caf50' : '#fbc02d'} />
+                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                      {item.estado}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
+                    <ThemedText style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      color: '#fff',
+                      backgroundColor: '#6c2eb7',
+                      paddingHorizontal: 12,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      overflow: 'hidden',
+                      alignSelf: 'flex-end'
+                    }}>
+                      {item.precio === 0 ? 'Gratis' : `${item.precio} €`}
+                    </ThemedText>
+                  </ThemedView>
+                </ThemedView>
+              </ThemedCard>
+            </TouchableOpacity>
+            );
+          }
+        }
+        />
+
+        {menuVisible && (
+          <ThemedView style={styles.menuOverlay}>
+            <ThemedView style={[styles.menuContainer, { backgroundColor: colors.card }]}>
               <ThemedTitle style={styles.menuTitle}>Menú</ThemedTitle>
               <ProfileHeader onPress={() => {
                 setMenuVisible(false);
                 navigation.navigate('EditProfile');
               }} />
-            <ThemedView style={styles.menuSection}>
-              <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
-              <ThemedView style={styles.themeRow}>
-                <ThemedButton
-                  title="Claro"
-                  variant={theme === 'light' ? 'primary' : 'secondary'}
-                  onPress={() => setTheme('light')}
-                  style={styles.menuButtonOption}
-                />
-                <ThemedButton
-                  title="Oscuro"
-                  variant={theme === 'dark' ? 'primary' : 'secondary'}
-                  onPress={() => setTheme('dark')}
-                  style={styles.menuButtonOption}
-                />
+              <ThemedView style={styles.menuSection}>
+                <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
+                <ThemedView style={styles.themeRow}>
+                  <ThemedButton
+                    title="Claro"
+                    variant={theme === 'light' ? 'primary' : 'secondary'}
+                    onPress={() => setTheme('light')}
+                    style={styles.menuButtonOption}
+                  />
+                  <ThemedButton
+                    title="Oscuro"
+                    variant={theme === 'dark' ? 'primary' : 'secondary'}
+                    onPress={() => setTheme('dark')}
+                    style={styles.menuButtonOption}
+                  />
+                </ThemedView>
               </ThemedView>
+              <ThemedButton
+                title="Cerrar sesión"
+                variant="danger"
+                onPress={onLogout}
+                style={styles.menuButtonOption}
+              />
+              <TouchableOpacity
+                style={styles.closeMenuButton}
+                onPress={() => setMenuVisible(false)}
+                accessibilityLabel="Cerrar menú"
+              >
+                <MaterialIcons name="close" size={32} color="#6c2eb7" />
+              </TouchableOpacity>
             </ThemedView>
-            <ThemedButton
-              title="Cerrar sesión"
-              variant="danger"
-              onPress={onLogout}
-              style={styles.menuButtonOption}
-            />
-            <TouchableOpacity
-              style={styles.closeMenuButton}
-              onPress={() => setMenuVisible(false)}
-              accessibilityLabel="Cerrar menú"
-            >
-              <MaterialIcons name="close" size={32} color="#6c2eb7" />
-            </TouchableOpacity>
           </ThemedView>
-        </ThemedView>
-      )}
-    </ThemedView>
-  </ImageBackground>
-);
+        )}
+      </ThemedView>
+    </ImageBackground>
+  );
 };
 
 
@@ -166,7 +247,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: 'center' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
-    marginTop: 60, 
+    marginTop: 60,
     marginBottom: 12,
     alignItems: 'flex-start',
   },
@@ -190,7 +271,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   menuContainer: {
-    width: '80%', 
+    width: '80%',
     height: '100%',
     padding: 24,
     borderTopRightRadius: 40,
@@ -201,17 +282,17 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 2, height: 0 },
     justifyContent: 'flex-start',
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   menuTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 18 },
   menuSection: { marginBottom: 24 },
   menuButtonOption: {
     marginBottom: 0,
     alignSelf: 'stretch',
-  },  headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
+  }, headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
   smallButton: { paddingHorizontal: 14, paddingVertical: 8 },
   smallButtonText: { fontSize: 12 },
-    themeRow: {
+  themeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -221,7 +302,7 @@ const styles = StyleSheet.create({
   tinyButtonText: { fontSize: 12 },
   cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
   separator: { height: 12 },
-    closeMenuButton: {
+  closeMenuButton: {
     alignSelf: 'center',
     marginTop: 'auto',
     marginBottom: 12,
@@ -229,7 +310,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 4,
   },
-    adminButton: {
+  adminButton: {
     position: 'absolute',
     top: 18,
     right: 18,

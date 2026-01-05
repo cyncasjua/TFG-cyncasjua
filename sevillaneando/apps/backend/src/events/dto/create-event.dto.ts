@@ -1,4 +1,13 @@
-import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class GeoJsonPoint {
+  @IsString()
+  type!: 'Point';
+
+  @IsNumber({}, { each: true })
+  coordinates!: [number, number]; 
+}
 
 export class CreateEventDto {
   @IsString()
@@ -13,11 +22,10 @@ export class CreateEventDto {
   @IsNotEmpty()
   address!: string;
 
-  @IsNumber()
-  latitude!: number;
-
-  @IsNumber()
-  longitude!: number;
+  @ValidateNested()
+  @Type(() => GeoJsonPoint)
+  @IsNotEmpty()
+  location!: GeoJsonPoint;
 
   @IsDateString()
   @IsOptional()
@@ -42,4 +50,8 @@ export class CreateEventDto {
   @IsNumber()
   @IsOptional()
   creadorId?: number;
+
+  @IsString()
+  @IsOptional()
+  imagen?: string;
 }
