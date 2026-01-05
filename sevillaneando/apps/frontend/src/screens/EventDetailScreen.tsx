@@ -20,6 +20,7 @@ import { useColorScheme } from 'react-native';
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
 const uploadProbe = async () => {
+  
   try {
     const storageRef = ref(storage, 'demo.txt');
     await uploadString(storageRef, 'Contenido de prueba', 'raw');
