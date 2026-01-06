@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-// filepath: c:\Users\G513\Desktop\TFG-cyncasjua\sevillaneando\apps\frontend\src\screens\HomeScreen.tsx
-// @ts-ignore
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { getEvents } from '../services/api';
 import { events as fallbackEvents } from '../seed/events';
 import { RootStackParamList } from '../App';
@@ -24,25 +23,25 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { role, logout } = useAuth();
   const { colors, setTheme, theme } = useTheme();
 
-  useEffect(() => {
-    const bootstrap = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const remote = await getEvents();
-        setItems(remote);
-        //setItems(fallbackEvents);
-      } catch (err) {
-        console.error('No se pudieron cargar eventos remotos', err);
-        setError('Mostrando eventos de ejemplo (sin conexión con backend).');
-        //setItems(fallbackEvents);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    bootstrap();
+  const fetchEvents = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const remote = await getEvents();
+      setItems(remote);
+    } catch (err) {
+      console.error('No se pudieron cargar eventos remotos', err);
+      setError('Mostrando eventos de ejemplo (sin conexión con backend).');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchEvents();
+    }, [fetchEvents])
+  );
 
   const onLogout = async () => {
     try {
@@ -72,6 +71,25 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
           <MaterialIcons name="menu" size={32} color="#6c2eb7" />
         </TouchableOpacity>
+        {role === 'user' && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => navigation.navigate('CreateEvent')}
+            accessibilityLabel="Crear evento"
+          >
+            <MaterialIcons name="add-circle" size={56} color="#6c2eb7" />
+          </TouchableOpacity>
+        )}
+
+        {role === 'moderator' && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => navigation.navigate('ModeratorEvents')}
+            accessibilityLabel="Aprobar eventos"
+          >
+            <MaterialIcons name="check-circle" size={56} color="#4caf50" />
+          </TouchableOpacity>
+        )}
 
         <ThemedView style={styles.header}>
           <ThemedTitle>Eventos en Sevilla</ThemedTitle>
@@ -87,6 +105,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         )}
 
+        <TouchableOpacity
+          style={styles.notificationsButton}
+          onPress={() => navigation.navigate('Notifications')}
+          accessibilityLabel="Ver notificaciones"
+        >
+          <MaterialIcons name="notifications" size={35} color="#ffd700" />
+        </TouchableOpacity>
+
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
         <FlatList
           data={items}
@@ -94,101 +120,102 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           renderItem={({ item }) => {
             console.log('Imagen del evento:', item.imagen);
             return (
-            <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
-              <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
-                <ImageBackground
-                  source={
-                    item.imagen
-                      ? { uri: item.imagen }
-                      : require('../../assets/splash.png')
-                  }
-                  style={{ height: 120, justifyContent: 'flex-end' }}
-                  imageStyle={{ opacity: 0.2 }}
-                  resizeMode="cover"
-                >
-                  <ThemedText
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 'bold',
-                      color: theme === 'dark' ? '#fff' : '#222',
-                      marginBottom: 2,
-                      marginLeft: 14,
-                      textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
-                      textShadowOffset: { width: 0, height: 2 },
-                      textShadowRadius: 6,
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
+              <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
+                <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+                  <ImageBackground
+                    source={
+                      item.imagen
+                        ? { uri: item.imagen }
+                        : require('../../assets/splash.png')
+                    }
+                    style={{ height: 120, justifyContent: 'flex-end' }}
+                    imageStyle={{ opacity: 0.2 }}
+                    resizeMode="cover"
                   >
-                    {item.title}
-                  </ThemedText>
-                  <ThemedTextSecondary
-                    style={{
-                      fontSize: 13,
-                      color: theme === 'dark' ? '#eee' : '#444',
-                      marginLeft: 14,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 2,
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    <MaterialIcons name="place" size={16} color="#ffd700" />{' '}
-                    {item.address}
-                  </ThemedTextSecondary>
-                </ImageBackground>
-                <ThemedView style={{ padding: 12 }}>
-                  <ThemedTextSecondary numberOfLines={2} style={{ marginBottom: 6 }}>
-                    {item.description}
-                  </ThemedTextSecondary>
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <MaterialIcons name="event" size={16} color="#6c2eb7" />
-                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {new Date(item.fechaInicio).toLocaleDateString()} - {new Date(item.fechaFin).toLocaleDateString()}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <MaterialIcons name="category" size={16} color="#6c2eb7" />
-                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {item.categoria?.nombre}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <MaterialIcons name="person" size={16} color="#6c2eb7" />
-                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {item.creador?.nombre}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    <MaterialIcons name="check-circle" size={16} color={item.estado === 'Aprobado' ? '#4caf50' : '#fbc02d'} />
-                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {item.estado}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                  <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
-                    <ThemedText style={{
-                      fontSize: 18,
-                      fontWeight: 'bold',
-                      color: '#fff',
-                      backgroundColor: '#6c2eb7',
-                      paddingHorizontal: 12,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                      alignSelf: 'flex-end'
-                    }}>
-                      {item.precio === 0 ? 'Gratis' : `${item.precio} €`}
+                    <ThemedText
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: theme === 'dark' ? '#fff' : '#222',
+                        marginBottom: 2,
+                        marginLeft: 14,
+                        textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
+                        textShadowOffset: { width: 0, height: 2 },
+                        textShadowRadius: 6,
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {item.title}
                     </ThemedText>
+                    <ThemedTextSecondary
+                      style={{
+                        fontSize: 13,
+                        color: theme === 'dark' ? '#eee' : '#444',
+                        marginLeft: 14,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      <MaterialIcons name="place" size={16} color="#ffd700" />{' '}
+                      {item.address}
+                    </ThemedTextSecondary>
+                  </ImageBackground>
+                  <ThemedView style={{ padding: 12 }}>
+                    <ThemedTextSecondary numberOfLines={2} style={{ marginBottom: 6 }}>
+                      {item.description}
+                    </ThemedTextSecondary>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <MaterialIcons name="event" size={16} color="#6c2eb7" />
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                        {new Date(item.fechaInicio).toLocaleDateString()} - {new Date(item.fechaFin).toLocaleDateString()}
+                      </ThemedTextSecondary>
+                    </ThemedView>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <MaterialIcons name="category" size={16} color="#6c2eb7" />
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                        {item.categoria?.nombre}
+                      </ThemedTextSecondary>
+                    </ThemedView>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <MaterialIcons name="person" size={16} color="#6c2eb7" />
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                        {item.creador?.nombre}
+                      </ThemedTextSecondary>
+                    </ThemedView>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <MaterialIcons name="check-circle" size={16} color={item.estado === 'Aprobado' ? '#4caf50' : '#fbc02d'} />
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                        {item.estado}
+                      </ThemedTextSecondary>
+                    </ThemedView>
+                    <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
+                      <ThemedText style={{
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: '#fff',
+                        backgroundColor: '#6c2eb7',
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        overflow: 'hidden',
+                        alignSelf: 'flex-end'
+                      }}>
+                        {item.precio === 0 ? 'Gratis' : `${item.precio} €`}
+                      </ThemedText>
+                    </ThemedView>
                   </ThemedView>
-                </ThemedView>
-              </ThemedCard>
-            </TouchableOpacity>
+                </ThemedCard>
+              </TouchableOpacity>
+
             );
           }
-        }
+          }
         />
 
         {menuVisible && (
@@ -312,9 +339,34 @@ const styles = StyleSheet.create({
   },
   adminButton: {
     position: 'absolute',
-    top: 18,
+    top: 19,
     right: 18,
     zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 32,
+    right: 32,
+    zIndex: 20,
+    elevation: 8,
+    backgroundColor: 'transparent',
+  },
+  fabLeft: {
+    position: 'absolute',
+    bottom: 32,
+    left: 32,
+    zIndex: 20,
+    elevation: 8,
+    backgroundColor: 'transparent',
+  },
+    notificationsButton: {
+    position: 'absolute',
+    top: 18,
+    right: 18,
+    zIndex: 11,
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 20,
     padding: 8,

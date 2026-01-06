@@ -15,6 +15,8 @@ import { Ruta } from './entities/ruta.entity';
 import { Coordenadas } from './entities/coordenadas.entity';
 import { Notificacion } from './entities/notificacion.entity';
 import { Recomendacion } from './entities/recomendacion.entity';
+import { CategoriasModule } from './categorias/categorias.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 
 @Module({
   imports: [
@@ -45,7 +47,10 @@ import { Recomendacion } from './entities/recomendacion.entity';
     DatabaseModule,
     EventsModule,
     UsersModule,
-    AuthModule
+    AuthModule,
+    CategoriasModule,
+    NotificacionesModule,
+    
   ]
 })
 export class AppModule {

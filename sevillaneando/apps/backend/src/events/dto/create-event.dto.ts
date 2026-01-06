@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class GeoJsonPoint {
@@ -28,28 +28,29 @@ export class CreateEventDto {
   location!: GeoJsonPoint;
 
   @IsDateString()
-  @IsOptional()
-  fechaInicio?: string;
+  @IsNotEmpty()
+  fechaInicio!: string;
 
   @IsDateString()
-  @IsOptional()
-  fechaFin?: string;
+  @IsNotEmpty()
+  fechaFin!: string;
 
   @IsNumber()
-  @IsOptional()
-  precio?: number;
+  @IsNotEmpty()
+  precio!: number;
+
+  @IsUUID()
+  @IsNotEmpty()
+  categoriaId!: string;
+
+  @IsUUID()
+  @IsNotEmpty()
+  creadorId!: string;
+
 
   @IsString()
   @IsOptional()
   estado?: string;
-
-  @IsNumber()
-  @IsOptional()
-  categoriaId?: number;
-
-  @IsNumber()
-  @IsOptional()
-  creadorId?: number;
 
   @IsString()
   @IsOptional()

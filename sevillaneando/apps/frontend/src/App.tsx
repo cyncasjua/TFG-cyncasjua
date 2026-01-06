@@ -15,6 +15,10 @@ import { useTheme } from './hooks/useTheme';
 import type { Event } from './types/event';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { EditPasswordScreen } from './screens/EditPasswordScreen';
+import CreateEventScreen from './screens/CreateEventScreen';
+import { ModeratorEventsScreen } from './screens/ModeratorEventsScreen';
+import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
+import { MaterialIcons } from '@expo/vector-icons';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -28,6 +32,9 @@ export type RootStackParamList = {
   Admin: undefined;
   EditProfile: undefined;
   EditPassword: undefined;
+  CreateEvent: undefined;
+  ModeratorEvents: undefined;
+  Notifications: undefined;
 };
 
 export type AuthStackParamList = {
@@ -37,7 +44,6 @@ export type AuthStackParamList = {
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
-
 
 const Navigator = () => {
   const { user, loading, role } = useAuth();
@@ -64,8 +70,8 @@ const Navigator = () => {
             headerTitleStyle: {
               color: colors.text,
             },
-            animation: 'fade', 
-            animationTypeForReplace: 'pop', 
+            animation: 'fade',
+            animationTypeForReplace: 'pop',
           }}
         >
           <AppStack.Screen
@@ -86,7 +92,11 @@ const Navigator = () => {
           )}
           <AppStack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar perfil' }} />
           <AppStack.Screen name="EditPassword" component={EditPasswordScreen} options={{ title: 'Cambiar contraseña' }} />
-
+          <AppStack.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: 'Crear evento' }} />
+          {role === 'moderator' && (
+            <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
+          )}
+          <AppStack.Screen name="Notifications" component={NotificacionesScreen} options={{ title: 'Notificaciones' }} />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

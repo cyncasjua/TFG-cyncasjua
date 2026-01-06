@@ -14,7 +14,21 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
 
     console.log('🌱 Iniciando seed de eventos de prueba...');
 
-    let categoria = await dataSource.getRepository(Categoria).findOne({ where: {} });
+    const categoriasRepo = dataSource.getRepository(Categoria);
+    const categoriasExistentes = await categoriasRepo.count();
+    let categorias: Categoria[] = [];
+    if (categoriasExistentes === 0) {
+      categorias = await categoriasRepo.save([
+        categoriasRepo.create({ nombre: 'Fiestas', descripcion: 'Eventos festivos y celebraciones' }),
+        categoriasRepo.create({ nombre: 'Conciertos', descripcion: 'Música en vivo y espectáculos' }),
+        categoriasRepo.create({ nombre: 'Gastronomía', descripcion: 'Rutas y eventos gastronómicos' }),
+      ]);
+      console.log('✅ Categorías de prueba creadas');
+    } else {
+      categorias = await categoriasRepo.find();
+    }
+    let categoria = categorias[0];
+
     if (!categoria) {
       categoria = dataSource.getRepository(Categoria).create({
         nombre: 'Fiestas',

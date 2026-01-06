@@ -8,7 +8,7 @@ export class Notificacion {
   id: string;
 
   @ManyToOne(() => User)
-  UserDestino: User;
+  usuario: User;
 
   @Column()
   mensaje: string;
@@ -17,9 +17,12 @@ export class Notificacion {
   tipo: TipoEnum;
 
   @Column('timestamp')
-  fechaEnvio: Date;
+  fecha: Date;
+
+  @Column({ default: false })
+  leida: boolean;
 
   enviarNotificacion() {
-    this.fechaEnvio = new Date();
+    this.fecha = new Date();
   }
 }

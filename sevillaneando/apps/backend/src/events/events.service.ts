@@ -13,19 +13,27 @@ export class EventsService {
     private readonly eventRepo: Repository<Event>
   ) {}
 
-  async create(dto: CreateEventDto): Promise<Event> {
-    const event = this.eventRepo.create({
-      ...dto,
-      estado: dto.estado as EstadoEnum, // Ensure correct enum type
-      location: dto.location, // Ensure this matches the Event entity type
-      fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : undefined,
-      fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
-    });
-    return await this.eventRepo.save(event);
-  }
+async create(dto: CreateEventDto): Promise<Event> {
+  const event = this.eventRepo.create({
+    title: dto.title,
+    description: dto.description,
+    address: dto.address,
+    location: dto.location,
+    fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : undefined,
+    fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
+    precio: dto.precio ?? 0, 
+    categoria: dto.categoriaId ? { id: dto.categoriaId } as any : undefined,
+    estado: EstadoEnum.Pendiente,
+    creador: dto.creadorId ? { id: dto.creadorId } as any : undefined,
+    imagen: dto.imagen ?? undefined,
+  });
+  return await this.eventRepo.save(event);
+}
 
-  findAll(): Promise<Event[]> {
+  findAll(estado: EstadoEnum = EstadoEnum.Aprobado): Promise<Event[]> {
+    const where = estado ? { estado } : {};
     return this.eventRepo.find({
+      where,
       relations: ['categoria', 'creador']
     });
   }
