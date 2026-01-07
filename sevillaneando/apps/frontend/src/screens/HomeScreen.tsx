@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
   },
     notificationsButton: {
     position: 'absolute',
-    top: 18,
-    right: 18,
+    bottom: 30,
+    left: 30,
     zIndex: 11,
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 20,

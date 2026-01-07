@@ -7,7 +7,7 @@ import {
   Alert,
   ImageBackground
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ThemedButton, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
@@ -98,14 +98,14 @@ const deleteUser = async (userId: string) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={[styles.container, { backgroundColor: colors.background }]}> 
         <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+    <View style={[styles.container, { backgroundColor: colors.background }]}> 
       <ThemedTitle style={styles.title}>Gestión de Usuarios</ThemedTitle>
 
       <FlatList
@@ -155,27 +155,19 @@ const deleteUser = async (userId: string) => {
                 />
               ))}
 
-              <ThemedButton
-                title="Borrar usuario"
-                variant="danger"
-                onPress={() => deleteUser(selectedUser.id)}
-                disabled={changingRole}
-                style={styles.roleOption}
-              />
-
               <ThemedButton title="Cerrar" variant="secondary" onPress={() => setShowModal(false)} style={styles.closeButton} />
             </ThemedCard>
           </ThemedView>
         </Modal>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   background: { flex: 1, padding: 16 },
   backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 40 }] },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 0 },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 16 },
   userCard: { marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   userInfo: { flex: 1 },
