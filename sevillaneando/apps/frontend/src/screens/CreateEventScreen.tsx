@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Alert, StyleSheet, KeyboardAvoidingView, Platform, TextInput, ScrollView, Keyboard, TouchableOpacity, Image, View, Button, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -9,7 +10,7 @@ import { api } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import DropDownPicker from 'react-native-dropdown-picker';
+// import DropDownPicker from 'react-native-dropdown-picker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateEvent'>;
 
@@ -19,6 +20,7 @@ type Categoria = {
 };
 
 export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
+  const mapRef = useRef<any>(null);
   const { colors } = useTheme();
   const { user } = useAuth();
   const [title, setTitle] = useState('');
@@ -26,13 +28,17 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const [address, setAddress] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
+  // Centro de Sevilla por defecto
+  const [latitude, setLatitude] = useState<number | null>(37.3891);
+  const [longitude, setLongitude] = useState<number | null>(-5.9845);
+  const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [precio, setPrecio] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
@@ -41,15 +47,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const addressRef = useRef<TextInput>(null);
   const fechaInicioRef = useRef<TextInput>(null);
   const fechaFinRef = useRef<TextInput>(null);
-  const latitudeRef = useRef<TextInput>(null);
-  const longitudeRef = useRef<TextInput>(null);
   const precioRef = useRef<TextInput>(null);
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
 
-  const categoriaItems = categorias.map((cat) => ({
-    label: cat.nombre,
-    value: cat.id,
-  }));
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -113,6 +113,64 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     setImageUrl('');
   };
 
+  const geocodeAddress = async (address: string, showLoading = false) => {
+    if (!address) return;
+    if (showLoading) setSearchLoading(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setLatitude(lat);
+        setLongitude(lon);
+        setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+        setTimeout(() => {
+          mapRef.current?.animateToRegion({
+            latitude: lat,
+            longitude: lon,
+            latitudeDelta: 0.0015,
+            longitudeDelta: 0.0015,
+          }, 500);
+        }, 100);
+      } else {
+        Alert.alert('No encontrado', 'No se ha encontrado la dirección o lugar especificado.');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo buscar la dirección o lugar.');
+    } finally {
+      if (showLoading) setSearchLoading(false);
+    }
+  };
+
+
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+      const data = await response.json();
+      if (data && data.display_name) {
+        setAddress(data.display_name);
+      }
+    } catch (e) {
+    }
+  };
+
+  useEffect(() => {
+    if (latitude !== null && longitude !== null) {
+      reverseGeocode(latitude, longitude);
+    }
+  }, [latitude, longitude]);
+
+  const handleAddressBlur = () => {
+    geocodeAddress(address);
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      geocodeAddress(searchQuery, true);
+    }
+  };
+
   const handleCreateEvent = async () => {
     if (
       !title ||
@@ -120,8 +178,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       !address ||
       !fechaInicio ||
       !fechaFin ||
-      !latitude ||
-      !longitude ||
+      latitude === null ||
+      longitude === null ||
       !precio ||
       !categoriaId
     ) {
@@ -142,7 +200,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         fechaFin,
         location: {
           type: 'Point',
-          coordinates: [parseFloat(latitude), parseFloat(longitude)],
+          coordinates: [longitude, latitude],
         },
         precio: parseFloat(precio),
         categoriaId,
@@ -205,18 +263,37 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onSubmitEditing={() => addressRef.current?.focus()}
               blurOnSubmit={false}
             />
-            <ThemedText style={styles.label}>Dirección</ThemedText>
-            <TextInput
-              ref={addressRef}
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Dirección"
-              placeholderTextColor={colors.text + '99'}
-              style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
-              returnKeyType="next"
-              onSubmitEditing={() => fechaInicioRef.current?.focus()}
-              blurOnSubmit={false}
-            />
+            {/* Agrupar buscador y dirección juntos visualmente */}
+            <View style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                <TextInput
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Buscar dirección o lugar..."
+                  placeholderTextColor={colors.text + '99'}
+                  style={[styles.mapSearchInput, { flex: 1, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+                  returnKeyType="search"
+                  onSubmitEditing={handleSearch}
+                  editable={!searchLoading}
+                />
+                <TouchableOpacity onPress={handleSearch} style={styles.mapSearchButton} disabled={searchLoading}>
+                  {searchLoading ? (
+                    <ActivityIndicator color={colors.primary} size={20} />
+                  ) : (
+                    <Icon name="magnify" size={24} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                ref={addressRef}
+                value={address}
+                onChangeText={() => {}}
+                placeholder="Dirección"
+                placeholderTextColor={colors.text + '99'}
+                style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+                editable={false}
+              />
+            </View>
             <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
             <TextInput
               ref={fechaInicioRef}
@@ -238,35 +315,46 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               placeholderTextColor={colors.text + '99'}
               style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
               returnKeyType="next"
-              onSubmitEditing={() => latitudeRef.current?.focus()}
+              onSubmitEditing={Keyboard.dismiss}
               blurOnSubmit={false}
             />
-            <ThemedText style={styles.label}>Latitud</ThemedText>
-            <TextInput
-              ref={latitudeRef}
-              value={latitude}
-              onChangeText={setLatitude}
-              placeholder="Latitud"
-              keyboardType="numeric"
-              placeholderTextColor={colors.text + '99'}
-              style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
-              returnKeyType="next"
-              onSubmitEditing={() => longitudeRef.current?.focus()}
-              blurOnSubmit={false}
-            />
-            <ThemedText style={styles.label}>Longitud</ThemedText>
-            <TextInput
-              ref={longitudeRef}
-              value={longitude}
-              onChangeText={setLongitude}
-              placeholder="Longitud"
-              keyboardType="numeric"
-              placeholderTextColor={colors.text + '99'}
-              style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
-              returnKeyType="next"
-              onSubmitEditing={() => precioRef.current?.focus()}
-              blurOnSubmit={false}
-            />
+            <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
+            <View style={{ height: 220, borderRadius: 12, overflow: 'hidden', marginBottom: 10, borderWidth: 1, borderColor: colors.primary, position: 'relative' }}>
+              <MapView
+                ref={mapRef}
+                style={StyleSheet.absoluteFillObject}
+                region={{
+                  latitude: latitude ?? 37.3891,
+                  longitude: longitude ?? -5.9845,
+                  latitudeDelta: mapDelta.latitudeDelta,
+                  longitudeDelta: mapDelta.longitudeDelta,
+                }}
+                onPress={(e: MapPressEvent) => {
+                  const lat = e.nativeEvent.coordinate.latitude;
+                  const lon = e.nativeEvent.coordinate.longitude;
+                  setLatitude(lat);
+                  setLongitude(lon);
+                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+                  mapRef.current?.animateToRegion({
+                    latitude: lat,
+                    longitude: lon,
+                    latitudeDelta: 0.0015,
+                    longitudeDelta: 0.0015,
+                  }, 500);
+                  reverseGeocode(lat, lon);
+                }}
+              >
+                {latitude !== null && longitude !== null && (
+                  <Marker coordinate={{ latitude, longitude }} />
+                )}
+                <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+              </MapView>
+            </View>
+            <ThemedText style={{ marginBottom: 8, color: colors.text + '99' }}>
+              {latitude && longitude
+                ? `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
+                : 'Toca el mapa para seleccionar la ubicación'}
+            </ThemedText>
             <ThemedText style={styles.label}>Precio</ThemedText>
             <TextInput
               ref={precioRef}
@@ -284,32 +372,19 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (
-              <DropDownPicker
-                open={open}
-                setOpen={setOpen}
-                value={categoriaId}
-                setValue={setCategoriaId}
-                items={categoriaItems}
-                placeholder="Selecciona una categoría..."
-                style={{
-                  borderColor: colors.primary,
-                  backgroundColor: colors.card,
-                  marginBottom: 10,
-                  zIndex: 1000,
-                }}
-                textStyle={{
-                  color: colors.text,
-                }}
-                dropDownContainerStyle={{
-                  borderColor: colors.primary,
-                  backgroundColor: colors.card,
-                  zIndex: 1000,
-                }}
-                showTickIcon={true}
-                zIndex={1000}
-                zIndexInverse={3000}
-                onChangeValue={(val) => setCategoriaId(val)}
-              />
+              <View style={{ borderWidth: 1, borderColor: colors.primary, borderRadius: 8, marginBottom: 10, backgroundColor: colors.card }}>
+                <Picker
+                  selectedValue={categoriaId}
+                  onValueChange={(itemValue) => setCategoriaId(itemValue)}
+                  style={{ color: colors.text }}
+                  dropdownIconColor={colors.primary}
+                >
+                  <Picker.Item label="Selecciona una categoría..." value={null} />
+                  {categorias.map((cat) => (
+                    <Picker.Item key={cat.id} label={cat.nombre} value={cat.id} />
+                  ))}
+                </Picker>
+              </View>
             )}
             <ThemedText style={styles.label}>Imagen del evento</ThemedText>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
@@ -338,6 +413,32 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  mapSearchContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  mapSearchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    fontSize: 15,
+    marginRight: 8,
+  },
+  mapSearchButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',

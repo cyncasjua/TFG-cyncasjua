@@ -16,6 +16,7 @@ import type { Event } from './types/event';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { EditPasswordScreen } from './screens/EditPasswordScreen';
 import CreateEventScreen from './screens/CreateEventScreen';
+import EditEventScreen from './screens/EditEventScreen';
 import { ModeratorEventsScreen } from './screens/ModeratorEventsScreen';
 import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
 import { MaterialIcons } from '@expo/vector-icons';
@@ -33,6 +34,7 @@ export type RootStackParamList = {
   EditProfile: undefined;
   EditPassword: undefined;
   CreateEvent: undefined;
+  EditEvent: { event: Event };
   ModeratorEvents: undefined;
   Notifications: undefined;
 };
@@ -94,7 +96,10 @@ const Navigator = () => {
           <AppStack.Screen name="EditPassword" component={EditPasswordScreen} options={{ title: 'Cambiar contraseña' }} />
           <AppStack.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: 'Crear evento' }} />
           {role === 'moderator' && (
-            <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
+            <>
+              <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
+              <AppStack.Screen name="EditEvent" component={EditEventScreen} options={{ title: 'Editar evento' }} />
+            </>
           )}
           <AppStack.Screen name="Notifications" component={NotificacionesScreen} options={{ title: 'Notificaciones' }} />
         </AppStack.Navigator>
