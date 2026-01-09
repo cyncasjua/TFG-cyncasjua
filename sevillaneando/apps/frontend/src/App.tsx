@@ -16,7 +16,6 @@ import type { Event } from './types/event';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { EditPasswordScreen } from './screens/EditPasswordScreen';
 import CreateEventScreen from './screens/CreateEventScreen';
-import EditEventScreen from './screens/EditEventScreen';
 import { ModeratorEventsScreen } from './screens/ModeratorEventsScreen';
 import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
 import { MaterialIcons } from '@expo/vector-icons';
@@ -98,7 +97,6 @@ const Navigator = () => {
           {role === 'moderator' && (
             <>
               <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
-              <AppStack.Screen name="EditEvent" component={EditEventScreen} options={{ title: 'Editar evento' }} />
             </>
           )}
           <AppStack.Screen name="Notifications" component={NotificacionesScreen} options={{ title: 'Notificaciones' }} />
