@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested, IsUUID, Length, MaxLength, Min, IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
 
 class GeoJsonPoint {
   @IsString()
@@ -12,14 +13,17 @@ class GeoJsonPoint {
 export class CreateEventDto {
   @IsString()
   @IsNotEmpty()
+  @Length(3, 100)
   title!: string;
 
   @IsString()
   @IsNotEmpty()
+  @Length(10, 1000)
   description!: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   address!: string;
 
   @ValidateNested()
@@ -33,10 +37,12 @@ export class CreateEventDto {
 
   @IsDateString()
   @IsNotEmpty()
+  @IsEndDateAfterStartDate('fechaInicio', { message: 'La fecha de fin debe ser posterior a la fecha de inicio.' })
   fechaFin!: string;
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(0)
   precio!: number;
 
   @IsUUID()
@@ -54,5 +60,6 @@ export class CreateEventDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(512)
   imagen?: string;
 }
