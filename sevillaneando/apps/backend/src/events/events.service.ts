@@ -49,11 +49,28 @@ async create(dto: CreateEventDto): Promise<Event> {
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
     const event = await this.findOne(id);
+    // Validar y transformar location si es necesario
+    let location = event.location;
+    if (dto.location && dto.location.type === 'Point' && Array.isArray(dto.location.coordinates)) {
+      location = {
+        type: 'Point',
+        coordinates: [
+          Number(dto.location.coordinates[0]),
+          Number(dto.location.coordinates[1])
+        ]
+      };
+    }
+    // Convertir fechas a Date
+    const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
+    const fechaFin = dto.fechaFin ? new Date(dto.fechaFin) : event.fechaFin;
     const updated = {
       ...event,
       ...dto,
+      categoria: dto.categoriaId ? { id: dto.categoriaId } : event.categoria,
       estado: dto.estado !== undefined ? dto.estado as EstadoEnum : event.estado,
-      location: dto.location ? dto.location : event.location
+      location,
+      fechaInicio,
+      fechaFin
     };
     await this.eventRepo.save(updated);
     return updated as Event;

@@ -25,7 +25,6 @@ export class EventsController {
 
   @Get()
   async findAll(@Query('estado') estado?: string): Promise<Event[]> {
-    // Si no se pasa estado, solo se devuelven los aprobados
     const estadoEnum = estado ? EstadoEnum[estado as keyof typeof EstadoEnum] : undefined;
     return this.eventsService.findAll(estadoEnum);
   }
@@ -45,7 +44,6 @@ export class EventsController {
     return this.eventsService.remove(id);
   }
 
-  // PATCH /events/:id/aprobar
   @Patch(':id/aprobar')
   async aprobar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
@@ -63,7 +61,6 @@ export class EventsController {
     return updated;
   }
 
-  // PATCH /events/:id/rechazar
   @Patch(':id/rechazar')
   async rechazar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);

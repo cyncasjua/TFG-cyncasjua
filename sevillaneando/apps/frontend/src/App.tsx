@@ -17,6 +17,7 @@ import { EditProfileScreen } from './screens/EditProfileScreen';
 import { EditPasswordScreen } from './screens/EditPasswordScreen';
 import CreateEventScreen from './screens/CreateEventScreen';
 import { ModeratorEventsScreen } from './screens/ModeratorEventsScreen';
+import { ModeratorEditEventScreen } from './screens/ModeratorEditEventScreen';
 import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -35,6 +36,7 @@ export type RootStackParamList = {
   CreateEvent: undefined;
   EditEvent: { event: Event };
   ModeratorEvents: undefined;
+  ModeratorEditEvent: { event: Event };
   Notifications: undefined;
 };
 
@@ -97,6 +99,7 @@ const Navigator = () => {
           {role === 'moderator' && (
             <>
               <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
+              <AppStack.Screen name="ModeratorEditEvent" component={ModeratorEditEventScreen} options={{ title: 'Editar evento' }} />
             </>
           )}
           <AppStack.Screen name="Notifications" component={NotificacionesScreen} options={{ title: 'Notificaciones' }} />

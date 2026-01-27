@@ -7,20 +7,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import type { RootStackParamList } from '../App';
+import type { Event } from '../types/event';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModeratorEvents'>;
 
 export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
   const { role } = useAuth();
   const { colors, theme } = useTheme();
-  type Event = {
-    id: string;
-    title: string;
-    description: string;
-    fechaInicio: string;
-    address: string;
-    imagen?: string; // Usar la misma propiedad que en HomeScreen
-  };
 
   const [pendingEvents, setPendingEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,48 +80,47 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
         data={pendingEvents}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <ThemedView
-            style={[
-              styles.card,
-              {
+          <TouchableOpacity onPress={() => navigation.navigate('ModeratorEditEvent', { event: item })}>
+            <ThemedView
+              style={[styles.card, {
                 backgroundColor: theme === 'dark' ? '#222' : '#fff',
                 borderColor: theme === 'dark' ? colors.primary : '#eee',
                 shadowColor: theme === 'dark' ? '#000' : '#aaa',
-              },
-            ]}
-          >
-            <Image
-              source={
-                item.imagen
-                  ? { uri: item.imagen }
-                  : require('../../assets/splash.png')
-              }
-              style={styles.image}
-              resizeMode="cover"
-            />
-            <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
-            <ThemedText style={styles.eventDesc}>{item.description}</ThemedText>
-            <ThemedTextSecondary style={styles.eventInfo}>
-              Fecha: {item.fechaInicio}
-            </ThemedTextSecondary>
-            <ThemedTextSecondary style={styles.eventInfo}>
-              Ubicación: {item.address}
-            </ThemedTextSecondary>
-            <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.button, styles.aprobarBtn]}
-                onPress={() => handleAprobar(item.id)}
-              >
-                <ThemedText style={styles.buttonText}>Aprobar</ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.rechazarBtn]}
-                onPress={() => handleRechazar(item.id)}
-              >
-                <ThemedText style={styles.buttonText}>Rechazar</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </ThemedView>
+              }]}
+            >
+              <Image
+                source={
+                  item.imagen
+                    ? { uri: item.imagen }
+                    : require('../../assets/splash.png')
+                }
+                style={styles.image}
+                resizeMode="cover"
+              />
+              <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
+              <ThemedText style={styles.eventDesc}>{item.description}</ThemedText>
+              <ThemedTextSecondary style={styles.eventInfo}>
+                Fecha: {item.fechaInicio}
+              </ThemedTextSecondary>
+              <ThemedTextSecondary style={styles.eventInfo}>
+                Ubicación: {item.address}
+              </ThemedTextSecondary>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={[styles.button, styles.aprobarBtn]}
+                  onPress={() => handleAprobar(item.id)}
+                >
+                  <ThemedText style={styles.buttonText}>Aprobar</ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.rechazarBtn]}
+                  onPress={() => handleRechazar(item.id)}
+                >
+                  <ThemedText style={styles.buttonText}>Rechazar</ThemedText>
+                </TouchableOpacity>
+              </View>
+            </ThemedView>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={
           <ThemedTextSecondary style={{ textAlign: 'center', marginTop: 40 }}>
