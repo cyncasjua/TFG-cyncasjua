@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet } from 'react
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { getEvents } from '../services/api';
+import { getEvents, api } from '../services/api';
 import { events as fallbackEvents } from '../seed/events';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
@@ -20,8 +20,22 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [categories, setCategories] = useState<{ id: string, nombre: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { role, logout } = useAuth();
   const { colors, setTheme, theme } = useTheme();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/categorias');
+        setCategories(res.data);
+      } catch (e) {
+        setCategories([]);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -68,6 +82,50 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       resizeMode="cover"
     >
       <ThemedView style={styles.container}>
+        <ThemedView style={styles.header}>
+          <ThemedTitle>Eventos en Sevilla</ThemedTitle>
+          <ThemedTextSecondary style={{ marginTop: 4 }}>
+            Rol actual: <ThemedText style={{ color: '#ffd700', fontWeight: 'bold' }}>{role}</ThemedText>
+          </ThemedTextSecondary>
+        </ThemedView>
+        {categories.length > 0 && (
+          <ThemedView style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, justifyContent: 'flex-start' }}>
+            <ThemedText style={{ fontWeight: 'bold', fontSize: 14, marginLeft:1 , color: colors.primary }}>Categoria:</ThemedText>
+            <TouchableOpacity
+              style={{
+                paddingVertical: 7,
+                paddingHorizontal: 16,
+                borderRadius: 18,
+                backgroundColor: selectedCategory === null ? colors.primary : colors.card,
+                marginHorizontal: 4,
+                marginBottom: 6,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+              }}
+              onPress={() => setSelectedCategory(null)}
+            >
+              <ThemedText style={{ color: selectedCategory === null ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>Todas</ThemedText>
+            </TouchableOpacity>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={{
+                  paddingVertical: 7,
+                  paddingHorizontal: 16,
+                  borderRadius: 18,
+                  backgroundColor: selectedCategory === cat.id ? colors.primary : colors.card,
+                  marginHorizontal: 4,
+                  marginBottom: 6,
+                  borderWidth: 1.5,
+                  borderColor: colors.primary,
+                }}
+                onPress={() => setSelectedCategory(cat.id)}
+              >
+                <ThemedText style={{ color: selectedCategory === cat.id ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>{cat.nombre}</ThemedText>
+              </TouchableOpacity>
+            ))}
+          </ThemedView>
+        )}
         <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
           <MaterialIcons name="menu" size={32} color="#6c2eb7" />
         </TouchableOpacity>
@@ -90,11 +148,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <MaterialIcons name="check-circle" size={56} color="#4caf50" />
           </TouchableOpacity>
         )}
-
-        <ThemedView style={styles.header}>
-          <ThemedTitle>Eventos en Sevilla</ThemedTitle>
-          <ThemedTextSecondary style={{ marginTop: 4 }}>Rol actual: {role}</ThemedTextSecondary>
-        </ThemedView>
 
         {role === 'admin' && (
           <>
@@ -123,7 +176,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
         <FlatList
-          data={items}
+          data={selectedCategory ? items.filter(ev => ev.categoria?.id === selectedCategory) : items}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => {
@@ -206,10 +259,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   </ThemedView>
                 </ThemedCard>
               </TouchableOpacity>
-
             );
-          }
-          }
+          }}
         />
 
         {menuVisible && (

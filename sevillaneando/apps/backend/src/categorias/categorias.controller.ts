@@ -1,4 +1,4 @@
-import { Controller, Get,Post,Body } from '@nestjs/common';
+import { Controller, Get,Post,Body, Delete, Param, Put } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Categoria } from '../entities/categoria.entity';
@@ -20,5 +20,16 @@ export class CategoriasController {
   @Post()
   async create(@Body() dto: CreateCategoriaDTO): Promise<Categoria> {
     return await this.categoriaService.create(dto);
-}
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() dto: CreateCategoriaDTO): Promise<Categoria> {
+    return await this.categoriaService.update(id, dto);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string): Promise<void> {
+    return await this.categoriaService.delete(id);
+  }
+  
 }

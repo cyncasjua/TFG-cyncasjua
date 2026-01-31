@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { TextInput, Button, FlatList, StyleSheet, Alert, ImageBackground, TouchableOpacity, Modal } from 'react-native';
+import { TextInput, Button, FlatList, StyleSheet, Alert, ImageBackground, TouchableOpacity, Modal, Keyboard, ScrollView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useAuthContext } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -22,6 +22,8 @@ const CategoriesScreen = () => {
     const [descripcion, setDescripcion] = useState('');
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editId, setEditId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchCategories();
@@ -40,27 +42,29 @@ const CategoriesScreen = () => {
         setLoading(false);
     };
 
-    const handleCreate = async () => {
-        if (!nombre || !descripcion) {
-            Alert.alert('Campos requeridos', 'Completa todos los campos');
-            return;
-        }
+    const handleCreateOrEdit = async () => {
         setLoading(true);
         try {
-            await api.post('/categorias', { nombre, descripcion });
+            if (editMode && editId) {
+                await api.put(`/categorias/${editId}`, { nombre, descripcion });
+                setCategories((prev) =>
+                    prev.map((cat) =>
+                        cat.id === editId ? { ...cat, nombre, descripcion } : cat
+                    )
+                );
+            } else {
+                const res = await api.post('/categorias', { nombre, descripcion });
+                setCategories((prev) => [...prev, res.data]);
+            }
             setNombre('');
             setDescripcion('');
-            fetchCategories();
-            Alert.alert('Éxito', 'Categoría creada');
-        } catch (error: any) {
-            console.log('Error al crear categoría:', error, error?.response?.data);
-            let msg = 'No se pudo crear la categoría';
-            if (error?.response?.data?.message) {
-                msg += `: ${error.response.data.message}`;
-            }
-            Alert.alert('Error', msg);
+            setEditMode(false);
+            setEditId(null);
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo guardar la categoría');
         }
         setLoading(false);
+        fetchCategories();
     };
 
     return (
@@ -70,99 +74,160 @@ const CategoriesScreen = () => {
             imageStyle={styles.backgroundImage}
             resizeMode="cover"
         >
-            <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-                <ThemedView style={styles.headerRow}>
-                    <MaterialIcons name="category" size={34} color={colors.primary} style={{ marginRight: 10 }} />
-                    <ThemedTitle style={styles.title}>Categorías</ThemedTitle>
-                </ThemedView>
-                {categories.length === 0 && !loading ? (
-                    <ThemedTextSecondary style={{ textAlign: 'center', marginVertical: 28, fontSize: 14 }}>No hay categorías disponibles.</ThemedTextSecondary>
-                ) : (
-                    <FlatList
-                        data={categories}
-                        keyExtractor={(item) => item.id?.toString() || item.nombre}
-                        contentContainerStyle={{ paddingBottom: 140, paddingTop: 16, paddingHorizontal: 2 }}
-                        ItemSeparatorComponent={() => <ThemedView style={{ height: 18 }} />}
-                        renderItem={({ item }) => (
-                            <ThemedCard style={[styles.item, { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5 }]}>
-                                <ThemedView style={styles.itemHeader}>
-                                    <MaterialIcons name="label" size={22} color={colors.primary} style={{ marginRight: 8 }} />
-                                    <ThemedText style={styles.itemTitle}>{item.nombre}</ThemedText>
-                                </ThemedView>
-                                <ThemedTextSecondary style={styles.itemDesc}>{item.descripcion}</ThemedTextSecondary>
-                            </ThemedCard>
-                        )}
-                        refreshing={loading}
-                        onRefresh={fetchCategories}
-                        showsVerticalScrollIndicator={false}
-                    />
-                )}
-                {user?.rol === 'admin' && (
-                    <>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+                <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+                    <ThemedView style={styles.headerRow}>
+                        <MaterialIcons name="category" size={34} color={colors.primary} style={{ marginRight: 10 }} />
+                        <ThemedTitle style={styles.title}>Categorías</ThemedTitle>
+                    </ThemedView>
+                    {categories.length === 0 && !loading ? (
+                        <ThemedTextSecondary style={{ textAlign: 'center', marginVertical: 28, fontSize: 14 }}>No hay categorías disponibles.</ThemedTextSecondary>
+                    ) : (
+                        <FlatList
+                            data={categories}
+                            keyExtractor={(item) => item.id?.toString() || item.nombre}
+                            contentContainerStyle={{ paddingBottom: 140, paddingTop: 16, paddingHorizontal: 2 }}
+                            ItemSeparatorComponent={() => <ThemedView style={{ height: 18 }} />}
+                            renderItem={({ item }) => (
+                                <ThemedCard style={[styles.item, { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5 }]}>
+                                    <ThemedView style={styles.itemHeader}>
+                                        <MaterialIcons name="label" size={22} color={colors.primary} style={{ marginRight: 8 }} />
+                                        <ThemedText style={styles.itemTitle}>{item.nombre}</ThemedText>
+                                        {user?.rol === 'admin' && (
+                                            <ThemedView style={{ flexDirection: 'row', marginLeft: 'auto' }}>
+                                                <TouchableOpacity
+                                                    style={{ padding: 4, marginRight: 2 }}
+                                                    onPress={() => {
+                                                        setEditMode(true);
+                                                        setEditId(item.id || null);
+                                                        setNombre(item.nombre);
+                                                        setDescripcion(item.descripcion);
+                                                        setModalVisible(true);
+                                                    }}
+                                                >
+                                                    <MaterialIcons name="edit" size={20} color={colors.primary} />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{ padding: 4, marginLeft: 2 }}
+                                                    onPress={async () => {
+                                                        Alert.alert(
+                                                            'Borrar categoría',
+                                                            `¿Seguro que quieres borrar "${item.nombre}"?`,
+                                                            [
+                                                                { text: 'Cancelar', style: 'cancel' },
+                                                                {
+                                                                    text: 'Borrar',
+                                                                    style: 'destructive',
+                                                                    onPress: async () => {
+                                                                        try {
+                                                                            setLoading(true);
+                                                                            await api.delete(`/categorias/${item.id}`);
+                                                                            fetchCategories();
+                                                                            Alert.alert('Eliminada', 'Categoría borrada correctamente');
+                                                                        } catch (error: any) {
+                                                                            console.log('Error al borrar categoría:', error, error?.response?.data);
+                                                                            let msg = 'No se pudo borrar la categoría';
+                                                                            if (error?.response?.data?.message) {
+                                                                                msg += `: ${error.response.data.message}`;
+                                                                            }
+                                                                            Alert.alert('Error', msg);
+                                                                        }
+                                                                        setLoading(false);
+                                                                    }
+                                                                }
+                                                            ]
+                                                        );
+                                                    }}
+                                                >
+                                                    <MaterialIcons name="delete" size={20} color={colors.error} />
+                                                </TouchableOpacity>
+                                            </ThemedView>
+                                        )}
+                                    </ThemedView>
+                                    <ThemedTextSecondary style={styles.itemDesc}>{item.descripcion}</ThemedTextSecondary>
+                                </ThemedCard>
+                            )}
+                            refreshing={loading}
+                            onRefresh={fetchCategories}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    )}
+                    {user?.rol === 'admin' && (
                         <TouchableOpacity
                             style={styles.fab}
-                            onPress={() => setModalVisible(true)}
+                            onPress={() => {
+                                setEditMode(false);
+                                setEditId(null);
+                                setNombre('');
+                                setDescripcion('');
+                                setModalVisible(true);
+                            }}
                             activeOpacity={0.8}
                         >
                             <MaterialIcons name="add-circle" size={48} color={colors.primary} />
                         </TouchableOpacity>
-                        <Modal
-                            visible={modalVisible}
-                            animationType="slide"
-                            transparent
-                            onRequestClose={() => setModalVisible(false)}
-                        >
-                            <ThemedView style={styles.modalOverlay}>
-                                <ThemedCard style={[styles.form, { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5, marginTop: 80 }]}>
-                                    <ThemedView style={styles.formHeader}>
-                                        <MaterialIcons name="add-circle" size={24} color={colors.primary} style={{ marginRight: 8 }} />
-                                        <ThemedTitle style={styles.formTitle}>Nueva categoría</ThemedTitle>
+                    )}
+                    <Modal
+                        visible={modalVisible}
+                        animationType="slide"
+                        transparent
+                        onRequestClose={() => setModalVisible(false)}
+                    >
+                        <ThemedView style={styles.modalOverlay}>
+                            <ThemedCard style={[styles.form, { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5, marginTop: 80 }]}>
+                                <ThemedView style={[styles.formHeader, { justifyContent: 'space-between' }]}>
+                                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <MaterialIcons name={editMode ? "edit" : "add-circle"} size={24} color={colors.primary} style={{ marginRight: 8 }} />
+                                        <ThemedTitle style={styles.formTitle}>{editMode ? 'Editar categoría' : 'Nueva categoría'}</ThemedTitle>
                                     </ThemedView>
-                                    <TextInput
-                                        style={[styles.input, { color: colors.text, borderColor: colors.primary, backgroundColor: colors.background, fontWeight: 'bold', fontSize: 15 }]}
-                                        placeholder="Nombre"
-                                        placeholderTextColor={colors.textSecondary}
-                                        value={nombre}
-                                        onChangeText={setNombre}
-                                        autoCapitalize="sentences"
-                                        returnKeyType="next"
-                                    />
-                                    <TextInput
-                                        style={[styles.input, { color: colors.text, borderColor: colors.primary, backgroundColor: colors.background, minHeight: 50, fontSize: 14 }]}
-                                        placeholder="Descripción"
-                                        placeholderTextColor={colors.textSecondary}
-                                        value={descripcion}
-                                        onChangeText={setDescripcion}
-                                        multiline
-                                        numberOfLines={3}
-                                        textAlignVertical="top"
-                                    />
-                                    <ThemedView style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10, alignItems: 'center' }}>
-                                        <TouchableOpacity
-                                            style={[styles.createButton, { backgroundColor: colors.error }]}
-                                            onPress={() => setModalVisible(false)}
-                                            activeOpacity={0.8}
-                                        >
-                                            <MaterialIcons name="close" size={20} color="#fff" />
-                                            <ThemedText style={styles.createButtonText}>Cancelar</ThemedText>
-                                        </TouchableOpacity>
-                                        <ThemedView style={{ width: 18 }} />
-                                        <TouchableOpacity
-                                            style={[styles.createButton, { backgroundColor: colors.primary, opacity: loading ? 0.6 : 1 }]}
-                                            onPress={async () => { await handleCreate(); setModalVisible(false); }}
-                                            disabled={loading}
-                                            activeOpacity={0.8}
-                                        >
-                                            <MaterialIcons name="check" size={20} color="#fff" />
-                                            <ThemedText style={styles.createButtonText}>Crear</ThemedText>
-                                        </TouchableOpacity>
-                                    </ThemedView>
-                                </ThemedCard>
-                            </ThemedView>
-                        </Modal>
-                    </>
-                )}
-            </ThemedView>
+                                    <TouchableOpacity onPress={() => Keyboard.dismiss()} style={{ padding: 4, marginLeft: 8 }}>
+                                        <MaterialIcons name="keyboard-hide" size={22} color={colors.primary} />
+                                    </TouchableOpacity>
+                                </ThemedView>
+                                <TextInput
+                                    style={[styles.input, { color: colors.text, borderColor: colors.primary, backgroundColor: colors.background, fontWeight: 'bold', fontSize: 15 }]}
+                                    placeholder="Nombre"
+                                    placeholderTextColor={colors.textSecondary}
+                                    value={nombre}
+                                    onChangeText={setNombre}
+                                    autoCapitalize="sentences"
+                                    returnKeyType="next"
+                                />
+                                <TextInput
+                                    style={[styles.input, { color: colors.text, borderColor: colors.primary, backgroundColor: colors.background, minHeight: 50, fontSize: 14 }]}
+                                    placeholder="Descripción"
+                                    placeholderTextColor={colors.textSecondary}
+                                    value={descripcion}
+                                    onChangeText={setDescripcion}
+                                    multiline
+                                    numberOfLines={3}
+                                    textAlignVertical="top"
+                                />
+                                <ThemedView style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10, alignItems: 'center' }}>
+                                    <TouchableOpacity
+                                        style={[styles.createButton, { backgroundColor: colors.error }]}
+                                        onPress={() => setModalVisible(false)}
+                                        activeOpacity={0.8}
+                                    >
+                                        <MaterialIcons name="close" size={20} color="#fff" />
+                                        <ThemedText style={styles.createButtonText}>Cancelar</ThemedText>
+                                    </TouchableOpacity>
+                                    <ThemedView style={{ width: 18 }} />
+                                    <TouchableOpacity
+                                        style={[styles.createButton, { backgroundColor: colors.primary, opacity: loading ? 0.6 : 1 }]}
+                                        onPress={async () => { await handleCreateOrEdit(); setModalVisible(false); }}
+                                        disabled={loading}
+                                        activeOpacity={0.8}
+                                    >
+                                        <MaterialIcons name="check" size={20} color="#fff" />
+                                        <ThemedText style={styles.createButtonText}>{editMode ? 'Guardar' : 'Crear'}</ThemedText>
+                                    </TouchableOpacity>
+                                </ThemedView>
+                            </ThemedCard>
+                        </ThemedView>
+                    </Modal>
+                </ThemedView>
+            </ScrollView>
         </ImageBackground>
     );
 };
