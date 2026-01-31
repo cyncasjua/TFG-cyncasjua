@@ -117,6 +117,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => {
             return (
               <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
