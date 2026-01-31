@@ -11,24 +11,24 @@ export class EventsService {
   constructor(
     @InjectRepository(Event)
     private readonly eventRepo: Repository<Event>
-  ) {}
+  ) { }
 
-async create(dto: CreateEventDto): Promise<Event> {
-  const event = this.eventRepo.create({
-    title: dto.title,
-    description: dto.description,
-    address: dto.address,
-    location: dto.location,
-    fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : undefined,
-    fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
-    precio: dto.precio ?? 0, 
-    categoria: dto.categoriaId ? { id: dto.categoriaId } as any : undefined,
-    estado: EstadoEnum.Pendiente,
-    creador: dto.creadorId ? { id: dto.creadorId } as any : undefined,
-    imagen: dto.imagen ?? undefined,
-  });
-  return await this.eventRepo.save(event);
-}
+  async create(dto: CreateEventDto): Promise<Event> {
+    const event = this.eventRepo.create({
+      title: dto.title,
+      description: dto.description,
+      address: dto.address,
+      location: dto.location,
+      fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : undefined,
+      fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
+      precio: dto.precio ?? 0,
+      categoria: dto.categoriaId ? { id: dto.categoriaId } as any : undefined,
+      estado: EstadoEnum.Pendiente,
+      creador: dto.creadorId ? { id: dto.creadorId } as any : undefined,
+      imagen: dto.imagen ?? undefined,
+    });
+    return await this.eventRepo.save(event);
+  }
 
   findAll(estado: EstadoEnum = EstadoEnum.Aprobado): Promise<Event[]> {
     const where = estado ? { estado } : {};
@@ -49,7 +49,6 @@ async create(dto: CreateEventDto): Promise<Event> {
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
     const event = await this.findOne(id);
-    // Validar y transformar location si es necesario
     let location = event.location;
     if (dto.location && dto.location.type === 'Point' && Array.isArray(dto.location.coordinates)) {
       location = {
@@ -60,7 +59,6 @@ async create(dto: CreateEventDto): Promise<Event> {
         ]
       };
     }
-    // Convertir fechas a Date
     const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
     const fechaFin = dto.fechaFin ? new Date(dto.fechaFin) : event.fechaFin;
     const updated = {

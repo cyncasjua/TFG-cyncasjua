@@ -20,6 +20,7 @@ import { ModeratorEventsScreen } from './screens/ModeratorEventsScreen';
 import { ModeratorEditEventScreen } from './screens/ModeratorEditEventScreen';
 import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
 import { MaterialIcons } from '@expo/vector-icons';
+import CategoriesScreen from './screens/CategoriesScreen';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -38,6 +39,7 @@ export type RootStackParamList = {
   ModeratorEvents: undefined;
   ModeratorEditEvent: { event: Event };
   Notifications: undefined;
+  Categories: undefined;
 };
 
 export type AuthStackParamList = {
@@ -91,7 +93,10 @@ const Navigator = () => {
           />
           <AppStack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Detalle del evento' }} />
           {role === 'admin' && (
-            <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />
+            <>
+              <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />
+              <AppStack.Screen name="Categories" component={CategoriesScreen} options={{ title: 'Gestión de categorías' }} />
+            </>
           )}
           <AppStack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar perfil' }} />
           <AppStack.Screen name="EditPassword" component={EditPasswordScreen} options={{ title: 'Cambiar contraseña' }} />

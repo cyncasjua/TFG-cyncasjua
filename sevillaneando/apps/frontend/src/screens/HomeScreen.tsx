@@ -97,12 +97,20 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </ThemedView>
 
         {role === 'admin' && (
-          <TouchableOpacity
-            style={styles.adminButton}
-            onPress={() => navigation.navigate('Admin')}
-          >
-            <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={styles.adminButton}
+              onPress={() => navigation.navigate('Admin')}
+            >
+              <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.adminButton, { marginTop: 0,marginRight:45, flexDirection: 'row', alignItems: 'center' }]}
+              onPress={() => navigation.navigate('Categories')}
+            >
+              <MaterialIcons name="category" size={28} color="#6c2eb7" />
+            </TouchableOpacity>
+          </>
         )}
 
         <TouchableOpacity

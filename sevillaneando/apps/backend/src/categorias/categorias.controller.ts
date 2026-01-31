@@ -1,17 +1,24 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get,Post,Body } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Categoria } from '../entities/categoria.entity';
+import { CreateCategoriaDTO } from './dto/create-categoria.dto';
+import { CategoriasService } from './categorias.service';
 
 @Controller('categorias')
 export class CategoriasController {
   constructor(
-    @InjectRepository(Categoria)
-    private readonly categoriaRepo: Repository<Categoria>,
+    private readonly categoriaService: CategoriasService,
   ) {}
 
   @Get()
   async findAll() {
-    return await this.categoriaRepo.find();
+    return await this.categoriaService.findAll();
   }
+
+
+  @Post()
+  async create(@Body() dto: CreateCategoriaDTO): Promise<Categoria> {
+    return await this.categoriaService.create(dto);
+}
 }
