@@ -123,18 +123,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
                 {event.categoria?.nombre}
               </ThemedTextSecondary>
             </ThemedView>
-            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <MaterialIcons name="person" size={16} color="#6c2eb7" />
-              <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                {event.creador?.nombre}
-              </ThemedTextSecondary>
-            </ThemedView>
-            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <MaterialIcons name="check-circle" size={16} color={event.estado === 'Aprobado' ? '#4caf50' : '#fbc02d'} />
-              <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                {event.estado}
-              </ThemedTextSecondary>
-            </ThemedView>
             <ThemedView style={{ alignItems: 'flex-end', marginBottom: 8 }}>
               <ThemedText style={{
                 fontSize: 20,

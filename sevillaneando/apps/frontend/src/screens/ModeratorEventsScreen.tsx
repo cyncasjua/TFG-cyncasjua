@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, Alert, ActivityIndicator, View, Image, TouchableOpacity } from 'react-native';
+import dayjs from 'dayjs';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api } from '../services/api';
@@ -100,7 +101,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
               <ThemedText style={styles.eventDesc}>{item.description}</ThemedText>
               <ThemedTextSecondary style={styles.eventInfo}>
-                Fecha: {item.fechaInicio}
+                Fecha: {item.fechaInicio ? dayjs(item.fechaInicio).format('YYYY-MM-DD HH:mm') : ''}
               </ThemedTextSecondary>
               <ThemedTextSecondary style={styles.eventInfo}>
                 Ubicación: {item.address}

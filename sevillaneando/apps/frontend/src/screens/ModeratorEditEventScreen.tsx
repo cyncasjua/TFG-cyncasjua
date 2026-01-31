@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import dayjs from 'dayjs';
 import { Alert, StyleSheet, KeyboardAvoidingView, Platform, TextInput, ScrollView, Keyboard, TouchableOpacity, Image, View, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
 import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,8 +8,14 @@ import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api } from '../services/api';
-import { Picker } from '@react-native-picker/picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StyleProp, ViewStyle } from 'react-native';
+import DateTimePickerModalOriginal from "react-native-modal-datetime-picker";
+import { ComponentType } from "react";
+
+
+const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModeratorEditEvent'>;
 type Categoria = { id: string; nombre: string };
@@ -17,21 +24,40 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const { event } = route.params;
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
+
+  const ArrowUpIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
+    <Icon name="chevron-up" size={24} color={colors.text} style={style ?? {}} />
+  );
+  const ArrowDownIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
+    <Icon name="chevron-down" size={24} color={colors.text} style={style ?? {}} />
+  );
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
   const [address, setAddress] = useState(event.address);
   const [fechaInicio, setFechaInicio] = useState(event.fechaInicio);
   const [fechaFin, setFechaFin] = useState(event.fechaFin);
+  const [showFechaInicio, setShowFechaInicio] = useState(false);
+  const [showHoraInicio, setShowHoraInicio] = useState(false);
+  const [showFechaFin, setShowFechaFin] = useState(false);
+  const [showHoraFin, setShowHoraFin] = useState(false);
   const [latitude, setLatitude] = useState(event.location?.coordinates[1] ?? 37.3891);
   const [longitude, setLongitude] = useState(event.location?.coordinates[0] ?? -5.9845);
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [precio, setPrecio] = useState(String(event.precio ?? ''));
   const [categoriaId, setCategoriaId] = useState(event.categoria?.id ?? '');
+  const [openCategoria, setOpenCategoria] = useState(false);
+  const [dropdownItems, setDropdownItems] = useState<{label: string, value: string}[]>([]);
   const [imageUrl, setImageUrl] = useState(event.imagen ?? '');
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
   const [estado, setEstado] = useState(event.estado ?? 'Pendiente');
+  const [openEstado, setOpenEstado] = useState(false);
+  const [estadoItems, setEstadoItems] = useState([
+    { label: 'Pendiente', value: 'Pendiente' },
+    { label: 'Aprobado', value: 'Aprobado' },
+    { label: 'Rechazado', value: 'Rechazado' },
+  ]);
   const [loading, setLoading] = useState(false);
   const descriptionRef = useRef<TextInput>(null);
   const addressRef = useRef<TextInput>(null);
@@ -44,6 +70,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       try {
         const res = await api.get('/categorias');
         setCategorias(res.data);
+        setDropdownItems(res.data.map((cat: Categoria) => ({ label: cat.nombre, value: cat.id })));
       } catch (e) {
         Alert.alert('Error', 'No se pudieron cargar las categorías.');
       } finally {
@@ -206,24 +233,153 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               <Marker coordinate={{ latitude, longitude }} />
             </MapView>
             <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
-            <TextInput ref={fechaInicioRef} value={fechaInicio} onChangeText={setFechaInicio} placeholder="YYYY-MM-DDTHH:mm:ss" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} />
+            <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
+              <TextInput
+                ref={fechaInicioRef}
+                value={fechaInicio ? dayjs(fechaInicio).format('YYYY-MM-DD HH:mm') : ''}
+                placeholder="YYYY-MM-DD HH:mm"
+                placeholderTextColor={colors.text + '99'}
+                style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+                editable={false}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={showFechaInicio}
+              mode="date"
+              date={fechaInicio ? new Date(fechaInicio) : new Date()}
+              onConfirm={(date: Date) => {
+                const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
+                const nuevaFecha = dayjs(date)
+                  .hour(prev.hour())
+                  .minute(prev.minute());
+                setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setShowFechaInicio(false);
+                setShowHoraInicio(false);
+                setTimeout(() => setShowHoraInicio(true), 350);
+              }}
+              onCancel={() => setShowFechaInicio(false)}
+              minimumDate={new Date()}
+              locale="es"
+            />
+            <DateTimePickerModal
+              isVisible={showHoraInicio}
+              mode="time"
+              date={fechaInicio ? new Date(fechaInicio) : new Date()}
+              onConfirm={(date: Date) => {
+                const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
+                const nuevaFecha = prev
+                  .hour(dayjs(date).hour())
+                  .minute(dayjs(date).minute());
+                setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setShowHoraInicio(false);
+              }}
+              onCancel={() => setShowHoraInicio(false)}
+              locale="es"
+            />
             <ThemedText style={styles.label}>Fecha de fin</ThemedText>
-            <TextInput ref={fechaFinRef} value={fechaFin} onChangeText={setFechaFin} placeholder="YYYY-MM-DDTHH:mm:ss" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} />
+            <TouchableOpacity onPress={() => setShowFechaFin(true)}>
+              <TextInput
+                ref={fechaFinRef}
+                value={fechaFin ? dayjs(fechaFin).format('YYYY-MM-DD HH:mm') : ''}
+                placeholder="YYYY-MM-DD HH:mm"
+                placeholderTextColor={colors.text + '99'}
+                style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+                editable={false}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={showFechaFin}
+              mode="date"
+              date={fechaFin ? new Date(fechaFin) : new Date()}
+              onConfirm={(date: Date) => {
+                const prev = fechaFin ? dayjs(fechaFin) : dayjs();
+                const nuevaFecha = dayjs(date)
+                  .hour(prev.hour())
+                  .minute(prev.minute());
+                setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setShowFechaFin(false);
+                setShowHoraFin(false);
+                setTimeout(() => setShowHoraFin(true), 350);
+              }}
+              onCancel={() => setShowFechaFin(false)}
+              minimumDate={fechaInicio && new Date(fechaInicio) > new Date() ? new Date(fechaInicio) : new Date()}
+              locale="es"
+            />
+            <DateTimePickerModal
+              isVisible={showHoraFin}
+              mode="time"
+              date={fechaFin ? new Date(fechaFin) : new Date()}
+              onConfirm={(date: Date) => {
+                const prev = fechaFin ? dayjs(fechaFin) : dayjs();
+                const nuevaFecha = prev
+                  .hour(dayjs(date).hour())
+                  .minute(dayjs(date).minute());
+                setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setShowHoraFin(false);
+              }}
+              onCancel={() => setShowHoraFin(false)}
+              locale="es"
+            />
             <ThemedText style={styles.label}>Precio (€)</ThemedText>
             <TextInput ref={precioRef} value={precio} onChangeText={setPrecio} placeholder="Precio" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} keyboardType="numeric" />
             <ThemedText style={styles.label}>Categoría</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />
             ) : (
-              <Picker selectedValue={categoriaId} onValueChange={setCategoriaId} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}>
-                <Picker.Item label="Selecciona una categoría" value="" />
-                {categorias.map((cat) => (
-                  <Picker.Item key={cat.id} label={cat.nombre} value={cat.id} />
-                ))}
-              </Picker>
+              <DropDownPicker
+                open={openCategoria}
+                value={categoriaId}
+                items={dropdownItems}
+                setOpen={setOpenCategoria}
+                setValue={setCategoriaId}
+                setItems={setDropdownItems}
+                placeholder="Selecciona una categoría"
+                style={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  minHeight: 40,
+                  borderRadius: 8,
+                }}
+                dropDownContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                }}
+                textStyle={{ color: colors.text }}
+                placeholderStyle={{ color: colors.text + '99' }}
+                zIndex={1000}
+                listMode="SCROLLVIEW"
+                ArrowUpIconComponent={ArrowUpIcon}
+                ArrowDownIconComponent={ArrowDownIcon}
+              />
             )}
             <ThemedText style={styles.label}>Estado</ThemedText>
-            <TextInput value={estado} onChangeText={setEstado} placeholder="Estado" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} />
+            <DropDownPicker
+              open={openEstado}
+              value={estado}
+              items={estadoItems}
+              setOpen={setOpenEstado}
+              setValue={setEstado}
+              setItems={setEstadoItems}
+              placeholder="Selecciona un estado"
+              style={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                minHeight: 40,
+                borderRadius: 8,
+              }}
+              dropDownContainerStyle={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+              }}
+              textStyle={{ color: colors.text }}
+              placeholderStyle={{ color: colors.text + '99' }}
+              zIndex={900}
+              listMode="SCROLLVIEW"
+              ArrowUpIconComponent={ArrowUpIcon}
+              ArrowDownIconComponent={ArrowDownIcon}
+            />
             <ThemedText style={styles.label}>Imagen</ThemedText>
             {imageUrl ? (
               <View style={{ alignItems: 'center', marginBottom: 8 }}>

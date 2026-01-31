@@ -118,7 +118,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           data={items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => {
-            console.log('Imagen del evento:', item.imagen);
             return (
               <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
                 <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
@@ -137,7 +136,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         fontSize: 18,
                         fontWeight: 'bold',
                         color: theme === 'dark' ? '#fff' : '#222',
-                        marginBottom: 2,
+                        marginBottom: 7,
                         marginLeft: 14,
                         textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
                         textShadowOffset: { width: 0, height: 2 },
@@ -153,6 +152,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         fontSize: 13,
                         color: theme === 'dark' ? '#eee' : '#444',
                         marginLeft: 14,
+                        marginBottom: 6,
                         flexDirection: 'row',
                         alignItems: 'center',
                         textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
@@ -167,31 +167,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     </ThemedTextSecondary>
                   </ImageBackground>
                   <ThemedView style={{ padding: 12 }}>
-                    <ThemedTextSecondary numberOfLines={2} style={{ marginBottom: 6 }}>
-                      {item.description}
-                    </ThemedTextSecondary>
                     <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                       <MaterialIcons name="event" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {new Date(item.fechaInicio).toLocaleDateString()} - {new Date(item.fechaFin).toLocaleDateString()}
+                        {new Date(item.fechaInicio).toLocaleString()} - {new Date(item.fechaFin).toLocaleDateString()}
                       </ThemedTextSecondary>
                     </ThemedView>
                     <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                       <MaterialIcons name="category" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
                         {item.categoria?.nombre}
-                      </ThemedTextSecondary>
-                    </ThemedView>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                      <MaterialIcons name="person" size={16} color="#6c2eb7" />
-                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {item.creador?.nombre}
-                      </ThemedTextSecondary>
-                    </ThemedView>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                      <MaterialIcons name="check-circle" size={16} color={item.estado === 'Aprobado' ? '#4caf50' : '#fbc02d'} />
-                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {item.estado}
                       </ThemedTextSecondary>
                     </ThemedView>
                     <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
