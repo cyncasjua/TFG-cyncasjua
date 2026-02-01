@@ -21,6 +21,7 @@ import { ModeratorEditEventScreen } from './screens/ModeratorEditEventScreen';
 import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
 import { MaterialIcons } from '@expo/vector-icons';
 import CategoriesScreen from './screens/CategoriesScreen';
+import { EventsMapScreen } from './screens/EventsMapScreen';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -40,6 +41,7 @@ export type RootStackParamList = {
   ModeratorEditEvent: { event: Event };
   Notifications: undefined;
   Categories: undefined;
+  EventsMap: undefined;
 };
 
 export type AuthStackParamList = {
@@ -92,6 +94,7 @@ const Navigator = () => {
             }}
           />
           <AppStack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Detalle del evento' }} />
+          <AppStack.Screen name="EventsMap" component={EventsMapScreen} options={{ title: 'Mapa de eventos', headerShown: false }} />
           {role === 'admin' && (
             <>
               <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />

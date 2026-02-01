@@ -286,11 +286,25 @@ const handleDeleteAccount = async () => {
             <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
           </MapView>
         </View>
-        <ThemedText style={{ marginBottom: 8, color: colors.text + '99' }}>
-          {latitud !== null && longitud !== null
-            ? `Lat: ${latitud.toFixed(6)}, Lng: ${longitud.toFixed(6)}`
-            : 'Toca el mapa para seleccionar la ubicación'}
-        </ThemedText>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <ThemedText style={{ color: colors.text + '99' }}>
+            {latitud !== null && longitud !== null
+              ? `Lat: ${latitud.toFixed(6)}, Lng: ${longitud.toFixed(6)}`
+              : 'Toca el mapa para seleccionar la ubicación'}
+          </ThemedText>
+          {latitud !== null && longitud !== null && (
+            <TouchableOpacity 
+              onPress={() => {
+                setLatitud(null);
+                setLongitud(null);
+                setSearchQuery('');
+              }}
+              style={{ padding: 4 }}
+            >
+              <Icon name="close-circle" size={20} color={colors.error} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
       <TextInput
         style={[styles.input, { color: colors.text, borderColor: colors.border }]}
