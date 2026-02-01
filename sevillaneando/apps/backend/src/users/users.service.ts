@@ -6,6 +6,11 @@ import { ChangePasswordDto } from './dto/update-password';
 import * as bcrypt from 'bcryptjs';
 import * as admin from 'firebase-admin';
 
+interface GeoJsonPoint {
+  type: 'Point';
+  coordinates: [number, number]; 
+}
+
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
@@ -71,7 +76,7 @@ export class UsersService {
   async updateProfile(firebaseUid: string, data: { 
     nombre?: string; 
     email?: string; 
-    ubicacion?: string;
+    ubicacion?: GeoJsonPoint;
     fotoPerfil?: string;
     intereses?: string[];
   }): Promise<User> {

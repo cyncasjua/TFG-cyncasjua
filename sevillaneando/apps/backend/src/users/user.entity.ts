@@ -9,6 +9,11 @@ export enum RolEnum {
   USER = 'user'
 }
 
+interface GeoJsonPoint {
+  type: 'Point';
+  coordinates: [number, number]; 
+}
+
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -23,8 +28,8 @@ export class User {
   @Column({ type: 'text', nullable: true })
   contrasena!: string | null;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  ubicacion!: string | null;
+  @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326, nullable: true })
+  ubicacion!: GeoJsonPoint | null;
 
   @Column({ type: 'text', nullable: true })
   fotoPerfil!: string | null;
@@ -77,8 +82,28 @@ export class User {
     if (this.firebaseUid.length > 128) {
       throw new Error('El UID de Firebase no puede superar los 128 caracteres.');
     }
-    if (this.ubicacion && this.ubicacion.length > 255) {
-      throw new Error('La ubicación no puede superar los 255 caracteres.');
+    if (this.ubicacion) {
+      const loc = typeof this.ubicacion === 'string' ? JSON.parse(this.ubicacion) : this.ubicacion;
+      
+      if (Object.keys(loc).length === 0) {
+        this.ubicacion = null;
+        return;
+      }
+      
+      if (loc.type !== 'Point' ||
+          !Array.isArray(loc.coordinates) ||
+          loc.coordinates.length !== 2 ||
+          typeof loc.coordinates[0] !== 'number' ||
+          typeof loc.coordinates[1] !== 'number') {
+        console.error('Validación de ubicación falló:', {
+          type: loc.type,
+          isArray: Array.isArray(loc.coordinates),
+          length: loc.coordinates?.length,
+          coord0Type: typeof loc.coordinates?.[0],
+          coord1Type: typeof loc.coordinates?.[1]
+        });
+        throw new Error('La ubicación debe ser un GeoJsonPoint válido.');
+      }
     }
     if (this.fotoPerfil && this.fotoPerfil.length > 512) {
       throw new Error('La URL de la foto de perfil no puede superar los 512 caracteres.');

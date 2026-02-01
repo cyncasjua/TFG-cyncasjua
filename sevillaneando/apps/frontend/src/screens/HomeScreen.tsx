@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -89,41 +89,45 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </ThemedTextSecondary>
         </ThemedView>
         {categories.length > 0 && (
-          <ThemedView style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, justifyContent: 'flex-start' }}>
-            <ThemedText style={{ fontWeight: 'bold', fontSize: 14, marginLeft:1 , color: colors.primary }}>Categoria:</ThemedText>
-            <TouchableOpacity
-              style={{
-                paddingVertical: 7,
-                paddingHorizontal: 16,
-                borderRadius: 18,
-                backgroundColor: selectedCategory === null ? colors.primary : colors.card,
-                marginHorizontal: 4,
-                marginBottom: 6,
-                borderWidth: 1.5,
-                borderColor: colors.primary,
-              }}
-              onPress={() => setSelectedCategory(null)}
+          <ThemedView style={{ marginBottom: 12 }}>
+            <ThemedText style={{ fontWeight: 'bold', fontSize: 14, marginLeft: 1, marginBottom: 8, color: colors.primary }}>Categoría:</ThemedText>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 12 }}
             >
-              <ThemedText style={{ color: selectedCategory === null ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>Todas</ThemedText>
-            </TouchableOpacity>
-            {categories.map((cat) => (
               <TouchableOpacity
-                key={cat.id}
                 style={{
                   paddingVertical: 7,
                   paddingHorizontal: 16,
                   borderRadius: 18,
-                  backgroundColor: selectedCategory === cat.id ? colors.primary : colors.card,
-                  marginHorizontal: 4,
-                  marginBottom: 6,
+                  backgroundColor: selectedCategory === null ? colors.primary : colors.card,
+                  marginRight: 8,
                   borderWidth: 1.5,
                   borderColor: colors.primary,
                 }}
-                onPress={() => setSelectedCategory(cat.id)}
+                onPress={() => setSelectedCategory(null)}
               >
-                <ThemedText style={{ color: selectedCategory === cat.id ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>{cat.nombre}</ThemedText>
+                <ThemedText style={{ color: selectedCategory === null ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>Todas</ThemedText>
               </TouchableOpacity>
-            ))}
+              {categories.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={{
+                    paddingVertical: 7,
+                    paddingHorizontal: 16,
+                    borderRadius: 18,
+                    backgroundColor: selectedCategory === cat.id ? colors.primary : colors.card,
+                    marginRight: 8,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                  }}
+                  onPress={() => setSelectedCategory(cat.id)}
+                >
+                  <ThemedText style={{ color: selectedCategory === cat.id ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>{cat.nombre}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </ThemedView>
         )}
         <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>

@@ -1,4 +1,13 @@
-import { IsOptional, IsString, IsEmail, Length, MaxLength, IsArray, ArrayNotEmpty, IsUrl } from 'class-validator';
+import { IsOptional, IsString, IsEmail, Length, MaxLength, IsArray, ValidateNested, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class GeoJsonPoint {
+  @IsString()
+  type!: 'Point';
+
+  @IsNumber({}, { each: true })
+  coordinates!: [number, number]; 
+}
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -12,9 +21,9 @@ export class UpdateProfileDto {
   email?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  ubicacion?: string;
+  @ValidateNested()
+  @Type(() => GeoJsonPoint)
+  ubicacion?: GeoJsonPoint;
 
   @IsOptional()
   @IsString()

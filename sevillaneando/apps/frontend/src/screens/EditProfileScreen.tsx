@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, KeyboardAvoidingView, Platform, TouchableOpacity, Image, View } from 'react-native';
+import { StyleSheet, TextInput, KeyboardAvoidingView, Platform, TouchableOpacity, Image, View, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ThemedTitle, ThemedButton, ThemedText } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
@@ -17,7 +19,11 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { user, setUser, token } = useAuth();
   const [nombre, setNombre] = useState(user?.nombre ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [ubicacion, setUbicacion] = useState(user?.ubicacion ?? '');
+  const [latitud, setLatitud] = useState<number | null>(user?.ubicacion?.coordinates[1] ?? null);
+  const [longitud, setLongitud] = useState<number | null>(user?.ubicacion?.coordinates[0] ?? null);
+  const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
   const [intereses, setIntereses] = useState(user?.intereses?.join(', ') ?? '');
   const [fotoPerfil, setFotoPerfil] = useState(user?.fotoPerfil ?? '');
   const [saving, setSaving] = useState(false);
@@ -76,6 +82,8 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
     setSaving(true);
     setError(null);
     try {
+      const ubicacionData = latitud && longitud ? { type: 'Point', coordinates: [Number(longitud), Number(latitud)] } : null;
+      
       const res = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${endpointPerfil}`,
         {
@@ -87,7 +95,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           body: JSON.stringify({
             nombre,
             email,
-            ubicacion,
+            ubicacion: ubicacionData,
             fotoPerfil,
             intereses: intereses.split(',').map(i => i.trim()).filter(Boolean),
           }),
@@ -195,13 +203,95 @@ const handleDeleteAccount = async () => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        placeholder="Ubicación"
-        placeholderTextColor={colors.text + '99'}
-        value={ubicacion}
-        onChangeText={setUbicacion}
-      />
+      <View style={{ marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Buscar dirección o lugar..."
+            placeholderTextColor={colors.text + '99'}
+            style={[styles.mapSearchInput, { flex: 1, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+            returnKeyType="search"
+            onSubmitEditing={async () => {
+              if (!searchQuery) return;
+              setSearchLoading(true);
+              try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+                const data = await response.json();
+                if (data && data.length > 0) {
+                  const lat = parseFloat(data[0].lat);
+                  const lon = parseFloat(data[0].lon);
+                  setLatitud(lat);
+                  setLongitud(lon);
+                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+                } else {
+                  setError('No se ha encontrado la dirección o lugar especificado.');
+                }
+              } catch {
+                setError('No se pudo buscar la dirección o lugar.');
+              } finally {
+                setSearchLoading(false);
+              }
+            }}
+            editable={!searchLoading}
+          />
+          <TouchableOpacity onPress={async () => {
+            if (!searchQuery) return;
+            setSearchLoading(true);
+            try {
+              const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+              const data = await response.json();
+              if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                setLatitud(lat);
+                setLongitud(lon);
+                setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+              } else {
+                setError('No se ha encontrado la dirección o lugar especificado.');
+              }
+            } catch {
+              setError('No se pudo buscar la dirección o lugar.');
+            } finally {
+              setSearchLoading(false);
+            }
+          }} style={styles.mapSearchButton} disabled={searchLoading}>
+            {searchLoading ? (
+              <ActivityIndicator color={colors.primary} size={20} />
+            ) : (
+              <Icon name="magnify" size={24} color={colors.primary} />
+            )}
+          </TouchableOpacity>
+        </View>
+        <View style={{ height: 180, borderRadius: 12, overflow: 'hidden', marginBottom: 10, borderWidth: 1, borderColor: colors.primary, position: 'relative' }}>
+          <MapView
+            style={StyleSheet.absoluteFillObject}
+            region={{
+              latitude: latitud ?? 37.3891,
+              longitude: longitud ?? -5.9845,
+              latitudeDelta: mapDelta.latitudeDelta,
+              longitudeDelta: mapDelta.longitudeDelta,
+            }}
+            onPress={e => {
+              const lat = e.nativeEvent.coordinate.latitude;
+              const lon = e.nativeEvent.coordinate.longitude;
+              setLatitud(lat);
+              setLongitud(lon);
+              setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+            }}
+          >
+            {latitud && longitud && (
+              <Marker coordinate={{ latitude: latitud, longitude: longitud }} />
+            )}
+            <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+          </MapView>
+        </View>
+        <ThemedText style={{ marginBottom: 8, color: colors.text + '99' }}>
+          {latitud !== null && longitud !== null
+            ? `Lat: ${latitud.toFixed(6)}, Lng: ${longitud.toFixed(6)}`
+            : 'Toca el mapa para seleccionar la ubicación'}
+        </ThemedText>
+      </View>
       <TextInput
         style={[styles.input, { color: colors.text, borderColor: colors.border }]}
         placeholder="Intereses (separados por coma)"
@@ -259,6 +349,16 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 8,
+  },
+  mapSearchInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+  },
+  mapSearchButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   saveButton: { marginTop: 8 },
   cancelButton: { marginTop: 8 },
