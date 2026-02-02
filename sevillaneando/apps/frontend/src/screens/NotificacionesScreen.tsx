@@ -30,6 +30,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       const res = await api.get(`/notificaciones/usuario/${user.id}`);
       setNotificaciones(res.data);
     } catch (err) {
+      // Ignore errors silently
     } finally {
       setLoading(false);
     }

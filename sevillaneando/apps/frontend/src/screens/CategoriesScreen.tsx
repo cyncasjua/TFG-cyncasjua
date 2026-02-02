@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { TextInput, Button, FlatList, StyleSheet, Alert, ImageBackground, TouchableOpacity, Modal, Keyboard, ScrollView } from 'react-native';
+import { TextInput, FlatList, StyleSheet, Alert, ImageBackground, TouchableOpacity, Modal, Keyboard, ScrollView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useAuthContext } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -16,7 +16,7 @@ type Category = {
 
 const CategoriesScreen = () => {
     const { user } = useAuthContext();
-    const { colors, theme } = useTheme();
+    const { colors } = useTheme();
     const [categories, setCategories] = useState<Category[]>([]);
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
@@ -177,7 +177,7 @@ const CategoriesScreen = () => {
                             <ThemedCard style={[styles.form, { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5, marginTop: 80 }]}>
                                 <ThemedView style={[styles.formHeader, { justifyContent: 'space-between' }]}>
                                     <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <MaterialIcons name={editMode ? "edit" : "add-circle"} size={24} color={colors.primary} style={{ marginRight: 8 }} />
+                                        <MaterialIcons name={editMode ? 'edit' : 'add-circle'} size={24} color={colors.primary} style={{ marginRight: 8 }} />
                                         <ThemedTitle style={styles.formTitle}>{editMode ? 'Editar categoría' : 'Nueva categoría'}</ThemedTitle>
                                     </ThemedView>
                                     <TouchableOpacity onPress={() => Keyboard.dismiss()} style={{ padding: 4, marginLeft: 8 }}>

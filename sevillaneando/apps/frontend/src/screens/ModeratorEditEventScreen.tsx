@@ -11,8 +11,8 @@ import { api } from '../services/api';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StyleProp, ViewStyle } from 'react-native';
-import DateTimePickerModalOriginal from "react-native-modal-datetime-picker";
-import { ComponentType } from "react";
+import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
+import { ComponentType } from 'react';
 
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
@@ -26,10 +26,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const { colors } = useTheme();
 
   const ArrowUpIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
-    <Icon name="chevron-up" size={24} color={colors.text} style={style ?? {}} />
+    <Icon name="chevron-up" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
   );
   const ArrowDownIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
-    <Icon name="chevron-down" size={24} color={colors.text} style={style ?? {}} />
+    <Icon name="chevron-down" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
   );
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
@@ -81,7 +81,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   }, []);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -157,7 +157,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       if (data && data.display_name) {
         setAddress(data.display_name);
       }
-    } catch (e) {}
+    } catch (e) {
+      // Silently fail if reverse geocoding is not available
+    }
   };
 
   useEffect(() => {

@@ -3,8 +3,6 @@ import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { Linking, Platform, StyleSheet, ImageBackground } from 'react-native';
-// filepath: c:\Users\G513\Desktop\TFG-cyncasjua\sevillaneando\apps\frontend\src\screens\HomeScreen.tsx
-// @ts-ignore
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -158,7 +156,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             title="Probar moderación NSFW (demo)"
             variant="secondary"
             onPress={async () => {
-              const safe = await evaluateImage('https://example.com/demo.jpg');
+              const safe = await evaluateImage();
               console.log('Imagen segura:', safe);
             }}
           />

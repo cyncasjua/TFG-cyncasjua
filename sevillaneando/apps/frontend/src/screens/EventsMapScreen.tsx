@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import MapView, { Marker, Circle, Callout } from 'react-native-maps';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';

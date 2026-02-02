@@ -4,11 +4,11 @@ import {
   FlatList,
   StyleSheet,
   Modal,
-  Alert,
-  ImageBackground
+  Alert
 } from 'react-native';
 import { View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { AxiosError } from 'axios';
 import { ThemedButton, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api } from '../services/api';
@@ -54,14 +54,20 @@ const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user
     );
     setShowModal(false);
     Alert.alert('\u00c9xito', `Rol actualizado a ${newRole}.`);
-  } catch (err: any) {
-    const errorMsg = err?.response?.data?.message || err?.message || 'No se pudo cambiar el rol.';
-    console.error('Error completo:', {
-      status: err?.response?.status,
-      data: err?.response?.data,
-      message: err?.message,
-      url: err?.config?.url
-    });
+  } catch (err: unknown) {
+    const error = err as AxiosError<{ message: string }> | Error;
+    const errorMsg = (error instanceof Error && 'response' in error) 
+      ? (error as AxiosError<{ message: string }>).response?.data?.message || error.message || 'No se pudo cambiar el rol.'
+      : error instanceof Error ? error.message : 'No se pudo cambiar el rol.';
+    if (error instanceof Error && 'response' in error) {
+      const axiosErr = error as AxiosError;
+      console.error('Error completo:', {
+        status: axiosErr.response?.status,
+        data: axiosErr.response?.data,
+        message: error.message,
+        url: axiosErr.config?.url
+      });
+    }
     Alert.alert('Error', errorMsg);
   } finally {
     setChangingRole(false);
@@ -84,8 +90,11 @@ const deleteUser = async (userId: string) => {
             setUsers((prev) => prev.filter((u) => u.id !== userId));
             setShowModal(false);
             Alert.alert('Éxito', 'Usuario borrado correctamente.');
-          } catch (err: any) {
-            const errorMsg = err?.response?.data?.message || err?.message || 'No se pudo borrar el usuario.';
+          } catch (err: unknown) {
+            const error = err as AxiosError<{ message: string }> | Error;
+            const errorMsg = (error instanceof Error && 'response' in error) 
+              ? (error as AxiosError<{ message: string }>).response?.data?.message || error.message || 'No se pudo borrar el usuario.'
+              : error instanceof Error ? error.message : 'No se pudo borrar el usuario.';
             Alert.alert('Error', errorMsg);
           } finally {
             setChangingRole(false);

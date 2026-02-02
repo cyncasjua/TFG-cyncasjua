@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Alert, StyleSheet, KeyboardAvoidingView, Platform, TextInput, ScrollView, Keyboard, TouchableOpacity, Image, View, Button, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
-import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -13,8 +13,9 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 // import DropDownPicker from 'react-native-dropdown-picker';
-import DateTimePickerModalOriginal from "react-native-modal-datetime-picker";
-import { ComponentType } from "react";
+import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
+import { ComponentType } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
@@ -31,12 +32,13 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
 
-  const ArrowUpIcon = ({ style }: { style?: import('react-native').StyleProp<import('react-native').ViewStyle> }) => (
-    <Icon name="chevron-up" size={24} color={colors.text} style={style ?? {}} />
+  const ArrowUpIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
+    <Icon name="chevron-up" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
   );
-  const ArrowDownIcon = ({ style }: { style?: import('react-native').StyleProp<import('react-native').ViewStyle> }) => (
-    <Icon name="chevron-down" size={24} color={colors.text} style={style ?? {}} />
+  const ArrowDownIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
+    <Icon name="chevron-down" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
   );
+
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -101,7 +103,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -187,6 +189,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         setAddress(data.display_name);
       }
     } catch (e) {
+      console.log('Error en geocodificación inversa:', e);
     }
   };
 

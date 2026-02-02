@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, ScrollView, View } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { getEvents, api } from '../services/api';
-import { events as fallbackEvents } from '../seed/events';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';

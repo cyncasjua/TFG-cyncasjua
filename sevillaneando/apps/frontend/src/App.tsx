@@ -18,8 +18,7 @@ import { EditPasswordScreen } from './screens/EditPasswordScreen';
 import CreateEventScreen from './screens/CreateEventScreen';
 import { ModeratorEventsScreen } from './screens/ModeratorEventsScreen';
 import { ModeratorEditEventScreen } from './screens/ModeratorEditEventScreen';
-import { NotificacionesScreen } from './screens/NotificacionesScreen'; 
-import { MaterialIcons } from '@expo/vector-icons';
+import { NotificacionesScreen } from './screens/NotificacionesScreen';
 import CategoriesScreen from './screens/CategoriesScreen';
 import { EventsMapScreen } from './screens/EventsMapScreen';
 
