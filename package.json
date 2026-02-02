@@ -11,9 +11,17 @@
     "react-native-date-picker": "^5.0.13",
     "react-native-modal-datetime-picker": "^18.0.0"
   },
+  "scripts": {
+    "prepare": "husky"
+  },
   "devDependencies": {
+    "@commitlint/config-conventional": "^20.4.1",
     "@types/react": "~19.1.10",
     "@types/react-native": "^0.72.8",
+    "commitlint": "^20.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "typescript": "~5.9.2"
   }
+
 }

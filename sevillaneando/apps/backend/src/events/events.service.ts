@@ -5,6 +5,8 @@ import { Event } from './event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EstadoEnum } from '../enums/estado.enum';
+import { Categoria } from '../entities/categoria.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class EventsService {
@@ -22,9 +24,9 @@ export class EventsService {
       fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : undefined,
       fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
       precio: dto.precio ?? 0,
-      categoria: dto.categoriaId ? { id: dto.categoriaId } as any : undefined,
+      categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
       estado: EstadoEnum.Pendiente,
-      creador: dto.creadorId ? { id: dto.creadorId } as any : undefined,
+      creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
     });
     return await this.eventRepo.save(event);

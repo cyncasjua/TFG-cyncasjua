@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolEnum, User } from './user.entity';
-import { ChangePasswordDto } from './dto/update-password';
-import * as bcrypt from 'bcryptjs';
 import * as admin from 'firebase-admin';
 
 interface GeoJsonPoint {
@@ -100,6 +98,7 @@ export class UsersService {
       try {
         await admin.auth().deleteUser(user.firebaseUid);
       } catch (e) {
+        // Ignorar errores al borrar usuario de Firebase
       }
     }
     await this.usersRepo.delete({ id });

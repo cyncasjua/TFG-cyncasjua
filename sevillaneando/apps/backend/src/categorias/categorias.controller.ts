@@ -1,6 +1,4 @@
-import { Controller, Get,Post,Body, Delete, Param, Put } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Controller, Get, Post, Body, Delete, Param, Put } from '@nestjs/common';
 import { Categoria } from '../entities/categoria.entity';
 import { CreateCategoriaDTO } from './dto/create-categoria.dto';
 import { CategoriasService } from './categorias.service';

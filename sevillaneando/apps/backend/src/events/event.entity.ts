@@ -1,9 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
 import { EstadoEnum } from '../enums/estado.enum';
-import { Coordenadas } from '../entities/coordenadas.entity';
-import { Imagen } from '../entities/imagen.entity';
 
 interface GeoJsonPoint {
   type: 'Point';

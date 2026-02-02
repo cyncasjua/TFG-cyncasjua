@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested, IsUUID, Length, MaxLength, Min, IsPositive } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsDateString, IsOptional, ValidateNested, IsUUID, Length, MaxLength, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
 

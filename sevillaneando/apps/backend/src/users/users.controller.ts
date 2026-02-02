@@ -10,7 +10,6 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { Multer } from 'multer';
-import { ChangePasswordDto } from './dto/update-password';
 
 @Controller('users')
 @UseGuards(FirebaseAuthGuard)
