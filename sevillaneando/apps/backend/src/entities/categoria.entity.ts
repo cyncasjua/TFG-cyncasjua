@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { Event } from '../events/event.entity';
 import { Length } from 'class-validator';
 
@@ -8,14 +15,14 @@ export class Categoria {
   id: string;
 
   @Length(3, 50)
-  @Column({ unique: true , nullable: false})
+  @Column({ unique: true, nullable: false })
   nombre: string;
 
   @Length(10, 200)
-  @Column({ nullable: true})
+  @Column({ nullable: true })
   descripcion: string;
 
-  @OneToMany(() => Event, event => event.categoria)
+  @OneToMany(() => Event, (event) => event.categoria)
   eventos: Event[];
 
   listarEventosPorCategoria(): Event[] {
@@ -42,5 +49,4 @@ export class Categoria {
       throw new Error('La descripción es obligatoria.');
     }
   }
-
 }

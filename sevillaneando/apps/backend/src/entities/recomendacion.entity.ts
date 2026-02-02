@@ -1,10 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinTable, ManyToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinTable,
+  ManyToMany,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { Event } from '../events/event.entity';
 
 @Entity()
 export class Recomendacion {
-  
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -13,7 +21,7 @@ export class Recomendacion {
 
   @ManyToMany(() => Event)
   @JoinTable()
-  eventosRecomendados: Event[]; 
+  eventosRecomendados: Event[];
 
   @Column('simple-array', { nullable: true })
   criterios: string[];

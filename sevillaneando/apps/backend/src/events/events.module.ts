@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
@@ -11,6 +10,6 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module';
   imports: [TypeOrmModule.forFeature([Event]), AuthModule, NotificacionesModule],
   controllers: [EventsController],
   providers: [EventsService],
-  exports: [EventsService]
+  exports: [EventsService],
 })
 export class EventsModule {}

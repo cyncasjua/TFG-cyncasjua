@@ -8,12 +8,12 @@ interface ThemedButtonProps extends TouchableOpacityProps {
   textStyle?: TextStyle;
 }
 
-export const ThemedButton = ({ 
-  title, 
-  variant = 'primary', 
-  style, 
+export const ThemedButton = ({
+  title,
+  variant = 'primary',
+  style,
   textStyle,
-  ...props 
+  ...props
 }: ThemedButtonProps) => {
   const { colors } = useTheme();
 
@@ -37,12 +37,12 @@ export const ThemedButton = ({
     <TouchableOpacity
       style={[
         styles.button,
-        { 
+        {
           backgroundColor: getBackgroundColor(),
           borderColor: variant === 'secondary' ? colors.border : 'transparent',
-          borderWidth: variant === 'secondary' ? 1 : 0
+          borderWidth: variant === 'secondary' ? 1 : 0,
         },
-        style
+        style,
       ]}
       {...props}
     >
@@ -60,12 +60,12 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 0
+    minWidth: 0,
   },
   text: {
     fontSize: 16,
     fontWeight: '600',
     flexShrink: 1,
-    textAlign: 'center'
-  }
+    textAlign: 'center',
+  },
 });

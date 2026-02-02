@@ -1,11 +1,18 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
 import { EstadoEnum } from '../enums/estado.enum';
 
 interface GeoJsonPoint {
   type: 'Point';
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 @Entity({ name: 'events' })
@@ -34,7 +41,7 @@ export class Event {
   @Column('float', { nullable: false })
   precio!: number;
 
-  @ManyToOne(() => Categoria, categoria => categoria.eventos)
+  @ManyToOne(() => Categoria, (categoria) => categoria.eventos)
   categoria!: Categoria;
 
   @Column({ type: 'enum', enum: EstadoEnum, default: EstadoEnum.Pendiente })
@@ -43,7 +50,7 @@ export class Event {
   /*@Column(type => Coordenadas)
   ubicacion!: Coordenadas;*/
 
-  @ManyToOne(() => User, user => user.eventos)
+  @ManyToOne(() => User, (user) => user.eventos)
   creador!: User;
 
   /*@OneToMany(() => Imagen, imagen => imagen.evento)
@@ -86,5 +93,4 @@ export class Event {
       throw new Error('La URL de la imagen no puede superar los 512 caracteres.');
     }
   }
-
 }

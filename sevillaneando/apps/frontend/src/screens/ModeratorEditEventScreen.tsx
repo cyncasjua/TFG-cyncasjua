@@ -1,6 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { Alert, StyleSheet, KeyboardAvoidingView, Platform, TextInput, ScrollView, Keyboard, TouchableOpacity, Image, View, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
+import {
+  Alert,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TextInput,
+  ScrollView,
+  Keyboard,
+  TouchableOpacity,
+  Image,
+  View,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,7 +26,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StyleProp, ViewStyle } from 'react-native';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { ComponentType } from 'react';
-
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -46,7 +58,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const [precio, setPrecio] = useState(String(event.precio ?? ''));
   const [categoriaId, setCategoriaId] = useState(event.categoria?.id ?? '');
   const [openCategoria, setOpenCategoria] = useState(false);
-  const [dropdownItems, setDropdownItems] = useState<{label: string, value: string}[]>([]);
+  const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);
   const [imageUrl, setImageUrl] = useState(event.imagen ?? '');
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -126,7 +138,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const geocodeAddress = async (address: string, showLoading = false) => {
     if (!address) return;
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
       const data = await response.json();
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
@@ -135,12 +149,15 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         setLongitude(lon);
         setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
         setTimeout(() => {
-          mapRef.current?.animateToRegion({
-            latitude: lat,
-            longitude: lon,
-            latitudeDelta: 0.0015,
-            longitudeDelta: 0.0015,
-          }, 500);
+          mapRef.current?.animateToRegion(
+            {
+              latitude: lat,
+              longitude: lon,
+              latitudeDelta: 0.0015,
+              longitudeDelta: 0.0015,
+            },
+            500
+          );
         }, 100);
       } else {
         Alert.alert('No encontrado', 'No se ha encontrado la dirección o lugar especificado.');
@@ -152,7 +169,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
 
   const reverseGeocode = async (lat: number, lon: number) => {
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+      );
       const data = await response.json();
       if (data && data.display_name) {
         setAddress(data.display_name);
@@ -173,7 +192,17 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   };
 
   const handleSave = async () => {
-    if (!title || !description || !address || !fechaInicio || !fechaFin || latitude === null || longitude === null || !precio || !categoriaId) {
+    if (
+      !title ||
+      !description ||
+      !address ||
+      !fechaInicio ||
+      !fechaFin ||
+      latitude === null ||
+      longitude === null ||
+      !precio ||
+      !categoriaId
+    ) {
       Alert.alert('Error', 'Por favor, completa todos los campos obligatorios.');
       return;
     }
@@ -198,7 +227,14 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       navigation.goBack();
     } catch (error) {
       let msg = 'No se pudo actualizar el evento.';
-      if (error && typeof error === 'object' && error !== null && 'response' in error && (error as any).response && 'data' in (error as any).response) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        (error as any).response &&
+        'data' in (error as any).response
+      ) {
         console.log('Error al actualizar evento:', (error as any).response.data);
         msg += '\n' + JSON.stringify((error as any).response.data);
       } else {
@@ -212,26 +248,106 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+        >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
             <ThemedText style={styles.label}>Título</ThemedText>
-            <TextInput value={title} onChangeText={setTitle} placeholder="Título del evento" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} returnKeyType="next" onSubmitEditing={() => descriptionRef.current?.focus()} blurOnSubmit={false} />
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Título del evento"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              returnKeyType="next"
+              onSubmitEditing={() => descriptionRef.current?.focus()}
+              blurOnSubmit={false}
+            />
             <ThemedText style={styles.label}>Descripción</ThemedText>
-            <TextInput ref={descriptionRef} value={description} onChangeText={setDescription} placeholder="Descripción" placeholderTextColor={colors.text + '99'} multiline style={[styles.input, { height: 80, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} returnKeyType="next" onSubmitEditing={() => addressRef.current?.focus()} blurOnSubmit={false} />
+            <TextInput
+              ref={descriptionRef}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Descripción"
+              placeholderTextColor={colors.text + '99'}
+              multiline
+              style={[
+                styles.input,
+                {
+                  height: 80,
+                  color: colors.text,
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                },
+              ]}
+              returnKeyType="next"
+              onSubmitEditing={() => addressRef.current?.focus()}
+              blurOnSubmit={false}
+            />
             <ThemedText style={styles.label}>Dirección</ThemedText>
-            <TextInput ref={addressRef} value={address} onChangeText={setAddress} placeholder="Dirección" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} onBlur={handleAddressBlur} />
+            <TextInput
+              ref={addressRef}
+              value={address}
+              onChangeText={setAddress}
+              placeholder="Dirección"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              onBlur={handleAddressBlur}
+            />
             <ThemedText style={styles.label}>Buscar dirección o lugar</ThemedText>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <TextInput value={address} onChangeText={setAddress} placeholder="Buscar dirección o lugar..." placeholderTextColor={colors.text + '99'} style={[styles.mapSearchInput, { flex: 1, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} returnKeyType="search" onSubmitEditing={() => geocodeAddress(address, true)} />
-              <TouchableOpacity onPress={() => geocodeAddress(address, true)} style={styles.mapSearchButton}>
+              <TextInput
+                value={address}
+                onChangeText={setAddress}
+                placeholder="Buscar dirección o lugar..."
+                placeholderTextColor={colors.text + '99'}
+                style={[
+                  styles.mapSearchInput,
+                  {
+                    flex: 1,
+                    color: colors.text,
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                  },
+                ]}
+                returnKeyType="search"
+                onSubmitEditing={() => geocodeAddress(address, true)}
+              />
+              <TouchableOpacity
+                onPress={() => geocodeAddress(address, true)}
+                style={styles.mapSearchButton}
+              >
                 <Icon name="magnify" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
-            <MapView ref={mapRef} style={styles.map} initialRegion={{ latitude, longitude, ...mapDelta }} region={{ latitude, longitude, ...mapDelta }} onPress={(e: MapPressEvent) => { setLatitude(e.nativeEvent.coordinate.latitude); setLongitude(e.nativeEvent.coordinate.longitude); }}>
-              <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+            <MapView
+              ref={mapRef}
+              style={styles.map}
+              initialRegion={{ latitude, longitude, ...mapDelta }}
+              region={{ latitude, longitude, ...mapDelta }}
+              onPress={(e: MapPressEvent) => {
+                setLatitude(e.nativeEvent.coordinate.latitude);
+                setLongitude(e.nativeEvent.coordinate.longitude);
+              }}
+            >
+              <UrlTile
+                urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                maximumZ={19}
+              />
               <Marker coordinate={{ latitude, longitude }} />
             </MapView>
             <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
@@ -241,7 +357,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 value={fechaInicio ? dayjs(fechaInicio).format('YYYY-MM-DD HH:mm') : ''}
                 placeholder="YYYY-MM-DD HH:mm"
                 placeholderTextColor={colors.text + '99'}
-                style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+                style={[
+                  styles.input,
+                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                ]}
                 editable={false}
                 pointerEvents="none"
               />
@@ -252,9 +371,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               date={fechaInicio ? new Date(fechaInicio) : new Date()}
               onConfirm={(date: Date) => {
                 const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
-                const nuevaFecha = dayjs(date)
-                  .hour(prev.hour())
-                  .minute(prev.minute());
+                const nuevaFecha = dayjs(date).hour(prev.hour()).minute(prev.minute());
                 setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
                 setShowFechaInicio(false);
                 setShowHoraInicio(false);
@@ -270,9 +387,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               date={fechaInicio ? new Date(fechaInicio) : new Date()}
               onConfirm={(date: Date) => {
                 const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
-                const nuevaFecha = prev
-                  .hour(dayjs(date).hour())
-                  .minute(dayjs(date).minute());
+                const nuevaFecha = prev.hour(dayjs(date).hour()).minute(dayjs(date).minute());
                 setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
                 setShowHoraInicio(false);
               }}
@@ -286,7 +401,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 value={fechaFin ? dayjs(fechaFin).format('YYYY-MM-DD HH:mm') : ''}
                 placeholder="YYYY-MM-DD HH:mm"
                 placeholderTextColor={colors.text + '99'}
-                style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]}
+                style={[
+                  styles.input,
+                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                ]}
                 editable={false}
                 pointerEvents="none"
               />
@@ -297,16 +415,18 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               date={fechaFin ? new Date(fechaFin) : new Date()}
               onConfirm={(date: Date) => {
                 const prev = fechaFin ? dayjs(fechaFin) : dayjs();
-                const nuevaFecha = dayjs(date)
-                  .hour(prev.hour())
-                  .minute(prev.minute());
+                const nuevaFecha = dayjs(date).hour(prev.hour()).minute(prev.minute());
                 setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
                 setShowFechaFin(false);
                 setShowHoraFin(false);
                 setTimeout(() => setShowHoraFin(true), 350);
               }}
               onCancel={() => setShowFechaFin(false)}
-              minimumDate={fechaInicio && new Date(fechaInicio) > new Date() ? new Date(fechaInicio) : new Date()}
+              minimumDate={
+                fechaInicio && new Date(fechaInicio) > new Date()
+                  ? new Date(fechaInicio)
+                  : new Date()
+              }
               locale="es"
             />
             <DateTimePickerModal
@@ -315,9 +435,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               date={fechaFin ? new Date(fechaFin) : new Date()}
               onConfirm={(date: Date) => {
                 const prev = fechaFin ? dayjs(fechaFin) : dayjs();
-                const nuevaFecha = prev
-                  .hour(dayjs(date).hour())
-                  .minute(dayjs(date).minute());
+                const nuevaFecha = prev.hour(dayjs(date).hour()).minute(dayjs(date).minute());
                 setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
                 setShowHoraFin(false);
               }}
@@ -325,7 +443,18 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               locale="es"
             />
             <ThemedText style={styles.label}>Precio (€)</ThemedText>
-            <TextInput ref={precioRef} value={precio} onChangeText={setPrecio} placeholder="Precio" placeholderTextColor={colors.text + '99'} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary }]} keyboardType="numeric" />
+            <TextInput
+              ref={precioRef}
+              value={precio}
+              onChangeText={setPrecio}
+              placeholder="Precio"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              keyboardType="numeric"
+            />
             <ThemedText style={styles.label}>Categoría</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />
@@ -393,7 +522,11 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             ) : (
               <ThemedButton title="Seleccionar imagen" onPress={pickImage} />
             )}
-            <ThemedButton title={loading ? 'Guardando...' : 'Guardar cambios'} onPress={handleSave} disabled={loading} />
+            <ThemedButton
+              title={loading ? 'Guardando...' : 'Guardar cambios'}
+              onPress={handleSave}
+              disabled={loading}
+            />
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -407,7 +540,13 @@ const styles = StyleSheet.create({
   label: { fontWeight: 'bold', marginTop: 12, marginBottom: 4 },
   input: { borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8, borderColor: '#ccc' },
   map: { width: '100%', height: 180, borderRadius: 10, marginBottom: 12 },
-  mapSearchInput: { borderWidth: 1, borderRadius: 8, padding: 8, marginRight: 8, borderColor: '#ccc' },
+  mapSearchInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    marginRight: 8,
+    borderColor: '#ccc',
+  },
   mapSearchButton: { padding: 8 },
   imagePreview: { width: 180, height: 120, borderRadius: 10, marginBottom: 8 },
   removeImageBtn: { backgroundColor: '#f44336', padding: 6, borderRadius: 6 },

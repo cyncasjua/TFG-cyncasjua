@@ -1,6 +1,9 @@
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 
-export function IsEndDateAfterStartDate(startDateProperty: string, validationOptions?: ValidationOptions) {
+export function IsEndDateAfterStartDate(
+  startDateProperty: string,
+  validationOptions?: ValidationOptions
+) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isEndDateAfterStartDate',

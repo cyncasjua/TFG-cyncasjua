@@ -5,15 +5,12 @@ import { CategoriasService } from './categorias.service';
 
 @Controller('categorias')
 export class CategoriasController {
-  constructor(
-    private readonly categoriaService: CategoriasService,
-  ) {}
+  constructor(private readonly categoriaService: CategoriasService) {}
 
   @Get()
   async findAll() {
     return await this.categoriaService.findAll();
   }
-
 
   @Post()
   async create(@Body() dto: CreateCategoriaDTO): Promise<Categoria> {
@@ -29,5 +26,4 @@ export class CategoriasController {
   async delete(@Param('id') id: string): Promise<void> {
     return await this.categoriaService.delete(id);
   }
-  
 }

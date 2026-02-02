@@ -23,7 +23,7 @@ export class SeedService {
         contrasena: null,
         ubicacion: null,
         fotoPerfil: null,
-        intereses: []
+        intereses: [],
       },
       {
         firebaseUid: 'moderator-uid-test',
@@ -33,7 +33,7 @@ export class SeedService {
         contrasena: null,
         ubicacion: null,
         fotoPerfil: null,
-        intereses: []
+        intereses: [],
       },
       {
         firebaseUid: 'user-uid-test',
@@ -43,8 +43,8 @@ export class SeedService {
         contrasena: null,
         ubicacion: null,
         fotoPerfil: null,
-        intereses: []
-      }
+        intereses: [],
+      },
     ];
 
     for (const userData of users) {

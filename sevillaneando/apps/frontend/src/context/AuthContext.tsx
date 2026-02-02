@@ -1,8 +1,13 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, getIdTokenResult } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  getIdTokenResult,
+} from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { api, setAuthToken } from '../services/api';
-import type { User as AppUser } from '../types/user'; 
+import type { User as AppUser } from '../types/user';
 
 export type UserRole = 'admin' | 'moderator' | 'user';
 
@@ -63,7 +68,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
       },
       logout: async () => {
         await signOut(auth);
-      }
+      },
     }),
     [user, role, loading, token]
   );

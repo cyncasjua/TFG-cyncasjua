@@ -13,7 +13,7 @@ export class EventsService {
   constructor(
     @InjectRepository(Event)
     private readonly eventRepo: Repository<Event>
-  ) { }
+  ) {}
 
   async create(dto: CreateEventDto): Promise<Event> {
     const event = this.eventRepo.create({
@@ -36,14 +36,14 @@ export class EventsService {
     const where = estado ? { estado } : {};
     return this.eventRepo.find({
       where,
-      relations: ['categoria', 'creador']
+      relations: ['categoria', 'creador'],
     });
   }
 
   async findOne(id: string): Promise<Event> {
     const found = await this.eventRepo.findOne({
       where: { id },
-      relations: ['categoria', 'creador']
+      relations: ['categoria', 'creador'],
     });
     if (!found) throw new NotFoundException('Evento no encontrado');
     return found;
@@ -55,10 +55,7 @@ export class EventsService {
     if (dto.location && dto.location.type === 'Point' && Array.isArray(dto.location.coordinates)) {
       location = {
         type: 'Point',
-        coordinates: [
-          Number(dto.location.coordinates[0]),
-          Number(dto.location.coordinates[1])
-        ]
+        coordinates: [Number(dto.location.coordinates[0]), Number(dto.location.coordinates[1])],
       };
     }
     const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
@@ -67,10 +64,10 @@ export class EventsService {
       ...event,
       ...dto,
       categoria: dto.categoriaId ? { id: dto.categoriaId } : event.categoria,
-      estado: dto.estado !== undefined ? dto.estado as EstadoEnum : event.estado,
+      estado: dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado,
       location,
       fechaInicio,
-      fechaFin
+      fechaFin,
     };
     await this.eventRepo.save(updated);
     return updated as Event;

@@ -15,16 +15,7 @@ import { PassportModule } from '@nestjs/passport';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  providers: [
-    FirebaseService,
-    FirebaseAuthGuard,
-    RolesGuard,
-  ],
-  exports: [
-    FirebaseAuthGuard,
-    FirebaseService,
-    RolesGuard,
-    UsersModule,
-  ],
+  providers: [FirebaseService, FirebaseAuthGuard, RolesGuard],
+  exports: [FirebaseAuthGuard, FirebaseService, RolesGuard, UsersModule],
 })
 export class AuthModule {}

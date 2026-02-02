@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { Event } from '../events/event.entity';
 import { Length } from 'class-validator';
@@ -8,14 +15,14 @@ export class Resena {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, user => user.resenas)
+  @ManyToOne(() => User, (user) => user.resenas)
   autor: User;
 
   @ManyToOne(() => Event)
   evento: Event;
 
   @Length(10, 500)
-  @Column({nullable: false})
+  @Column({ nullable: false })
   comentario: string;
 
   @Column('int', { nullable: false })
@@ -40,7 +47,12 @@ export class Resena {
     if (!this.comentario || this.comentario.trim().length < 10 || this.comentario.length > 500) {
       throw new Error('El comentario debe tener entre 10 y 500 caracteres.');
     }
-    if (this.puntuacion === undefined || this.puntuacion === null || this.puntuacion < 1 || this.puntuacion > 5) {
+    if (
+      this.puntuacion === undefined ||
+      this.puntuacion === null ||
+      this.puntuacion < 1 ||
+      this.puntuacion > 5
+    ) {
       throw new Error('La puntuación debe estar entre 1 y 5.');
     }
     if (!this.fecha || isNaN(new Date(this.fecha).getTime())) {

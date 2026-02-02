@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { ThemedText } from '../components/ThemedText'; 
+import { ThemedText } from '../components/ThemedText';
 import { useAuth } from '../hooks/useAuth';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
@@ -19,7 +19,7 @@ export const ProfileHeader: React.FC<Props> = ({ onPress }) => {
         source={
           user?.fotoPerfil
             ? { uri: user.fotoPerfil }
-            : { uri: 'https://ui-avatars.com/api/?name=Perfil' } 
+            : { uri: 'https://ui-avatars.com/api/?name=Perfil' }
         }
         style={styles.avatar}
       />

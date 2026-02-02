@@ -6,18 +6,22 @@ import * as admin from 'firebase-admin';
 
 interface GeoJsonPoint {
   type: 'Point';
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
 
-  async ensureFromFirebase(payload: { uid: string; email?: string | null; name?: string | null }): Promise<User> {
+  async ensureFromFirebase(payload: {
+    uid: string;
+    email?: string | null;
+    name?: string | null;
+  }): Promise<User> {
     const { uid, email, name } = payload;
-    
+
     let user = await this.usersRepo.findOne({ where: { firebaseUid: uid } });
-    
+
     if (!user && email) {
       user = await this.usersRepo.findOne({ where: { email } });
       if (user) {
@@ -25,7 +29,7 @@ export class UsersService {
         await this.usersRepo.save(user);
       }
     }
-    
+
     if (!user) {
       user = this.usersRepo.create({
         firebaseUid: uid,
@@ -35,7 +39,7 @@ export class UsersService {
         ubicacion: null,
         fotoPerfil: null,
         intereses: [],
-        rol: RolEnum.USER
+        rol: RolEnum.USER,
       });
       await this.usersRepo.save(user);
     } else {
@@ -52,7 +56,7 @@ export class UsersService {
         await this.usersRepo.save(user);
       }
     }
-    
+
     return user;
   }
 
@@ -70,14 +74,16 @@ export class UsersService {
     return this.usersRepo.save(user);
   }
 
-  
-  async updateProfile(firebaseUid: string, data: { 
-    nombre?: string; 
-    email?: string; 
-    ubicacion?: GeoJsonPoint;
-    fotoPerfil?: string;
-    intereses?: string[];
-  }): Promise<User> {
+  async updateProfile(
+    firebaseUid: string,
+    data: {
+      nombre?: string;
+      email?: string;
+      ubicacion?: GeoJsonPoint;
+      fotoPerfil?: string;
+      intereses?: string[];
+    }
+  ): Promise<User> {
     const user = await this.usersRepo.findOneOrFail({ where: { firebaseUid } });
     if (data.nombre !== undefined) user.nombre = data.nombre;
     if (data.email !== undefined) user.email = data.email;
@@ -91,7 +97,7 @@ export class UsersService {
     await this.usersRepo.delete({ firebaseUid });
   }
 
-    async deleteCompletelyById(id: string): Promise<void> {
+  async deleteCompletelyById(id: string): Promise<void> {
     const user = await this.usersRepo.findOne({ where: { id } });
     if (!user) return;
     if (user.firebaseUid) {
@@ -103,5 +109,4 @@ export class UsersService {
     }
     await this.usersRepo.delete({ id });
   }
-
 }

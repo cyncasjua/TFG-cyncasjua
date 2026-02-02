@@ -17,7 +17,7 @@ export class NotificacionesService {
       usuario,
       mensaje,
       tipo,
-      fecha: new Date() 
+      fecha: new Date(),
     });
     return this.notificacionesRepo.save(noti);
   }

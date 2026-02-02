@@ -14,7 +14,7 @@ export const events: Event[] = [
     precio: 0,
     categoria: { id: 'cat1', nombre: 'Fiestas', descripcion: 'Eventos festivos y celebraciones' },
     estado: 'Pendiente',
-    creador: { id: 'user1', nombre: 'Usuario de Prueba', email: 'prueba@correo.com' }
+    creador: { id: 'user1', nombre: 'Usuario de Prueba', email: 'prueba@correo.com' },
   },
   {
     id: '2',
@@ -29,7 +29,7 @@ export const events: Event[] = [
     precio: 15,
     categoria: { id: 'cat1', nombre: 'Fiestas', descripcion: 'Eventos festivos y celebraciones' },
     estado: 'Pendiente',
-    creador: { id: 'user1', nombre: 'Usuario de Prueba', email: 'prueba@correo.com' }
+    creador: { id: 'user1', nombre: 'Usuario de Prueba', email: 'prueba@correo.com' },
   },
   {
     id: '3',
@@ -44,6 +44,6 @@ export const events: Event[] = [
     precio: 25,
     categoria: { id: 'cat1', nombre: 'Fiestas', descripcion: 'Eventos festivos y celebraciones' },
     estado: 'Pendiente',
-    creador: { id: 'user1', nombre: 'Usuario de Prueba', email: 'prueba@correo.com' }
-  }
+    creador: { id: 'user1', nombre: 'Usuario de Prueba', email: 'prueba@correo.com' },
+  },
 ];

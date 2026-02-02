@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query, Patch, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  Query,
+  Patch,
+  ForbiddenException,
+} from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -16,7 +27,7 @@ export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
     private readonly notificacionesService: NotificacionesService
-  ) { }
+  ) {}
 
   @Post()
   async create(@Body() dto: CreateEventDto): Promise<Event> {
@@ -47,16 +58,22 @@ export class EventsController {
   @Patch(':id/aprobar')
   async aprobar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
-    if (event.estado === EstadoEnum.Aprobado) throw new ForbiddenException('El evento ya está aprobado');
+    if (event.estado === EstadoEnum.Aprobado)
+      throw new ForbiddenException('El evento ya está aprobado');
     event.estado = EstadoEnum.Aprobado;
     const updateDto: UpdateEventDto = {
       ...event,
-      fechaInicio: event.fechaInicio instanceof Date ? event.fechaInicio.toISOString() : event.fechaInicio,
+      fechaInicio:
+        event.fechaInicio instanceof Date ? event.fechaInicio.toISOString() : event.fechaInicio,
       fechaFin: event.fechaFin instanceof Date ? event.fechaFin.toISOString() : event.fechaFin,
     };
     const updated = await this.eventsService.update(id, updateDto);
     if (event.creador) {
-      await this.notificacionesService.crearParaUsuario(event.creador, `Tu evento "${event.title}" ha sido aprobado y ya es visible para todos los usuarios.`, TipoEnum.Aprobacion);
+      await this.notificacionesService.crearParaUsuario(
+        event.creador,
+        `Tu evento "${event.title}" ha sido aprobado y ya es visible para todos los usuarios.`,
+        TipoEnum.Aprobacion
+      );
     }
     return updated;
   }
@@ -64,30 +81,38 @@ export class EventsController {
   @Patch(':id/rechazar')
   async rechazar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
-    if (event.estado === EstadoEnum.Rechazado) throw new ForbiddenException('El evento ya está rechazado');
+    if (event.estado === EstadoEnum.Rechazado)
+      throw new ForbiddenException('El evento ya está rechazado');
     event.estado = EstadoEnum.Rechazado;
     const updateDto: UpdateEventDto = {
       ...event,
-      fechaInicio: event.fechaInicio instanceof Date ? event.fechaInicio.toISOString() : event.fechaInicio,
+      fechaInicio:
+        event.fechaInicio instanceof Date ? event.fechaInicio.toISOString() : event.fechaInicio,
       fechaFin: event.fechaFin instanceof Date ? event.fechaFin.toISOString() : event.fechaFin,
     };
     const updated = await this.eventsService.update(id, updateDto);
     if (event.creador) {
-      await this.notificacionesService.crearParaUsuario(event.creador, `Tu evento "${event.title}" ha sido rechazado. No será visible para otros usuarios.`, TipoEnum.Rechazado);
+      await this.notificacionesService.crearParaUsuario(
+        event.creador,
+        `Tu evento "${event.title}" ha sido rechazado. No será visible para otros usuarios.`,
+        TipoEnum.Rechazado
+      );
     }
     return updated;
   }
 
   @Post('upload-image')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads/event-images',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + extname(file.originalname));
-      }
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/event-images',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueSuffix + extname(file.originalname));
+        },
+      }),
     })
-  }))
+  )
   uploadEventImage(@UploadedFile() file: import('multer').File) {
     return { url: `/uploads/event-images/${file.filename}` };
   }

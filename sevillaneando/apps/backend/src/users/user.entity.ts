@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { Notificacion } from '../entities/notificacion.entity';
 import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
@@ -6,12 +13,12 @@ import { Resena } from '../entities/resena.entity';
 export enum RolEnum {
   ADMIN = 'admin',
   MODERATOR = 'moderator',
-  USER = 'user'
+  USER = 'user',
 }
 
 interface GeoJsonPoint {
   type: 'Point';
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 @Entity({ name: 'users' })
@@ -19,10 +26,10 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar', length: 120 , nullable: false})
+  @Column({ type: 'varchar', length: 120, nullable: false })
   nombre!: string;
 
-  @Column({ type: 'varchar', length: 180, unique: true , nullable: false })
+  @Column({ type: 'varchar', length: 180, unique: true, nullable: false })
   email!: string;
 
   @Column({ type: 'text', nullable: true })
@@ -43,13 +50,13 @@ export class User {
   @Column({ type: 'varchar', length: 128, unique: true })
   firebaseUid!: string;
 
-  @OneToMany(() => Event, event => event.creador)
+  @OneToMany(() => Event, (event) => event.creador)
   eventos!: Event[];
 
-  @OneToMany(() => Notificacion, noti => noti.usuario)
+  @OneToMany(() => Notificacion, (noti) => noti.usuario)
   notificaciones!: Notificacion[];
 
-  @OneToMany(() => Resena, resena => resena.autor)
+  @OneToMany(() => Resena, (resena) => resena.autor)
   resenas!: Resena[];
 
   iniciarSesion() {}
@@ -59,7 +66,6 @@ export class User {
   editarPerfil() {}
   añadirEvento() {}
   añadirReseña() {}
-
 
   @BeforeInsert()
   @BeforeUpdate()
@@ -84,23 +90,25 @@ export class User {
     }
     if (this.ubicacion) {
       const loc = typeof this.ubicacion === 'string' ? JSON.parse(this.ubicacion) : this.ubicacion;
-      
+
       if (Object.keys(loc).length === 0) {
         this.ubicacion = null;
         return;
       }
-      
-      if (loc.type !== 'Point' ||
-          !Array.isArray(loc.coordinates) ||
-          loc.coordinates.length !== 2 ||
-          typeof loc.coordinates[0] !== 'number' ||
-          typeof loc.coordinates[1] !== 'number') {
+
+      if (
+        loc.type !== 'Point' ||
+        !Array.isArray(loc.coordinates) ||
+        loc.coordinates.length !== 2 ||
+        typeof loc.coordinates[0] !== 'number' ||
+        typeof loc.coordinates[1] !== 'number'
+      ) {
         console.error('Validación de ubicación falló:', {
           type: loc.type,
           isArray: Array.isArray(loc.coordinates),
           length: loc.coordinates?.length,
           coord0Type: typeof loc.coordinates?.[0],
-          coord1Type: typeof loc.coordinates?.[1]
+          coord1Type: typeof loc.coordinates?.[1],
         });
         throw new Error('La ubicación debe ser un GeoJsonPoint válido.');
       }
@@ -109,5 +117,4 @@ export class User {
       throw new Error('La URL de la foto de perfil no puede superar los 512 caracteres.');
     }
   }
-
 }

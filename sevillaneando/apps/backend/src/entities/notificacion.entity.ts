@@ -1,10 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { TipoEnum } from '../enums/tipo.enum';
 
 @Entity()
 export class Notificacion {
-  
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

@@ -6,6 +6,6 @@ import { SeedService } from './seed.service';
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   providers: [SeedService],
-  exports: [SeedService]
+  exports: [SeedService],
 })
 export class DatabaseModule {}

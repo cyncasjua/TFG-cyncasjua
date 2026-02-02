@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,7 +15,14 @@ import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
 
 type EventWithDistance = Event & { distance?: number };
-import { ThemedView, ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
+import {
+  ThemedView,
+  ThemedCard,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedButton,
+} from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
 import { ProfileHeader } from './ProfileHeader';
@@ -21,25 +34,27 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [categories, setCategories] = useState<{ id: string, nombre: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; nombre: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filterNearby, setFilterNearby] = useState(false);
-  const [searchRadius, setSearchRadius] = useState(1); 
+  const [searchRadius, setSearchRadius] = useState(1);
   const { role, logout, user } = useAuth();
   const { colors, setTheme, theme } = useTheme();
 
-  const radiusOptions = [0.5, 1, 2, 5, 10]; 
+  const radiusOptions = [0.5, 1, 2, 5, 10];
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; 
+    return R * c;
   };
   const calculateWalkingTime = (distanceKm: number): string => {
     // Velocidad promedio a pie: 1.4 m/s = 5.04 km/h
@@ -71,20 +86,26 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setError(null);
     try {
       const remote = await getEvents();
-      
-      
+
       if (user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2) {
         const userLon = user.ubicacion.coordinates[0];
         const userLat = user.ubicacion.coordinates[1];
-                
-        const sortedEvents = remote.map(event => {
-          if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
-            return { ...event, distance: Infinity };
-          }
-          const dist = calculateDistance(userLat, userLon, event.location.coordinates[1], event.location.coordinates[0]);
-          return { ...event, distance: dist };
-        }).sort((a, b) => a.distance - b.distance);
-        
+
+        const sortedEvents = remote
+          .map((event) => {
+            if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
+              return { ...event, distance: Infinity };
+            }
+            const dist = calculateDistance(
+              userLat,
+              userLon,
+              event.location.coordinates[1],
+              event.location.coordinates[0]
+            );
+            return { ...event, distance: dist };
+          })
+          .sort((a, b) => a.distance - b.distance);
+
         setItems(sortedEvents);
       } else {
         setItems(remote);
@@ -128,11 +149,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       resizeMode="cover"
     >
       <ThemedView style={styles.container}>
-        <ThemedView style={[styles.header, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+        <ThemedView
+          style={[
+            styles.header,
+            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+          ]}
+        >
           <ThemedView>
             <ThemedTitle>Eventos en Sevilla</ThemedTitle>
             <ThemedTextSecondary style={{ marginTop: 4 }}>
-              Rol actual: <ThemedText style={{ color: '#ffd700', fontWeight: 'bold' }}>{role}</ThemedText>
+              Rol actual:{' '}
+              <ThemedText style={{ color: '#ffd700', fontWeight: 'bold' }}>{role}</ThemedText>
             </ThemedTextSecondary>
           </ThemedView>
           {user?.ubicacion && (
@@ -149,16 +176,44 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               }}
               onPress={() => setFilterNearby(!filterNearby)}
             >
-              <MaterialIcons name="near-me" size={15} color={filterNearby ? '#fff' : '#ffd700'} style={{ marginRight: 4 }} />
-              <ThemedText style={{ color: filterNearby ? '#fff' : colors.text + '99', fontWeight: '500', fontSize: 11 }}>Cerca <ThemedText style={{ fontSize: 9, color: filterNearby ? '#fff' : colors.text + 'cc' }}>(&lt;1km)</ThemedText></ThemedText>
+              <MaterialIcons
+                name="near-me"
+                size={15}
+                color={filterNearby ? '#fff' : '#ffd700'}
+                style={{ marginRight: 4 }}
+              />
+              <ThemedText
+                style={{
+                  color: filterNearby ? '#fff' : colors.text + '99',
+                  fontWeight: '500',
+                  fontSize: 11,
+                }}
+              >
+                Cerca{' '}
+                <ThemedText
+                  style={{ fontSize: 9, color: filterNearby ? '#fff' : colors.text + 'cc' }}
+                >
+                  (&lt;1km)
+                </ThemedText>
+              </ThemedText>
             </TouchableOpacity>
           )}
         </ThemedView>
         {filterNearby && user?.ubicacion && (
           <ThemedView style={{ marginBottom: 12 }}>
-            <ThemedText style={{ fontWeight: 'bold', fontSize: 13, marginLeft: 1, marginBottom: 6, color: colors.primary }}>Radio:</ThemedText>
-            <ScrollView 
-              horizontal 
+            <ThemedText
+              style={{
+                fontWeight: 'bold',
+                fontSize: 13,
+                marginLeft: 1,
+                marginBottom: 6,
+                color: colors.primary,
+              }}
+            >
+              Radio:
+            </ThemedText>
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 12 }}
             >
@@ -176,7 +231,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   }}
                   onPress={() => setSearchRadius(radius)}
                 >
-                  <ThemedText style={{ color: searchRadius === radius ? '#fff' : colors.text, fontWeight: '500', fontSize: 11 }}>
+                  <ThemedText
+                    style={{
+                      color: searchRadius === radius ? '#fff' : colors.text,
+                      fontWeight: '500',
+                      fontSize: 11,
+                    }}
+                  >
                     {radius === 0.5 ? '500m' : `${radius}km`}
                   </ThemedText>
                 </TouchableOpacity>
@@ -186,9 +247,19 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         )}
         {categories.length > 0 && (
           <ThemedView style={{ marginBottom: 12 }}>
-            <ThemedText style={{ fontWeight: 'bold', fontSize: 14, marginLeft: 1, marginBottom: 8, color: colors.primary }}>Categoría:</ThemedText>
-            <ScrollView 
-              horizontal 
+            <ThemedText
+              style={{
+                fontWeight: 'bold',
+                fontSize: 14,
+                marginLeft: 1,
+                marginBottom: 8,
+                color: colors.primary,
+              }}
+            >
+              Categoría:
+            </ThemedText>
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 12 }}
             >
@@ -204,7 +275,15 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 }}
                 onPress={() => setSelectedCategory(null)}
               >
-                <ThemedText style={{ color: selectedCategory === null ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>Todas</ThemedText>
+                <ThemedText
+                  style={{
+                    color: selectedCategory === null ? '#fff' : colors.primary,
+                    fontWeight: 'bold',
+                    fontSize: 13,
+                  }}
+                >
+                  Todas
+                </ThemedText>
               </TouchableOpacity>
               {categories.map((cat) => (
                 <TouchableOpacity
@@ -220,27 +299,40 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   }}
                   onPress={() => setSelectedCategory(cat.id)}
                 >
-                  <ThemedText style={{ color: selectedCategory === cat.id ? '#fff' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>{cat.nombre}</ThemedText>
+                  <ThemedText
+                    style={{
+                      color: selectedCategory === cat.id ? '#fff' : colors.primary,
+                      fontWeight: 'bold',
+                      fontSize: 13,
+                    }}
+                  >
+                    {cat.nombre}
+                  </ThemedText>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </ThemedView>
         )}
         {!user?.ubicacion && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.navigate('EditProfile')}
-            style={{ 
-              backgroundColor: colors.primary + '20', 
-              borderLeftWidth: 3, 
-              borderLeftColor: colors.primary, 
-              padding: 12, 
-              marginBottom: 12, 
+            style={{
+              backgroundColor: colors.primary + '20',
+              borderLeftWidth: 3,
+              borderLeftColor: colors.primary,
+              padding: 12,
+              marginBottom: 12,
               borderRadius: 8,
               flexDirection: 'row',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
-            <MaterialIcons name="location-on" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+            <MaterialIcons
+              name="location-on"
+              size={20}
+              color={colors.primary}
+              style={{ marginRight: 8 }}
+            />
             <ThemedText style={{ flex: 1, fontSize: 13, color: colors.primary }}>
               Configura tu ubicación para ver eventos ordenados por cercanía
             </ThemedText>
@@ -256,7 +348,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           accessibilityLabel="Ver mapa"
         >
           <MaterialIcons name="map" size={28} color="#6c2eb7" />
-          <ThemedText style={{ fontSize: 10, color: '#6c2eb7', marginTop: 2, fontWeight: 'bold' }}>Mapa</ThemedText>
+          <ThemedText style={{ fontSize: 10, color: '#6c2eb7', marginTop: 2, fontWeight: 'bold' }}>
+            Mapa
+          </ThemedText>
         </TouchableOpacity>
 
         {role === 'user' && (
@@ -294,7 +388,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.adminButton, { marginTop: 0,marginRight:45, flexDirection: 'row', alignItems: 'center' }]}
+              style={[
+                styles.adminButton,
+                { marginTop: 0, marginRight: 45, flexDirection: 'row', alignItems: 'center' },
+              ]}
               onPress={() => navigation.navigate('Categories')}
             >
               <MaterialIcons name="category" size={28} color="#6c2eb7" />
@@ -312,19 +409,19 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
         <FlatList
-          data={
-            (() => {
-              let filtered = selectedCategory 
-                ? items.filter(ev => ev.categoria?.id === selectedCategory)
-                : items;
-              
-              if (filterNearby) {
-                filtered = filtered.filter(ev => ev.distance !== undefined && ev.distance < searchRadius);
-              }
-              
-              return filtered;
-            })()
-          }
+          data={(() => {
+            let filtered = selectedCategory
+              ? items.filter((ev) => ev.categoria?.id === selectedCategory)
+              : items;
+
+            if (filterNearby) {
+              filtered = filtered.filter(
+                (ev) => ev.distance !== undefined && ev.distance < searchRadius
+              );
+            }
+
+            return filtered;
+          })()}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item, index }) => {
@@ -332,16 +429,26 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
                 <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
                   {item.distance !== undefined && item.distance !== Infinity && (
-                    <ThemedText style={{ position: 'absolute', top: 8, right: 8, backgroundColor: colors.primary, color: '#fff', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, fontSize: 12, fontWeight: 'bold', zIndex: 10 }}>
+                    <ThemedText
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: colors.primary,
+                        color: '#fff',
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        zIndex: 10,
+                      }}
+                    >
                       {item.distance.toFixed(1)} km
                     </ThemedText>
                   )}
                   <ImageBackground
-                    source={
-                      item.imagen
-                        ? { uri: item.imagen }
-                        : require('../../assets/splash.png')
-                    }
+                    source={item.imagen ? { uri: item.imagen } : require('../../assets/splash.png')}
                     style={{ height: 120, justifyContent: 'flex-end' }}
                     imageStyle={{ opacity: 0.2 }}
                     resizeMode="cover"
@@ -353,7 +460,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         color: theme === 'dark' ? '#fff' : '#222',
                         marginBottom: 7,
                         marginLeft: 14,
-                        textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
+                        textShadowColor:
+                          theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
                         textShadowOffset: { width: 0, height: 2 },
                         textShadowRadius: 6,
                       }}
@@ -370,25 +478,30 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         marginBottom: 6,
                         flexDirection: 'row',
                         alignItems: 'center',
-                        textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                        textShadowColor:
+                          theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
                         textShadowOffset: { width: 0, height: 1 },
                         textShadowRadius: 2,
                       }}
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      <MaterialIcons name="place" size={16} color="#ffd700" />{' '}
-                      {item.address}
+                      <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
                     </ThemedTextSecondary>
                   </ImageBackground>
                   <ThemedView style={{ padding: 12 }}>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <ThemedView
+                      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                    >
                       <MaterialIcons name="event" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {new Date(item.fechaInicio).toLocaleString()} - {new Date(item.fechaFin).toLocaleDateString()}
+                        {new Date(item.fechaInicio).toLocaleString()} -{' '}
+                        {new Date(item.fechaFin).toLocaleDateString()}
                       </ThemedTextSecondary>
                     </ThemedView>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <ThemedView
+                      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                    >
                       <MaterialIcons name="category" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
                         {item.categoria?.nombre}
@@ -396,13 +509,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     </ThemedView>
                     {item.distance !== undefined && item.distance !== Infinity && (
                       <>
-                        <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <ThemedView
+                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                        >
                           <MaterialIcons name="directions-walk" size={16} color="#4caf50" />
                           <ThemedTextSecondary style={{ marginLeft: 4 }}>
                             {calculateWalkingTime(item.distance)} a pie
                           </ThemedTextSecondary>
                         </ThemedView>
-                        <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <ThemedView
+                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                        >
                           <MaterialIcons name="directions-car" size={16} color="#2196F3" />
                           <ThemedTextSecondary style={{ marginLeft: 4 }}>
                             {calculateDrivingTime(item.distance)} en coche
@@ -411,17 +528,19 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       </>
                     )}
                     <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
-                      <ThemedText style={{
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                        color: '#fff',
-                        backgroundColor: '#6c2eb7',
-                        paddingHorizontal: 12,
-                        paddingVertical: 4,
-                        borderRadius: 12,
-                        overflow: 'hidden',
-                        alignSelf: 'flex-end'
-                      }}>
+                      <ThemedText
+                        style={{
+                          fontSize: 18,
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          backgroundColor: '#6c2eb7',
+                          paddingHorizontal: 12,
+                          paddingVertical: 4,
+                          borderRadius: 12,
+                          overflow: 'hidden',
+                          alignSelf: 'flex-end',
+                        }}
+                      >
                         {item.precio === 0 ? 'Gratis' : `${item.precio} €`}
                       </ThemedText>
                     </ThemedView>
@@ -436,10 +555,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedView style={styles.menuOverlay}>
             <ThemedView style={[styles.menuContainer, { backgroundColor: colors.card }]}>
               <ThemedTitle style={styles.menuTitle}>Menú</ThemedTitle>
-              <ProfileHeader onPress={() => {
-                setMenuVisible(false);
-                navigation.navigate('EditProfile');
-              }} />
+              <ProfileHeader
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate('EditProfile');
+                }}
+              />
               <ThemedView style={styles.menuSection}>
                 <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
                 <ThemedView style={styles.themeRow}>
@@ -477,7 +598,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     </ImageBackground>
   );
 };
-
 
 const styles = StyleSheet.create({
   logo: { width: 32, height: 32, marginRight: 8 },
@@ -530,7 +650,8 @@ const styles = StyleSheet.create({
   menuButtonOption: {
     marginBottom: 0,
     alignSelf: 'stretch',
-  }, headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
+  },
+  headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
   smallButton: { paddingHorizontal: 14, paddingVertical: 8 },
   smallButtonText: { fontSize: 12 },
   themeRow: {
@@ -596,7 +717,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     backgroundColor: 'transparent',
   },
-    notificationsButton: {
+  notificationsButton: {
     position: 'absolute',
     bottom: 30,
     left: 30,

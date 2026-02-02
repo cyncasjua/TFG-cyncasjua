@@ -39,10 +39,10 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
           Ruta,
           Coordenadas,
           Notificacion,
-          Recomendacion
+          Recomendacion,
         ],
-        synchronize: true, 
-      })
+        synchronize: true,
+      }),
     }),
     DatabaseModule,
     EventsModule,
@@ -50,8 +50,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
     AuthModule,
     CategoriasModule,
     NotificacionesModule,
-    
-  ]
+  ],
 })
 export class AppModule {
   constructor(private readonly seedService: SeedService) {

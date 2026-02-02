@@ -16,9 +16,9 @@ export const ThemedCard = ({ style, ...props }: ViewProps) => {
           borderRadius: 30,
           padding: 16,
           borderWidth: 1,
-          borderColor: colors.border
+          borderColor: colors.border,
         },
-        style
+        style,
       ]}
       {...props}
     />

@@ -1,5 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, StyleSheet, Alert, ActivityIndicator, View, Image, TouchableOpacity } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  View,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import dayjs from 'dayjs';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -69,7 +77,9 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando eventos pendientes...</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>
+          Cargando eventos pendientes...
+        </ThemedTextSecondary>
       </ThemedView>
     );
   }
@@ -79,22 +89,23 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedTitle style={styles.title}>Eventos pendientes de aprobación</ThemedTitle>
       <FlatList
         data={pendingEvents}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => navigation.navigate('ModeratorEditEvent', { event: item })}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ModeratorEditEvent', { event: item })}
+          >
             <ThemedView
-              style={[styles.card, {
-                backgroundColor: theme === 'dark' ? '#222' : '#fff',
-                borderColor: theme === 'dark' ? colors.primary : '#eee',
-                shadowColor: theme === 'dark' ? '#000' : '#aaa',
-              }]}
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme === 'dark' ? '#222' : '#fff',
+                  borderColor: theme === 'dark' ? colors.primary : '#eee',
+                  shadowColor: theme === 'dark' ? '#000' : '#aaa',
+                },
+              ]}
             >
               <Image
-                source={
-                  item.imagen
-                    ? { uri: item.imagen }
-                    : require('../../assets/splash.png')
-                }
+                source={item.imagen ? { uri: item.imagen } : require('../../assets/splash.png')}
                 style={styles.image}
                 resizeMode="cover"
               />

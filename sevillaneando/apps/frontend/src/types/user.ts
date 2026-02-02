@@ -1,7 +1,6 @@
-
 interface GeoJsonPoint {
   type: 'Point';
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 export type User = {

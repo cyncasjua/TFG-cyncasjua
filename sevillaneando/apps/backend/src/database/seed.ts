@@ -19,9 +19,18 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
     let categorias: Categoria[] = [];
     if (categoriasExistentes === 0) {
       categorias = await categoriasRepo.save([
-        categoriasRepo.create({ nombre: 'Fiestas', descripcion: 'Eventos festivos y celebraciones' }),
-        categoriasRepo.create({ nombre: 'Conciertos', descripcion: 'Música en vivo y espectáculos' }),
-        categoriasRepo.create({ nombre: 'Gastronomía', descripcion: 'Rutas y eventos gastronómicos' }),
+        categoriasRepo.create({
+          nombre: 'Fiestas',
+          descripcion: 'Eventos festivos y celebraciones',
+        }),
+        categoriasRepo.create({
+          nombre: 'Conciertos',
+          descripcion: 'Música en vivo y espectáculos',
+        }),
+        categoriasRepo.create({
+          nombre: 'Gastronomía',
+          descripcion: 'Rutas y eventos gastronómicos',
+        }),
       ]);
       console.log('✅ Categorías de prueba creadas');
     } else {
@@ -32,7 +41,7 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
     if (!categoria) {
       categoria = dataSource.getRepository(Categoria).create({
         nombre: 'Fiestas',
-        descripcion: 'Eventos festivos y celebraciones'
+        descripcion: 'Eventos festivos y celebraciones',
       });
       categoria = await dataSource.getRepository(Categoria).save(categoria);
       console.log('✅ Categoría de prueba creada');
@@ -43,7 +52,7 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
       creador = dataSource.getRepository(User).create({
         nombre: 'Usuario de Prueba',
         email: 'prueba@correo.com',
-        contrasena: '123456'
+        contrasena: '123456',
       });
       creador = await dataSource.getRepository(User).save(creador);
       console.log('✅ Usuario de prueba creado');
@@ -51,7 +60,7 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
 
     interface GeoJsonPoint {
       type: 'Point';
-      coordinates: [number, number]; 
+      coordinates: [number, number];
     }
     const testEvents = [
       {
@@ -65,7 +74,8 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
         categoria,
         estado: EstadoEnum.Pendiente,
         creador,
-        imagen: 'https://legacy.visitasevilla.es/sites/default/files/styles/card_extended_page/public/extended_page/img_card_right/feria-de-abril-bloque-1.jpg?itok=83C_2NQm'
+        imagen:
+          'https://legacy.visitasevilla.es/sites/default/files/styles/card_extended_page/public/extended_page/img_card_right/feria-de-abril-bloque-1.jpg?itok=83C_2NQm',
       },
       {
         title: 'Concierto en la Plaza de España',
@@ -78,7 +88,8 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
         categoria,
         estado: EstadoEnum.Pendiente,
         creador,
-        imagen: 'https://s1.abcstatics.com/abc/www/multimedia/sevilla/2022/10/26/plaza-espana-sevilla-RGatPHKYapyCsuC8b7DAh8L-1240x768@abc.jpg'
+        imagen:
+          'https://s1.abcstatics.com/abc/www/multimedia/sevilla/2022/10/26/plaza-espana-sevilla-RGatPHKYapyCsuC8b7DAh8L-1240x768@abc.jpg',
       },
       {
         title: 'Ruta gastronómica por Triana',
@@ -91,8 +102,9 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
         categoria,
         estado: EstadoEnum.Pendiente,
         creador,
-        imagen: 'https://sevillavisita.com/wp-content/uploads/2019/12/Portada-Tour-guiado-Triana.jpg'
-      }
+        imagen:
+          'https://sevillavisita.com/wp-content/uploads/2019/12/Portada-Tour-guiado-Triana.jpg',
+      },
     ];
 
     for (const eventData of testEvents) {

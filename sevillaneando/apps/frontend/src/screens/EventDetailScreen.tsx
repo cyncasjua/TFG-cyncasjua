@@ -8,7 +8,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedButton, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
+import {
+  ThemedButton,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedView,
+} from '../components';
 import type { Event } from '../types/event';
 import { storage } from '../firebase/config';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
@@ -18,7 +24,6 @@ import { useColorScheme } from 'react-native';
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
 const uploadProbe = async () => {
-  
   try {
     const storageRef = ref(storage, 'demo.txt');
     await uploadString(storageRef, 'Contenido de prueba', 'raw');
@@ -67,7 +72,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
     const label = encodeURIComponent(event.title);
     const url = Platform.select({
       ios: `${scheme}${latLng}(${label})`,
-      android: `${scheme}${latLng}(${label})`
+      android: `${scheme}${latLng}(${label})`,
     });
     if (url) Linking.openURL(url);
   };
@@ -91,7 +96,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
     >
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent', zIndex: 2 }]}>
         <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
-          <ThemedView style={[{ borderRadius: 18, padding: 16, marginBottom: 12 }, { backgroundColor: colors.card + 'DD' }]}>
+          <ThemedView
+            style={[
+              { borderRadius: 18, padding: 16, marginBottom: 12 },
+              { backgroundColor: colors.card + 'DD' },
+            ]}
+          >
             <ThemedTitle
               style={[
                 styles.title,
@@ -112,7 +122,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                {new Date(event.fechaInicio).toLocaleString()} - {new Date(event.fechaFin).toLocaleString()}
+                {new Date(event.fechaInicio).toLocaleString()} -{' '}
+                {new Date(event.fechaFin).toLocaleString()}
               </ThemedTextSecondary>
             </ThemedView>
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
@@ -122,29 +133,36 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
               </ThemedTextSecondary>
             </ThemedView>
             <ThemedView style={{ alignItems: 'flex-end', marginBottom: 8 }}>
-              <ThemedText style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: '#fff',
-                backgroundColor: '#6c2eb7',
-                paddingHorizontal: 16,
-                paddingVertical: 6,
-                borderRadius: 14,
-                overflow: 'hidden',
-                alignSelf: 'flex-end'
-              }}>
+              <ThemedText
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#fff',
+                  backgroundColor: '#6c2eb7',
+                  paddingHorizontal: 16,
+                  paddingVertical: 6,
+                  borderRadius: 14,
+                  overflow: 'hidden',
+                  alignSelf: 'flex-end',
+                }}
+              >
                 {event.precio === 0 ? 'Gratis' : `${event.precio} €`}
               </ThemedText>
             </ThemedView>
           </ThemedView>
-          <ThemedView style={[styles.mapContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <ThemedView
+            style={[
+              styles.mapContainer,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
             <MapView
               style={StyleSheet.absoluteFillObject}
               initialRegion={{
                 latitude: coords.latitude,
                 longitude: coords.longitude,
                 latitudeDelta: 0.01,
-                longitudeDelta: 0.01
+                longitudeDelta: 0.01,
               }}
             >
               <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />

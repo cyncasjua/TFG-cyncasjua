@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, TextInput, StyleSheet } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import {
+  getAuth,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from 'firebase/auth';
 import { ThemedTitle, ThemedButton, ThemedText } from '../components';
 
 type Props = {
@@ -10,7 +15,7 @@ type Props = {
 };
 
 export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
-  const { token, user } = useAuth(); 
+  const { token, user } = useAuth();
   const { colors } = useTheme();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -79,17 +84,14 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(true);
     try {
       const endpoint = '/users/change-password';
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}${endpoint}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
-      );
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}${endpoint}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
       const data = await res.json();
       if (res.ok) {
         alert(data.message);
@@ -103,7 +105,9 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(false);
   };
 
-  const handleChangePassword = esFirebase ? handleChangePasswordFirebase : handleChangePasswordBackend;
+  const handleChangePassword = esFirebase
+    ? handleChangePasswordFirebase
+    : handleChangePasswordBackend;
 
   return (
     <KeyboardAvoidingView

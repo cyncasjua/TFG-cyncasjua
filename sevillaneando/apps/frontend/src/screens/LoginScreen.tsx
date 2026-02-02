@@ -5,7 +5,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedButton, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
+import {
+  ThemedButton,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedView,
+} from '../components';
 import type { AuthStackParamList } from '../App';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
@@ -25,7 +31,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      
+
       await AsyncStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
       if (rememberMe) {
         await AsyncStorage.setItem('savedEmail', email.trim());
@@ -48,70 +54,91 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await sendPasswordResetEmail(getAuth(), email.trim());
       setError(null);
-      alert('Te hemos enviado un email para restablecer tu contraseña. Si no lo ves, revisa la carpeta de spam.');
+      alert(
+        'Te hemos enviado un email para restablecer tu contraseña. Si no lo ves, revisa la carpeta de spam.'
+      );
     } catch (err: any) {
       setError('No se pudo enviar el email de recuperación.');
     }
   };
 
   return (
-    <ImageBackground 
-      source={require('../../assets/icon.png')} 
+    <ImageBackground
+      source={require('../../assets/icon.png')}
       style={[styles.background, { backgroundColor: colors.background }]}
       imageStyle={styles.backgroundImage}
       resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <ThemedTitle style={styles.title}>Inicia sesión</ThemedTitle>
-        <ThemedTextSecondary style={styles.subtitle}>Accede con tu cuenta para continuar.</ThemedTextSecondary>
+        <ThemedTextSecondary style={styles.subtitle}>
+          Accede con tu cuenta para continuar.
+        </ThemedTextSecondary>
 
-      <ThemedView style={styles.form}>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
-          placeholderTextColor={colors.textSecondary}
-        />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Contraseña"
-          secureTextEntry
-          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
-          placeholderTextColor={colors.textSecondary}
-        />
-        
-        <ThemedView style={styles.checkboxContainer}>
-          <TouchableOpacity
+        <ThemedView style={styles.form}>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
             style={[
-              styles.checkbox,
-              { borderColor: colors.primary, backgroundColor: rememberMe ? colors.primary : 'transparent' }
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
             ]}
-            onPress={() => setRememberMe(!rememberMe)}
-          >
-            {rememberMe && <ThemedText style={[styles.checkmark, { color: colors.background }]}>✓</ThemedText>}
-          </TouchableOpacity>
-          <ThemedText style={styles.checkboxLabel}>Mantener sesión iniciada</ThemedText>
+            placeholderTextColor={colors.textSecondary}
+          />
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Contraseña"
+            secureTextEntry
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+            ]}
+            placeholderTextColor={colors.textSecondary}
+          />
+
+          <ThemedView style={styles.checkboxContainer}>
+            <TouchableOpacity
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: colors.primary,
+                  backgroundColor: rememberMe ? colors.primary : 'transparent',
+                },
+              ]}
+              onPress={() => setRememberMe(!rememberMe)}
+            >
+              {rememberMe && (
+                <ThemedText style={[styles.checkmark, { color: colors.background }]}>✓</ThemedText>
+              )}
+            </TouchableOpacity>
+            <ThemedText style={styles.checkboxLabel}>Mantener sesión iniciada</ThemedText>
+          </ThemedView>
+
+          {error && (
+            <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>
+          )}
+          <ThemedButton
+            title={loading ? 'Entrando...' : 'Entrar'}
+            onPress={onSubmit}
+            disabled={loading}
+          />
         </ThemedView>
 
-        {error && <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>}
-        <ThemedButton title={loading ? 'Entrando...' : 'Entrar'} onPress={onSubmit} disabled={loading} />
-      </ThemedView>
+        <TouchableOpacity onPress={handleForgotPassword} style={{ marginTop: 16 }}>
+          <ThemedText style={[styles.link, { color: colors.primary }]}>
+            ¿Has olvidado tu contraseña?
+          </ThemedText>
+        </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleForgotPassword} style={{ marginTop: 16 }}>
-        <ThemedText style={[styles.link, { color: colors.primary }]}>
-          ¿Has olvidado tu contraseña?
-        </ThemedText>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={{ marginTop: 32 }}>
-        <ThemedText style={[styles.link, { color: colors.primary }]}>
-          ¿No tienes cuenta? Regístrate aquí
-        </ThemedText>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={{ marginTop: 32 }}>
+          <ThemedText style={[styles.link, { color: colors.primary }]}>
+            ¿No tienes cuenta? Regístrate aquí
+          </ThemedText>
+        </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -126,9 +153,17 @@ const styles = StyleSheet.create({
   form: { gap: 12, marginBottom: 20, borderRadius: 30, padding: 16 },
   input: { borderRadius: 50, padding: 14, borderWidth: 1 },
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
-  checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 50, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderRadius: 50,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   checkmark: { fontWeight: 'bold', fontSize: 16 },
   checkboxLabel: { fontSize: 14 },
   error: { textAlign: 'center' },
-  link: { textAlign: 'center', fontWeight: '600' }
+  link: { textAlign: 'center', fontWeight: '600' },
 });

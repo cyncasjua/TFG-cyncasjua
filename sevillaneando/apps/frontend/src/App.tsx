@@ -25,7 +25,7 @@ import { EventsMapScreen } from './screens/EventsMapScreen';
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
   'SafeAreaView has been deprecated',
-  'Non-serializable values were found in the navigation state'
+  'Non-serializable values were found in the navigation state',
 ]);
 
 export type RootStackParamList = {
@@ -57,7 +57,14 @@ const Navigator = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={{ marginTop: 8, color: colors.text }}>Comprobando sesión...</Text>
       </SafeAreaView>
@@ -86,30 +93,75 @@ const Navigator = () => {
             options={{
               headerTitle: () => (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image source={require('../assets/icon.png')} style={{ width: 28, height: 28, marginRight: 8 }} />
-                  <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Sevillaneando</Text>
+                  <Image
+                    source={require('../assets/icon.png')}
+                    style={{ width: 28, height: 28, marginRight: 8 }}
+                  />
+                  <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>
+                    Sevillaneando
+                  </Text>
                 </View>
-              )
+              ),
             }}
           />
-          <AppStack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Detalle del evento' }} />
-          <AppStack.Screen name="EventsMap" component={EventsMapScreen} options={{ title: 'Mapa de eventos', headerShown: false }} />
+          <AppStack.Screen
+            name="EventDetail"
+            component={EventDetailScreen}
+            options={{ title: 'Detalle del evento' }}
+          />
+          <AppStack.Screen
+            name="EventsMap"
+            component={EventsMapScreen}
+            options={{ title: 'Mapa de eventos', headerShown: false }}
+          />
           {role === 'admin' && (
             <>
-              <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />
-              <AppStack.Screen name="Categories" component={CategoriesScreen} options={{ title: 'Gestión de categorías' }} />
+              <AppStack.Screen
+                name="Admin"
+                component={AdminScreen}
+                options={{ title: 'Panel de Admin' }}
+              />
+              <AppStack.Screen
+                name="Categories"
+                component={CategoriesScreen}
+                options={{ title: 'Gestión de categorías' }}
+              />
             </>
           )}
-          <AppStack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar perfil' }} />
-          <AppStack.Screen name="EditPassword" component={EditPasswordScreen} options={{ title: 'Cambiar contraseña' }} />
-          <AppStack.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: 'Crear evento' }} />
+          <AppStack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
+            options={{ title: 'Editar perfil' }}
+          />
+          <AppStack.Screen
+            name="EditPassword"
+            component={EditPasswordScreen}
+            options={{ title: 'Cambiar contraseña' }}
+          />
+          <AppStack.Screen
+            name="CreateEvent"
+            component={CreateEventScreen}
+            options={{ title: 'Crear evento' }}
+          />
           {role === 'moderator' && (
             <>
-              <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
-              <AppStack.Screen name="ModeratorEditEvent" component={ModeratorEditEventScreen} options={{ title: 'Editar evento' }} />
+              <AppStack.Screen
+                name="ModeratorEvents"
+                component={ModeratorEventsScreen}
+                options={{ title: 'Moderación' }}
+              />
+              <AppStack.Screen
+                name="ModeratorEditEvent"
+                component={ModeratorEditEventScreen}
+                options={{ title: 'Editar evento' }}
+              />
             </>
           )}
-          <AppStack.Screen name="Notifications" component={NotificacionesScreen} options={{ title: 'Notificaciones' }} />
+          <AppStack.Screen
+            name="Notifications"
+            component={NotificacionesScreen}
+            options={{ title: 'Notificaciones' }}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

@@ -6,7 +6,7 @@ import { Type } from 'class-transformer';
 export class GeoJsonPoint {
   type: 'Point';
 
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 export class UpdateEventDto extends PartialType(CreateEventDto) {

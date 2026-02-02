@@ -1,6 +1,5 @@
 import { Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 export class Coordenadas {
-
   @Column('float', { nullable: false })
   latitud: number;
 

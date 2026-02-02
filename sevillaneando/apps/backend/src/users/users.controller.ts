@@ -1,4 +1,17 @@
-import { Body, Controller, Get, Param, Patch, Req, UseGuards,Post, UseInterceptors, UploadedFile, Request,Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Req,
+  UseGuards,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  Request,
+  Delete,
+} from '@nestjs/common';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -17,15 +30,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('upload-profile-image/firebase')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads/profile-images',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + extname(file.originalname));
-      }
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/profile-images',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueSuffix + extname(file.originalname));
+        },
+      }),
     })
-  }))
+  )
   uploadProfileImageFirebase(@UploadedFile() file: Multer.File) {
     return { url: `/uploads/profile-images/${file.filename}` };
   }
@@ -36,7 +51,7 @@ export class UsersController {
     return this.usersService.ensureFromFirebase({
       uid: decoded.uid,
       email: decoded.email,
-      name: decoded.name as string | undefined
+      name: decoded.name as string | undefined,
     });
   }
 

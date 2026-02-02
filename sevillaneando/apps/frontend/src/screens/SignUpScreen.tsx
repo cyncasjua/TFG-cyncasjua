@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { createUserWithEmailAndPassword , updateProfile} from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedButton, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
+import {
+  ThemedButton,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedView,
+} from '../components';
 import type { AuthStackParamList } from '../App';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
@@ -67,7 +73,10 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setNombre}
             placeholder="Nombre completo"
             autoCapitalize="words"
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+            ]}
             placeholderTextColor={colors.textSecondary}
           />
           <TextInput
@@ -76,7 +85,10 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
             placeholder="Email"
             autoCapitalize="none"
             keyboardType="email-address"
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+            ]}
             placeholderTextColor={colors.textSecondary}
           />
           <TextInput
@@ -84,7 +96,10 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setPassword}
             placeholder="Contraseña"
             secureTextEntry
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+            ]}
             placeholderTextColor={colors.textSecondary}
           />
           <TextInput
@@ -92,15 +107,26 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setConfirmPassword}
             placeholder="Confirmar contraseña"
             secureTextEntry
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+            ]}
             placeholderTextColor={colors.textSecondary}
           />
-          {error && <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>}
-          <ThemedButton title={loading ? 'Creando cuenta...' : 'Registrarse'} onPress={onSubmit} disabled={loading} />
+          {error && (
+            <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>
+          )}
+          <ThemedButton
+            title={loading ? 'Creando cuenta...' : 'Registrarse'}
+            onPress={onSubmit}
+            disabled={loading}
+          />
         </ThemedView>
 
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <ThemedText style={[styles.link, { color: colors.primary }]}>¿Ya tienes cuenta? Inicia sesión</ThemedText>
+          <ThemedText style={[styles.link, { color: colors.primary }]}>
+            ¿Ya tienes cuenta? Inicia sesión
+          </ThemedText>
         </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>
@@ -116,5 +142,5 @@ const styles = StyleSheet.create({
   form: { gap: 12, marginBottom: 20 },
   input: { borderRadius: 50, padding: 14, borderWidth: 1 },
   error: { textAlign: 'center' },
-  link: { textAlign: 'center', fontWeight: '600' }
+  link: { textAlign: 'center', fontWeight: '600' },
 });

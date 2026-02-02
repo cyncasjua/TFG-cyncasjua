@@ -53,7 +53,7 @@ export async function getEvents(): Promise<Event[]> {
       creador: event.creador,
       latitude: coords?.latitude,
       longitude: coords?.longitude,
-      imagen: event.imagen
+      imagen: event.imagen,
     } as Event;
   });
 }

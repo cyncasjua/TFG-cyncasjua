@@ -29,7 +29,7 @@ const lightColors: Colors = {
   primary: '#9333EA',
   border: '#E5E5E5',
   error: '#FF3B30',
-  success: '#34C759'
+  success: '#34C759',
 };
 
 const darkColors: Colors = {
@@ -40,7 +40,7 @@ const darkColors: Colors = {
   primary: '#A855F7',
   border: '#38383A',
   error: '#FF453A',
-  success: '#32D74B'
+  success: '#32D74B',
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

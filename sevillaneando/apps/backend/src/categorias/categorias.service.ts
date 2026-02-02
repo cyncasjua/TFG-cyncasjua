@@ -6,36 +6,35 @@ import { CreateCategoriaDTO } from './dto/create-categoria.dto';
 
 @Injectable()
 export class CategoriasService {
-    constructor(
-        @InjectRepository(Categoria)
-        private readonly categoriaRepo: Repository<Categoria>
-    ) { }
+  constructor(
+    @InjectRepository(Categoria)
+    private readonly categoriaRepo: Repository<Categoria>
+  ) {}
 
-    async create(dto: CreateCategoriaDTO): Promise<Categoria> {
-        const nuevaCategoria = this.categoriaRepo.create({
-            nombre: dto.nombre,
-            descripcion: dto.descripcion
-        });
-        return await this.categoriaRepo.save(nuevaCategoria);
-    }
+  async create(dto: CreateCategoriaDTO): Promise<Categoria> {
+    const nuevaCategoria = this.categoriaRepo.create({
+      nombre: dto.nombre,
+      descripcion: dto.descripcion,
+    });
+    return await this.categoriaRepo.save(nuevaCategoria);
+  }
 
-    async findAll(): Promise<Categoria[]> {
-        return await this.categoriaRepo.find();
-    }
+  async findAll(): Promise<Categoria[]> {
+    return await this.categoriaRepo.find();
+  }
 
-    async findById(id: string): Promise<Categoria> {
-        return await this.categoriaRepo.findOneBy({ id: id.toString() });
-    }
+  async findById(id: string): Promise<Categoria> {
+    return await this.categoriaRepo.findOneBy({ id: id.toString() });
+  }
 
-    async update(id: string, dto: CreateCategoriaDTO): Promise<Categoria> {
-        const categoria = await this.categoriaRepo.findOneBy({ id: id.toString() });
-        categoria.nombre = dto.nombre;
-        categoria.descripcion = dto.descripcion;
-        return await this.categoriaRepo.save(categoria);
-    }
+  async update(id: string, dto: CreateCategoriaDTO): Promise<Categoria> {
+    const categoria = await this.categoriaRepo.findOneBy({ id: id.toString() });
+    categoria.nombre = dto.nombre;
+    categoria.descripcion = dto.descripcion;
+    return await this.categoriaRepo.save(categoria);
+  }
 
-    async delete(id:string ): Promise<void> {
-        await this.categoriaRepo.delete(id);
-    }
+  async delete(id: string): Promise<void> {
+    await this.categoriaRepo.delete(id);
+  }
 }
-

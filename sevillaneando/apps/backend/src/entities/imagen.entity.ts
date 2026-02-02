@@ -1,20 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, BeforeUpdate } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { Event } from '../events/event.entity';
 import { User } from '../users/user.entity';
 
 @Entity()
 export class Imagen {
-  
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ nullable: false })
   uri: string;
 
-  @ManyToOne(() => Event, event => event.id)
+  @ManyToOne(() => Event, (event) => event.id)
   evento: Event;
 
-  @ManyToOne(() => User, user => user.id)
+  @ManyToOne(() => User, (user) => user.id)
   usuario: User;
 
   @Column('timestamp', { nullable: false })
