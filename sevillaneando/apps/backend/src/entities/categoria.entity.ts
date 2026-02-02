@@ -18,7 +18,7 @@ export class Categoria {
   @Column({ unique: true, nullable: false })
   nombre: string;
 
-  @Length(10, 200)
+  @Length(5, 200)
   @Column({ nullable: true })
   descripcion: string;
 
@@ -42,8 +42,8 @@ export class Categoria {
     }
     if (this.descripcion) {
       this.descripcion = this.descripcion.trim();
-      if (this.descripcion.length < 10 || this.descripcion.length > 200) {
-        throw new Error('La descripción debe tener entre 10 y 200 caracteres.');
+      if (this.descripcion.length < 5 || this.descripcion.length > 200) {
+        throw new Error('La descripción debe tener entre 5 y 200 caracteres.');
       }
     } else {
       throw new Error('La descripción es obligatoria.');

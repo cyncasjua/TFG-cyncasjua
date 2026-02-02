@@ -5,11 +5,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  View,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { getEvents, api } from '../services/api';
+import { getEvents, api, getErrorMessage } from '../services/api';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
@@ -111,8 +112,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         setItems(remote);
       }
     } catch (err) {
-      console.error('No se pudieron cargar eventos remotos', err);
-      setError('Mostrando eventos de ejemplo (sin conexión con backend).');
+      console.error('Error cargando eventos:', err);
+      const message = getErrorMessage(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -147,7 +149,18 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       style={[styles.background, { backgroundColor: colors.background }]}
       imageStyle={styles.backgroundImage}
       resizeMode="cover"
+      blurRadius={2}
     >
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            backgroundColor:
+              theme === 'dark' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.25)',
+          },
+        ]}
+      />
       <ThemedView style={styles.container}>
         <ThemedView
           style={[
@@ -159,7 +172,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <ThemedTitle>Eventos en Sevilla</ThemedTitle>
             <ThemedTextSecondary style={{ marginTop: 4 }}>
               Rol actual:{' '}
-              <ThemedText style={{ color: '#ffd700', fontWeight: 'bold' }}>{role}</ThemedText>
+              <ThemedText style={{  fontWeight: 'bold' }}>{role}</ThemedText>
             </ThemedTextSecondary>
           </ThemedView>
           {user?.ubicacion && (
@@ -374,29 +387,20 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         )}
 
         {role === 'admin' && (
-          <>
+          <ThemedView style={styles.adminActions}>
             <TouchableOpacity
-              style={styles.mapButton}
-              onPress={() => navigation.navigate('EventsMap')}
-            >
-              <MaterialIcons name="map" size={28} color="#6c2eb7" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.adminButton}
+              style={styles.adminActionButton}
               onPress={() => navigation.navigate('Admin')}
             >
               <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.adminButton,
-                { marginTop: 0, marginRight: 45, flexDirection: 'row', alignItems: 'center' },
-              ]}
+              style={styles.adminActionButton}
               onPress={() => navigation.navigate('Categories')}
             >
               <MaterialIcons name="category" size={28} color="#6c2eb7" />
             </TouchableOpacity>
-          </>
+          </ThemedView>
         )}
 
         <TouchableOpacity
@@ -672,20 +676,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 4,
   },
-  adminButton: {
+  adminActions: {
     position: 'absolute',
-    top: 19,
-    right: 18,
+    top: 18,
+    left: 72,
     zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 8,
+    flexDirection: 'row',
+    gap: 8,
   },
-  mapButton: {
-    position: 'absolute',
-    top: 19,
-    right: 70,
-    zIndex: 10,
+  adminActionButton: {
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 20,
     padding: 8,

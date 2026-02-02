@@ -8,11 +8,10 @@ import {
   TouchableOpacity,
   Modal,
   Keyboard,
-  ScrollView,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useAuthContext } from '../context/AuthContext';
-import { api } from '../services/api';
+import { api, getErrorMessage } from '../services/api';
 import {
   ThemedView,
   ThemedCard,
@@ -51,7 +50,7 @@ const CategoriesScreen = () => {
       setCategories(data);
     } catch (error) {
       console.log('Error al cargar categorías:', error);
-      Alert.alert('Error', 'No se pudieron cargar las categorías');
+      Alert.alert('Error', getErrorMessage(error));
     }
     setLoading(false);
   };
@@ -73,7 +72,7 @@ const CategoriesScreen = () => {
       setEditMode(false);
       setEditId(null);
     } catch (error) {
-      Alert.alert('Error', 'No se pudo guardar la categoría');
+      Alert.alert('Error', getErrorMessage(error));
     }
     setLoading(false);
     fetchCategories();
@@ -86,140 +85,142 @@ const CategoriesScreen = () => {
       imageStyle={styles.backgroundImage}
       resizeMode="cover"
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ThemedView style={styles.headerRow}>
-            <MaterialIcons
-              name="category"
-              size={34}
-              color={colors.primary}
-              style={{ marginRight: 10 }}
-            />
-            <ThemedTitle style={styles.title}>Categorías</ThemedTitle>
-          </ThemedView>
-          {categories.length === 0 && !loading ? (
-            <ThemedTextSecondary style={{ textAlign: 'center', marginVertical: 28, fontSize: 14 }}>
-              No hay categorías disponibles.
-            </ThemedTextSecondary>
-          ) : (
-            <FlatList
-              data={categories}
-              keyExtractor={(item) => item.id?.toString() || item.nombre}
-              contentContainerStyle={{ paddingBottom: 140, paddingTop: 16, paddingHorizontal: 2 }}
-              ItemSeparatorComponent={() => <ThemedView style={{ height: 18 }} />}
-              renderItem={({ item }) => (
-                <ThemedCard
-                  style={[
-                    styles.item,
-                    { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5 },
-                  ]}
-                >
-                  <ThemedView style={styles.itemHeader}>
-                    <MaterialIcons
-                      name="label"
-                      size={22}
-                      color={colors.primary}
-                      style={{ marginRight: 8 }}
-                    />
-                    <ThemedText style={styles.itemTitle}>{item.nombre}</ThemedText>
-                    {user?.rol === 'admin' && (
-                      <ThemedView style={{ flexDirection: 'row', marginLeft: 'auto' }}>
-                        <TouchableOpacity
-                          style={{ padding: 4, marginRight: 2 }}
-                          onPress={() => {
-                            setEditMode(true);
-                            setEditId(item.id || null);
-                            setNombre(item.nombre);
-                            setDescripcion(item.descripcion);
-                            setModalVisible(true);
-                          }}
-                        >
-                          <MaterialIcons name="edit" size={20} color={colors.primary} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={{ padding: 4, marginLeft: 2 }}
-                          onPress={async () => {
-                            Alert.alert(
-                              'Borrar categoría',
-                              `¿Seguro que quieres borrar "${item.nombre}"?`,
-                              [
-                                { text: 'Cancelar', style: 'cancel' },
-                                {
-                                  text: 'Borrar',
-                                  style: 'destructive',
-                                  onPress: async () => {
-                                    try {
-                                      setLoading(true);
-                                      await api.delete(`/categorias/${item.id}`);
-                                      fetchCategories();
-                                      Alert.alert('Eliminada', 'Categoría borrada correctamente');
-                                    } catch (error: any) {
-                                      console.log(
-                                        'Error al borrar categoría:',
-                                        error,
-                                        error?.response?.data
-                                      );
-                                      let msg = 'No se pudo borrar la categoría';
-                                      if (error?.response?.data?.message) {
-                                        msg += `: ${error.response.data.message}`;
-                                      }
-                                      Alert.alert('Error', msg);
-                                    }
-                                    setLoading(false);
-                                  },
-                                },
-                              ]
-                            );
-                          }}
-                        >
-                          <MaterialIcons name="delete" size={20} color={colors.error} />
-                        </TouchableOpacity>
-                      </ThemedView>
-                    )}
-                  </ThemedView>
-                  <ThemedTextSecondary style={styles.itemDesc}>
-                    {item.descripcion}
-                  </ThemedTextSecondary>
-                </ThemedCard>
-              )}
-              refreshing={loading}
-              onRefresh={fetchCategories}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-          {user?.rol === 'admin' && (
-            <TouchableOpacity
-              style={styles.fab}
-              onPress={() => {
-                setEditMode(false);
-                setEditId(null);
-                setNombre('');
-                setDescripcion('');
-                setModalVisible(true);
-              }}
-              activeOpacity={0.8}
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        <FlatList
+          data={categories}
+          keyExtractor={(item) => item.id?.toString() || item.nombre}
+          contentContainerStyle={{ paddingBottom: 140, paddingTop: 16, paddingHorizontal: 2 }}
+          ItemSeparatorComponent={() => <ThemedView style={{ height: 18 }} />}
+          renderItem={({ item }) => (
+            <ThemedCard
+              style={[
+                styles.item,
+                { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 1.5 },
+              ]}
             >
-              <MaterialIcons name="add-circle" size={48} color={colors.primary} />
-            </TouchableOpacity>
+              <ThemedView style={styles.itemHeader}>
+                <MaterialIcons
+                  name="label"
+                  size={22}
+                  color={colors.primary}
+                  style={{ marginRight: 8 }}
+                />
+                <ThemedText style={styles.itemTitle}>{item.nombre}</ThemedText>
+                {user?.rol === 'admin' && (
+                  <ThemedView style={{ flexDirection: 'row', marginLeft: 'auto' }}>
+                    <TouchableOpacity
+                      style={{ padding: 4, marginRight: 2 }}
+                      onPress={() => {
+                        setEditMode(true);
+                        setEditId(item.id || null);
+                        setNombre(item.nombre);
+                        setDescripcion(item.descripcion);
+                        setModalVisible(true);
+                      }}
+                    >
+                      <MaterialIcons name="edit" size={20} color={colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ padding: 4, marginLeft: 2 }}
+                      onPress={async () => {
+                        Alert.alert(
+                          'Borrar categoría',
+                          `¿Seguro que quieres borrar "${item.nombre}"?`,
+                          [
+                            { text: 'Cancelar', style: 'cancel' },
+                            {
+                              text: 'Borrar',
+                              style: 'destructive',
+                              onPress: async () => {
+                                try {
+                                  setLoading(true);
+                                  await api.delete(`/categorias/${item.id}`);
+                                  fetchCategories();
+                                  Alert.alert('Eliminada', 'Categoría borrada correctamente');
+                                } catch (error: any) {
+                                  console.log(
+                                    'Error al borrar categoría:',
+                                    error,
+                                    error?.response?.data
+                                  );
+                                  let msg = 'No se pudo borrar la categoría';
+                                  if (error?.response?.data?.message) {
+                                    msg += `: ${error.response.data.message}`;
+                                  }
+                                  Alert.alert('Error', msg);
+                                }
+                                setLoading(false);
+                              },
+                            },
+                          ]
+                        );
+                      }}
+                    >
+                      <MaterialIcons name="delete" size={20} color={colors.error} />
+                    </TouchableOpacity>
+                  </ThemedView>
+                )}
+              </ThemedView>
+              <ThemedTextSecondary style={styles.itemDesc}>{item.descripcion}</ThemedTextSecondary>
+            </ThemedCard>
           )}
-          <Modal
-            visible={modalVisible}
-            animationType="slide"
-            transparent
-            onRequestClose={() => setModalVisible(false)}
-          >
-            <ThemedView style={styles.modalOverlay}>
-              <ThemedCard
-                style={[
-                  styles.form,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.primary,
-                    borderWidth: 1.5,
-                    marginTop: 80,
-                  },
-                ]}
+          refreshing={loading}
+          onRefresh={fetchCategories}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <ThemedView style={styles.headerRow}>
+              <MaterialIcons
+                name="category"
+                size={34}
+                color={colors.primary}
+                style={{ marginRight: 10 }}
+              />
+              <ThemedTitle style={styles.title}>Categorías</ThemedTitle>
+            </ThemedView>
+          }
+          ListEmptyComponent={
+            !loading ? (
+              <ThemedTextSecondary
+                style={{ textAlign: 'center', marginVertical: 28, fontSize: 14 }}
               >
+                No hay categorías disponibles.
+              </ThemedTextSecondary>
+            ) : null
+          }
+        />
+        {user?.rol === 'admin' && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => {
+              setEditMode(false);
+              setEditId(null);
+              setNombre('');
+              setDescripcion('');
+              setModalVisible(true);
+            }}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="add-circle" size={48} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <ThemedView style={styles.modalOverlay}>
+            <ThemedCard
+              style={[
+                styles.form,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  borderWidth: 1.5,
+                  marginTop: 80,
+                },
+              ]}
+            >
                 <ThemedView style={[styles.formHeader, { justifyContent: 'space-between' }]}>
                   <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <MaterialIcons
@@ -315,7 +316,6 @@ const CategoriesScreen = () => {
             </ThemedView>
           </Modal>
         </ThemedView>
-      </ScrollView>
     </ImageBackground>
   );
 };

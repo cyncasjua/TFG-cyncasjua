@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { api } from '../services/api';
+import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
@@ -33,7 +33,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       const res = await api.get('/events?estado=Pendiente');
       setPendingEvents(res.data);
     } catch (err) {
-      Alert.alert('Error', 'No se pudieron cargar los eventos pendientes.');
+      Alert.alert('Error', getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert('Evento aprobado');
       fetchPendingEvents();
     } catch (err) {
-      Alert.alert('Error', 'No se pudo aprobar el evento.');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 
@@ -61,7 +61,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert('Evento rechazado');
       fetchPendingEvents();
     } catch (err) {
-      Alert.alert('Error', 'No se pudo rechazar el evento.');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 

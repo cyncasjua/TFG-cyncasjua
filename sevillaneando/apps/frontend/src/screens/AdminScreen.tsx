@@ -12,7 +12,7 @@ import {
   ThemedView,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api } from '../services/api';
+import { api, getErrorMessage } from '../services/api';
 import { User } from '../types/user';
 import { RootStackParamList } from '../App';
 
@@ -36,7 +36,7 @@ export const AdminScreen: React.FC<Props> = () => {
       const res = await api.get<User[]>('/users');
       setUsers(res.data);
     } catch (err) {
-      Alert.alert('Error', 'No se pudieron cargar los usuarios.');
+      Alert.alert('Error', getErrorMessage(err));
       console.error(err);
     } finally {
       setLoading(false);

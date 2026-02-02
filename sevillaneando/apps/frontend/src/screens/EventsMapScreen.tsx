@@ -4,7 +4,7 @@ import MapView, { Marker, Circle, Callout } from 'react-native-maps';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { getEvents } from '../services/api';
+import { getEvents, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText } from '../components';
@@ -90,7 +90,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           setEvents(remote);
         }
       } catch (err) {
-        console.error('Error cargando eventos', err);
+        console.error('Error cargando eventos', getErrorMessage(err));
       } finally {
         setLoading(false);
       }

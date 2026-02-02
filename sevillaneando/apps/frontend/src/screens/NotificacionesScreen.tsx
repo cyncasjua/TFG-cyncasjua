@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { api } from '../services/api';
+import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
@@ -30,7 +30,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       const res = await api.get(`/notificaciones/usuario/${user.id}`);
       setNotificaciones(res.data);
     } catch (err) {
-      // Ignore errors silently
+      console.error('Error cargando notificaciones:', getErrorMessage(err));
     } finally {
       setLoading(false);
     }

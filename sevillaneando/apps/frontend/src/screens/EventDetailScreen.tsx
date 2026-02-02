@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
-import { Linking, Platform, StyleSheet, ImageBackground } from 'react-native';
+import { Linking, Platform, StyleSheet, ImageBackground, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -19,7 +19,6 @@ import type { Event } from '../types/event';
 import { storage } from '../firebase/config';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { useIsFocused } from '@react-navigation/native';
-import { useColorScheme } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -60,8 +59,7 @@ function parsePoint(event: Event) {
 export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const { event } = route.params;
   const { evaluateImage } = useNsfwGuard();
-  const { colors } = useTheme();
-  const colorScheme = useColorScheme();
+  const { colors, theme } = useTheme();
   const coords = useMemo(() => parsePoint(event), [event]);
   const isFocused = useIsFocused();
 
@@ -93,7 +91,18 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
       style={styles.background}
       imageStyle={styles.backgroundImage}
       resizeMode="cover"
+      blurRadius={3}
     >
+      <View
+        pointerEvents="none"
+        style={[
+          styles.backgroundOverlay,
+          {
+            backgroundColor:
+              theme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.45)',
+          },
+        ]}
+      />
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent', zIndex: 2 }]}>
         <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
           <ThemedView
@@ -106,7 +115,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
               style={[
                 styles.title,
                 {
-                  color: colorScheme === 'dark' ? '#fff' : '#111',
+                  color: colors.text,
                   marginBottom: 4,
                 },
               ]}
@@ -194,4 +203,7 @@ const styles = StyleSheet.create({
   mapContainer: { height: 260, borderRadius: 30, overflow: 'hidden', borderWidth: 1 },
   background: { flex: 1, padding: 16, gap: 12 },
   backgroundImage: { opacity: 1, transform: [{ scale: 1.5 }, { translateY: 40 }] },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
 });

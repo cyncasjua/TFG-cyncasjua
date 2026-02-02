@@ -16,7 +16,9 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "customConditions": ["react-native"],
+    "customConditions": [
+      "react-native"
+    ],
     "types": [
       "react",
       "react-native",
@@ -31,5 +33,6 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

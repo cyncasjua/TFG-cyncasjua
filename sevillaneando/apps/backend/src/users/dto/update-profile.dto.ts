@@ -20,27 +20,27 @@ class GeoJsonPoint {
 
 export class UpdateProfileDto {
   @IsOptional()
-  @IsString()
-  @Length(2, 120)
+  @IsString({ message: 'El nombre debe ser un texto.' })
+  @Length(2, 120, { message: 'El nombre debe tener entre 2 y 120 caracteres.' })
   nombre?: string;
 
   @IsOptional()
-  @IsEmail()
-  @MaxLength(180)
+  @IsEmail({}, { message: 'El email debe ser una dirección válida.' })
+  @MaxLength(180, { message: 'El email no puede superar los 180 caracteres.' })
   email?: string;
 
   @IsOptional()
-  @ValidateNested()
+  @ValidateNested({ message: 'La ubicación debe ser un punto GeoJSON válido.' })
   @Type(() => GeoJsonPoint)
   ubicacion?: GeoJsonPoint;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(512)
+  @IsString({ message: 'La foto de perfil debe ser un texto.' })
+  @MaxLength(512, { message: 'La URL de la foto no puede superar los 512 caracteres.' })
   fotoPerfil?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
+  @IsArray({ message: 'Los intereses deben ser un array.' })
+  @IsString({ each: true, message: 'Cada interés debe ser un texto.' })
   intereses?: string[];
 }

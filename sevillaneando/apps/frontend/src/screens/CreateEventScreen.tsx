@@ -20,7 +20,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api } from '../services/api';
+import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -270,7 +270,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       );
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', 'No se pudo crear el evento.');
+      Alert.alert('Error', getErrorMessage(error));
       if (
         error &&
         typeof error === 'object' &&

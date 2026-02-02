@@ -22,40 +22,38 @@ class GeoJsonPoint {
 }
 
 export class CreateEventDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(3, 100)
+  @IsString({ message: 'El título debe ser un texto.' })
+  @IsNotEmpty({ message: 'El título es obligatorio.' })
+  @Length(3, 100, { message: 'El título debe tener entre 3 y 100 caracteres.' })
   title!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Length(10, 1000)
+  @IsString({ message: 'La descripción debe ser un texto.' })
+  @IsNotEmpty({ message: 'La descripción es obligatoria.' })
+  @Length(10, 1000, { message: 'La descripción debe tener entre 10 y 1000 caracteres.' })
   description!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
+  @IsString({ message: 'La dirección debe ser un texto.' })
+  @IsNotEmpty({ message: 'La dirección es obligatoria.' })
+  @MaxLength(255, { message: 'La dirección no puede superar los 255 caracteres.' })
   address!: string;
 
-  @ValidateNested()
+  @ValidateNested({ message: 'La ubicación debe ser un punto GeoJSON válido.' })
   @Type(() => GeoJsonPoint)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'La ubicación es obligatoria.' })
   location!: GeoJsonPoint;
 
-  @IsDateString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'La fecha de inicio es obligatoria.' })
   fechaInicio!: string;
 
-  @IsDateString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'La fecha de fin es obligatoria.' })
   @IsEndDateAfterStartDate('fechaInicio', {
     message: 'La fecha de fin debe ser posterior a la fecha de inicio.',
   })
   fechaFin!: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(0)
+  @IsNumber({}, { message: 'El precio debe ser un número.' })
+  @IsNotEmpty({ message: 'El precio es obligatorio.' })
+  @Min(0, { message: 'El precio no puede ser negativo.' })
   precio!: number;
 
   @IsUUID()

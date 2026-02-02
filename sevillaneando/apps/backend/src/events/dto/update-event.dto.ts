@@ -10,7 +10,7 @@ export class GeoJsonPoint {
 }
 
 export class UpdateEventDto extends PartialType(CreateEventDto) {
-  @ValidateNested()
+  @ValidateNested({ message: 'La ubicación debe ser un punto GeoJSON válido.' })
   @Type(() => GeoJsonPoint)
   @IsOptional()
   location?: GeoJsonPoint;
