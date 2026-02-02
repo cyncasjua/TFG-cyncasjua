@@ -2,7 +2,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsString,
-  IsDateString,
   IsOptional,
   ValidateNested,
   IsUUID,
