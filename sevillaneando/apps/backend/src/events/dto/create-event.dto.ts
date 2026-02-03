@@ -11,14 +11,8 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
-
-class GeoJsonPoint {
-  @IsString()
-  type!: 'Point';
-
-  @IsNumber({}, { each: true })
-  coordinates!: [number, number];
-}
+import type { GeoJsonPoint } from '../../common/geojson-point';
+import { GeoJsonPointDto } from '../../common/geojson-point.dto';
 
 export class CreateEventDto {
   @IsString({ message: 'El título debe ser un texto.' })
@@ -37,7 +31,7 @@ export class CreateEventDto {
   address!: string;
 
   @ValidateNested({ message: 'La ubicación debe ser un punto GeoJSON válido.' })
-  @Type(() => GeoJsonPoint)
+  @Type(() => GeoJsonPointDto)
   @IsNotEmpty({ message: 'La ubicación es obligatoria.' })
   location!: GeoJsonPoint;
 

@@ -9,11 +9,7 @@ import {
 import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
 import { EstadoEnum } from '../enums/estado.enum';
-
-interface GeoJsonPoint {
-  type: 'Point';
-  coordinates: [number, number];
-}
+import type { GeoJsonPoint } from '../common/geojson-point';
 
 @Entity({ name: 'events' })
 export class Event {

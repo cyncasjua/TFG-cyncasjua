@@ -1,7 +1,4 @@
-interface GeoJsonPoint {
-  type: 'Point';
-  coordinates: [number, number];
-}
+import type { GeoJsonPoint } from './geojson';
 
 export type User = {
   id: string;

@@ -3,6 +3,7 @@ import { Event } from '../events/event.entity';
 import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
 import { EstadoEnum } from '../enums/estado.enum';
+import type { GeoJsonPoint } from '../common/geojson-point';
 
 export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataSource) => {
   try {
@@ -58,10 +59,6 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
       console.log('✅ Usuario de prueba creado');
     }
 
-    interface GeoJsonPoint {
-      type: 'Point';
-      coordinates: [number, number];
-    }
     const testEvents = [
       {
         title: 'Feria de Abril',

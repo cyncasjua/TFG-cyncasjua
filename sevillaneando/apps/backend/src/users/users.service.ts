@@ -3,11 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolEnum, User } from './user.entity';
 import * as admin from 'firebase-admin';
-
-interface GeoJsonPoint {
-  type: 'Point';
-  coordinates: [number, number];
-}
+import type { GeoJsonPoint } from '../common/geojson-point';
 
 @Injectable()
 export class UsersService {

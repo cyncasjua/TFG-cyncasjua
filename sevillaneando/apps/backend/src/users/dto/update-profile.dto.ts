@@ -6,17 +6,10 @@ import {
   MaxLength,
   IsArray,
   ValidateNested,
-  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-class GeoJsonPoint {
-  @IsString()
-  type!: 'Point';
-
-  @IsNumber({}, { each: true })
-  coordinates!: [number, number];
-}
+import type { GeoJsonPoint } from '../../common/geojson-point';
+import { GeoJsonPointDto } from '../../common/geojson-point.dto';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -31,7 +24,7 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @ValidateNested({ message: 'La ubicación debe ser un punto GeoJSON válido.' })
-  @Type(() => GeoJsonPoint)
+  @Type(() => GeoJsonPointDto)
   ubicacion?: GeoJsonPoint;
 
   @IsOptional()

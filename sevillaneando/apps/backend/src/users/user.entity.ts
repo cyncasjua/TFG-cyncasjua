@@ -9,16 +9,12 @@ import {
 import { Notificacion } from '../entities/notificacion.entity';
 import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
+import type { GeoJsonPoint } from '../common/geojson-point';
 
 export enum RolEnum {
   ADMIN = 'admin',
   MODERATOR = 'moderator',
   USER = 'user',
-}
-
-interface GeoJsonPoint {
-  type: 'Point';
-  coordinates: [number, number];
 }
 
 @Entity({ name: 'users' })
