@@ -5,6 +5,7 @@ import {
   Length,
   MaxLength,
   IsArray,
+  IsNumber,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -36,4 +37,15 @@ export class UpdateProfileDto {
   @IsArray({ message: 'Los intereses deben ser un array.' })
   @IsString({ each: true, message: 'Cada interés debe ser un texto.' })
   intereses?: string[];
+
+  @IsOptional()
+  @IsArray({ message: 'El orden de categorías debe ser un array.' })
+  @IsString({ each: true, message: 'Cada categoría debe ser un texto.' })
+  categoryOrder?: string[];
+
+  @IsOptional()
+  @IsArray({ message: 'Las opciones de radio deben ser un array.' })
+  @IsNumber({}, { each: true, message: 'Cada radio debe ser un número.' })
+  @Type(() => Number)
+  radiusOptions?: number[];
 }

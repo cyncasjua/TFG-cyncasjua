@@ -40,6 +40,12 @@ export class User {
   @Column({ type: 'text', array: true, default: '{}' })
   intereses!: string[];
 
+  @Column({ type: 'text', array: true, default: '{}' })
+  categoryOrder!: string[];
+
+  @Column({ type: 'double precision', array: true, default: '{}' })
+  radiusOptions!: number[];
+
   @Column({ type: 'enum', enum: RolEnum, default: RolEnum.USER })
   rol!: RolEnum;
 

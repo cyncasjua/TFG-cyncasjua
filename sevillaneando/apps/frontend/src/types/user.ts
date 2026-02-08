@@ -8,6 +8,8 @@ export type User = {
   ubicacion: GeoJsonPoint | null;
   fotoPerfil: string | null;
   intereses: string[];
+  categoryOrder?: string[];
+  radiusOptions?: number[];
   rol: 'admin' | 'moderator' | 'user';
   firebaseUid: string;
 };

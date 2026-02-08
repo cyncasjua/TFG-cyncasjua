@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Delete } from '@nestjs/common';
 import { NotificacionesService } from './notificaciones.service';
 
 @Controller('notificaciones')
@@ -13,6 +13,12 @@ export class NotificacionesController {
   @Patch(':id/leida')
   async marcarLeida(@Param('id') id: string) {
     await this.notificacionesService.marcarLeida(id);
+    return { ok: true };
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    await this.notificacionesService.delete(id);
     return { ok: true };
   }
 }

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { Linking, Platform, StyleSheet, ImageBackground, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import dayjs from 'dayjs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
@@ -62,6 +63,45 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const { colors, theme } = useTheme();
   const coords = useMemo(() => parsePoint(event), [event]);
   const isFocused = useIsFocused();
+  const formatDuration = (totalMinutes: number, label: string) => {
+    if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return `${label}: -`;
+    const totalHours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+
+    if (days > 0) {
+      if (minutes === 0 && hours === 0) return `${label}: ${days} d`;
+      if (minutes === 0) return `${label}: ${days} d ${hours} h`;
+      return `${label}: ${days} d ${hours} h ${minutes} min`;
+    }
+
+    if (totalHours === 0) return `${label}: ${minutes} min`;
+    if (minutes === 0) return `${label}: ${totalHours} h`;
+    return `${label}: ${totalHours} h ${minutes} min`;
+  };
+
+  const durationText = useMemo(() => {
+    const start = dayjs(event.fechaInicio);
+    const end = dayjs(event.fechaFin);
+    const totalMinutes = end.diff(start, 'minute');
+    return formatDuration(totalMinutes, 'Duración');
+  }, [event.fechaInicio, event.fechaFin]);
+
+  const remainingText = useMemo(() => {
+    const start = dayjs(event.fechaInicio);
+    const end = dayjs(event.fechaFin);
+    const now = dayjs();
+
+    if (now.isAfter(end)) return 'Tiempo restante: Evento finalizado';
+    if (now.isBefore(start)) {
+      const minutesToStart = start.diff(now, 'minute');
+      return formatDuration(minutesToStart, 'Tiempo restante');
+    }
+
+    const minutesToEnd = end.diff(now, 'minute');
+    return formatDuration(minutesToEnd, 'Termina en');
+  }, [event.fechaInicio, event.fechaFin]);
 
   const openExternalNavigation = () => {
     if (!coords) return;
@@ -131,9 +171,17 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                {new Date(event.fechaInicio).toLocaleString()} -{' '}
-                {new Date(event.fechaFin).toLocaleString()}
+                {dayjs(event.fechaInicio).format('DD/MM/YYYY HH:mm')} -{' '}
+                {dayjs(event.fechaFin).format('DD/MM/YYYY HH:mm')}
               </ThemedTextSecondary>
+            </ThemedView>
+            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <MaterialIcons name="schedule" size={16} color="#6c2eb7" />
+              <ThemedTextSecondary style={{ marginLeft: 4 }}>{durationText}</ThemedTextSecondary>
+            </ThemedView>
+            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <MaterialIcons name="hourglass-bottom" size={16} color="#6c2eb7" />
+              <ThemedTextSecondary style={{ marginLeft: 4 }}>{remainingText}</ThemedTextSecondary>
             </ThemedView>
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
               <MaterialIcons name="category" size={16} color="#6c2eb7" />

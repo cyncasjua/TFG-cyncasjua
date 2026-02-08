@@ -7,6 +7,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import type { RootStackParamList } from '../App';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Alert } from 'react-native';
 
 type Notificacion = {
   id: string;
@@ -47,6 +49,22 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
     fetchNotificaciones();
   };
 
+  const borrarNotificacion = async (id: string) => {
+    try {
+      await api.delete(`/notificaciones/${id}`);
+      setNotificaciones((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error('Error borrando notificación:', getErrorMessage(err));
+    }
+  };
+
+  const confirmarBorrado = (id: string) => {
+    Alert.alert('Eliminar', '¿Estás seguro de que quieres eliminar esta notificación?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: () => borrarNotificacion(id) },
+    ]);
+  };
+
   if (loading) {
     return (
       <ThemedView style={styles.centered}>
@@ -65,14 +83,23 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
         data={notificaciones}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => marcarLeida(item.id)}>
-            <ThemedView
-              style={[
-                styles.card,
-                { backgroundColor: theme === 'dark' ? '#222' : '#f9f9f9' },
-                !item.leida && { borderColor: colors.primary, borderWidth: 2 },
-              ]}
+          <ThemedView
+            style={[
+              styles.card,
+              { backgroundColor: theme === 'dark' ? '#222' : '#f9f9f9' },
+              !item.leida && { borderColor: colors.primary, borderWidth: 2 },
+            ]}
+          >
+            <TouchableOpacity
+              onPress={() => confirmarBorrado(item.id)}
+              style={styles.trashButton}
+              accessibilityLabel="Eliminar notificación"
             >
+              <Icon name="trash-can-outline" size={20} color="#6c2eb7" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => marcarLeida(item.id)}>
+
               <ThemedText style={styles.mensaje}>{item.mensaje}</ThemedText>
               <ThemedTextSecondary style={styles.fecha}>
                 {new Date(item.fecha).toLocaleString()}
@@ -82,8 +109,9 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
                   Nueva
                 </ThemedText>
               )}
-            </ThemedView>
-          </TouchableOpacity>
+
+            </TouchableOpacity>
+          </ThemedView>
         )}
         ListEmptyComponent={<ThemedTextSecondary>No tienes notificaciones.</ThemedTextSecondary>}
       />
@@ -112,4 +140,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  trashButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 8,
+    width: 28,
+    height: 28,
+    padding: 0,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

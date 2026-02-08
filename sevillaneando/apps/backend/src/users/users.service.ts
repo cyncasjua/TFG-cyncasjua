@@ -35,6 +35,8 @@ export class UsersService {
         ubicacion: null,
         fotoPerfil: null,
         intereses: [],
+        categoryOrder: [],
+        radiusOptions: [],
         rol: RolEnum.USER,
       });
       await this.usersRepo.save(user);
@@ -78,6 +80,8 @@ export class UsersService {
       ubicacion?: GeoJsonPoint;
       fotoPerfil?: string;
       intereses?: string[];
+      categoryOrder?: string[];
+      radiusOptions?: number[];
     }
   ): Promise<User> {
     const user = await this.usersRepo.findOneOrFail({ where: { firebaseUid } });
@@ -86,6 +90,8 @@ export class UsersService {
     if (data.ubicacion !== undefined) user.ubicacion = data.ubicacion;
     if (data.fotoPerfil !== undefined) user.fotoPerfil = data.fotoPerfil;
     if (data.intereses !== undefined) user.intereses = data.intereses;
+    if (data.categoryOrder !== undefined) user.categoryOrder = data.categoryOrder;
+    if (data.radiusOptions !== undefined) user.radiusOptions = data.radiusOptions;
     return this.usersRepo.save(user);
   }
 

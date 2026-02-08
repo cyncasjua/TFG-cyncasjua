@@ -6,10 +6,13 @@ import {
   StyleSheet,
   ScrollView,
   View,
+  TextInput,
+  Modal,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import DraggableFlatList from 'react-native-draggable-flatlist';
 import { getEvents, api, getErrorMessage } from '../services/api';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
@@ -39,10 +42,27 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filterNearby, setFilterNearby] = useState(false);
   const [searchRadius, setSearchRadius] = useState(1);
+  const [customRadiusVisible, setCustomRadiusVisible] = useState(false);
+  const [customRadiusInput, setCustomRadiusInput] = useState('');
+  const [radiusOptions, setRadiusOptions] = useState([0.5, 1, 2, 5, 10]);
   const { role, logout, user } = useAuth();
   const { colors, setTheme, theme } = useTheme();
 
-  const radiusOptions = [0.5, 1, 2, 5, 10];
+  const persistCategoryOrder = async (order: string[]) => {
+    try {
+      await api.patch('/users/me/firebase', { categoryOrder: order });
+    } catch (err) {
+      console.error('Error guardando orden de categorías:', getErrorMessage(err));
+    }
+  };
+
+  const persistRadiusOptions = async (options: number[]) => {
+    try {
+      await api.patch('/users/me/firebase', { radiusOptions: options });
+    } catch (err) {
+      console.error('Error guardando radios personalizados:', getErrorMessage(err));
+    }
+  };
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371;
@@ -70,17 +90,53 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     if (minutes < 1) return '< 1 min';
     return `${minutes} min`;
   };
+
+  const handleAddCustomRadius = () => {
+    const value = parseFloat(customRadiusInput);
+    if (value > 0 && !radiusOptions.includes(value)) {
+      const newRadiusOptions = [...radiusOptions, value].sort((a, b) => a - b);
+      setRadiusOptions(newRadiusOptions);
+      setSearchRadius(value);
+      setCustomRadiusInput('');
+      setCustomRadiusVisible(false);
+      persistRadiusOptions(newRadiusOptions);
+    }
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await api.get('/categorias');
-        setCategories(res.data);
+        let data = res.data as { id: string; nombre: string }[];
+        if (user?.categoryOrder && user.categoryOrder.length > 0) {
+          const orderIndex = new Map(user.categoryOrder.map((id, idx) => [id, idx]));
+          data = [...data].sort((a, b) => {
+            const aIdx = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+            const bIdx = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+            return aIdx - bIdx;
+          });
+        }
+        setCategories(data);
       } catch (e) {
         setCategories([]);
       }
     };
     fetchCategories();
-  }, []);
+  }, [user?.categoryOrder]);
+
+  useEffect(() => {
+    if (user?.radiusOptions && user.radiusOptions.length > 0) {
+      const uniqueSorted = Array.from(new Set(user.radiusOptions))
+        .filter((value) => Number.isFinite(value) && value > 0)
+        .sort((a, b) => a - b);
+      if (uniqueSorted.length > 0) {
+        setRadiusOptions(uniqueSorted);
+        if (!uniqueSorted.includes(searchRadius)) {
+          setSearchRadius(uniqueSorted[0]);
+        }
+      }
+    }
+  }, [user?.radiusOptions, searchRadius]);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -202,12 +258,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   fontSize: 11,
                 }}
               >
-                Cerca{' '}
-                <ThemedText
-                  style={{ fontSize: 9, color: filterNearby ? '#fff' : colors.text + 'cc' }}
-                >
-                  (&lt;1km)
-                </ThemedText>
+                Cerca
               </ThemedText>
             </TouchableOpacity>
           )}
@@ -223,7 +274,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 color: colors.primary,
               }}
             >
-              Radio:
+              Mostrar hasta:
             </ThemedText>
             <ScrollView
               horizontal
@@ -251,10 +302,26 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       fontSize: 11,
                     }}
                   >
-                    {radius === 0.5 ? '500m' : `${radius}km`}
+                    {radius === 0.5 ? '<= 500 m' : `<= ${radius} km`}
                   </ThemedText>
                 </TouchableOpacity>
               ))}
+              <TouchableOpacity
+                style={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: 16,
+                  backgroundColor: colors.card,
+                  marginRight: 6,
+                  borderWidth: 1,
+                  borderColor: colors.primary + '66',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => setCustomRadiusVisible(true)}
+              >
+                <MaterialIcons name="add" size={16} color={colors.primary} />
+              </TouchableOpacity>
             </ScrollView>
           </ThemedView>
         )}
@@ -271,59 +338,68 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             >
               Categoría:
             </ThemedText>
-            <ScrollView
+            <DraggableFlatList
               horizontal
+              data={categories}
+              keyExtractor={(item) => item.id}
+              onDragEnd={({ data }) => {
+                setCategories(data);
+                persistCategoryOrder(data.map((item) => item.id));
+              }}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 12 }}
-            >
-              <TouchableOpacity
-                style={{
-                  paddingVertical: 7,
-                  paddingHorizontal: 16,
-                  borderRadius: 18,
-                  backgroundColor: selectedCategory === null ? colors.primary : colors.card,
-                  marginRight: 8,
-                  borderWidth: 1.5,
-                  borderColor: colors.primary,
-                }}
-                onPress={() => setSelectedCategory(null)}
-              >
-                <ThemedText
-                  style={{
-                    color: selectedCategory === null ? '#fff' : colors.primary,
-                    fontWeight: 'bold',
-                    fontSize: 13,
-                  }}
-                >
-                  Todas
-                </ThemedText>
-              </TouchableOpacity>
-              {categories.map((cat) => (
+              ListHeaderComponent={
                 <TouchableOpacity
-                  key={cat.id}
                   style={{
                     paddingVertical: 7,
                     paddingHorizontal: 16,
                     borderRadius: 18,
-                    backgroundColor: selectedCategory === cat.id ? colors.primary : colors.card,
+                    backgroundColor: selectedCategory === null ? colors.primary : colors.card,
                     marginRight: 8,
                     borderWidth: 1.5,
                     borderColor: colors.primary,
                   }}
-                  onPress={() => setSelectedCategory(cat.id)}
+                  onPress={() => setSelectedCategory(null)}
                 >
                   <ThemedText
                     style={{
-                      color: selectedCategory === cat.id ? '#fff' : colors.primary,
+                      color: selectedCategory === null ? '#fff' : colors.primary,
                       fontWeight: 'bold',
                       fontSize: 13,
                     }}
                   >
-                    {cat.nombre}
+                    Todas
                   </ThemedText>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              }
+              renderItem={({ item, drag, isActive }) => (
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 7,
+                    paddingHorizontal: 16,
+                    borderRadius: 18,
+                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.card,
+                    marginRight: 8,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                    opacity: isActive ? 0.7 : 1,
+                  }}
+                  onPress={() => setSelectedCategory(item.id)}
+                  onLongPress={drag}
+                  delayLongPress={150}
+                >
+                  <ThemedText
+                    style={{
+                      color: selectedCategory === item.id ? '#fff' : colors.primary,
+                      fontWeight: 'bold',
+                      fontSize: 13,
+                    }}
+                  >
+                    {item.nombre}
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+            />
           </ThemedView>
         )}
         {!user?.ubicacion && (
@@ -360,10 +436,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onPress={() => navigation.navigate('EventsMap')}
           accessibilityLabel="Ver mapa"
         >
-          <MaterialIcons name="map" size={28} color="#6c2eb7" />
-          <ThemedText style={{ fontSize: 10, color: '#6c2eb7', marginTop: 2, fontWeight: 'bold' }}>
-            Mapa
-          </ThemedText>
+          <MaterialIcons name="map" size={32} color="#6c2eb7" />
+
         </TouchableOpacity>
 
         {role === 'user' && (
@@ -414,13 +488,15 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
         <FlatList
           data={(() => {
-            let filtered = selectedCategory
-              ? items.filter((ev) => ev.categoria?.id === selectedCategory)
-              : items;
+            let filtered = items;
 
-            if (filterNearby) {
+            if (selectedCategory) {
+              filtered = filtered.filter((ev) => ev.categoria?.id === selectedCategory);
+            }
+
+            if (filterNearby && searchRadius) {
               filtered = filtered.filter(
-                (ev) => ev.distance !== undefined && ev.distance < searchRadius
+                (ev) => ev.distance !== undefined && ev.distance <= searchRadius
               );
             }
 
@@ -429,9 +505,28 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item, index }) => {
+            const nowMs = Date.now();
+            const startMs = new Date(item.fechaInicio).getTime();
+            const endMs = new Date(item.fechaFin).getTime();
+            const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
+              ? nowMs >= startMs && nowMs <= endMs
+              : false;
+            const isWithinWeek = Number.isFinite(startMs)
+              ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
+              : false;
             return (
               <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
                 <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+                  {isOngoing && (
+                    <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
+                      En curso
+                    </ThemedText>
+                  )}
+                  {!isOngoing && isWithinWeek && (
+                    <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
+                      En &lt; 7 días
+                    </ThemedText>
+                  )}
                   {item.distance !== undefined && item.distance !== Infinity && (
                     <ThemedText
                       style={{
@@ -499,7 +594,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="event" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {new Date(item.fechaInicio).toLocaleString()} -{' '}
+                        {new Date(item.fechaInicio).toLocaleDateString()} -{' '}
                         {new Date(item.fechaFin).toLocaleDateString()}
                       </ThemedTextSecondary>
                     </ThemedView>
@@ -598,6 +693,54 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </ThemedView>
           </ThemedView>
         )}
+
+        <Modal
+          visible={customRadiusVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setCustomRadiusVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <ThemedView style={[styles.modalContainer, { backgroundColor: colors.card }]}>
+              <ThemedTitle style={styles.modalTitle}>Radio personalizado</ThemedTitle>
+              <ThemedText style={{ marginBottom: 12, color: colors.text }}>
+                Ingresa el radio en kilómetros
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                    borderColor: colors.primary,
+                  },
+                ]}
+                placeholder="Ej: 3, 7.5, 15"
+                placeholderTextColor={colors.text + '66'}
+                value={customRadiusInput}
+                onChangeText={setCustomRadiusInput}
+                keyboardType="decimal-pad"
+              />
+              <View style={styles.modalButtonsContainer}>
+                <ThemedButton
+                  title="Cancelar"
+                  variant="secondary"
+                  onPress={() => {
+                    setCustomRadiusVisible(false);
+                    setCustomRadiusInput('');
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <ThemedButton
+                  title="Añadir"
+                  variant="primary"
+                  onPress={handleAddCustomRadius}
+                  style={{ flex: 1, marginLeft: 8 }}
+                />
+              </View>
+            </ThemedView>
+          </View>
+        </Modal>
       </ThemedView>
     </ImageBackground>
   );
@@ -724,5 +867,55 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 20,
     padding: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    marginBottom: 12,
+    fontSize: 18,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statusBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    color: '#fff',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 'bold',
+    zIndex: 10,
+  },
+  statusOngoing: {
+    backgroundColor: '#4caf50',
+  },
+  statusSoon: {
+    backgroundColor: '#ff9800',
   },
 });

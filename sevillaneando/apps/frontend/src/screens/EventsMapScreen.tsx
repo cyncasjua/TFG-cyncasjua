@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import MapView, { Marker, Circle, Callout } from 'react-native-maps';
+import Slider from '@react-native-community/slider';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -19,6 +20,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [radius, setRadius] = useState(1000);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371;
@@ -135,9 +137,9 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
             </Marker>
             <Circle
               center={{ latitude: userLat, longitude: userLon }}
-              radius={1000}
-              strokeColor="rgba(108, 46, 183, 0.5)"
-              fillColor="rgba(108, 46, 183, 0.1)"
+              radius={radius}
+              strokeColor="rgba(108, 46, 183, 1)"
+              fillColor="rgba(108, 46, 183, 0.4)"
             />
           </>
         )}
@@ -152,8 +154,8 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 longitude: event.location!.coordinates[0],
               }}
               title={event.title}
-              onPress={() => navigation.navigate('EventDetail', { event })}
               pinColor={getMarkerColor(event.distance)}
+              onCalloutPress={() => navigation.navigate('EventDetail', { event })}
             >
               <Callout tooltip>
                 <View
@@ -186,6 +188,25 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
             </Marker>
           ))}
       </MapView>
+
+      {hasUserLocation && (
+        <ThemedView style={[styles.radiusBox, { backgroundColor: colors.card }]}>
+          <ThemedText style={{ fontSize: 12, color: colors.text }}>
+            Radio: {(radius / 1000).toFixed(1)} km
+          </ThemedText>
+          <Slider
+            style={{ width: '100%' }}
+            minimumValue={200}
+            maximumValue={5000}
+            step={100}
+            value={radius}
+            onValueChange={setRadius}
+            minimumTrackTintColor={colors.primary}
+            maximumTrackTintColor={colors.border}
+            thumbTintColor={colors.primary}
+          />
+        </ThemedView>
+      )}
 
       <TouchableOpacity
         style={[styles.closeButton, { backgroundColor: colors.card }]}
@@ -233,5 +254,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  radiusBox: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    right: 20,
+    padding: 12,
+    borderRadius: 8,
   },
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Modal, Alert } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Modal, Alert, TouchableOpacity } from 'react-native';
 import { View } from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AxiosError } from 'axios';
 import {
@@ -138,20 +139,23 @@ export const AdminScreen: React.FC<Props> = () => {
               </ThemedText>
             </ThemedView>
             <ThemedView>
-              <ThemedButton
-                title="Editar rol"
+              <TouchableOpacity
                 onPress={() => {
                   setSelectedUser(item);
                   setShowModal(true);
                 }}
-                style={styles.editButton}
-              />
-              <ThemedButton
-                title="Borrar"
-                variant="danger"
+                style={styles.iconButton}
+                accessibilityLabel="Editar rol"
+              >
+                <MaterialIcons name="edit" size={20} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => deleteUser(item.id)}
-                style={[styles.editButton, { marginTop: 6 }]}
-              />
+                style={[styles.iconButton, { marginTop: 6 }]}
+                accessibilityLabel="Borrar usuario"
+              >
+                <MaterialIcons name="delete" size={20} color={colors.error} />
+              </TouchableOpacity>
             </ThemedView>
           </ThemedCard>
         )}
@@ -214,7 +218,12 @@ const styles = StyleSheet.create({
   userName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   userEmail: { fontSize: 13, marginBottom: 4 },
   userRole: { fontSize: 12, fontWeight: '600' },
-  editButton: { paddingHorizontal: 12, paddingVertical: 8 },
+  iconButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   modalOverlay: { flex: 1, justifyContent: 'flex-end' },
   modalContent: {
     borderTopLeftRadius: 35,

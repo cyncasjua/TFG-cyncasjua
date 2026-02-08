@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, LogBox, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HomeScreen } from './screens/HomeScreen';
 import { EventDetailScreen } from './screens/EventDetailScreen';
 import { LoginScreen } from './screens/LoginScreen';
@@ -174,11 +175,13 @@ const Navigator = () => {
 };
 
 const App = () => (
-  <ThemeProvider>
-    <AuthProvider>
-      <Navigator />
-    </AuthProvider>
-  </ThemeProvider>
+  <GestureHandlerRootView style={{ flex: 1 }}>
+    <ThemeProvider>
+      <AuthProvider>
+        <Navigator />
+      </AuthProvider>
+    </ThemeProvider>
+  </GestureHandlerRootView>
 );
 
 export default App;

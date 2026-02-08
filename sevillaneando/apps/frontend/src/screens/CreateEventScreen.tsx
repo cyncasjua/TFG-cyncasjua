@@ -336,7 +336,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onSubmitEditing={() => addressRef.current?.focus()}
               blurOnSubmit={false}
             />
-            {/* Agrupar buscador y dirección juntos visualmente */}
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                 <TextInput
@@ -397,7 +396,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 pointerEvents="none"
               />
             </TouchableOpacity>
-            {/* Selector de fecha */}
             <DateTimePickerModal
               isVisible={showFechaInicio}
               mode="date"
