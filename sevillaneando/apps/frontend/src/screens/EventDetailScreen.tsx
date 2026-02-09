@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -20,6 +20,9 @@ import type { Event } from '../types/event';
 import { storage } from '../firebase/config';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { useIsFocused } from '@react-navigation/native';
+import { TextInput, TouchableOpacity } from 'react-native';
+import { io, Socket } from 'socket.io-client';
+import { useAuth } from '../hooks/useAuth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -57,12 +60,56 @@ function parsePoint(event: Event) {
   return null;
 }
 
+type ChatMessage = {
+  id: string;
+  eventId: string;
+  contenido: string;
+  fechaCreacion: string;
+  usuario?: { nombre?: string; firebaseUid?: string };
+};
+
 export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const { event } = route.params;
   const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
   const coords = useMemo(() => parsePoint(event), [event]);
   const isFocused = useIsFocused();
+  const { token, user } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [chatError, setChatError] = useState('');
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    const socket = io(process.env.EXPO_PUBLIC_API_URL, {
+      auth: { token },
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('join_room', event.id);
+    });
+
+    socket.on('chat_history', (history: ChatMessage[]) => {
+      setMessages(history);
+    });
+
+    socket.on('chat_message', (message: ChatMessage) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    socket.on('chat_error', (err: { message: string }) => {
+      setChatError(err.message);
+    });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [event.id, token]);
+
   const formatDuration = (totalMinutes: number, label: string) => {
     if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return `${label}: -`;
     const totalHours = Math.floor(totalMinutes / 60);
@@ -236,6 +283,109 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             }}
           />
           <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />
+          <ThemedView
+            style={[
+              { marginTop: 16, borderRadius: 16, padding: 12 },
+              { backgroundColor: colors.card + 'DD' },
+            ]}
+          >
+            <ThemedTitle style={{ marginBottom: 8 }}>Chat del evento</ThemedTitle>
+            {!!chatError && (
+              <ThemedTextSecondary style={{ marginBottom: 6, color: '#c0392b' }}>
+                {chatError}
+              </ThemedTextSecondary>
+            )}
+            <ThemedView style={{ maxHeight: 220 }}>
+              {messages.map((item) => (
+                <ThemedView
+                  key={item.id}
+                  style={{
+                    marginBottom: 6,
+                    alignItems: item.usuario?.firebaseUid === user?.firebaseUid ? 'flex-end' : 'flex-start',
+                  }}
+                >
+                  <ThemedView
+                    style={{
+                      padding: 8,
+                      borderRadius: 10,
+                      maxWidth: '85%',
+                      backgroundColor:
+                        item.usuario?.firebaseUid === user?.firebaseUid
+                          ? '#6c2eb7'
+                          : colors.card,
+                    }}
+                  >
+                    <ThemedTextSecondary
+                      style={{
+                        fontSize: 12,
+                        color:
+                          item.usuario?.firebaseUid === user?.firebaseUid ? '#fff' : colors.text,
+                      }}
+                    >
+                      {item.usuario?.firebaseUid === user?.firebaseUid
+                        ? 'Tu'
+                        : item.usuario?.nombre ?? 'Anonimo'}
+                    </ThemedTextSecondary>
+                    <ThemedText
+                      style={{
+                        color:
+                          item.usuario?.firebaseUid === user?.firebaseUid ? '#fff' : colors.text,
+                      }}
+                    >
+                      {item.contenido}
+                    </ThemedText>
+                    <ThemedTextSecondary
+                      style={{
+                        fontSize: 11,
+                        marginTop: 4,
+                        color:
+                          item.usuario?.firebaseUid === user?.firebaseUid
+                            ? '#e7d3ff'
+                            : colors.text + '99',
+                      }}
+                    >
+                      {dayjs(item.fechaCreacion).format('HH:mm')}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                </ThemedView>
+              ))}
+            </ThemedView>
+            <ThemedView style={{ flexDirection: 'row', marginTop: 8 }}>
+              <TextInput
+                value={input}
+                onChangeText={setInput}
+                placeholder="Escribe un mensaje..."
+                style={{
+                  flex: 1,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 10,
+                  padding: 10,
+                  color: colors.text,
+                }}
+                placeholderTextColor={colors.text + '99'}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  if (!input.trim() || !socketRef.current) return;
+                  socketRef.current.emit('chat_message', {
+                    eventId: event.id,
+                    text: input.trim(),
+                  });
+                  setInput('');
+                }}
+                style={{
+                  marginLeft: 8,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  backgroundColor: '#6c2eb7',
+                  borderRadius: 10,
+                }}
+              >
+                <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          </ThemedView>
         </ScrollView>
       </SafeAreaView>
     </ImageBackground>

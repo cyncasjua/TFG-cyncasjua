@@ -17,6 +17,7 @@ import { Notificacion } from './entities/notificacion.entity';
 import { Recomendacion } from './entities/recomendacion.entity';
 import { CategoriasModule } from './categorias/categorias.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { Mensaje } from './entities/mensaje.entity';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
           Coordenadas,
           Notificacion,
           Recomendacion,
+          Mensaje,
         ],
         synchronize: true,
       }),

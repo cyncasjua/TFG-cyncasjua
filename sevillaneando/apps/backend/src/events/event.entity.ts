@@ -7,9 +7,11 @@ import {
   BeforeUpdate,
 } from 'typeorm';
 import { Categoria } from '../entities/categoria.entity';
-import { User } from '../users/user.entity';
+
+
 import { EstadoEnum } from '../enums/estado.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
+import { User } from '../users/user.entity';
 
 @Entity({ name: 'events' })
 export class Event {
