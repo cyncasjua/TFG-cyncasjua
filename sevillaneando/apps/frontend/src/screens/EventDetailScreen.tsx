@@ -78,6 +78,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [chatError, setChatError] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -191,6 +192,19 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
         ]}
       />
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent', zIndex: 2 }]}>
+        <TouchableOpacity
+          onPress={() => setIsChatOpen((prev) => !prev)}
+          style={[
+            styles.chatToggle,
+            { backgroundColor: colors.card + 'EE', borderColor: colors.border },
+          ]}
+        >
+          <MaterialIcons
+            name={isChatOpen ? 'close' : 'chat-bubble-outline'}
+            size={22}
+            color="#6c2eb7"
+          />
+        </TouchableOpacity>
         <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
           <ThemedView
             style={[
@@ -283,110 +297,103 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             }}
           />
           <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />
-          <ThemedView
-            style={[
-              { marginTop: 16, borderRadius: 16, padding: 12 },
-              { backgroundColor: colors.card + 'DD' },
-            ]}
-          >
-            <ThemedTitle style={{ marginBottom: 8 }}>Chat del evento</ThemedTitle>
-            {!!chatError && (
-              <ThemedTextSecondary style={{ marginBottom: 6, color: '#c0392b' }}>
-                {chatError}
-              </ThemedTextSecondary>
-            )}
-            <ThemedView style={{ maxHeight: 220 }}>
-              {messages.map((item) => (
-                <ThemedView
-                  key={item.id}
+        </ScrollView>
+        {isChatOpen && (
+          <View style={styles.chatOverlay}>
+            <ThemedView style={[styles.chatPanel, { backgroundColor: colors.card }]}
+            >
+              <ThemedView style={styles.chatHeader}>
+                <ThemedTitle>Chat del evento</ThemedTitle>
+                <TouchableOpacity
+                  onPress={() => setIsChatOpen(false)}
+                  style={styles.chatClose}
+                >
+                  <MaterialIcons name="close" size={20} color={colors.text} />
+                </TouchableOpacity>
+              </ThemedView>
+              {!!chatError && (
+                <ThemedTextSecondary style={{ marginBottom: 6, color: '#c0392b' }}>
+                  {chatError}
+                </ThemedTextSecondary>
+              )}
+              <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
+                {messages.map((item) => {
+                  const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
+                  const nameColor = theme === 'dark' ? '#9bbcff' : '#3b5bdb';
+                  const messageColor = theme === 'dark' ? '#e6e8ef' : '#1f2937';
+
+                  return (
+                    <ThemedView
+                      key={item.id}
+                      style={{
+                        marginBottom: 6,
+                        alignItems: isOwn ? 'flex-end' : 'flex-start',
+                      }}
+                    >
+                      <ThemedView
+                        style={{
+                          padding: 8,
+                          borderRadius: 10,
+                          maxWidth: '85%',
+                          backgroundColor: isOwn ? '#6c2eb7' : colors.card,
+                        }}
+                      >
+                        <ThemedTextSecondary style={{ fontSize: 12, color: nameColor }}>
+                          {isOwn ? 'Tu' : item.usuario?.nombre ?? 'Anonimo'}
+                        </ThemedTextSecondary>
+                        <ThemedText style={{ color: messageColor }}>{item.contenido}</ThemedText>
+                        <ThemedTextSecondary
+                          style={{
+                            fontSize: 11,
+                            marginTop: 4,
+                            color: colors.text + '99',
+                          }}
+                        >
+                          {dayjs(item.fechaCreacion).format('HH:mm')}
+                        </ThemedTextSecondary>
+                      </ThemedView>
+                    </ThemedView>
+                  );
+                })}
+              </ScrollView>
+              <ThemedView style={{ flexDirection: 'row', marginTop: 8 }}>
+                <TextInput
+                  value={input}
+                  onChangeText={setInput}
+                  placeholder="Escribe un mensaje..."
                   style={{
-                    marginBottom: 6,
-                    alignItems: item.usuario?.firebaseUid === user?.firebaseUid ? 'flex-end' : 'flex-start',
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 10,
+                    padding: 10,
+                    color: colors.text,
+                  }}
+                  placeholderTextColor={colors.text + '99'}
+                />
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!input.trim() || !socketRef.current) return;
+                    socketRef.current.emit('chat_message', {
+                      eventId: event.id,
+                      text: input.trim(),
+                    });
+                    setInput('');
+                  }}
+                  style={{
+                    marginLeft: 8,
+                    paddingHorizontal: 14,
+                    paddingVertical: 10,
+                    backgroundColor: '#6c2eb7',
+                    borderRadius: 10,
                   }}
                 >
-                  <ThemedView
-                    style={{
-                      padding: 8,
-                      borderRadius: 10,
-                      maxWidth: '85%',
-                      backgroundColor:
-                        item.usuario?.firebaseUid === user?.firebaseUid
-                          ? '#6c2eb7'
-                          : colors.card,
-                    }}
-                  >
-                    <ThemedTextSecondary
-                      style={{
-                        fontSize: 12,
-                        color:
-                          item.usuario?.firebaseUid === user?.firebaseUid ? '#fff' : colors.text,
-                      }}
-                    >
-                      {item.usuario?.firebaseUid === user?.firebaseUid
-                        ? 'Tu'
-                        : item.usuario?.nombre ?? 'Anonimo'}
-                    </ThemedTextSecondary>
-                    <ThemedText
-                      style={{
-                        color:
-                          item.usuario?.firebaseUid === user?.firebaseUid ? '#fff' : colors.text,
-                      }}
-                    >
-                      {item.contenido}
-                    </ThemedText>
-                    <ThemedTextSecondary
-                      style={{
-                        fontSize: 11,
-                        marginTop: 4,
-                        color:
-                          item.usuario?.firebaseUid === user?.firebaseUid
-                            ? '#e7d3ff'
-                            : colors.text + '99',
-                      }}
-                    >
-                      {dayjs(item.fechaCreacion).format('HH:mm')}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                </ThemedView>
-              ))}
+                  <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
             </ThemedView>
-            <ThemedView style={{ flexDirection: 'row', marginTop: 8 }}>
-              <TextInput
-                value={input}
-                onChangeText={setInput}
-                placeholder="Escribe un mensaje..."
-                style={{
-                  flex: 1,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 10,
-                  padding: 10,
-                  color: colors.text,
-                }}
-                placeholderTextColor={colors.text + '99'}
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  if (!input.trim() || !socketRef.current) return;
-                  socketRef.current.emit('chat_message', {
-                    eventId: event.id,
-                    text: input.trim(),
-                  });
-                  setInput('');
-                }}
-                style={{
-                  marginLeft: 8,
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  backgroundColor: '#6c2eb7',
-                  borderRadius: 10,
-                }}
-              >
-                <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          </ThemedView>
-        </ScrollView>
+          </View>
+        )}
       </SafeAreaView>
     </ImageBackground>
   );
@@ -403,5 +410,35 @@ const styles = StyleSheet.create({
   backgroundImage: { opacity: 1, transform: [{ scale: 1.5 }, { translateY: 40 }] },
   backgroundOverlay: {
     ...StyleSheet.absoluteFillObject,
+  },
+  chatToggle: {
+    position: 'absolute',
+    top: 8,
+    right: 12,
+    zIndex: 4,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 8,
+  },
+  chatOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 3,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    padding: 12,
+  },
+  chatPanel: {
+    flex: 1,
+    borderRadius: 18,
+    padding: 12,
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  chatClose: {
+    padding: 6,
+    borderRadius: 12,
   },
 });
