@@ -94,10 +94,14 @@ async function bootstrap() {
 
     socket.on(
       'chat_message',
-      async ({ eventId, text }: { eventId: string; text: string }) => {
+      async ({ eventId, text, imageUrl }: { eventId: string; text?: string; imageUrl?: string }) => {
         try {
           const firebaseUid = socket.data.user?.uid;
-          if (!firebaseUid || !eventId || !text || !text.trim()) return;
+          const trimmedText = text?.trim() ?? '';
+          const trimmedImageUrl = imageUrl?.trim() ?? '';
+          const hasText = trimmedText.length > 0;
+          const hasImage = trimmedImageUrl.length > 0;
+          if (!firebaseUid || !eventId || (!hasText && !hasImage)) return;
 
           const user = await usersRepo.findOne({ where: { firebaseUid } });
           if (!user) {
@@ -112,7 +116,8 @@ async function bootstrap() {
           }
 
           const message = chatRepo.create({
-            contenido: text.trim(),
+            contenido: hasText ? trimmedText : '',
+            imageUrl: hasImage ? trimmedImageUrl : null,
             evento: event,
             usuario: user,
           });

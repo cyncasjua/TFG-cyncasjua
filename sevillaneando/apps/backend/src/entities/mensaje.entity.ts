@@ -11,6 +11,9 @@ export class Mensaje {
   @Column()
   contenido: string;
 
+  @Column({ nullable: true })
+  imageUrl?: string | null;
+
   @ManyToOne(() => User)
   usuario: User;
 

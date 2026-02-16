@@ -18,6 +18,7 @@ import { Recomendacion } from './entities/recomendacion.entity';
 import { CategoriasModule } from './categorias/categorias.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { Mensaje } from './entities/mensaje.entity';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { Mensaje } from './entities/mensaje.entity';
     AuthModule,
     CategoriasModule,
     NotificacionesModule,
+    ChatModule,
   ],
 })
 export class AppModule {

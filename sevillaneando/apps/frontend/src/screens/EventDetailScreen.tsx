@@ -2,7 +2,16 @@ import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
-import { Linking, Platform, StyleSheet, ImageBackground, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  StyleSheet,
+  ImageBackground,
+  View,
+  Image,
+  Modal,
+  Animated,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import dayjs from 'dayjs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,6 +32,8 @@ import { useIsFocused } from '@react-navigation/native';
 import { TextInput, TouchableOpacity } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../hooks/useAuth';
+import * as ImagePicker from 'expo-image-picker';
+import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -66,6 +77,7 @@ type ChatMessage = {
   contenido: string;
   fechaCreacion: string;
   usuario?: { nombre?: string; firebaseUid?: string };
+  imageUrl?: string | null;
 };
 
 export const EventDetailScreen: React.FC<Props> = ({ route }) => {
@@ -79,7 +91,34 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const [input, setInput] = useState('');
   const [chatError, setChatError] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [pendingImageLocalUri, setPendingImageLocalUri] = useState<string | null>(null);
+  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const baseScale = useRef(new Animated.Value(1)).current;
+  const pinchScale = useRef(new Animated.Value(1)).current;
+  const lastScaleRef = useRef(1);
+  const imageScale = Animated.multiply(baseScale, pinchScale);
+
+  const onPinchEvent = Animated.event([{ nativeEvent: { scale: pinchScale } }], {
+    useNativeDriver: true,
+  });
+
+  const handlePinchStateChange = (event: any) => {
+    if (event.nativeEvent.oldState === State.ACTIVE) {
+      lastScaleRef.current *= event.nativeEvent.scale;
+      baseScale.setValue(lastScaleRef.current);
+      pinchScale.setValue(1);
+    }
+  };
+
+  const closePreview = () => {
+    lastScaleRef.current = 1;
+    baseScale.setValue(1);
+    pinchScale.setValue(1);
+    setPreviewImageUrl(null);
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -161,6 +200,113 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
       android: `${scheme}${latLng}(${label})`,
     });
     if (url) Linking.openURL(url);
+  };
+
+  const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (!token) {
+      setChatError('Necesitas iniciar sesion para subir imagenes');
+      return;
+    }
+    if (!asset?.uri) return;
+
+    try {
+      setChatError('');
+      setPendingImageLocalUri(asset.uri);
+      setIsUploadingImage(true);
+
+      const uriParts = asset.uri.split('.');
+      const ext = uriParts.length > 1 ? uriParts[uriParts.length - 1] : 'jpg';
+      const mimeType = asset.mimeType ?? `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+      const name = asset.fileName ?? `chat-${Date.now()}.${ext}`;
+
+      const formData = new FormData();
+      formData.append('file', { uri: asset.uri, name, type: mimeType } as any);
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/chat/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        setChatError('No se pudo subir la imagen');
+        setPendingImageLocalUri(null);
+        setPendingImageUrl(null);
+        return;
+      }
+
+      const data = await response.json();
+      if (!data?.imageUrl) {
+        setChatError('Respuesta de imagen invalida');
+        setPendingImageLocalUri(null);
+        setPendingImageUrl(null);
+        return;
+      }
+
+      setPendingImageUrl(data.imageUrl);
+    } catch (error) {
+      console.error(error);
+      setChatError('Error al subir la imagen');
+      setPendingImageLocalUri(null);
+      setPendingImageUrl(null);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handlePickImage = async () => {
+    if (!token) {
+      setChatError('Necesitas iniciar sesion para subir imagenes');
+      return;
+    }
+
+    try {
+      setChatError('');
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission.status !== 'granted') {
+        setChatError('Permiso requerido para acceder a fotos');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+
+      if (result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset?.uri) return;
+      await uploadChatImage(asset);
+    } catch (error) {
+      console.error(error);
+      setChatError('Error al seleccionar la imagen');
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    if (!token) {
+      setChatError('Necesitas iniciar sesion para subir imagenes');
+      return;
+    }
+
+    try {
+      setChatError('');
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (permission.status !== 'granted') {
+        setChatError('Permiso requerido para usar la camara');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.8,
+      });
+
+      if (result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset?.uri) return;
+      await uploadChatImage(asset);
+    } catch (error) {
+      console.error(error);
+      setChatError('Error al abrir la camara');
+    }
   };
 
   if (!isFocused) return null;
@@ -304,12 +450,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             >
               <ThemedView style={styles.chatHeader}>
                 <ThemedTitle>Chat del evento</ThemedTitle>
-                <TouchableOpacity
-                  onPress={() => setIsChatOpen(false)}
-                  style={styles.chatClose}
-                >
-                  <MaterialIcons name="close" size={20} color={colors.text} />
-                </TouchableOpacity>
               </ThemedView>
               {!!chatError && (
                 <ThemedTextSecondary style={{ marginBottom: 6, color: '#c0392b' }}>
@@ -341,7 +481,18 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
                         <ThemedTextSecondary style={{ fontSize: 12, color: nameColor }}>
                           {isOwn ? 'Tu' : item.usuario?.nombre ?? 'Anonimo'}
                         </ThemedTextSecondary>
-                        <ThemedText style={{ color: messageColor }}>{item.contenido}</ThemedText>
+                        {!!item.contenido?.trim() && (
+                          <ThemedText style={{ color: messageColor }}>{item.contenido}</ThemedText>
+                        )}
+                        {!!item.imageUrl && (
+                          <TouchableOpacity onPress={() => setPreviewImageUrl(item.imageUrl ?? null)}>
+                            <Image
+                              source={{ uri: item.imageUrl }}
+                              style={styles.chatMessageImage}
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+                        )}
                         <ThemedTextSecondary
                           style={{
                             fontSize: 11,
@@ -356,7 +507,35 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
                   );
                 })}
               </ScrollView>
-              <ThemedView style={{ flexDirection: 'row', marginTop: 8 }}>
+              {!!pendingImageLocalUri && (
+                <ThemedView style={styles.chatAttachment}>
+                  <Image source={{ uri: pendingImageLocalUri }} style={styles.chatAttachmentImage} />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPendingImageLocalUri(null);
+                      setPendingImageUrl(null);
+                    }}
+                    style={styles.chatAttachmentRemove}
+                  >
+                    <MaterialIcons name="close" size={16} color={colors.text} />
+                  </TouchableOpacity>
+                </ThemedView>
+              )}
+              <ThemedView style={{ flexDirection: 'row', marginTop: 8, alignItems: 'center' }}>
+                <TouchableOpacity
+                  onPress={handlePickImage}
+                  disabled={isUploadingImage}
+                  style={styles.chatImageButton}
+                >
+                  <MaterialIcons name="image" size={20} color="#6c2eb7" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleTakePhoto}
+                  disabled={isUploadingImage}
+                  style={styles.chatImageButton}
+                >
+                  <MaterialIcons name="photo-camera" size={20} color="#6c2eb7" />
+                </TouchableOpacity>
                 <TextInput
                   value={input}
                   onChangeText={setInput}
@@ -373,12 +552,16 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
                 />
                 <TouchableOpacity
                   onPress={() => {
-                    if (!input.trim() || !socketRef.current) return;
+                    const trimmedText = input.trim();
+                    if ((!trimmedText && !pendingImageUrl) || !socketRef.current) return;
                     socketRef.current.emit('chat_message', {
                       eventId: event.id,
-                      text: input.trim(),
+                      text: trimmedText,
+                      imageUrl: pendingImageUrl ?? undefined,
                     });
                     setInput('');
+                    setPendingImageLocalUri(null);
+                    setPendingImageUrl(null);
                   }}
                   style={{
                     marginLeft: 8,
@@ -394,6 +577,35 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
             </ThemedView>
           </View>
         )}
+        <Modal
+          visible={!!previewImageUrl}
+          transparent
+          animationType="fade"
+          onRequestClose={closePreview}
+        >
+          <View style={styles.imagePreviewOverlay}>
+            <TouchableOpacity
+              style={styles.imagePreviewBackdrop}
+              onPress={closePreview}
+              activeOpacity={1}
+            />
+            <TouchableOpacity style={styles.imagePreviewClose} onPress={closePreview}>
+              <MaterialIcons name="close" size={22} color="#fff" />
+            </TouchableOpacity>
+            {!!previewImageUrl && (
+              <PinchGestureHandler
+                onGestureEvent={onPinchEvent}
+                onHandlerStateChange={handlePinchStateChange}
+              >
+                <Animated.Image
+                  source={{ uri: previewImageUrl }}
+                  style={[styles.imagePreviewImage, { transform: [{ scale: imageScale }] }]}
+                  resizeMode="contain"
+                />
+              </PinchGestureHandler>
+            )}
+          </View>
+        </Modal>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -413,8 +625,8 @@ const styles = StyleSheet.create({
   },
   chatToggle: {
     position: 'absolute',
-    top: 8,
-    right: 12,
+    top: 16,
+    right: 20,
     zIndex: 4,
     borderWidth: 1,
     borderRadius: 16,
@@ -430,6 +642,54 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 18,
     padding: 12,
+  },
+  chatMessageImage: {
+    marginTop: 6,
+    width: 200,
+    height: 120,
+    borderRadius: 10,
+  },
+  chatAttachment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  chatAttachmentImage: {
+    width: 80,
+    height: 60,
+    borderRadius: 8,
+  },
+  chatAttachmentRemove: {
+    marginLeft: 8,
+    padding: 6,
+    borderRadius: 10,
+  },
+  chatImageButton: {
+    marginRight: 8,
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#6c2eb7',
+  },
+  imagePreviewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imagePreviewBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  imagePreviewImage: {
+    width: '92%',
+    height: '80%',
+  },
+  imagePreviewClose: {
+    position: 'absolute',
+    top: 48,
+    right: 18,
+    padding: 8,
+    zIndex: 2,
   },
   chatHeader: {
     flexDirection: 'row',
