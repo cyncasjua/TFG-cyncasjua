@@ -71,9 +71,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -228,7 +228,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <ThemedTitle>Eventos en Sevilla</ThemedTitle>
             <ThemedTextSecondary style={{ marginTop: 4 }}>
               Rol actual:{' '}
-              <ThemedText style={{  fontWeight: 'bold' }}>{role}</ThemedText>
+              <ThemedText style={{ fontWeight: 'bold' }}>{role}</ThemedText>
             </ThemedTextSecondary>
           </ThemedView>
           {user?.ubicacion && (
@@ -483,6 +483,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           accessibilityLabel="Ver notificaciones"
         >
           <MaterialIcons name="notifications" size={35} color="#ffd700" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.messagesButton}
+          onPress={() => navigation.navigate('Messages')}
+          accessibilityLabel="Ver mensajes privados"
+        >
+          <MaterialIcons name="mail" size={35} color="#6c2eb7" />
         </TouchableOpacity>
 
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
@@ -863,6 +871,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     left: 30,
+    zIndex: 11,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  messagesButton: {
+    position: 'absolute',
+    top: 15,
+    right: 70,
     zIndex: 11,
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 20,

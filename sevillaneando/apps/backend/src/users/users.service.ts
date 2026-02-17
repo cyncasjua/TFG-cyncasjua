@@ -7,7 +7,7 @@ import type { GeoJsonPoint } from '../common/geojson-point';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
+  constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) { }
 
   async ensureFromFirebase(payload: {
     uid: string;
@@ -110,5 +110,9 @@ export class UsersService {
       }
     }
     await this.usersRepo.delete({ id });
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.usersRepo.findOne({ where: { id } });
   }
 }

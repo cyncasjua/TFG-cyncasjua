@@ -5,6 +5,7 @@ import {
   OneToMany,
   BeforeInsert,
   BeforeUpdate,
+  ManyToMany,
 } from 'typeorm';
 import { Notificacion } from '../entities/notificacion.entity';
 import { Event } from '../events/event.entity';
@@ -61,13 +62,16 @@ export class User {
   @OneToMany(() => Resena, (resena) => resena.autor)
   resenas!: Resena[];
 
-  iniciarSesion() {}
-  cerrarSesion() {}
-  verEventos() {}
-  subirFoto() {}
-  editarPerfil() {}
-  añadirEvento() {}
-  añadirReseña() {}
+  @ManyToMany(() => Event, (event) => event.asistentes)
+  eventosAsistidos!: Event[];
+
+  iniciarSesion() { }
+  cerrarSesion() { }
+  verEventos() { }
+  subirFoto() { }
+  editarPerfil() { }
+  añadirEvento() { }
+  añadirReseña() { }
 
   @BeforeInsert()
   @BeforeUpdate()

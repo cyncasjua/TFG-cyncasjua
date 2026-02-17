@@ -13,3 +13,10 @@ export type User = {
   rol: 'admin' | 'moderator' | 'user';
   firebaseUid: string;
 };
+
+export type PublicUser = {
+  id: string;
+  nombre: string;
+  fotoPerfil: string | null;
+  intereses?: string[];
+}

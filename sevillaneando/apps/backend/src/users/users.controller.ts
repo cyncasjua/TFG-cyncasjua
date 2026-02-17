@@ -27,7 +27,7 @@ import type { Multer } from 'multer';
 @Controller('users')
 @UseGuards(FirebaseAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post('upload-profile-image/firebase')
   @UseInterceptors(
@@ -86,5 +86,19 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     await this.usersService.deleteCompletelyById(id);
     return { success: true };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      return null;
+    }
+    return {
+      id: user.id,
+      nombre: user.nombre,
+      fotoPerfil: user.fotoPerfil,
+      intereses: user.intereses,
+    };
   }
 }

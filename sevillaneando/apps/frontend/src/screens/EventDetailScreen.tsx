@@ -34,6 +34,9 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
+import { PublicUser } from '../types/user';
+import { getFullImageUrl } from '../utils/imageUrl';
+import { attendEvent, getEventAttendees, getMyAttendance, unattendEvent } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -76,11 +79,11 @@ type ChatMessage = {
   eventId: string;
   contenido: string;
   fechaCreacion: string;
-  usuario?: { nombre?: string; firebaseUid?: string };
+  usuario?: { id?: string; nombre?: string; firebaseUid?: string; fotoPerfil?: string };
   imageUrl?: string | null;
 };
 
-export const EventDetailScreen: React.FC<Props> = ({ route }) => {
+export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { event } = route.params;
   const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
@@ -95,6 +98,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [attendees, setAttendees] = useState<PublicUser[]>([]);
+  const [isAttending, setIsAttending] = useState(false);
+  const [attendeesError, setAttendeesError] = useState('');
   const socketRef = useRef<Socket | null>(null);
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
@@ -104,6 +110,44 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
   const onPinchEvent = Animated.event([{ nativeEvent: { scale: pinchScale } }], {
     useNativeDriver: true,
   });
+
+  useEffect(() => {
+    let mounted = true;
+    if (!token) return;
+
+    Promise.all([getEventAttendees(event.id), getMyAttendance(event.id)])
+      .then(([list, me]) => {
+        if (!mounted) return;
+        setAttendees(list);
+        setIsAttending(me.attending);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setAttendeesError('No se pudo cargar la lista de asistentes');
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [event.id, token]);
+
+  const handleToggleAttend = async () => {
+    if (!token) return;
+    setAttendeesError('');
+    try {
+      if (isAttending) {
+        const list = await unattendEvent(event.id);
+        setAttendees(list);
+        setIsAttending(false);
+      } else {
+        const list = await attendEvent(event.id);
+        setAttendees(list);
+        setIsAttending(true);
+      }
+    } catch {
+      setAttendeesError('No se pudo actualizar tu asistencia');
+    }
+  };
 
   const handlePinchStateChange = (event: any) => {
     if (event.nativeEvent.oldState === State.ACTIVE) {
@@ -433,6 +477,36 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
               <Marker coordinate={coords} title={event.title} />
             </MapView>
           </ThemedView>
+          <ThemedButton
+            title={isAttending ? 'Ya no asistiré' : 'Asistiré'}
+            onPress={handleToggleAttend}
+          />
+          {!!attendeesError && (
+            <ThemedTextSecondary style={{ color: '#c0392b', marginTop: 6 }}>
+              {attendeesError}
+            </ThemedTextSecondary>
+          )}
+          <ThemedView style={{ marginTop: 12 }}>
+            <ThemedTextSecondary style={{ marginBottom: 6 }}>
+              Asistentes ({attendees.length})
+            </ThemedTextSecondary>
+            <ThemedView style={{ gap: 8 }}>
+              {attendees.map((att) => (
+                <TouchableOpacity
+                  key={att.id}
+                  onPress={() => navigation.navigate('UserProfile', { userId: att.id })}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 8 }}
+                >
+                  {att.fotoPerfil ? (
+                    <Image source={{ uri: getFullImageUrl(att.fotoPerfil) || att.fotoPerfil }} style={{ width: 32, height: 32, borderRadius: 16 }} />
+                  ) : (
+                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d0d0d0' }} />
+                  )}
+                  <ThemedText>{att.nombre}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ThemedView>
+          </ThemedView>
           <ThemedButton title="Abrir en Google/Apple Maps" onPress={openExternalNavigation} />
           <ThemedButton
             title="Probar moderación NSFW (demo)"
@@ -472,36 +546,110 @@ export const EventDetailScreen: React.FC<Props> = ({ route }) => {
                     >
                       <ThemedView
                         style={{
-                          padding: 8,
-                          borderRadius: 10,
+                          flexDirection: 'row',
+                          alignItems: 'flex-start',
+                          gap: 6,
                           maxWidth: '85%',
-                          backgroundColor: isOwn ? '#6c2eb7' : colors.card,
                         }}
                       >
-                        <ThemedTextSecondary style={{ fontSize: 12, color: nameColor }}>
-                          {isOwn ? 'Tu' : item.usuario?.nombre ?? 'Anonimo'}
-                        </ThemedTextSecondary>
-                        {!!item.contenido?.trim() && (
-                          <ThemedText style={{ color: messageColor }}>{item.contenido}</ThemedText>
-                        )}
-                        {!!item.imageUrl && (
-                          <TouchableOpacity onPress={() => setPreviewImageUrl(item.imageUrl ?? null)}>
-                            <Image
-                              source={{ uri: item.imageUrl }}
-                              style={styles.chatMessageImage}
-                              resizeMode="cover"
-                            />
+                        {!isOwn && item.usuario?.id && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (item.usuario?.id) {
+                                navigation.navigate('UserProfile', {
+                                  userId: item.usuario.id,
+                                });
+                              }
+                            }}
+                            style={{ marginTop: 2 }}
+                          >
+                            {item.usuario?.fotoPerfil ? (
+                              <Image
+                                source={{ uri: getFullImageUrl(item.usuario.fotoPerfil) || item.usuario.fotoPerfil }}
+                                style={{ width: 24, height: 24, borderRadius: 12 }}
+                              />
+                            ) : (
+                              <View
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: 12,
+                                  backgroundColor: '#d0d0d0',
+                                }}
+                              />
+                            )}
                           </TouchableOpacity>
                         )}
-                        <ThemedTextSecondary
+                        <ThemedView
                           style={{
-                            fontSize: 11,
-                            marginTop: 4,
-                            color: colors.text + '99',
+                            padding: 8,
+                            borderRadius: 10,
+                            backgroundColor: isOwn ? '#6c2eb7' : colors.card,
+                            flex: 1,
                           }}
                         >
-                          {dayjs(item.fechaCreacion).format('HH:mm')}
-                        </ThemedTextSecondary>
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (item.usuario?.id && !isOwn) {
+                                navigation.navigate('UserProfile', {
+                                  userId: item.usuario.id,
+                                });
+                              }
+                            }}
+                            disabled={!item.usuario?.id || isOwn}
+                          >
+                            <ThemedTextSecondary
+                              style={{ fontSize: 12, color: nameColor }}
+                            >
+                              {isOwn ? 'Tu' : item.usuario?.nombre ?? 'Anonimo'}
+                            </ThemedTextSecondary>
+                          </TouchableOpacity>
+                          {!!item.contenido?.trim() && (
+                            <ThemedText style={{ color: messageColor }}>
+                              {item.contenido}
+                            </ThemedText>
+                          )}
+                          {!!item.imageUrl && (
+                            <TouchableOpacity
+                              onPress={() => setPreviewImageUrl(item.imageUrl ?? null)}
+                            >
+                              <Image
+                                source={{ uri: item.imageUrl }}
+                                style={styles.chatMessageImage}
+                                resizeMode="cover"
+                              />
+                            </TouchableOpacity>
+                          )}
+                          <ThemedTextSecondary
+                            style={{
+                              fontSize: 11,
+                              marginTop: 4,
+                              color: colors.text + '99',
+                            }}
+                          >
+                            {dayjs(item.fechaCreacion).format('HH:mm')}
+                          </ThemedTextSecondary>
+                        </ThemedView>
+                        {!isOwn && item.usuario?.id && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (item.usuario?.id) {
+                                navigation.navigate('DirectMessage', {
+                                  userId: item.usuario.id,
+                                  userName: item.usuario.nombre ?? 'Usuario',
+                                });
+                              }
+                            }}
+                            style={{
+                              marginTop: 2,
+                              padding: 4,
+                              borderRadius: 6,
+                              backgroundColor: colors.card,
+                            }}
+                          >
+                            <MaterialIcons name="mail" size={16} color="#6c2eb7" />
+                          </TouchableOpacity>
+                        )}
                       </ThemedView>
                     </ThemedView>
                   );

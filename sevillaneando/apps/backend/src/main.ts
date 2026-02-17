@@ -10,6 +10,7 @@ import { Server, Socket } from 'socket.io';
 import { Mensaje } from './entities/mensaje.entity';
 import { FirebaseService } from './auth/firebase.service';
 import { User } from './users/user.entity';
+import { MensajePrivado } from './entities/mensaje-privado.entity';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
@@ -38,6 +39,7 @@ async function bootstrap() {
 
   const usersRepo = dataSource.getRepository(User);
   const eventsRepo = dataSource.getRepository(Event);
+  const privateRepo = dataSource.getRepository(MensajePrivado);
 
   io.use(async (socket, next) => {
     try {
@@ -54,11 +56,72 @@ async function bootstrap() {
 
   const chatRepo = dataSource.getRepository(Mensaje);
 
-  io.on('connection', (socket) => {
-    //console.log('User connected:', socket.id);
+  io.on('connection', async (socket) => {
+    const firebaseUid = socket.data.user?.uid;
+    if (firebaseUid) {
+      const currentUser = await usersRepo.findOne({ where: { firebaseUid } });
+      if (currentUser) {
+        socket.data.userId = currentUser.id;
+        socket.join(`user:${currentUser.id}`);
+        console.log('Usuario conectado:', currentUser.id, firebaseUid);
+      } else {
+        console.warn('Usuario no encontrado en DB con firebaseUid:', firebaseUid);
+      }
+    } else {
+      console.warn('Sin firebaseUid en socket.data.user');
+    }
 
     socket.on('disconnect', () => {
-      //console.log('User disconnected:', socket.id);
+    });
+
+    socket.on('get_conversations', async () => {
+      try {
+        const me = socket.data.userId;
+        if (!me) {
+          console.warn('get_conversations: userId no encontrado. FirebaseUid:', socket.data.user?.uid);
+          return socket.emit('conversations', []);
+        }
+
+        const messages = await privateRepo.find({
+          where: [
+            { emisor: { id: me } },
+            { receptor: { id: me } },
+          ],
+          relations: ['emisor', 'receptor'],
+          order: { fechaCreacion: 'DESC' },
+        });
+
+        interface Conversation {
+          userId: string;
+          userName: string;
+          userPhoto: string | null;
+          lastMessage: string;
+          lastMessageTime: Date;
+        }
+
+        const conversationMap = new Map<string, Conversation>();
+
+        for (const msg of messages) {
+          const otherId = msg.emisor.id === me ? msg.receptor.id : msg.emisor.id;
+          const otherUser = msg.emisor.id === me ? msg.receptor : msg.emisor;
+
+          if (!conversationMap.has(otherId)) {
+            conversationMap.set(otherId, {
+              userId: otherId,
+              userName: otherUser.nombre,
+              userPhoto: otherUser.fotoPerfil,
+              lastMessage: msg.contenido,
+              lastMessageTime: msg.fechaCreacion,
+            });
+          }
+        }
+
+        const conversations = Array.from(conversationMap.values());
+        socket.emit('conversations', conversations);
+      } catch (err) {
+        console.error('Error al obtener conversaciones:', err);
+        socket.emit('conversations', []);
+      }
     });
 
     socket.on('join_room', async (eventId: string) => {
@@ -87,7 +150,6 @@ async function bootstrap() {
           take: 50,
         });
 
-        //envia el evento solo al socket actual (el cliente que hizo la llamada).
         socket.emit('chat_history', history);
       } catch {
         emitSocketError(socket, 'history_failed', 'Error al cargar el historial');
@@ -125,16 +187,90 @@ async function bootstrap() {
           });
 
           const saved = await chatRepo.save(message);
-          //emite el evento a todos los sockets conectados a ese room, incluido el emisor si esta en el room.
-          io.to(`event:${eventId}`).emit('chat_message', saved);
+          const hydrated = await chatRepo.findOne({
+            where: { id: saved.id },
+            relations: ['usuario'],
+          });
+          io.to(`event:${eventId}`).emit('chat_message', hydrated ?? saved);
         } catch (err) {
           console.error(err);
           socket.emit('chat_error', { message: 'Error al guardar mensaje' });
         }
       }
     );
-  });
 
+    socket.on('dm_history', async ({ withUserId }: { withUserId: string }) => {
+      try {
+        const me = socket.data.userId;
+        if (!me || !withUserId) return;
+
+        const history = await privateRepo.find({
+          where: [
+            { emisor: { id: me }, receptor: { id: withUserId } },
+            { emisor: { id: withUserId }, receptor: { id: me } },
+          ],
+          relations: ['emisor', 'receptor'],
+          order: { fechaCreacion: 'ASC' },
+          take: 50,
+        });
+
+        socket.emit('dm_history', history);
+      } catch (err) {
+        emitSocketError(socket, 'dm_history_failed', 'Error al cargar historial de mensajes privados');
+      }
+    });
+
+    socket.on(
+      'dm_message',
+      async ({ toUserId, text }: { toUserId: string; text?: string }) => {
+        try {
+          const me = socket.data.userId;
+          const trimmedText = text?.trim() ?? '';
+
+          console.log('dm_message recibido:', { from: me, to: toUserId, textLength: trimmedText.length });
+
+          if (!me || !toUserId || trimmedText.length === 0) {
+            console.warn('dm_message: datos inválidos', { me, toUserId, textLength: trimmedText.length });
+            return;
+          }
+
+          const sender = await usersRepo.findOne({ where: { id: me } });
+          const receiver = await usersRepo.findOne({ where: { id: toUserId } });
+
+          if (!sender || !receiver) {
+            console.warn('dm_message: usuario no encontrado', { sender: !!sender, receiver: !!receiver });
+            return;
+          }
+
+          const message = privateRepo.create({
+            contenido: trimmedText,
+            emisor: sender,
+            receptor: receiver,
+          });
+          const saved = await privateRepo.save(message);
+          const hydrated = await privateRepo.findOne({
+            where: { id: saved.id },
+            relations: ['emisor', 'receptor'],
+          });
+
+          console.log('dm_message emitiendo:', {
+            to: [me, toUserId],
+            message: {
+              id: hydrated?.id,
+              contenido: hydrated?.contenido,
+              emisor: { id: hydrated?.emisor?.id, nombre: hydrated?.emisor?.nombre },
+              receptor: { id: hydrated?.receptor?.id, nombre: hydrated?.receptor?.nombre },
+            },
+          });
+
+          io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
+        } catch (err) {
+          console.error('dm_message error:', err);
+          emitSocketError(socket, 'dm_send_failed', 'Error al enviar mensaje privado');
+        }
+      }
+    );
+  });
 
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {

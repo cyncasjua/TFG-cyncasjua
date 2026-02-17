@@ -9,6 +9,9 @@ import {
   Query,
   Patch,
   ForbiddenException,
+  UseGuards,
+  Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -21,13 +24,16 @@ import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import { UsersService } from 'src/users/users.service';
+import { FirebaseAuthGuard } from '../auth/firebase.guard';
 
 @Controller('events')
 export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
-    private readonly notificacionesService: NotificacionesService
-  ) {}
+    private readonly notificacionesService: NotificacionesService,
+    private readonly usersService: UsersService
+  ) { }
 
   @Post()
   async create(@Body() dto: CreateEventDto): Promise<Event> {
@@ -115,5 +121,50 @@ export class EventsController {
   )
   uploadEventImage(@UploadedFile() file: import('multer').File) {
     return { url: `/uploads/event-images/${file.filename}` };
+  }
+
+  @Get(':id/attendees')
+  async listAttendees(@Param('id') id: string) {
+    const attendees = await this.eventsService.getAttendees(id);
+    return attendees.map((user) => ({
+      id: user.id,
+      nombre: user.nombre,
+      fotoPerfil: user.fotoPerfil,
+    }));
+  }
+
+  @Get(':id/attendees/me')
+  @UseGuards(FirebaseAuthGuard)
+  async myAttendance(@Param('id') id: string, @Req() req) {
+    const user = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const attending = await this.eventsService.isAttending(id, user.id);
+    return { attending };
+  }
+
+  @Post(':id/attendees')
+  @UseGuards(FirebaseAuthGuard)
+  async attend(@Param('id') id: string, @Req() req) {
+    const user = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const attendees = await this.eventsService.addAttendee(id, user.id);
+    return attendees.map((u) => ({
+      id: u.id,
+      nombre: u.nombre,
+      fotoPerfil: u.fotoPerfil,
+    }));
+  }
+
+  @Delete(':id/attendees')
+  @UseGuards(FirebaseAuthGuard)
+  async unattend(@Param('id') id: string, @Req() req) {
+    const user = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const attendees = await this.eventsService.removeAttendee(id, user.id);
+    return attendees.map((u) => ({
+      id: u.id,
+      nombre: u.nombre,
+      fotoPerfil: u.fotoPerfil,
+    }));
   }
 }

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { Event } from '../types/event';
+import { PublicUser } from '../types/user';
 
 const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -119,4 +120,29 @@ export async function getEvents(): Promise<Event[]> {
       imagen: event.imagen,
     } as Event;
   });
+}
+
+export async function getEventAttendees(eventId: string): Promise<PublicUser[]> {
+  const res = await api.get(`/events/${eventId}/attendees`);
+  return res.data as PublicUser[];
+}
+
+export async function getMyAttendance(eventId: string): Promise<{ attending: boolean }> {
+  const res = await api.get(`/events/${eventId}/attendees/me`);
+  return res.data as { attending: boolean };
+}
+
+export async function attendEvent(eventId: string): Promise<PublicUser[]> {
+  const res = await api.post(`/events/${eventId}/attendees`);
+  return res.data as PublicUser[];
+}
+
+export async function unattendEvent(eventId: string): Promise<PublicUser[]> {
+  const res = await api.delete(`/events/${eventId}/attendees`);
+  return res.data as PublicUser[];
+}
+
+export async function getUserProfile(userId: string): Promise<PublicUser | null> {
+  const res = await api.get(`/users/${userId}`);
+  return res.data as PublicUser | null;
 }

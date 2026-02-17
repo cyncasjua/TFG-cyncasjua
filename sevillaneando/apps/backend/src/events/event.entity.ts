@@ -5,6 +5,8 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Categoria } from '../entities/categoria.entity';
 
@@ -56,6 +58,14 @@ export class Event {
 
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;
+
+  @ManyToMany(() => User, (user) => user.eventosAsistidos)
+  @JoinTable({
+    name: 'event_asistentes',
+    joinColumn: { name: 'event_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' },
+  })
+  asistentes!: User[];
 
   aprobarEvento() {
     this.estado = EstadoEnum.Aprobado;

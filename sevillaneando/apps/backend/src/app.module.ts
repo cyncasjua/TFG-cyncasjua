@@ -19,6 +19,7 @@ import { CategoriasModule } from './categorias/categorias.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { Mensaje } from './entities/mensaje.entity';
 import { ChatModule } from './chat/chat.module';
+import { MensajePrivado } from './entities/mensaje-privado.entity';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ChatModule } from './chat/chat.module';
           Notificacion,
           Recomendacion,
           Mensaje,
+          MensajePrivado,
         ],
         synchronize: true,
       }),

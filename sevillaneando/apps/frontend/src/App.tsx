@@ -11,6 +11,7 @@ import { SignUpScreen } from './screens/SignUpScreen';
 import { AdminScreen } from './screens/AdminScreen';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { SocketProvider } from './context/SocketContext';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import type { Event } from './types/event';
@@ -22,6 +23,9 @@ import { ModeratorEditEventScreen } from './screens/ModeratorEditEventScreen';
 import { NotificacionesScreen } from './screens/NotificacionesScreen';
 import CategoriesScreen from './screens/CategoriesScreen';
 import { EventsMapScreen } from './screens/EventsMapScreen';
+import { UserProfileScreen } from './screens/UserProfileScreen';
+import { DirectMessageScreen } from './screens/DirectMessageScreen';
+import { MessagesScreen } from './screens/MessagesScreen';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -42,6 +46,9 @@ export type RootStackParamList = {
   Notifications: undefined;
   Categories: undefined;
   EventsMap: undefined;
+  UserProfile: { userId: string };
+  DirectMessage: { userId: string; userName: string };
+  Messages: undefined;
 };
 
 export type AuthStackParamList = {
@@ -163,6 +170,21 @@ const Navigator = () => {
             component={NotificacionesScreen}
             options={{ title: 'Notificaciones' }}
           />
+          <AppStack.Screen
+            name="Messages"
+            component={MessagesScreen}
+            options={{ title: 'Mensajes' }}
+          />
+          <AppStack.Screen
+            name="UserProfile"
+            component={UserProfileScreen}
+            options={{ title: 'Perfil' }}
+          />
+          <AppStack.Screen
+            name="DirectMessage"
+            component={DirectMessageScreen}
+            options={{ title: 'Mensaje privado' }}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
@@ -178,7 +200,9 @@ const App = () => (
   <GestureHandlerRootView style={{ flex: 1 }}>
     <ThemeProvider>
       <AuthProvider>
-        <Navigator />
+        <SocketProvider>
+          <Navigator />
+        </SocketProvider>
       </AuthProvider>
     </ThemeProvider>
   </GestureHandlerRootView>

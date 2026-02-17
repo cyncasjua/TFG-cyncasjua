@@ -12,8 +12,10 @@ import { User } from '../users/user.entity';
 export class EventsService {
   constructor(
     @InjectRepository(Event)
-    private readonly eventRepo: Repository<Event>
-  ) {}
+    private readonly eventRepo: Repository<Event>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>
+  ) { }
 
   async create(dto: CreateEventDto): Promise<Event> {
     const event = this.eventRepo.create({
@@ -75,5 +77,49 @@ export class EventsService {
 
   async remove(id: string): Promise<void> {
     await this.eventRepo.delete(id);
+  }
+
+  async getAttendees(eventId: string): Promise<User[]> {
+    const event = await this.eventRepo.findOne({
+      where: { id: eventId },
+      relations: ['asistentes'],
+    });
+    if (!event) throw new NotFoundException('Evento no encontrado');
+    return event?.asistentes ?? [];
+  }
+
+  async isAttending(eventId: string, userId: string): Promise<boolean> {
+    const attendees = await this.getAttendees(eventId);
+    return attendees.some((att) => att.id === userId);
+  }
+
+  async addAttendee(eventId: string, userId: string): Promise<User[]> {
+    const event = await this.eventRepo.findOne({
+      where: { id: eventId },
+      relations: ['asistentes'],
+    });
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    event.asistentes = event.asistentes ?? [];
+    if (!event.asistentes.some(att => att.id === userId)) {
+      event.asistentes.push(user);
+      await this.eventRepo.save(event);
+    }
+    return event.asistentes;
+  }
+
+  async removeAttendee(eventId: string, userId: string): Promise<User[]> {
+    const event = await this.eventRepo.findOne({
+      where: { id: eventId },
+      relations: ['asistentes'],
+    });
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    event.asistentes = (event.asistentes ?? []).filter((att) => att.id !== userId);
+    await this.eventRepo.save(event);
+    return event.asistentes;
   }
 }
