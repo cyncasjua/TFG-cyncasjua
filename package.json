@@ -23,6 +23,7 @@
     "@types/react": "~19.1.10",
     "@types/react-native": "^0.72.8",
     "commitlint": "^20.4.1",
+    "expo-module-scripts": "^5.0.8",
     "typescript": "~5.9.2"
   }
 }

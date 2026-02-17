@@ -55,10 +55,10 @@ async function bootstrap() {
   const chatRepo = dataSource.getRepository(Mensaje);
 
   io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+    //console.log('User connected:', socket.id);
 
     socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
+      //console.log('User disconnected:', socket.id);
     });
 
     socket.on('join_room', async (eventId: string) => {
@@ -79,6 +79,7 @@ async function bootstrap() {
         const room = `event:${eventId}`;
         socket.join(room);
 
+        //carga los últimos 50 mensajes del evento por si hay error
         const history = await chatRepo.find({
           where: { evento: { id: eventId } },
           relations: ['usuario'],
@@ -86,6 +87,7 @@ async function bootstrap() {
           take: 50,
         });
 
+        //envia el evento solo al socket actual (el cliente que hizo la llamada).
         socket.emit('chat_history', history);
       } catch {
         emitSocketError(socket, 'history_failed', 'Error al cargar el historial');
@@ -123,6 +125,7 @@ async function bootstrap() {
           });
 
           const saved = await chatRepo.save(message);
+          //emite el evento a todos los sockets conectados a ese room, incluido el emisor si esta en el room.
           io.to(`event:${eventId}`).emit('chat_message', saved);
         } catch (err) {
           console.error(err);
