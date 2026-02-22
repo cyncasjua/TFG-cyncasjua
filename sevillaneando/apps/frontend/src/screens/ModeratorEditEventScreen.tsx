@@ -61,8 +61,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const [categoriaId, setCategoriaId] = useState(event.categoria?.id ?? '');
   const [openCategoria, setOpenCategoria] = useState(false);
   const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);
-  const [imageUrl, setImageUrl] = useState(event.imagen ?? '');
-  const [localImageUri, setLocalImageUri] = useState<string | null>(null);
+  const [imageUrls, setImageUrls] = useState<string[]>(event.imagenes ?? []);
+  const [localImageUris, setLocalImageUris] = useState<string[]>(event.imagenes ?? []);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(event.imagen ?? (event.imagenes?.[0] ?? null));
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
   const [estado, setEstado] = useState(event.estado ?? 'Pendiente');
@@ -80,6 +81,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const precioRef = useRef<TextInput>(null);
   const precioMinRef = useRef<TextInput>(null);
   const precioMaxRef = useRef<TextInput>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const [scrollX, setScrollX] = useState(0);
+  const [maxScroll, setMaxScroll] = useState(0);
+
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
@@ -95,47 +100,64 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     fetchCategorias();
   }, []);
 
-  const pickImage = async () => {
+  const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsMultipleSelection: true,
+      selectionLimit: 5 - imageUrls.length,
       aspect: [4, 3],
       quality: 0.7,
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const localUri = result.assets[0].uri;
-      const formData = new FormData();
-      formData.append('file', {
-        uri: localUri,
-        name: 'event.jpg',
-        type: 'image/jpeg',
-      } as any);
-      try {
-        const res = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/events/upload-image`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'multipart/form-data' },
-            body: formData,
-          }
-        );
-        const data = await res.json();
-        const url = data.url.startsWith('http')
-          ? data.url
-          : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
-        setLocalImageUri(localUri);
-        setImageUrl(url);
-      } catch (e) {
-        Alert.alert('Error', 'No se pudo subir la imagen.');
-        setLocalImageUri(null);
-        setImageUrl('');
+      const newUris = result.assets.map(asset => asset.uri).slice(0, 5 - imageUrls.length);
+      const urls: string[] = [];
+      for (const uri of newUris) {
+        const formData = new FormData();
+        formData.append('file', {
+          uri,
+          name: 'event.jpg',
+          type: 'image/jpeg',
+        } as any);
+        try {
+          const res = await fetch(
+            `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/events/upload-image`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'multipart/form-data' },
+              body: formData,
+            }
+          );
+          const data = await res.json();
+          const url = data.url.startsWith('http')
+            ? data.url
+            : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
+          urls.push(url);
+        } catch (e) {
+          Alert.alert('Error', 'No se pudo subir una imagen.');
+        }
       }
+      setLocalImageUris(prev => [...prev, ...newUris]);
+      setImageUrls(prev => {
+        const combined = [...prev, ...urls];
+        if (!coverImageUrl && combined.length > 0) setCoverImageUrl(combined[0]);
+        return combined;
+      });
+      if (!coverImageUrl && urls.length > 0) setCoverImageUrl(urls[0]);
     }
   };
 
-  const quitarImagen = () => {
-    setLocalImageUri(null);
-    setImageUrl('');
+  const quitarImagen = (idx: number) => {
+    const newUris = [...localImageUris];
+    const newUrls = [...imageUrls];
+    newUris.splice(idx, 1);
+    newUrls.splice(idx, 1);
+    setLocalImageUris(newUris);
+    setImageUrls(newUrls);
+    if (newUrls.length === 0) {
+      setCoverImageUrl(null);
+    } else if (coverImageUrl === imageUrls[idx]) {
+      setCoverImageUrl(newUrls[0] || null);
+    }
   };
 
   const geocodeAddress = async (address: string, showLoading = false) => {
@@ -223,7 +245,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
         categoriaId,
         estado,
-        imagen: imageUrl || undefined,
+        imagenes: imageUrls || undefined,
+        imagen: coverImageUrl || undefined,
       };
       await api.put(`/events/${event.id}`, payload);
       Alert.alert('Éxito', 'Evento actualizado');
@@ -547,17 +570,145 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
             />
-            <ThemedText style={styles.label}>Imagen</ThemedText>
-            {imageUrl ? (
-              <View style={{ alignItems: 'center', marginBottom: 8 }}>
-                <Image source={{ uri: imageUrl }} style={styles.imagePreview} />
-                <TouchableOpacity onPress={quitarImagen} style={styles.removeImageBtn}>
-                  <ThemedText style={{ color: '#fff' }}>Quitar imagen</ThemedText>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <ThemedButton title="Seleccionar imagen" onPress={pickImage} />
-            )}
+            <ThemedText style={styles.label}>Imagen del evento</ThemedText>
+            <TouchableOpacity style={styles.imagePicker}>
+              {localImageUris && localImageUris.length > 0 ? (
+                <>
+                  <View style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={true}
+                      contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', minWidth: '100%' }}
+                      style={{ width: '100%' }}
+                      scrollEnabled={true}
+                      ref={scrollRef}
+                      onContentSizeChange={(w, h) => setMaxScroll(w - 360)}
+                      onScroll={e => {
+                        setScrollX(e.nativeEvent.contentOffset.x);
+                      }}
+                      scrollEventThrottle={16}
+                    >
+                      {localImageUris.map((uri, idx) => (
+                        <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
+                          <Image
+                            source={{ uri }}
+                            style={[
+                              styles.imagePreview,
+                              {
+                                width: 120,
+                                borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
+                                borderColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
+                              },
+                            ]}
+                          />
+                          <TouchableOpacity
+                            onPress={() => {
+                              const newUris = [...localImageUris];
+                              const newUrls = [...imageUrls];
+                              newUris.splice(idx, 1);
+                              newUrls.splice(idx, 1);
+                              setLocalImageUris(newUris);
+                              setImageUrls(newUrls);
+                              if (newUrls.length === 0) {
+                                setCoverImageUrl(null);
+                              } else if (coverImageUrl === imageUrls[idx]) {
+                                setCoverImageUrl(newUrls[0] || null);
+                              }
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              backgroundColor: 'rgba(0,0,0,0.6)',
+                              borderRadius: 12,
+                              padding: 2,
+                              zIndex: 2,
+                            }}
+                          >
+                            <Icon name="close" size={18} color="#fff" />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => setCoverImageUrl(imageUrls[idx])}
+                            style={{
+                              position: 'absolute',
+                              bottom: 4,
+                              left: 4,
+                              backgroundColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)',
+                              borderRadius: 12,
+                              paddingHorizontal: 8,
+                              paddingVertical: 2,
+                              zIndex: 2,
+                            }}
+                          >
+                            <ThemedText style={{ color: '#fff', fontSize: 12 }}>
+                              {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </ScrollView>
+                    {imageUrls.length > 2 && maxScroll > 20 && scrollX < maxScroll - 10 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (scrollRef.current) {
+                            scrollRef.current.scrollTo({ x: scrollX + 200, animated: true });
+                          }
+                        }}
+                        style={{
+                          position: 'absolute',
+                          right: 0,
+                          top: '50%',
+                          transform: [{ translateY: -20 }],
+                          backgroundColor: 'rgba(0,0,0,0.3)',
+                          borderRadius: 20,
+                          padding: 6,
+                          zIndex: 10,
+                        }}
+                      >
+                        <Icon name="chevron-right" size={28} color="#fff" />
+                      </TouchableOpacity>
+                    )}
+                    {imageUrls.length > 2 && maxScroll > 20 && scrollX > 10 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (scrollRef.current) {
+                            scrollRef.current.scrollTo({ x: scrollX - 200, animated: true });
+                          }
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: '50%',
+                          transform: [{ translateY: -20 }],
+                          backgroundColor: 'rgba(0,0,0,0.3)',
+                          borderRadius: 20,
+                          padding: 6,
+                          zIndex: 10,
+                        }}
+                      >
+                        <Icon name="chevron-left" size={28} color="#fff" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {imageUrls.length < 5 && (
+                    <ThemedButton
+                      title="Añadir más imágenes"
+                      onPress={pickImages}
+                      style={{ marginBottom: 8, alignSelf: 'flex-start' }}
+                    />
+                  )}
+                </>
+              ) : (
+                <>
+                  <ThemedButton
+                    title="Añadir imágenes"
+                    onPress={pickImages}
+                    style={{ marginBottom: 8, alignSelf: 'flex-start' }}
+                  />
+                </>
+
+              )}
+            </TouchableOpacity>
             <ThemedButton
               title={loading ? 'Guardando...' : 'Guardar cambios'}
               onPress={handleSave}
@@ -586,6 +737,11 @@ const styles = StyleSheet.create({
   mapSearchButton: { padding: 8 },
   imagePreview: { width: 180, height: 120, borderRadius: 10, marginBottom: 8 },
   removeImageBtn: { backgroundColor: '#f44336', padding: 6, borderRadius: 6 },
+  imagePicker: {
+    alignSelf: 'center',
+    marginBottom: 16,
+    width: '100%',
+  },
 });
 
 export default ModeratorEditEventScreen;

@@ -8,6 +8,7 @@ import {
   Length,
   MaxLength,
   Min,
+  ArrayMaxSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
@@ -75,4 +76,9 @@ export class CreateEventDto {
   @IsOptional()
   @MaxLength(512)
   imagen?: string;
+
+  @IsOptional()
+  @ArrayMaxSize(5, { message: 'Solo se pueden añadir hasta 5 imágenes por evento' })
+  @IsString({ each: true })
+  imagenes?: string[];
 }

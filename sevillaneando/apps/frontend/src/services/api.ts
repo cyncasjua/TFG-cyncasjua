@@ -120,6 +120,7 @@ export async function getEvents(): Promise<Event[]> {
       latitude: coords?.latitude,
       longitude: coords?.longitude,
       imagen: event.imagen,
+      imagenes: event.imagenes,
     } as Event;
   });
 }

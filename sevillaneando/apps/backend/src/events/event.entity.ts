@@ -66,6 +66,9 @@ export class Event {
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;
 
+  @Column('simple-array', { nullable: true })
+  imagenes?: string[];
+
   @ManyToMany(() => User, (user) => user.eventosAsistidos)
   @JoinTable({
     name: 'event_asistentes',
@@ -124,6 +127,9 @@ export class Event {
     }
     if (this.imagen && this.imagen.length > 512) {
       throw new BadRequestException('La URL de la imagen no puede superar los 512 caracteres.');
+    }
+    if (this.imagenes.length > 5) {
+      throw new BadRequestException('No puedes subir más de 5 imágenes para un evento.');
     }
   }
 }

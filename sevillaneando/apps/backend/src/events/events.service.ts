@@ -32,6 +32,7 @@ export class EventsService {
       estado: EstadoEnum.Pendiente,
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
+      imagenes: dto.imagenes ?? undefined,
     });
     const saved = await this.eventRepo.save(event);
     return saved;
@@ -75,6 +76,7 @@ export class EventsService {
     event.categoria = dto.categoriaId ? { id: dto.categoriaId } as Categoria : event.categoria;
     event.estado = dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
+    event.imagenes = dto.imagenes !== undefined ? dto.imagenes : event.imagenes;
     event.location = location;
     event.fechaInicio = fechaInicio;
     event.fechaFin = fechaFin;

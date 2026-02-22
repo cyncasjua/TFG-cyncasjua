@@ -15,4 +15,5 @@ export interface Event {
   latitude?: number;
   longitude?: number;
   imagen?: string;
+  imagenes?: string[];
 }

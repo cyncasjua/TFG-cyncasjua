@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
-import { ScrollView } from 'react-native';
+import { FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import {
@@ -38,6 +38,7 @@ import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
 import { attendEvent, getEventAttendees, getMyAttendance, unattendEvent } from '../services/api';
+import { Dimensions } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -419,6 +420,21 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         </TouchableOpacity>
         <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+          <FlatList
+            data={event.imagenes}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, idx) => idx.toString()}
+            renderItem={({ item }) => (
+              <Image
+                source={{ uri: item }}
+                style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 12, marginRight: 10 }}
+                resizeMode="cover"
+              />
+            )}
+            style={{ marginBottom: 16 }}
+          />
           <ThemedView
             style={[
               { borderRadius: 18, padding: 16, marginBottom: 12 },
