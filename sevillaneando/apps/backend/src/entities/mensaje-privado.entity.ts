@@ -10,6 +10,9 @@ export class MensajePrivado {
   @Column({ type: 'text' })
   contenido: string;
 
+  @Column({ type: 'text', nullable: true })
+  imageUrl?: string | null;
+
   @ManyToOne(() => User)
   emisor: User;
 

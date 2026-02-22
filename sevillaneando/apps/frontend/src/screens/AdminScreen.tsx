@@ -47,9 +47,7 @@ export const AdminScreen: React.FC<Props> = () => {
   const changeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user') => {
     try {
       setChangingRole(true);
-      console.log('Cambiando rol:', { userId, newRole });
       const response = await api.patch(`/users/${userId}/role`, { rol: newRole });
-      console.log('Respuesta exitosa:', response.data);
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, rol: newRole } : u)));
       setShowModal(false);
       Alert.alert('\u00c9xito', `Rol actualizado a ${newRole}.`);
@@ -58,8 +56,8 @@ export const AdminScreen: React.FC<Props> = () => {
       const errorMsg =
         error instanceof Error && 'response' in error
           ? (error as AxiosError<{ message: string }>).response?.data?.message ||
-            error.message ||
-            'No se pudo cambiar el rol.'
+          error.message ||
+          'No se pudo cambiar el rol.'
           : error instanceof Error
             ? error.message
             : 'No se pudo cambiar el rol.';
@@ -99,8 +97,8 @@ export const AdminScreen: React.FC<Props> = () => {
               const errorMsg =
                 error instanceof Error && 'response' in error
                   ? (error as AxiosError<{ message: string }>).response?.data?.message ||
-                    error.message ||
-                    'No se pudo borrar el usuario.'
+                  error.message ||
+                  'No se pudo borrar el usuario.'
                   : error instanceof Error
                     ? error.message
                     : 'No se pudo borrar el usuario.';

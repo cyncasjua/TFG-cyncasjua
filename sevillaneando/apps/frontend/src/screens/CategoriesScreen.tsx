@@ -49,7 +49,6 @@ const CategoriesScreen = () => {
       const data = res.data;
       setCategories(data);
     } catch (error) {
-      console.log('Error al cargar categorías:', error);
       Alert.alert('Error', getErrorMessage(error));
     }
     setLoading(false);
@@ -221,101 +220,101 @@ const CategoriesScreen = () => {
                 },
               ]}
             >
-                <ThemedView style={[styles.formHeader, { justifyContent: 'space-between' }]}>
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <MaterialIcons
-                      name={editMode ? 'edit' : 'add-circle'}
-                      size={24}
-                      color={colors.primary}
-                      style={{ marginRight: 8 }}
-                    />
-                    <ThemedTitle style={styles.formTitle}>
-                      {editMode ? 'Editar categoría' : 'Nueva categoría'}
-                    </ThemedTitle>
-                  </ThemedView>
-                  <TouchableOpacity
-                    onPress={() => Keyboard.dismiss()}
-                    style={{ padding: 4, marginLeft: 8 }}
-                  >
-                    <MaterialIcons name="keyboard-hide" size={22} color={colors.primary} />
-                  </TouchableOpacity>
+              <ThemedView style={[styles.formHeader, { justifyContent: 'space-between' }]}>
+                <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialIcons
+                    name={editMode ? 'edit' : 'add-circle'}
+                    size={24}
+                    color={colors.primary}
+                    style={{ marginRight: 8 }}
+                  />
+                  <ThemedTitle style={styles.formTitle}>
+                    {editMode ? 'Editar categoría' : 'Nueva categoría'}
+                  </ThemedTitle>
                 </ThemedView>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      color: colors.text,
-                      borderColor: colors.primary,
-                      backgroundColor: colors.background,
-                      fontWeight: 'bold',
-                      fontSize: 15,
-                    },
-                  ]}
-                  placeholder="Nombre"
-                  placeholderTextColor={colors.textSecondary}
-                  value={nombre}
-                  onChangeText={setNombre}
-                  autoCapitalize="sentences"
-                  returnKeyType="next"
-                />
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      color: colors.text,
-                      borderColor: colors.primary,
-                      backgroundColor: colors.background,
-                      minHeight: 50,
-                      fontSize: 14,
-                    },
-                  ]}
-                  placeholder="Descripción"
-                  placeholderTextColor={colors.textSecondary}
-                  value={descripcion}
-                  onChangeText={setDescripcion}
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-                <ThemedView
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    marginTop: 10,
-                    alignItems: 'center',
-                  }}
+                <TouchableOpacity
+                  onPress={() => Keyboard.dismiss()}
+                  style={{ padding: 4, marginLeft: 8 }}
                 >
-                  <TouchableOpacity
-                    style={[styles.createButton, { backgroundColor: colors.error }]}
-                    onPress={() => setModalVisible(false)}
-                    activeOpacity={0.8}
-                  >
-                    <MaterialIcons name="close" size={20} color="#fff" />
-                    <ThemedText style={styles.createButtonText}>Cancelar</ThemedText>
-                  </TouchableOpacity>
-                  <ThemedView style={{ width: 18 }} />
-                  <TouchableOpacity
-                    style={[
-                      styles.createButton,
-                      { backgroundColor: colors.primary, opacity: loading ? 0.6 : 1 },
-                    ]}
-                    onPress={async () => {
-                      await handleCreateOrEdit();
-                      setModalVisible(false);
-                    }}
-                    disabled={loading}
-                    activeOpacity={0.8}
-                  >
-                    <MaterialIcons name="check" size={20} color="#fff" />
-                    <ThemedText style={styles.createButtonText}>
-                      {editMode ? 'Guardar' : 'Crear'}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </ThemedView>
-              </ThemedCard>
-            </ThemedView>
-          </Modal>
-        </ThemedView>
+                  <MaterialIcons name="keyboard-hide" size={22} color={colors.primary} />
+                </TouchableOpacity>
+              </ThemedView>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    color: colors.text,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.background,
+                    fontWeight: 'bold',
+                    fontSize: 15,
+                  },
+                ]}
+                placeholder="Nombre"
+                placeholderTextColor={colors.textSecondary}
+                value={nombre}
+                onChangeText={setNombre}
+                autoCapitalize="sentences"
+                returnKeyType="next"
+              />
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    color: colors.text,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.background,
+                    minHeight: 50,
+                    fontSize: 14,
+                  },
+                ]}
+                placeholder="Descripción"
+                placeholderTextColor={colors.textSecondary}
+                value={descripcion}
+                onChangeText={setDescripcion}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+              <ThemedView
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  marginTop: 10,
+                  alignItems: 'center',
+                }}
+              >
+                <TouchableOpacity
+                  style={[styles.createButton, { backgroundColor: colors.error }]}
+                  onPress={() => setModalVisible(false)}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="close" size={20} color="#fff" />
+                  <ThemedText style={styles.createButtonText}>Cancelar</ThemedText>
+                </TouchableOpacity>
+                <ThemedView style={{ width: 18 }} />
+                <TouchableOpacity
+                  style={[
+                    styles.createButton,
+                    { backgroundColor: colors.primary, opacity: loading ? 0.6 : 1 },
+                  ]}
+                  onPress={async () => {
+                    await handleCreateOrEdit();
+                    setModalVisible(false);
+                  }}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="check" size={20} color="#fff" />
+                  <ThemedText style={styles.createButtonText}>
+                    {editMode ? 'Guardar' : 'Crear'}
+                  </ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            </ThemedCard>
+          </ThemedView>
+        </Modal>
+      </ThemedView>
     </ImageBackground>
   );
 };

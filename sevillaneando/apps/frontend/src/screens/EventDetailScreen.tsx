@@ -11,6 +11,7 @@ import {
   Image,
   Modal,
   Animated,
+  Alert,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import dayjs from 'dayjs';
@@ -45,7 +46,6 @@ const uploadProbe = async () => {
     const storageRef = ref(storage, 'demo.txt');
     await uploadString(storageRef, 'Contenido de prueba', 'raw');
     const url = await getDownloadURL(storageRef);
-    console.log('Archivo subido:', url);
   } catch (error) {
     console.error('Error al subir archivo:', error);
   }
@@ -182,6 +182,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     socket.on('chat_message', (message: ChatMessage) => {
       setMessages((prev) => [...prev, message]);
+    });
+
+    socket.on('delete_event_message_success', (messageId: string) => {
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
     });
 
     socket.on('chat_error', (err: { message: string }) => {
@@ -351,6 +355,25 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       console.error(error);
       setChatError('Error al abrir la camara');
     }
+  };
+
+  const handleDeleteEventMessage = (messageId: string) => {
+    Alert.alert(
+      'Borrar mensaje',
+      '¿Estás seguro de que quieres borrar este mensaje?',
+      [
+        { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
+        {
+          text: 'Borrar',
+          onPress: () => {
+            if (socketRef.current) {
+              socketRef.current.emit('delete_event_message', { eventId: event?.id, messageId });
+            }
+          },
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   if (!isFocused) return null;
@@ -580,7 +603,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             )}
                           </TouchableOpacity>
                         )}
-                        <ThemedView
+                        <TouchableOpacity
+                          onLongPress={() => isOwn && handleDeleteEventMessage(item.id)}
+                          activeOpacity={0.9}
                           style={{
                             padding: 8,
                             borderRadius: 10,
@@ -629,7 +654,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                           >
                             {dayjs(item.fechaCreacion).format('HH:mm')}
                           </ThemedTextSecondary>
-                        </ThemedView>
+                        </TouchableOpacity>
                         {!isOwn && item.usuario?.id && (
                           <TouchableOpacity
                             onPress={() => {
@@ -724,7 +749,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               </ThemedView>
             </ThemedView>
           </View>
-        )}
+        )
+        }
         <Modal
           visible={!!previewImageUrl}
           transparent
@@ -754,8 +780,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
           </View>
         </Modal>
-      </SafeAreaView>
-    </ImageBackground>
+      </SafeAreaView >
+    </ImageBackground >
   );
 };
 

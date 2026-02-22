@@ -63,7 +63,6 @@ async function bootstrap() {
       if (currentUser) {
         socket.data.userId = currentUser.id;
         socket.join(`user:${currentUser.id}`);
-        console.log('Usuario conectado:', currentUser.id, firebaseUid);
       } else {
         console.warn('Usuario no encontrado en DB con firebaseUid:', firebaseUid);
       }
@@ -222,15 +221,13 @@ async function bootstrap() {
 
     socket.on(
       'dm_message',
-      async ({ toUserId, text }: { toUserId: string; text?: string }) => {
+      async ({ toUserId, text, imageUrl }: { toUserId: string; text?: string; imageUrl?: string }) => {
         try {
           const me = socket.data.userId;
           const trimmedText = text?.trim() ?? '';
 
-          console.log('dm_message recibido:', { from: me, to: toUserId, textLength: trimmedText.length });
-
-          if (!me || !toUserId || trimmedText.length === 0) {
-            console.warn('dm_message: datos inválidos', { me, toUserId, textLength: trimmedText.length });
+          if (!me || !toUserId || (trimmedText.length === 0 && !imageUrl)) {
+            console.warn('dm_message: datos inválidos', { me, toUserId, textLength: trimmedText.length, hasImage: !!imageUrl });
             return;
           }
 
@@ -244,6 +241,7 @@ async function bootstrap() {
 
           const message = privateRepo.create({
             contenido: trimmedText,
+            imageUrl: imageUrl ?? null,
             emisor: sender,
             receptor: receiver,
           });
@@ -258,8 +256,9 @@ async function bootstrap() {
             message: {
               id: hydrated?.id,
               contenido: hydrated?.contenido,
-              emisor: { id: hydrated?.emisor?.id, nombre: hydrated?.emisor?.nombre },
-              receptor: { id: hydrated?.receptor?.id, nombre: hydrated?.receptor?.nombre },
+              imageUrl: hydrated?.imageUrl,
+              emisor: { id: hydrated?.emisor?.id, nombre: hydrated?.emisor?.nombre, fotoPerfil: hydrated?.emisor?.fotoPerfil },
+              receptor: { id: hydrated?.receptor?.id, nombre: hydrated?.receptor?.nombre, fotoPerfil: hydrated?.receptor?.fotoPerfil },
             },
           });
 
@@ -267,6 +266,77 @@ async function bootstrap() {
         } catch (err) {
           console.error('dm_message error:', err);
           emitSocketError(socket, 'dm_send_failed', 'Error al enviar mensaje privado');
+        }
+      }
+    );
+
+    socket.on(
+      'delete_dm',
+      async ({ messageId }: { messageId: string }) => {
+        try {
+          const me = socket.data.userId;
+          if (!me || !messageId) {
+            console.warn('delete_dm: datos inválidos', { me, messageId });
+            return;
+          }
+
+          const message = await privateRepo.findOne({
+            where: { id: messageId },
+            relations: ['emisor', 'receptor'],
+          });
+
+          if (!message) {
+            console.warn('delete_dm: mensaje no encontrado', { messageId });
+            return;
+          }
+
+          if (message.emisor.id !== me) {
+            console.warn('delete_dm: no autorizado', { messageOwner: message.emisor.id, requester: me });
+            return;
+          }
+
+          await privateRepo.remove(message);
+          const toUserId = message.receptor.id;
+
+          io.to(`user:${me}`).to(`user:${toUserId}`).emit('delete_dm_success', messageId);
+        } catch (err) {
+          console.error('delete_dm error:', err);
+          emitSocketError(socket, 'delete_dm_failed', 'Error al borrar mensaje privado');
+        }
+      }
+    );
+
+    socket.on(
+      'delete_event_message',
+      async ({ eventId, messageId }: { eventId: string; messageId: string }) => {
+        try {
+          const me = socket.data.userId;
+          if (!me || !eventId || !messageId) {
+            console.warn('delete_event_message: datos inválidos', { me, eventId, messageId });
+            return;
+          }
+
+          const message = await chatRepo.findOne({
+            where: { id: messageId, evento: { id: eventId } },
+            relations: ['usuario'],
+          });
+
+          if (!message) {
+            console.warn('delete_event_message: mensaje no encontrado', { eventId, messageId });
+            return;
+          }
+
+          if (message.usuario.id !== me) {
+            console.warn('delete_event_message: no autorizado', { messageOwner: message.usuario.id, requester: me });
+            return;
+          }
+
+          await chatRepo.remove(message);
+
+          io.to(`event:${eventId}`).emit('delete_event_message_success', messageId);
+        } catch (err) {
+          console.error('delete_event_message error:', err);
+          emitSocketError(socket, 'delete_event_message_failed', 'Error al borrar mensaje del evento');
         }
       }
     );

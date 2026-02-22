@@ -221,7 +221,6 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         estado,
         imagen: imageUrl || undefined,
       };
-      console.log('Payload enviado al backend:', payload);
       await api.put(`/events/${event.id}`, payload);
       Alert.alert('Éxito', 'Evento actualizado');
       navigation.goBack();
@@ -235,7 +234,6 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         (error as any).response &&
         'data' in (error as any).response
       ) {
-        console.log('Error al actualizar evento:', (error as any).response.data);
         msg += '\n' + JSON.stringify((error as any).response.data);
       } else {
         console.log('Error al actualizar evento:', error);

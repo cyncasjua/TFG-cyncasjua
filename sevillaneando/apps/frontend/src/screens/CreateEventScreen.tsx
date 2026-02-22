@@ -262,7 +262,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         creadorId: user.id,
         imagen: imageUrl || undefined,
       };
-      console.log('Payload para crear evento:', payload);
       await api.post('/events', payload);
       Alert.alert(
         'Éxito',
@@ -371,7 +370,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 ref={addressRef}
                 value={address}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 placeholder="Dirección"
                 placeholderTextColor={colors.text + '99'}
                 style={[
