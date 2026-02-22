@@ -72,6 +72,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const [longitude, setLongitude] = useState<number | null>(-5.9845);
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [precio, setPrecio] = useState('');
+  const [precioMin, setPrecioMin] = useState('');
+  const [precioMax, setPrecioMax] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
@@ -89,6 +91,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const fechaInicioRef = useRef<TextInput>(null);
   const fechaFinRef = useRef<TextInput>(null);
   const precioRef = useRef<TextInput>(null);
+  const precioMinRef = useRef<TextInput>(null);
+  const precioMaxRef = useRef<TextInput>(null);
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
 
   const showDatePicker = () => setDatePickerVisibility(true);
@@ -235,10 +239,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       !fechaFin ||
       latitude === null ||
       longitude === null ||
-      !precio ||
+      (precio && (precioMin || precioMax)) ||
+      (precioMin && !precioMax) ||
+      (precioMax && !precioMin) ||
       !categoriaId
     ) {
-      Alert.alert('Error', 'Por favor, completa todos los campos obligatorios.');
+      Alert.alert('Error', 'Especifica un precio fijo, un intervalo (mín-máx), o déjalo en blanco para gratis.');
       return;
     }
     if (!user?.id) {
@@ -257,7 +263,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
           type: 'Point',
           coordinates: [longitude, latitude],
         },
-        precio: parseFloat(precio),
+        precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
+        precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
+        precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
         categoriaId,
         creadorId: user.id,
         imagen: imageUrl || undefined,
@@ -521,12 +529,52 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 ? `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
                 : 'Toca el mapa para seleccionar la ubicación'}
             </ThemedText>
-            <ThemedText style={styles.label}>Precio</ThemedText>
+
+            <ThemedText style={styles.label}>Precio: Fijo o Intervalo</ThemedText>
+            <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
+              Elige UNO: o un precio fijo, o un rango (mín-máx), o déjalo vacío para gratis
+            </ThemedText>
+
+            <ThemedText style={styles.label}>Precio Fijo</ThemedText>
             <TextInput
               ref={precioRef}
               value={precio}
               onChangeText={setPrecio}
-              placeholder="Precio"
+              placeholder="Ej: 15 €"
+              keyboardType="numeric"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              returnKeyType="next"
+              onSubmitEditing={() => precioMinRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+
+            <ThemedText style={styles.label}>Precio Mínimo</ThemedText>
+            <TextInput
+              ref={precioMinRef}
+              value={precioMin}
+              onChangeText={setPrecioMin}
+              placeholder="Ej: 10 €"
+              keyboardType="numeric"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              returnKeyType="next"
+              onSubmitEditing={() => precioMaxRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+
+            <ThemedText style={styles.label}>Precio Máximo</ThemedText>
+            <TextInput
+              ref={precioMaxRef}
+              value={precioMax}
+              onChangeText={setPrecioMax}
+              placeholder="Ej: 25 €"
               keyboardType="numeric"
               placeholderTextColor={colors.text + '99'}
               style={[
@@ -537,6 +585,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onSubmitEditing={Keyboard.dismiss}
               blurOnSubmit={false}
             />
+
             <ThemedText style={styles.label}>Estado</ThemedText>
             <DropDownPicker
               open={openEstado}

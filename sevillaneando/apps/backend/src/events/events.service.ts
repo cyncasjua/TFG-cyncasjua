@@ -18,6 +18,7 @@ export class EventsService {
   ) { }
 
   async create(dto: CreateEventDto): Promise<Event> {
+    console.log('📥 CREATE DTO recibido:', JSON.stringify(dto, null, 2));
     const event = this.eventRepo.create({
       title: dto.title,
       description: dto.description,
@@ -25,13 +26,18 @@ export class EventsService {
       location: dto.location,
       fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : undefined,
       fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : undefined,
-      precio: dto.precio ?? 0,
+      precio: dto.precio !== undefined ? dto.precio : null,
+      precioMin: dto.precioMin !== undefined ? dto.precioMin : null,
+      precioMax: dto.precioMax !== undefined ? dto.precioMax : null,
       categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
       estado: EstadoEnum.Pendiente,
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
     });
-    return await this.eventRepo.save(event);
+    console.log('💾 Evento antes de guardar:', JSON.stringify({ precio: event.precio, precioMin: event.precioMin, precioMax: event.precioMax }, null, 2));
+    const saved = await this.eventRepo.save(event);
+    console.log('✅ Evento guardado:', JSON.stringify({ id: saved.id, precio: saved.precio, precioMin: saved.precioMin, precioMax: saved.precioMax }, null, 2));
+    return saved;
   }
 
   findAll(estado: EstadoEnum = EstadoEnum.Aprobado): Promise<Event[]> {
@@ -52,6 +58,7 @@ export class EventsService {
   }
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
+    console.log('📥 UPDATE DTO recibido:', JSON.stringify(dto, null, 2));
     const event = await this.findOne(id);
     let location = event.location;
     if (dto.location && dto.location.type === 'Point' && Array.isArray(dto.location.coordinates)) {
@@ -62,17 +69,26 @@ export class EventsService {
     }
     const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
     const fechaFin = dto.fechaFin ? new Date(dto.fechaFin) : event.fechaFin;
+
     const updated = {
       ...event,
-      ...dto,
+      title: dto.title !== undefined ? dto.title : event.title,
+      description: dto.description !== undefined ? dto.description : event.description,
+      address: dto.address !== undefined ? dto.address : event.address,
+      precio: dto.precio !== undefined ? dto.precio : event.precio,
+      precioMin: dto.precioMin !== undefined ? dto.precioMin : event.precioMin,
+      precioMax: dto.precioMax !== undefined ? dto.precioMax : event.precioMax,
       categoria: dto.categoriaId ? { id: dto.categoriaId } : event.categoria,
       estado: dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado,
+      imagen: dto.imagen !== undefined ? dto.imagen : event.imagen,
       location,
       fechaInicio,
       fechaFin,
     };
-    await this.eventRepo.save(updated);
-    return updated as Event;
+    console.log('💾 Evento antes de actualizar:', JSON.stringify({ precio: updated.precio, precioMin: updated.precioMin, precioMax: updated.precioMax }, null, 2));
+    const saved = await this.eventRepo.save(updated);
+    console.log('✅ Evento actualizado');
+    return saved;
   }
 
   async remove(id: string): Promise<void> {

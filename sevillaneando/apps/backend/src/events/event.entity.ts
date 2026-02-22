@@ -38,8 +38,14 @@ export class Event {
   @Column('timestamp', { nullable: false })
   fechaFin!: Date;
 
-  @Column('float', { nullable: false })
-  precio!: number;
+  @Column('float', { nullable: true })
+  precio?: number | null;
+
+  @Column('float', { nullable: true })
+  precioMin?: number | null;
+
+  @Column('float', { nullable: true })
+  precioMax?: number | null;
 
   @ManyToOne(() => Categoria, (categoria) => categoria.eventos)
   categoria!: Categoria;
@@ -85,8 +91,17 @@ export class Event {
     if (this.fechaFin && this.fechaInicio && this.fechaFin <= this.fechaInicio) {
       throw new Error('La fecha de fin debe ser posterior a la fecha de inicio.');
     }
-    if (this.precio !== undefined && this.precio < 0) {
+    if (this.precio != null && this.precio < 0) {
       throw new Error('El precio no puede ser negativo.');
+    }
+    if (this.precioMin != null && this.precioMin < 0) {
+      throw new Error('El precio mínimo no puede ser negativo.');
+    }
+    if (this.precioMax != null && this.precioMax < 0) {
+      throw new Error('El precio máximo no puede ser negativo.');
+    }
+    if (this.precioMin != null && this.precioMax != null && this.precioMin >= this.precioMax) {
+      throw new Error('El precio mínimo debe ser menor que el precio máximo.');
     }
     if (this.title && (this.title.length < 3 || this.title.length > 100)) {
       throw new Error('El título debe tener entre 3 y 100 caracteres.');

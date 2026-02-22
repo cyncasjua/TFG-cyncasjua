@@ -112,6 +112,8 @@ export async function getEvents(): Promise<Event[]> {
       fechaInicio: event.fechaInicio,
       fechaFin: event.fechaFin,
       precio: event.precio,
+      precioMin: event.precioMin,
+      precioMax: event.precioMax,
       categoria: event.categoria,
       estado: event.estado,
       creador: event.creador,

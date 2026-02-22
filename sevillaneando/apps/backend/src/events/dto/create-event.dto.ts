@@ -45,9 +45,19 @@ export class CreateEventDto {
   fechaFin!: string;
 
   @IsNumber({}, { message: 'El precio debe ser un número.' })
-  @IsNotEmpty({ message: 'El precio es obligatorio.' })
   @Min(0, { message: 'El precio no puede ser negativo.' })
+  @IsOptional()
   precio!: number;
+
+  @IsNumber({}, { message: 'El precio mínimo debe ser un número.' })
+  @Min(0, { message: 'El precio mínimo no puede ser negativo.' })
+  @IsOptional()
+  precioMin?: number;
+
+  @IsNumber({}, { message: 'El precio máximo debe ser un número.' })
+  @Min(0, { message: 'El precio máximo no puede ser negativo.' })
+  @IsOptional()
+  precioMax?: number;
 
   @IsUUID()
   @IsNotEmpty()

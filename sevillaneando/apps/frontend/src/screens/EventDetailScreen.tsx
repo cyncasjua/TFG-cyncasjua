@@ -477,7 +477,16 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   alignSelf: 'flex-end',
                 }}
               >
-                {event.precio === 0 ? 'Gratis' : `${event.precio} €`}
+                {
+                  (() => {
+                    console.log('EventDetail - Precio:', event.precio, 'Min:', event.precioMin, 'Max:', event.precioMax);
+                    if (event.precio != null && event.precio !== 0)
+                      return `${event.precio} €`;
+                    if (event.precioMin != null && event.precioMax != null)
+                      return `${event.precioMin}€ - ${event.precioMax}€`;
+                    return 'Gratis';
+                  })()
+                }
               </ThemedText>
             </ThemedView>
           </ThemedView>

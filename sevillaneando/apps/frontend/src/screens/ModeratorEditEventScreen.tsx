@@ -56,6 +56,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const [longitude, setLongitude] = useState(event.location?.coordinates[0] ?? -5.9845);
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [precio, setPrecio] = useState(String(event.precio ?? ''));
+  const [precioMin, setPrecioMin] = useState(String(event.precioMin ?? ''));
+  const [precioMax, setPrecioMax] = useState(String(event.precioMax ?? ''));
   const [categoriaId, setCategoriaId] = useState(event.categoria?.id ?? '');
   const [openCategoria, setOpenCategoria] = useState(false);
   const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);
@@ -76,7 +78,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const fechaInicioRef = useRef<TextInput>(null);
   const fechaFinRef = useRef<TextInput>(null);
   const precioRef = useRef<TextInput>(null);
-
+  const precioMinRef = useRef<TextInput>(null);
+  const precioMaxRef = useRef<TextInput>(null);
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
@@ -177,7 +180,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         setAddress(data.display_name);
       }
     } catch (e) {
-      // Silently fail if reverse geocoding is not available
+      // Comentario para la guia de estilo
     }
   };
 
@@ -200,10 +203,12 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       !fechaFin ||
       latitude === null ||
       longitude === null ||
-      !precio ||
+      (precio && (precioMin || precioMax)) ||
+      (precioMin && !precioMax) ||
+      (precioMax && !precioMin) ||
       !categoriaId
     ) {
-      Alert.alert('Error', 'Por favor, completa todos los campos obligatorios.');
+      Alert.alert('Error', 'Especifica un precio fijo, un intervalo (mín-máx), o déjalo en blanco para gratis.');
       return;
     }
     setLoading(true);
@@ -216,7 +221,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         fechaInicio,
         fechaFin,
         location: { type: 'Point', coordinates: [longitude, latitude] },
-        precio: parseFloat(precio),
+        precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
+        precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
+        precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
         categoriaId,
         estado,
         imagen: imageUrl || undefined,
@@ -440,12 +447,52 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onCancel={() => setShowHoraFin(false)}
               locale="es"
             />
-            <ThemedText style={styles.label}>Precio (€)</ThemedText>
+
+            <ThemedText style={styles.label}>Precio: Fijo o Intervalo</ThemedText>
+            <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
+              Elige UNO: o un precio fijo, o un rango (mín-máx), o déjalo vacío para gratis
+            </ThemedText>
+
+            <ThemedText style={styles.label}>Precio Fijo (€) </ThemedText>
             <TextInput
               ref={precioRef}
               value={precio}
               onChangeText={setPrecio}
-              placeholder="Precio"
+              placeholder="Ej: 15€"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              keyboardType="numeric"
+              returnKeyType="next"
+              onSubmitEditing={() => precioMinRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+
+            <ThemedText style={styles.label}>Precio Mínimo (€)</ThemedText>
+            <TextInput
+              ref={precioMinRef}
+              value={precioMin}
+              onChangeText={setPrecioMin}
+              placeholder="Ej: 10€"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              keyboardType="numeric"
+              returnKeyType="next"
+              onSubmitEditing={() => precioMaxRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+
+            <ThemedText style={styles.label}>Precio Máximo (€) </ThemedText>
+            <TextInput
+              ref={precioMaxRef}
+              value={precioMax}
+              onChangeText={setPrecioMax}
+              placeholder="Ej: 25€"
               placeholderTextColor={colors.text + '99'}
               style={[
                 styles.input,
@@ -453,6 +500,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               ]}
               keyboardType="numeric"
             />
+
             <ThemedText style={styles.label}>Categoría</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />

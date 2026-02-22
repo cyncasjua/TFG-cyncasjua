@@ -17,6 +17,8 @@ import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './event.entity';
+import { EventResponseDto } from './dto/event-response.dto';
+import { instanceToPlain } from 'class-transformer';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { EstadoEnum } from '../enums/estado.enum';
 import { TipoEnum } from 'src/enums/tipo.enum';
@@ -36,24 +38,28 @@ export class EventsController {
   ) { }
 
   @Post()
-  async create(@Body() dto: CreateEventDto): Promise<Event> {
-    return this.eventsService.create(dto);
+  async create(@Body() dto: CreateEventDto): Promise<EventResponseDto> {
+    const event = await this.eventsService.create(dto);
+    return instanceToPlain(event, { groups: undefined }) as EventResponseDto;
   }
 
   @Get()
-  async findAll(@Query('estado') estado?: string): Promise<Event[]> {
+  async findAll(@Query('estado') estado?: string): Promise<EventResponseDto[]> {
     const estadoEnum = estado ? EstadoEnum[estado as keyof typeof EstadoEnum] : undefined;
-    return this.eventsService.findAll(estadoEnum);
+    const events = await this.eventsService.findAll(estadoEnum);
+    return events.map(event => instanceToPlain(event, { groups: undefined }) as EventResponseDto);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Event> {
-    return this.eventsService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<EventResponseDto> {
+    const event = await this.eventsService.findOne(id);
+    return instanceToPlain(event, { groups: undefined }) as EventResponseDto;
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
-    return this.eventsService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<EventResponseDto> {
+    const event = await this.eventsService.update(id, dto);
+    return instanceToPlain(event, { groups: undefined }) as EventResponseDto;
   }
 
   @Delete(':id')
@@ -62,7 +68,7 @@ export class EventsController {
   }
 
   @Patch(':id/aprobar')
-  async aprobar(@Param('id') id: string): Promise<Event> {
+  async aprobar(@Param('id') id: string): Promise<EventResponseDto> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Aprobado)
       throw new ForbiddenException('El evento ya está aprobado');
@@ -81,11 +87,11 @@ export class EventsController {
         TipoEnum.Aprobacion
       );
     }
-    return updated;
+    return instanceToPlain(updated, { groups: undefined }) as EventResponseDto;
   }
 
   @Patch(':id/rechazar')
-  async rechazar(@Param('id') id: string): Promise<Event> {
+  async rechazar(@Param('id') id: string): Promise<EventResponseDto> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Rechazado)
       throw new ForbiddenException('El evento ya está rechazado');
@@ -104,7 +110,7 @@ export class EventsController {
         TipoEnum.Rechazado
       );
     }
-    return updated;
+    return instanceToPlain(updated, { groups: undefined }) as EventResponseDto;
   }
 
   @Post('upload-image')

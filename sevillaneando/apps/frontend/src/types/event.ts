@@ -6,7 +6,9 @@ export interface Event {
   location: { type: string; coordinates: [number, number] };
   fechaInicio: string;
   fechaFin: string;
-  precio: number;
+  precio?: number | null;
+  precioMin?: number | null;
+  precioMax?: number | null;
   categoria: { id: string; nombre: string; descripcion: string };
   estado: string;
   creador: { id: string; nombre: string; email: string };
