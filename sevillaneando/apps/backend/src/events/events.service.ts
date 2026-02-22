@@ -18,7 +18,6 @@ export class EventsService {
   ) { }
 
   async create(dto: CreateEventDto): Promise<Event> {
-    console.log('📥 CREATE DTO recibido:', JSON.stringify(dto, null, 2));
     const event = this.eventRepo.create({
       title: dto.title,
       description: dto.description,
@@ -34,9 +33,7 @@ export class EventsService {
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
     });
-    console.log('💾 Evento antes de guardar:', JSON.stringify({ precio: event.precio, precioMin: event.precioMin, precioMax: event.precioMax }, null, 2));
     const saved = await this.eventRepo.save(event);
-    console.log('✅ Evento guardado:', JSON.stringify({ id: saved.id, precio: saved.precio, precioMin: saved.precioMin, precioMax: saved.precioMax }, null, 2));
     return saved;
   }
 
@@ -58,7 +55,6 @@ export class EventsService {
   }
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
-    console.log('📥 UPDATE DTO recibido:', JSON.stringify(dto, null, 2));
     const event = await this.findOne(id);
     let location = event.location;
     if (dto.location && dto.location.type === 'Point' && Array.isArray(dto.location.coordinates)) {
@@ -70,24 +66,20 @@ export class EventsService {
     const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
     const fechaFin = dto.fechaFin ? new Date(dto.fechaFin) : event.fechaFin;
 
-    const updated = {
-      ...event,
-      title: dto.title !== undefined ? dto.title : event.title,
-      description: dto.description !== undefined ? dto.description : event.description,
-      address: dto.address !== undefined ? dto.address : event.address,
-      precio: dto.precio !== undefined ? dto.precio : event.precio,
-      precioMin: dto.precioMin !== undefined ? dto.precioMin : event.precioMin,
-      precioMax: dto.precioMax !== undefined ? dto.precioMax : event.precioMax,
-      categoria: dto.categoriaId ? { id: dto.categoriaId } : event.categoria,
-      estado: dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado,
-      imagen: dto.imagen !== undefined ? dto.imagen : event.imagen,
-      location,
-      fechaInicio,
-      fechaFin,
-    };
-    console.log('💾 Evento antes de actualizar:', JSON.stringify({ precio: updated.precio, precioMin: updated.precioMin, precioMax: updated.precioMax }, null, 2));
-    const saved = await this.eventRepo.save(updated);
-    console.log('✅ Evento actualizado');
+    event.title = dto.title !== undefined ? dto.title : event.title;
+    event.description = dto.description !== undefined ? dto.description : event.description;
+    event.address = dto.address !== undefined ? dto.address : event.address;
+    event.precio = dto.precio !== undefined ? dto.precio : event.precio;
+    event.precioMin = dto.precioMin !== undefined ? dto.precioMin : event.precioMin;
+    event.precioMax = dto.precioMax !== undefined ? dto.precioMax : event.precioMax;
+    event.categoria = dto.categoriaId ? { id: dto.categoriaId } as Categoria : event.categoria;
+    event.estado = dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado;
+    event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
+    event.location = location;
+    event.fechaInicio = fechaInicio;
+    event.fechaFin = fechaFin;
+
+    const saved = await this.eventRepo.save(event);
     return saved;
   }
 

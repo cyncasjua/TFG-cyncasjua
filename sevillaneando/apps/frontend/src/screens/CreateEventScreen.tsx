@@ -239,12 +239,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       !fechaFin ||
       latitude === null ||
       longitude === null ||
-      (precio && (precioMin || precioMax)) ||
-      (precioMin && !precioMax) ||
-      (precioMax && !precioMin) ||
       !categoriaId
     ) {
-      Alert.alert('Error', 'Especifica un precio fijo, un intervalo (mín-máx), o déjalo en blanco para gratis.');
+      Alert.alert('Error', 'Asegúrate de completar todos los campos obligatorios.');
       return;
     }
     if (!user?.id) {
@@ -276,20 +273,14 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         'Evento enviado para revisión. Será visible tras la aprobación de un moderador.'
       );
       navigation.goBack();
-    } catch (error) {
-      Alert.alert('Error', getErrorMessage(error));
-      if (
-        error &&
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        (error as any).response &&
-        'data' in (error as any).response
-      ) {
-        console.log('Error al crear evento:', (error as any).response.data);
-      } else {
-        console.log('Error al crear evento:', error);
+    } catch (error: any) {
+      let msg = 'No se pudo crear el evento.';
+      if (error?.response?.data?.message) {
+        msg = error.response.data.message;
+      } else if (error?.message) {
+        msg = error.message;
       }
+      Alert.alert('Error', msg);
     } finally {
       setLoading(false);
     }

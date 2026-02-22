@@ -479,7 +479,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               >
                 {
                   (() => {
-                    console.log('EventDetail - Precio:', event.precio, 'Min:', event.precioMin, 'Max:', event.precioMax);
                     if (event.precio != null && event.precio !== 0)
                       return `${event.precio} €`;
                     if (event.precioMin != null && event.precioMax != null)
@@ -545,7 +544,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             variant="secondary"
             onPress={async () => {
               const safe = await evaluateImage();
-              console.log('Imagen segura:', safe);
             }}
           />
           <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />

@@ -650,7 +650,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       >
                         {
                           (() => {
-                            console.log('HomeScreen - Item:', item.title, 'Precio:', item.precio, 'Min:', item.precioMin, 'Max:', item.precioMax);
                             if (item.precio != null && item.precio !== 0)
                               return `${item.precio} €`;
                             if (item.precioMin != null && item.precioMax != null)

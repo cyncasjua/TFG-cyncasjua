@@ -203,12 +203,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       !fechaFin ||
       latitude === null ||
       longitude === null ||
-      (precio && (precioMin || precioMax)) ||
-      (precioMin && !precioMax) ||
-      (precioMax && !precioMin) ||
       !categoriaId
     ) {
-      Alert.alert('Error', 'Especifica un precio fijo, un intervalo (mín-máx), o déjalo en blanco para gratis.');
+      Alert.alert('Error', 'Asegúrate de completar todos los campos obligatorios.');
       return;
     }
     setLoading(true);
@@ -231,21 +228,14 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       await api.put(`/events/${event.id}`, payload);
       Alert.alert('Éxito', 'Evento actualizado');
       navigation.goBack();
-    } catch (error) {
+    } catch (error: any) {
       let msg = 'No se pudo actualizar el evento.';
-      if (
-        error &&
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        (error as any).response &&
-        'data' in (error as any).response
-      ) {
-        msg += '\n' + JSON.stringify((error as any).response.data);
-      } else {
-        console.log('Error al actualizar evento:', error);
+      if (error?.response?.data?.message) {
+        msg = error.response.data.message;
+      } else if (error?.message) {
+        msg = error.message;
       }
-      Alert.alert('Error', msg + '\nPayload: ' + JSON.stringify(payload));
+      Alert.alert('Error', msg);
     } finally {
       setLoading(false);
     }
