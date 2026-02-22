@@ -85,6 +85,7 @@ type ChatMessage = {
 };
 
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
+  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const { event } = route.params;
   const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
@@ -533,27 +534,43 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               {attendeesError}
             </ThemedTextSecondary>
           )}
-          <ThemedView style={{ marginTop: 12 }}>
-            <ThemedTextSecondary style={{ marginBottom: 6 }}>
-              Asistentes ({attendees.length})
-            </ThemedTextSecondary>
-            <ThemedView style={{ gap: 8 }}>
-              {attendees.map((att) => (
-                <TouchableOpacity
-                  key={att.id}
-                  onPress={() => navigation.navigate('UserProfile', { userId: att.id })}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 8 }}
-                >
-                  {att.fotoPerfil ? (
-                    <Image source={{ uri: getFullImageUrl(att.fotoPerfil) || att.fotoPerfil }} style={{ width: 32, height: 32, borderRadius: 16 }} />
-                  ) : (
-                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d0d0d0' }} />
-                  )}
-                  <ThemedText>{att.nombre}</ThemedText>
-                </TouchableOpacity>
-              ))}
-            </ThemedView>
-          </ThemedView>
+          <ThemedButton
+            title={`Ver asistentes (${attendees.length})`}
+            variant="secondary"
+            onPress={() => setShowAttendeesModal(true)}
+          />
+          <Modal
+            visible={showAttendeesModal}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowAttendeesModal(false)}
+          >
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18, maxHeight: '70%' }}>
+                <ThemedTitle style={{ marginBottom: 12 }}>Asistentes ({attendees.length})</ThemedTitle>
+                <ScrollView style={{ maxHeight: 350 }}>
+                  {attendees.map((att) => (
+                    <TouchableOpacity
+                      key={att.id}
+                      onPress={() => {
+                        setShowAttendeesModal(false);
+                        navigation.navigate('UserProfile', { userId: att.id });
+                      }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 8, marginBottom: 6 }}
+                    >
+                      {att.fotoPerfil ? (
+                        <Image source={{ uri: getFullImageUrl(att.fotoPerfil) || att.fotoPerfil }} style={{ width: 32, height: 32, borderRadius: 16 }} />
+                      ) : (
+                        <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d0d0d0' }} />
+                      )}
+                      <ThemedText>{att.nombre}</ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <ThemedButton title="Cerrar" variant="secondary" onPress={() => setShowAttendeesModal(false)} />
+              </View>
+            </View>
+          </Modal>
           <ThemedButton title="Abrir en Google/Apple Maps" onPress={openExternalNavigation} />
           <ThemedButton
             title="Probar moderación NSFW (demo)"

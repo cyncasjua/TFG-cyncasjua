@@ -80,6 +80,7 @@ export class EventsService {
     event.location = location;
     event.fechaInicio = fechaInicio;
     event.fechaFin = fechaFin;
+    event.asistentes = event.asistentes ?? [];
 
     const saved = await this.eventRepo.save(event);
     return saved;
@@ -124,7 +125,11 @@ export class EventsService {
   async removeAttendee(eventId: string, userId: string): Promise<User[]> {
     const event = await this.eventRepo.findOne({
       where: { id: eventId },
-      relations: ['asistentes'],
+      relations: ['asistentes', 'categoria', 'creador'],
+      select: [
+        'id', 'title', 'description', 'address', 'location', 'fechaInicio', 'fechaFin',
+        'precio', 'precioMin', 'precioMax', 'categoria', 'estado', 'creador', 'imagen', 'imagenes', 'asistentes'
+      ],
     });
     if (!event) throw new NotFoundException('Evento no encontrado');
 
