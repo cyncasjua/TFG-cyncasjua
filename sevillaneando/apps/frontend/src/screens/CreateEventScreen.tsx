@@ -481,15 +481,24 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onCancel={() => setShowHoraFin(false)}
               locale="es"
             />
-            <ThemedText style= {styles.label}> Privado</ThemedText>
+            <ThemedText style={styles.label}>Privado</ThemedText>
             <TouchableOpacity
-              style= {[styles.checkboxContainer, {borderColor: colors.primary}]}
+              style={styles.checkboxContainer}
               onPress={() => setPrivado(!privado)}
+              activeOpacity={0.8}
             >
-              <View style={[styles.checkbox, privado && { backgroundColor: colors.primary }]}>
+              <View
+                style={[
+                  styles.checkbox,
+                  {
+                    borderColor: colors.primary,
+                    backgroundColor: privado ? colors.primary : colors.card,
+                  },
+                ]}
+              >
                 {privado && <Icon name="check" size={16} color="#fff" />}
               </View>
-              <ThemedText style={{ marginLeft: 8, color: colors.text }}>Marcar como privado</ThemedText>
+
             </TouchableOpacity>
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
             <View
@@ -883,9 +892,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   checkboxContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   checkbox: {
     width: 24,

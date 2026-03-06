@@ -34,6 +34,7 @@ type Categoria = { id: string; nombre: string };
 
 export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const { event } = route.params;
+  const isPrivateEvent = Boolean(event.privado);
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
 
@@ -461,6 +462,24 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               locale="es"
             />
 
+            <ThemedText style={styles.label}>Privado</ThemedText>
+            <TouchableOpacity style={styles.checkboxContainer} disabled activeOpacity={1}>
+              <View
+                style={[
+                  styles.checkbox,
+                  {
+                    borderColor: colors.primary,
+                    backgroundColor: isPrivateEvent ? colors.primary : colors.card,
+                  },
+                ]}
+              >
+                {isPrivateEvent && <Icon name="check" size={16} color="#fff" />}
+              </View>
+              <ThemedText style={{ color: colors.text + 'AA' }}>
+                Solo lectura para moderador
+              </ThemedText>
+            </TouchableOpacity>
+
             <ThemedText style={styles.label}>Precio: Fijo o Intervalo</ThemedText>
             <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
               Elige UNO: o un precio fijo, o un rango (mín-máx), o déjalo vacío para gratis
@@ -735,6 +754,20 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   mapSearchButton: { padding: 8 },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   imagePreview: { width: 180, height: 120, borderRadius: 10, marginBottom: 8 },
   removeImageBtn: { backgroundColor: '#f44336', padding: 6, borderRadius: 6 },
   imagePicker: {

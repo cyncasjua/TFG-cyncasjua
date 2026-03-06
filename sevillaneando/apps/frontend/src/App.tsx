@@ -26,6 +26,7 @@ import { EventsMapScreen } from './screens/EventsMapScreen';
 import { UserProfileScreen } from './screens/UserProfileScreen';
 import { DirectMessageScreen } from './screens/DirectMessageScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
+import { AccessPrivateEventScreen } from './screens/AccessPrivateEventScreen';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -185,6 +186,11 @@ const Navigator = () => {
             name="DirectMessage"
             component={DirectMessageScreen}
             options={{ title: 'Mensaje privado' }}
+          />
+          <AppStack.Screen
+            name="AccessPrivateEvent"
+            component={AccessPrivateEventScreen}
+            options={{ title: 'Acceso privado' }}
           />
         </AppStack.Navigator>
       ) : (

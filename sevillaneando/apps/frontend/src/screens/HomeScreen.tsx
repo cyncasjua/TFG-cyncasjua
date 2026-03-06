@@ -539,10 +539,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <MaterialIcons name="mail" size={35} color="#6c2eb7" />
         </TouchableOpacity>
 
-      <ThemedButton
-        title="Acceder por enlace privado"
-        onPress={openPrivateAccess}
-      />
+        <TouchableOpacity
+          style={styles.privateAccessButton}
+          onPress={openPrivateAccess}
+          accessibilityLabel="Abrir acceso a eventos privados"
+        >
+          <MaterialIcons name="vpn-key" size={35} color="#6c2eb7" />
+        </TouchableOpacity>
 
       {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
       <FlatList
@@ -724,8 +727,24 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         onRequestClose={closePrivateAccess}
       >
         <View style={styles.privateModalBackdrop}>
-          <ThemedView style={styles.privateModalCard}>
-            <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
+          <ThemedView
+            style={[
+              styles.privateModalCard,
+              {
+                backgroundColor: theme === 'dark' ? '#1f2430' : '#fff2de',
+                borderColor: colors.primary + '55',
+              },
+            ]}
+          >
+            <View style={styles.privateModalHeader}>
+              <View style={[styles.privateModalIcon, { backgroundColor: colors.primary }]}>
+                <MaterialIcons name="lock-open" size={18} color="#fff" />
+              </View>
+              <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
+            </View>
+            <ThemedTextSecondary style={styles.privateModalHint}>
+              Introduce el enlace completo o solo el codigo final.
+            </ThemedTextSecondary>
 
             <TextInput
               value={privateAccessInput}
@@ -739,7 +758,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 {
                   borderColor: colors.border,
                   color: colors.text,
-                  backgroundColor: colors.card,
+                  backgroundColor: theme === 'dark' ? '#2b3344' : '#ffffff',
                 },
               ]}
             />
@@ -1031,25 +1050,51 @@ const styles = StyleSheet.create({
   },
   privateModalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.62)',
     justifyContent: 'center',
     padding: 20,
   },
+  privateAccessButton: {
+    position: 'absolute',
+    top: 15,
+    right: 122,
+    zIndex: 11,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
+    padding: 8,
+  },
   privateModalCard: {
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+  },
+  privateModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  privateModalIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   privateModalTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
-    marginBottom: 10,
+  },
+  privateModalHint: {
+    marginBottom: 12,
+    fontSize: 13,
   },
   privateModalInput: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    marginBottom: 12,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    marginBottom: 14,
   },
   privateModalActions: {
     flexDirection: 'row',
