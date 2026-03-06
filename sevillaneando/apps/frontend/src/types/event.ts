@@ -9,6 +9,8 @@ export interface Event {
   precio?: number | null;
   precioMin?: number | null;
   precioMax?: number | null;
+  privado?: boolean;
+  linkAcceso?: string;
   categoria: { id: string; nombre: string; descripcion: string };
   estado: string;
   creador: { id: string; nombre: string; email: string };

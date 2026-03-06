@@ -49,6 +49,7 @@ export type RootStackParamList = {
   UserProfile: { userId: string };
   DirectMessage: { userId: string; userName: string };
   Messages: undefined;
+  AccessPrivateEvent: { linkAcceso: string };
 };
 
 export type AuthStackParamList = {

@@ -48,6 +48,12 @@ export class Event {
   @Column('float', { nullable: true })
   precioMax?: number | null;
 
+  @Column({ type: 'boolean', nullable: true })
+  privado?: boolean | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  linkAcceso?: string | null;
+
   @ManyToOne(() => Categoria, (categoria) => categoria.eventos)
   categoria!: Categoria;
 

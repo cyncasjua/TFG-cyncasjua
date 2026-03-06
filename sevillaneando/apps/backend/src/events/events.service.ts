@@ -7,6 +7,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { EstadoEnum } from '../enums/estado.enum';
 import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class EventsService {
@@ -28,14 +29,26 @@ export class EventsService {
       precio: dto.precio !== undefined ? dto.precio : null,
       precioMin: dto.precioMin !== undefined ? dto.precioMin : null,
       precioMax: dto.precioMax !== undefined ? dto.precioMax : null,
+      privado: dto.privado !== undefined ? dto.privado : null,
+      linkAcceso: dto.linkAcceso !== undefined ? dto.linkAcceso : null,
       categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
       estado: EstadoEnum.Pendiente,
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
       imagenes: dto.imagenes ?? undefined,
     });
+    if (event.privado ){
+      event.linkAcceso = uuidv4();
+    }
     const saved = await this.eventRepo.save(event);
     return saved;
+  }
+
+  async findOneByLinkAcceso(linkAcceso: string): Promise<Event> {
+    const event = await this.eventRepo.findOne({
+      where: { linkAcceso }});
+    if (!event) throw new NotFoundException('Evento no encontrado o no es privado');
+    return event;
   }
 
   findAll(estado: EstadoEnum = EstadoEnum.Aprobado): Promise<Event[]> {
@@ -73,6 +86,8 @@ export class EventsService {
     event.precio = dto.precio !== undefined ? dto.precio : event.precio;
     event.precioMin = dto.precioMin !== undefined ? dto.precioMin : event.precioMin;
     event.precioMax = dto.precioMax !== undefined ? dto.precioMax : event.precioMax;
+    event.privado = dto.privado !== undefined ? dto.privado : event.privado;
+    event.linkAcceso = dto.linkAcceso !== undefined ? dto.linkAcceso : event.linkAcceso;
     event.categoria = dto.categoriaId ? { id: dto.categoriaId } as Categoria : event.categoria;
     event.estado = dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
@@ -128,7 +143,7 @@ export class EventsService {
       relations: ['asistentes', 'categoria', 'creador'],
       select: [
         'id', 'title', 'description', 'address', 'location', 'fechaInicio', 'fechaFin',
-        'precio', 'precioMin', 'precioMax', 'categoria', 'estado', 'creador', 'imagen', 'imagenes', 'asistentes'
+        'precio', 'linkAcceso', 'precioMin', 'precioMax', 'privado', 'categoria', 'estado', 'creador', 'imagen', 'imagenes', 'asistentes'
       ],
     });
     if (!event) throw new NotFoundException('Evento no encontrado');

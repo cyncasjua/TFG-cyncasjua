@@ -9,6 +9,7 @@ import {
   MaxLength,
   Min,
   ArrayMaxSize,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
@@ -59,6 +60,15 @@ export class CreateEventDto {
   @Min(0, { message: 'El precio máximo no puede ser negativo.' })
   @IsOptional()
   precioMax?: number;
+
+  @IsBoolean({ message: 'El campo privado debe ser un valor booleano.' })
+  @IsOptional()
+  privado?: boolean;
+
+  @IsString({ message: 'El link de acceso debe ser un texto.' })
+  @MaxLength(255, { message: 'El link de acceso no puede superar los 255 caracteres.' })
+  @IsOptional()
+  linkAcceso?: string;
 
   @IsUUID()
   @IsNotEmpty()

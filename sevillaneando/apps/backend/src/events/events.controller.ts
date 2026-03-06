@@ -51,6 +51,11 @@ export class EventsController {
     return this.eventsService.findOne(id);
   }
 
+  @Get('acceso/:linkAcceso')
+  async getEventoPrivado(@Param('linkAcceso') linkAcceso: string): Promise<Event> {
+    return this.eventsService.findOneByLinkAcceso(linkAcceso);
+  }
+
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
     return this.eventsService.update(id, dto);
