@@ -55,6 +55,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [privateAccessVisible, setPrivateAccessVisible] = useState(false);
   const [privateAccessInput, setPrivateAccessInput] = useState('');
 
+  const sortWithOtrosLast = useCallback((data: { id: string; nombre: string }[]) => {
+    const others = data.filter((item) => item.nombre.trim().toLowerCase() === 'otros');
+    const rest = data.filter((item) => item.nombre.trim().toLowerCase() !== 'otros');
+    return [...rest, ...others];
+  }, []);
+
   const openPrivateAccess = () => setPrivateAccessVisible(true);
   const closePrivateAccess = () => {
     setPrivateAccessVisible(false);
@@ -145,13 +151,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             return aIdx - bIdx;
           });
         }
-        setCategories(data);
+        setCategories(sortWithOtrosLast(data));
       } catch (e) {
         setCategories([]);
       }
     };
     fetchCategories();
-  }, [user?.categoryOrder]);
+  }, [sortWithOtrosLast, user?.categoryOrder]);
 
   useEffect(() => {
     if (user?.radiusOptions && user.radiusOptions.length > 0) {
@@ -389,8 +395,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               data={categories}
               keyExtractor={(item) => item.id}
               onDragEnd={({ data }) => {
-                setCategories(data);
-                persistCategoryOrder(data.map((item) => item.id));
+                const sortedData = sortWithOtrosLast(data);
+                setCategories(sortedData);
+                persistCategoryOrder(sortedData.map((item) => item.id));
               }}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 12 }}

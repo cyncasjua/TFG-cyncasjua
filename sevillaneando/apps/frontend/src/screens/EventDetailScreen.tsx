@@ -87,9 +87,27 @@ type ChatMessage = {
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const { event } = route.params;
+  const defaultEventImage = require('../../assets/splash.png');
   const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
   const coords = useMemo(() => parsePoint(event), [event]);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<number, boolean>>({});
+  const coverImage = useMemo(() => getFullImageUrl(event.imagen), [event.imagen]);
+  const detailImages = useMemo<Array<{ uri: string; cache?: 'force-cache' } | number>>(() => {
+    if (Array.isArray(event.imagenes) && event.imagenes.length > 0) {
+      return event.imagenes
+        .filter((image): image is string => typeof image === 'string' && image.trim().length > 0)
+        .map((image) => getFullImageUrl(image))
+        .filter((image): image is string => typeof image === 'string' && image.length > 0)
+        .map((image) => ({ uri: image, cache: 'force-cache' }));
+    }
+
+    if (coverImage) {
+      return [{ uri: coverImage, cache: 'force-cache' }];
+    }
+
+    return [defaultEventImage];
+  }, [coverImage, event.imagenes, defaultEventImage]);
   const isFocused = useIsFocused();
   const { token, user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -390,7 +408,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <ImageBackground
-      source={event.imagen ? { uri: event.imagen } : require('../../assets/splash.png')}
+      source={coverImage ? { uri: coverImage, cache: 'force-cache' } : defaultEventImage}
       style={styles.background}
       imageStyle={styles.backgroundImage}
       resizeMode="cover"
@@ -422,16 +440,28 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         </TouchableOpacity>
         <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
           <FlatList
-            data={event.imagenes}
+            data={detailImages}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item, idx) => idx.toString()}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <Image
-                source={{ uri: item }}
+                source={
+                  imageLoadErrors[index]
+                    ? defaultEventImage
+                    : typeof item === 'number'
+                      ? item
+                      : { uri: item.uri, cache: 'force-cache' }
+                }
                 style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 12, marginRight: 10 }}
                 resizeMode="cover"
+                onError={() =>
+                  setImageLoadErrors((prev) => ({
+                    ...prev,
+                    [index]: true,
+                  }))
+                }
               />
             )}
             style={{ marginBottom: 16 }}

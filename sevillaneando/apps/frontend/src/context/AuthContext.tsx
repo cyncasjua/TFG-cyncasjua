@@ -29,6 +29,24 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string>('');
 
+  // Refrescar token cada 50 minutos (antes de que expire a los 60)
+  useEffect(() => {
+    const refreshTokenInterval = setInterval(async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const tokenResult = await getIdTokenResult(currentUser, true);
+          setAuthToken(tokenResult.token);
+          setToken(tokenResult.token);
+        } catch (err) {
+          console.warn('Error refrescando token:', err);
+        }
+      }
+    }, 50 * 60 * 1000); // 50 minutos
+
+    return () => clearInterval(refreshTokenInterval);
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (current) => {
       if (current) {

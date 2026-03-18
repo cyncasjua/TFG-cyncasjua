@@ -8,6 +8,9 @@ import { EstadoEnum } from '../enums/estado.enum';
 import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { Mensaje } from '../entities/mensaje.entity';
+import { Resena } from '../entities/resena.entity';
+import { Imagen } from '../entities/imagen.entity';
 
 @Injectable()
 export class EventsService {
@@ -15,7 +18,13 @@ export class EventsService {
     @InjectRepository(Event)
     private readonly eventRepo: Repository<Event>,
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>
+    private readonly userRepo: Repository<User>,
+    @InjectRepository(Mensaje)
+    private readonly mensajeRepo: Repository<Mensaje>,
+    @InjectRepository(Resena)
+    private readonly resenaRepo: Repository<Resena>,
+    @InjectRepository(Imagen)
+    private readonly imagenRepo: Repository<Imagen>
   ) { }
 
   async create(dto: CreateEventDto): Promise<Event> {
@@ -102,6 +111,42 @@ export class EventsService {
   }
 
   async remove(id: string): Promise<void> {
+    const event = await this.eventRepo.findOne({
+      where: { id },
+      relations: ['asistentes'],
+    });
+
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    if (event.asistentes?.length) {
+      await this.eventRepo
+        .createQueryBuilder()
+        .relation(Event, 'asistentes')
+        .of(id)
+        .remove(event.asistentes.map((attendee) => attendee.id));
+    }
+
+    await this.mensajeRepo
+      .createQueryBuilder()
+      .delete()
+      .from(Mensaje)
+      .where('eventoId = :id', { id })
+      .execute();
+
+    await this.resenaRepo
+      .createQueryBuilder()
+      .delete()
+      .from(Resena)
+      .where('eventoId = :id', { id })
+      .execute();
+
+    await this.imagenRepo
+      .createQueryBuilder()
+      .delete()
+      .from(Imagen)
+      .where('eventoId = :id', { id })
+      .execute();
+
     await this.eventRepo.delete(id);
   }
 
