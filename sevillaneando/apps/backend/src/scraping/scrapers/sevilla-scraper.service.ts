@@ -544,9 +544,8 @@ export class SevillaScraperService implements IScraper {
     }
   }
 
-  //Scraper de salas de conciertos en Sevilla
+  //Scraper de salas de conciertos en Sevilla: TODO: implementacion extra
   private async scrapeSalasConciertos(_events: ScrapedEvent[]): Promise<void> {
-    // Implementa aquí el scraping de páginas de salas de conciertos
     // Ejemplo: Sala Fanatic, Teatro Lope de Vega, etc.
     this.logger.warn('scraper de salas de conciertos no implementado aún');
   }
@@ -622,7 +621,7 @@ export class SevillaScraperService implements IScraper {
     const hour = withTimeMatch ? Number(withTimeMatch[1]) : 12;
     const minute = withTimeMatch ? Number(withTimeMatch[2]) : 0;
 
-    const dmyMatch = value.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
+    const dmyMatch = value.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
     if (dmyMatch) {
       const day = Number(dmyMatch[1]);
       const month = Number(dmyMatch[2]);

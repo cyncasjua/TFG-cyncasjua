@@ -25,10 +25,8 @@ export class TicketmasterScraperService implements IScraper {
     const apiKey = this.getApiKey();
 
     if (apiKey) {
-      // Opción 1: Usar API oficial (RECOMENDADO)
       await this.scrapeWithApi(events, apiKey);
     } else {
-      // Opción 2: Web scraping (solo si no hay API disponible)
       this.logger.warn('TICKETMASTER_API_KEY no configurada. Scraping deshabilitado.');
       this.logger.warn('Obtén tu API key en: https://developer.ticketmaster.com/');
     }
@@ -36,9 +34,6 @@ export class TicketmasterScraperService implements IScraper {
     return events;
   }
 
-  /**
-   * Método usando la API oficial de Ticketmaster
-   */
   private async scrapeWithApi(events: ScrapedEvent[], apiKey: string): Promise<void> {
     try {
       this.logger.log(`Consultando Ticketmaster API con key: ${apiKey.substring(0, 5)}...`);
@@ -113,34 +108,39 @@ export class TicketmasterScraperService implements IScraper {
     return this.configService.get<string>('TICKETMASTER_API_KEY') || process.env.TICKETMASTER_API_KEY || '';
   }
 
-  /**
-   * Parsea un evento de la API de Ticketmaster
-   */
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private parseTicketmasterEvent(tmEvent: any): ScrapedEvent | null {
     try {
-      // Extraer información básica
       const title = tmEvent.name;
-      const description = tmEvent.info || tmEvent.description || tmEvent.pleaseNote || 'Sin descripción';
+      let description = '';
+      if (typeof tmEvent.info === 'string' && tmEvent.info.trim().length > 0) {
+        description = tmEvent.info.trim();
+      }
+      if (!description && typeof tmEvent.description === 'string' && tmEvent.description.trim().length > 0) {
+        description = tmEvent.description.trim();
+      }
+      if (!description && typeof tmEvent.pleaseNote === 'string' && tmEvent.pleaseNote.trim().length > 0) {
+        description = tmEvent.pleaseNote.trim();
+      }
+      if (!description || description.trim().length === 0) {
+        description = 'Más información y venta de entradas en Ticketmaster';
+      }
 
-      // Fechas
       const fechaInicio = new Date(tmEvent.dates.start.dateTime || tmEvent.dates.start.localDate);
       let fechaFin = new Date(fechaInicio);
 
       if (tmEvent.dates.end?.dateTime) {
         fechaFin = new Date(tmEvent.dates.end.dateTime);
       } else {
-        // Si no hay fecha fin, asumir 2 horas después del inicio
         fechaFin.setHours(fechaFin.getHours() + 2);
       }
 
-      // Ubicación
       const venue = tmEvent._embedded?.venues?.[0];
       const address = venue?.address?.line1 || 'Sevilla, España';
       const lat = parseFloat(venue?.location?.latitude || '37.3891');
       const lng = parseFloat(venue?.location?.longitude || '-5.9845');
 
-      // Precio
       let precio: number | null = null;
       let precioMin: number | null = null;
       let precioMax: number | null = null;
@@ -148,10 +148,9 @@ export class TicketmasterScraperService implements IScraper {
       if (tmEvent.priceRanges && tmEvent.priceRanges.length > 0) {
         precioMin = tmEvent.priceRanges[0].min;
         precioMax = tmEvent.priceRanges[0].max;
-        precio = precioMin; // O el promedio si prefieres
+        precio = precioMin;
       }
 
-      // Imagen
       const imagen = tmEvent.images?.[0]?.url;
 
       return {

@@ -8,11 +8,12 @@ import { User } from '../users/user.entity';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
 import { AuthModule } from '../auth/auth.module';
+import { GeminiScraperService } from './scrapers/gemini-scraper.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Event, Categoria, User]), AuthModule],
   controllers: [ScrapingController],
-  providers: [ScrapingService, SevillaScraperService, TicketmasterScraperService],
+  providers: [ScrapingService, SevillaScraperService, TicketmasterScraperService, GeminiScraperService],
   exports: [ScrapingService],
 })
 export class ScrapingModule {}

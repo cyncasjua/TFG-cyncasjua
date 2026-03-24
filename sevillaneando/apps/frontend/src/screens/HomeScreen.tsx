@@ -202,7 +202,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         const sortedEvents: EventWithDistance[] = remote
           .map((event) => {
-            if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
+            if (!event.location || !event.location.coordinates || event.location.coordinates.length !== 2) {
               return { ...event, distance: Infinity };
             }
             const dist = calculateDistance(

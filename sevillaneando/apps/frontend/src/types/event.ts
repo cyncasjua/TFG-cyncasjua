@@ -3,7 +3,7 @@ export interface Event {
   title: string;
   description: string;
   address: string;
-  location: { type: string; coordinates: [number, number] };
+  location: { type: string; coordinates: [number, number] } | null;
   fechaInicio: string;
   fechaFin: string;
   precio?: number | null;

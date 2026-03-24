@@ -75,7 +75,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           const userLat = user.ubicacion.coordinates[1];
 
           const eventsWithDistance = remote.map((event) => {
-            if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
+            if (!event.location || !event.location.coordinates || event.location.coordinates.length !== 2) {
               return { ...event, distance: Infinity };
             }
             const dist = calculateDistance(
@@ -145,7 +145,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
         )}
 
         {events
-          .filter((ev) => ev.location?.coordinates && ev.location.coordinates.length === 2)
+          .filter((ev) => ev.location && ev.location.coordinates && ev.location.coordinates.length === 2)
           .map((event) => (
             <Marker
               key={event.id}
