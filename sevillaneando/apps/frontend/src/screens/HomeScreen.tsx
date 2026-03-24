@@ -8,15 +8,17 @@ import {
   View,
   TextInput,
   Modal,
+  Alert,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { getEvents, api, getErrorMessage } from '../services/api';
+import { getEvents, api, getErrorMessage, getEventByAccessLink } from '../services/api';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type EventWithDistance = Event & { distance?: number };
 import {
@@ -33,6 +35,8 @@ import { ProfileHeader } from './ProfileHeader';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
+const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
+
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [items, setItems] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +51,37 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [radiusOptions, setRadiusOptions] = useState([0.5, 1, 2, 5, 10]);
   const { role, logout, user } = useAuth();
   const { colors, setTheme, theme } = useTheme();
+
+  const [privateAccessVisible, setPrivateAccessVisible] = useState(false);
+  const [privateAccessInput, setPrivateAccessInput] = useState('');
+
+  const sortWithOtrosLast = useCallback((data: { id: string; nombre: string }[]) => {
+    const others = data.filter((item) => item.nombre.trim().toLowerCase() === 'otros');
+    const rest = data.filter((item) => item.nombre.trim().toLowerCase() !== 'otros');
+    return [...rest, ...others];
+  }, []);
+
+  const openPrivateAccess = () => setPrivateAccessVisible(true);
+  const closePrivateAccess = () => {
+    setPrivateAccessVisible(false);
+    setPrivateAccessInput('');
+  };
+
+  const handlePrivateAccessSubmit = () => {
+    const raw = privateAccessInput.trim();
+    if (!raw) {
+      Alert.alert('Enlace inválido', 'Introduce un enlace o código de acceso.');
+      return;
+    }
+    const normalized = raw.includes('/') ? raw.split('/').filter(Boolean).pop() ?? '' : raw;
+    if (!normalized) {
+      Alert.alert('Enlace inválido', 'No se pudo extraer el código de acceso.');
+      return;
+    }
+
+    closePrivateAccess();
+    navigation.navigate('AccessPrivateEvent', { linkAcceso: normalized });
+  };
 
   const persistCategoryOrder = async (order: string[]) => {
     try {
@@ -116,13 +151,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             return aIdx - bIdx;
           });
         }
-        setCategories(data);
+        setCategories(sortWithOtrosLast(data));
       } catch (e) {
         setCategories([]);
       }
     };
     fetchCategories();
-  }, [user?.categoryOrder]);
+  }, [sortWithOtrosLast, user?.categoryOrder]);
 
   useEffect(() => {
     if (user?.radiusOptions && user.radiusOptions.length > 0) {
@@ -141,16 +176,33 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const remote = await getEvents();
+      const publicEvents = await getEvents();
+
+      const raw = await AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY);
+      const links: string[] = raw ? JSON.parse(raw) : [];
+
+      const privateResults = await Promise.allSettled(
+        links.map((link) => getEventByAccessLink(link))
+      );
+
+      const privateEvents: Event[] = privateResults
+        .filter((r): r is PromiseFulfilledResult<Event> => r.status === 'fulfilled')
+        .map((r) => r.value);
+
+      const remote: Event[] = [...publicEvents, ...privateEvents].filter(
+        (event, index, arr) =>
+          index === arr.findIndex((e) => e.id === event.id)
+      );
 
       if (user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2) {
         const userLon = user.ubicacion.coordinates[0];
         const userLat = user.ubicacion.coordinates[1];
 
-        const sortedEvents = remote
+        const sortedEvents: EventWithDistance[] = remote
           .map((event) => {
-            if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
+            if (!event.location || !event.location.coordinates || event.location.coordinates.length !== 2) {
               return { ...event, distance: Infinity };
             }
             const dist = calculateDistance(
@@ -161,11 +213,11 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             );
             return { ...event, distance: dist };
           })
-          .sort((a, b) => a.distance - b.distance);
+          .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
 
         setItems(sortedEvents);
       } else {
-        setItems(remote);
+        setItems(remote as EventWithDistance[]);
       }
     } catch (err) {
       console.error('Error cargando eventos:', err);
@@ -343,8 +395,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               data={categories}
               keyExtractor={(item) => item.id}
               onDragEnd={({ data }) => {
-                setCategories(data);
-                persistCategoryOrder(data.map((item) => item.id));
+                const sortedData = sortWithOtrosLast(data);
+                setCategories(sortedData);
+                persistCategoryOrder(sortedData.map((item) => item.id));
               }}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingRight: 12 }}
@@ -493,178 +546,237 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <MaterialIcons name="mail" size={35} color="#6c2eb7" />
         </TouchableOpacity>
 
-        {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-        <FlatList
-          data={(() => {
-            let filtered = items;
+        <TouchableOpacity
+          style={styles.privateAccessButton}
+          onPress={openPrivateAccess}
+          accessibilityLabel="Abrir acceso a eventos privados"
+        >
+          <MaterialIcons name="vpn-key" size={35} color="#6c2eb7" />
+        </TouchableOpacity>
 
-            if (selectedCategory) {
-              filtered = filtered.filter((ev) => ev.categoria?.id === selectedCategory);
-            }
+      {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
+      <FlatList
+        data={(() => {
+          let filtered = items;
 
-            if (filterNearby && searchRadius) {
-              filtered = filtered.filter(
-                (ev) => ev.distance !== undefined && ev.distance <= searchRadius
-              );
-            }
+          if (selectedCategory) {
+            filtered = filtered.filter((ev) => ev.categoria?.id === selectedCategory);
+          }
 
-            return filtered;
-          })()}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          renderItem={({ item, index }) => {
-            const nowMs = Date.now();
-            const startMs = new Date(item.fechaInicio).getTime();
-            const endMs = new Date(item.fechaFin).getTime();
-            const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
-              ? nowMs >= startMs && nowMs <= endMs
-              : false;
-            const isWithinWeek = Number.isFinite(startMs)
-              ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
-              : false;
-            return (
-              <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
-                <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
-                  {isOngoing && (
-                    <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
-                      En curso
-                    </ThemedText>
-                  )}
-                  {!isOngoing && isWithinWeek && (
-                    <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
-                      En &lt; 7 días
-                    </ThemedText>
-                  )}
-                  {item.distance !== undefined && item.distance !== Infinity && (
-                    <ThemedText
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: colors.primary,
-                        color: '#fff',
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 'bold',
-                        zIndex: 10,
-                      }}
-                    >
-                      {item.distance.toFixed(1)} km
-                    </ThemedText>
-                  )}
-                  <ImageBackground
-                    source={item.imagen ? { uri: item.imagen } : require('../../assets/splash.png')}
-                    style={{ height: 120, justifyContent: 'flex-end' }}
-                    imageStyle={{ opacity: 0.2 }}
-                    resizeMode="cover"
+          if (filterNearby && searchRadius) {
+            filtered = filtered.filter(
+              (ev) => ev.distance !== undefined && ev.distance <= searchRadius
+            );
+          }
+
+          return filtered;
+        })()}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        renderItem={({ item, index }) => {
+          const nowMs = Date.now();
+          const startMs = new Date(item.fechaInicio).getTime();
+          const endMs = new Date(item.fechaFin).getTime();
+          const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
+            ? nowMs >= startMs && nowMs <= endMs
+            : false;
+          const isWithinWeek = Number.isFinite(startMs)
+            ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
+            : false;
+          return (
+            <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
+              <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+                {isOngoing && (
+                  <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
+                    En curso
+                  </ThemedText>
+                )}
+                {!isOngoing && isWithinWeek && (
+                  <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
+                    En &lt; 7 días
+                  </ThemedText>
+                )}
+                {item.distance !== undefined && item.distance !== Infinity && (
+                  <ThemedText
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      backgroundColor: colors.primary,
+                      color: '#fff',
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 'bold',
+                      zIndex: 10,
+                    }}
                   >
+                    {item.distance.toFixed(1)} km
+                  </ThemedText>
+                )}
+                <ImageBackground
+                  source={item.imagen ? { uri: item.imagen } : require('../../assets/splash.png')}
+                  style={{ height: 120, justifyContent: 'flex-end' }}
+                  imageStyle={{ opacity: 0.2 }}
+                  resizeMode="cover"
+                >
+                  <ThemedText
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      color: theme === 'dark' ? '#fff' : '#222',
+                      marginBottom: 7,
+                      marginLeft: 14,
+                      textShadowColor:
+                        theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
+                      textShadowOffset: { width: 0, height: 2 },
+                      textShadowRadius: 6,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.title}
+                  </ThemedText>
+                  <ThemedTextSecondary
+                    style={{
+                      fontSize: 13,
+                      color: theme === 'dark' ? '#eee' : '#444',
+                      marginLeft: 14,
+                      marginBottom: 6,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      textShadowColor:
+                        theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
+                  </ThemedTextSecondary>
+                </ImageBackground>
+                <ThemedView style={{ padding: 12 }}>
+                  <ThemedView
+                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                  >
+                    <MaterialIcons name="event" size={16} color="#6c2eb7" />
+                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                      {new Date(item.fechaInicio).toLocaleDateString()} -{' '}
+                      {new Date(item.fechaFin).toLocaleDateString()}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  <ThemedView
+                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                  >
+                    <MaterialIcons name="category" size={16} color="#6c2eb7" />
+                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                      {item.categoria?.nombre}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  {item.distance !== undefined && item.distance !== Infinity && (
+                    <>
+                      <ThemedView
+                        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                      >
+                        <MaterialIcons name="directions-walk" size={16} color="#4caf50" />
+                        <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                          {calculateWalkingTime(item.distance)} a pie
+                        </ThemedTextSecondary>
+                      </ThemedView>
+                      <ThemedView
+                        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                      >
+                        <MaterialIcons name="directions-car" size={16} color="#2196F3" />
+                        <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                          {calculateDrivingTime(item.distance)} en coche
+                        </ThemedTextSecondary>
+                      </ThemedView>
+                    </>
+                  )}
+                  <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
                     <ThemedText
                       style={{
                         fontSize: 18,
                         fontWeight: 'bold',
-                        color: theme === 'dark' ? '#fff' : '#222',
-                        marginBottom: 7,
-                        marginLeft: 14,
-                        textShadowColor:
-                          theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
-                        textShadowOffset: { width: 0, height: 2 },
-                        textShadowRadius: 6,
+                        color: '#fff',
+                        backgroundColor: '#6c2eb7',
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        overflow: 'hidden',
+                        alignSelf: 'flex-end',
                       }}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
                     >
-                      {item.title}
+                      {
+                        (() => {
+                          if (item.precio != null && item.precio !== 0)
+                            return `${item.precio} €`;
+                          if (item.precioMin != null && item.precioMax != null)
+                            return `${item.precioMin}€ - ${item.precioMax}€`;
+                          return 'Gratis';
+                        })()
+                      }
                     </ThemedText>
-                    <ThemedTextSecondary
-                      style={{
-                        fontSize: 13,
-                        color: theme === 'dark' ? '#eee' : '#444',
-                        marginLeft: 14,
-                        marginBottom: 6,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        textShadowColor:
-                          theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 2,
-                      }}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
-                    </ThemedTextSecondary>
-                  </ImageBackground>
-                  <ThemedView style={{ padding: 12 }}>
-                    <ThemedView
-                      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                    >
-                      <MaterialIcons name="event" size={16} color="#6c2eb7" />
-                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {new Date(item.fechaInicio).toLocaleDateString()} -{' '}
-                        {new Date(item.fechaFin).toLocaleDateString()}
-                      </ThemedTextSecondary>
-                    </ThemedView>
-                    <ThemedView
-                      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                    >
-                      <MaterialIcons name="category" size={16} color="#6c2eb7" />
-                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {item.categoria?.nombre}
-                      </ThemedTextSecondary>
-                    </ThemedView>
-                    {item.distance !== undefined && item.distance !== Infinity && (
-                      <>
-                        <ThemedView
-                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                        >
-                          <MaterialIcons name="directions-walk" size={16} color="#4caf50" />
-                          <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                            {calculateWalkingTime(item.distance)} a pie
-                          </ThemedTextSecondary>
-                        </ThemedView>
-                        <ThemedView
-                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                        >
-                          <MaterialIcons name="directions-car" size={16} color="#2196F3" />
-                          <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                            {calculateDrivingTime(item.distance)} en coche
-                          </ThemedTextSecondary>
-                        </ThemedView>
-                      </>
-                    )}
-                    <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
-                      <ThemedText
-                        style={{
-                          fontSize: 18,
-                          fontWeight: 'bold',
-                          color: '#fff',
-                          backgroundColor: '#6c2eb7',
-                          paddingHorizontal: 12,
-                          paddingVertical: 4,
-                          borderRadius: 12,
-                          overflow: 'hidden',
-                          alignSelf: 'flex-end',
-                        }}
-                      >
-                        {
-                          (() => {
-                            if (item.precio != null && item.precio !== 0)
-                              return `${item.precio} €`;
-                            if (item.precioMin != null && item.precioMax != null)
-                              return `${item.precioMin}€ - ${item.precioMax}€`;
-                            return 'Gratis';
-                          })()
-                        }
-                      </ThemedText>
-                    </ThemedView>
                   </ThemedView>
-                </ThemedCard>
-              </TouchableOpacity>
-            );
-          }}
-        />
+                </ThemedView>
+              </ThemedCard>
+            </TouchableOpacity>
+          );
+        }}
+      />
+
+      <Modal
+        visible={privateAccessVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closePrivateAccess}
+      >
+        <View style={styles.privateModalBackdrop}>
+          <ThemedView
+            style={[
+              styles.privateModalCard,
+              {
+                backgroundColor: theme === 'dark' ? '#1f2430' : '#fff2de',
+                borderColor: colors.primary + '55',
+              },
+            ]}
+          >
+            <View style={styles.privateModalHeader}>
+              <View style={[styles.privateModalIcon, { backgroundColor: colors.primary }]}>
+                <MaterialIcons name="lock-open" size={18} color="#fff" />
+              </View>
+              <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
+            </View>
+            <ThemedTextSecondary style={styles.privateModalHint}>
+              Introduce el enlace completo o solo el codigo final.
+            </ThemedTextSecondary>
+
+            <TextInput
+              value={privateAccessInput}
+              onChangeText={setPrivateAccessInput}
+              placeholder="Pega el enlace o código"
+              placeholderTextColor={theme === 'dark' ? '#aaa' : '#666'}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={[
+                styles.privateModalInput,
+                {
+                  borderColor: colors.border,
+                  color: colors.text,
+                  backgroundColor: theme === 'dark' ? '#2b3344' : '#ffffff',
+                },
+              ]}
+            />
+
+            <View style={styles.privateModalActions}>
+              <ThemedButton title="Cancelar" onPress={closePrivateAccess} />
+              <ThemedButton title="Entrar" onPress={handlePrivateAccessSubmit} />
+            </View>
+          </ThemedView>
+        </View>
+      </Modal>
 
         {menuVisible && (
           <ThemedView style={styles.menuOverlay}>
@@ -942,5 +1054,58 @@ const styles = StyleSheet.create({
   },
   statusSoon: {
     backgroundColor: '#ff9800',
+  },
+  privateModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.62)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  privateAccessButton: {
+    position: 'absolute',
+    top: 15,
+    right: 122,
+    zIndex: 11,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  privateModalCard: {
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+  },
+  privateModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  privateModalIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  privateModalTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  privateModalHint: {
+    marginBottom: 12,
+    fontSize: 13,
+  },
+  privateModalInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    marginBottom: 14,
+  },
+  privateModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
   },
 });

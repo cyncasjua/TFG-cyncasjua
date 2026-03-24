@@ -149,3 +149,30 @@ export async function getUserProfile(userId: string): Promise<PublicUser | null>
   const res = await api.get(`/users/${userId}`);
   return res.data as PublicUser | null;
 }
+
+export async function getEventByAccessLink(linkAcceso: string): Promise<Event> {
+  const res = await api.get(`/events/acceso/${linkAcceso}`);
+  const event = res.data as any;
+  const coords = parsePoint(event.location);
+  return {
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    address: event.address,
+    location: event.location,
+    fechaInicio: event.fechaInicio,
+    fechaFin: event.fechaFin,
+    precio: event.precio,
+    precioMin: event.precioMin,
+    precioMax: event.precioMax,
+    categoria: event.categoria,
+    estado: event.estado,
+    creador: event.creador,
+    latitude: coords?.latitude,
+    longitude: coords?.longitude,
+    imagen: event.imagen,
+    imagenes: event.imagenes,
+    privado: event.privado,
+    linkAcceso: event.linkAcceso,
+  } as Event;
+}

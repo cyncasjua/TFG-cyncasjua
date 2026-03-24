@@ -29,6 +29,7 @@ import dayjs from 'dayjs';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { ComponentType } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
+import { PrivateEventLinkModal } from './PrivateEventLinkModal';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -81,7 +82,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
+  const [privado, setPrivado] = useState(false);
+  const [showPrivateLinkModal, setShowPrivateLinkModal] = useState(false);
+  const [eventLinkAcceso, setEventLinkAcceso] = useState('');
   const descriptionRef = useRef<TextInput>(null);
   const addressRef = useRef<TextInput>(null);
   const fechaInicioRef = useRef<TextInput>(null);
@@ -267,17 +270,23 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
         precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
         precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
+        privado,
         categoriaId,
         creadorId: user.id,
         imagenes: imageUrls || undefined,
         imagen: coverImageUrl || undefined,
       };
-      await api.post('/events', payload);
-      Alert.alert(
-        'Éxito',
-        'Evento enviado para revisión. Será visible tras la aprobación de un moderador.'
-      );
-      navigation.goBack();
+      const response = await api.post('/events', payload);
+      setEventLinkAcceso(response.data.linkAcceso || null);
+      if( privado && response.data.linkAcceso) {
+        setShowPrivateLinkModal(true);
+      } else {
+        Alert.alert(
+          'Éxito',
+          'Evento enviado para revisión. Será visible tras la aprobación de un moderador.'
+        );
+        navigation.goBack();
+      }
     } catch (error: any) {
       let msg = 'No se pudo crear el evento.';
       if (error?.response?.data?.message) {
@@ -472,6 +481,25 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onCancel={() => setShowHoraFin(false)}
               locale="es"
             />
+            <ThemedText style={styles.label}>Privado</ThemedText>
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setPrivado(!privado)}
+              activeOpacity={0.8}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  {
+                    borderColor: colors.primary,
+                    backgroundColor: privado ? colors.primary : colors.card,
+                  },
+                ]}
+              >
+                {privado && <Icon name="check" size={16} color="#fff" />}
+              </View>
+
+            </TouchableOpacity>
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
             <View
               style={{
@@ -638,6 +666,18 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 listMode="SCROLLVIEW"
                 ArrowUpIconComponent={ArrowUpIcon}
                 ArrowDownIconComponent={ArrowDownIcon}
+              />
+            )}
+            {privado && eventLinkAcceso && (
+              <PrivateEventLinkModal
+                visible={showPrivateLinkModal}
+                linkAcceso={eventLinkAcceso}
+                eventTitle={title}
+                onClose={() => {
+                  setShowPrivateLinkModal(false);
+                  navigation.goBack();
+                }}
+                apiUrl={process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}
               />
             )}
             <ThemedText style={styles.label}>Imagen del evento</ThemedText>
@@ -850,6 +890,20 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 10,
     marginBottom: 8,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
 });
 

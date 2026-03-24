@@ -20,7 +20,8 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { Mensaje } from './entities/mensaje.entity';
 import { ChatModule } from './chat/chat.module';
 import { MensajePrivado } from './entities/mensaje-privado.entity';
-
+import { ScrapingModule } from './scraping/scraping.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -56,6 +57,8 @@ import { MensajePrivado } from './entities/mensaje-privado.entity';
     CategoriasModule,
     NotificacionesModule,
     ChatModule,
+    ScrapingModule,
+    SchedulerModule, // Tareas programadas - comenta esta línea si no quieres scraping automático
   ],
 })
 export class AppModule {
