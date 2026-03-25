@@ -37,14 +37,14 @@ export const CalendarEventsScreen: React.FC = () => {
       const date = event.fechaInicio.split('T')[0];
       marks[date] = {
         marked: true,
-        dotColor: '#00adf5'
+        dotColor: '#6c2eb7'
       };
     });
 
     marks[selectedDate] = {
       ...marks[selectedDate],
       selected: true,
-      selectedColor: '#00adf5',
+      selectedColor: '#6c2eb7',
     };
     return marks;
   }, [events, selectedDate]);
@@ -56,7 +56,7 @@ export const CalendarEventsScreen: React.FC = () => {
   if (loading) {
     return (
       <ThemedView style={styles.center}>
-        <ActivityIndicator size="large" color="#00adf5" />
+        <ActivityIndicator size="large" color="#6c2eb7" />
       </ThemedView>
     );
   }
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   },
   eventTitle: { fontWeight: 'bold', fontSize: 16 },
   eventSubtitle: { color: '#666', fontSize: 14, marginTop: 4 },
-  eventTime: { color: '#00adf5', fontSize: 12, marginTop: 4, fontWeight: '600' },
+  eventTime: { color: '#6c2eb7', fontSize: 12, marginTop: 4, fontWeight: '600' },
   emptyText: { textAlign: 'center', color: '#999', marginTop: 20 }
 });
 

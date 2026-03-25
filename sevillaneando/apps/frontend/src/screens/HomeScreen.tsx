@@ -505,23 +505,22 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         )}
 
         {role === 'user' && (
-          <TouchableOpacity
-            style={styles.fabSecondary}
-            onPress={() => navigation.navigate('UserEvents')}
-            accessibilityLabel="Mis eventos"
-          >
-            <MaterialIcons name="edit" size={44} color="#6c2eb7" />
-          </TouchableOpacity>
-        )}
-
-        {role === 'user' && (
-          <TouchableOpacity
-            style={styles.fabCalendar}
-            onPress={() => navigation.navigate('CalendarEvents')}
-            accessibilityLabel="Calendario de eventos"
-          >
-            <MaterialIcons name="calendar-today" size={44} color="#6c2eb7" />
-          </TouchableOpacity>
+          <View style={styles.fabRowRightAligned}>
+            <TouchableOpacity
+              style={styles.fabSecondary}
+              onPress={() => navigation.navigate('UserEvents')}
+              accessibilityLabel="Mis eventos"
+            >
+              <MaterialIcons name="edit" size={35} color="#6c2eb7" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.fabCalendar}
+              onPress={() => navigation.navigate('CalendarEvents')}
+              accessibilityLabel="Calendario de eventos"
+            >
+              <MaterialIcons name="calendar-today" size={35} color="#6c2eb7" />
+            </TouchableOpacity>
+          </View>
         )}
 
         {role === 'moderator' && (
@@ -1129,20 +1128,23 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 8,
   },
-  fabSecondary: {
+  fabRowRightAligned: {
     position: 'absolute',
-    bottom: 100,
-    right: 32,
-    zIndex: 20,
-    elevation: 8,
-    backgroundColor: 'transparent',
+    top: 20,
+    right: 122 + 44 + 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 8,
+    gap: 10,
   },
-    fabCalendar: {
-    position: 'absolute',
-    bottom: 168,
-    right: 32,
-    zIndex: 20,
-    elevation: 8,
+  fabSecondary: {
     backgroundColor: 'transparent',
+    marginRight: 10,
+    elevation: 8,
+  },
+  fabCalendar: {
+    backgroundColor: 'transparent',
+    marginLeft: 0,
+    elevation: 8,
   },
 });
