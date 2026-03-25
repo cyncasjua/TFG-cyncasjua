@@ -9,17 +9,19 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 import { UsersModule } from '../users/users.module';
 import { Mensaje } from '../entities/mensaje.entity';
 import { Resena } from '../entities/resena.entity';
-import { Imagen } from '../entities/imagen.entity';
+import { EventEditRequest } from './event-edit-request.entity';
+import { EventEditRequestService } from './event-edit-request.service';
+import { EventEditRequestController } from './event-edit-request.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Event, User, Mensaje, Resena, Imagen]),
+    TypeOrmModule.forFeature([Event, User, Mensaje, Resena,  EventEditRequest]),
     AuthModule,
     NotificacionesModule,
     UsersModule,
   ],
-  controllers: [EventsController],
-  providers: [EventsService],
+  controllers: [EventsController, EventEditRequestController],
+  providers: [EventsService, EventEditRequestService],
   exports: [EventsService],
 })
 export class EventsModule { }

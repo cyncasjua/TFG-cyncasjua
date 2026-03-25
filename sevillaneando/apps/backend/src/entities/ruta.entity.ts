@@ -7,8 +7,8 @@ import {
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
-import { Coordenadas } from './coordenadas.entity';
 import { Event } from '../events/event.entity';
+import { GeoJsonPoint } from 'src/common/geojson-point';
 
 @Entity()
 export class Ruta {
@@ -16,7 +16,7 @@ export class Ruta {
   id: string;
 
   @Column('simple-json')
-  trayecto: Coordenadas[];
+  trayecto: GeoJsonPoint[];
 
   @ManyToMany(() => Event)
   @JoinTable()

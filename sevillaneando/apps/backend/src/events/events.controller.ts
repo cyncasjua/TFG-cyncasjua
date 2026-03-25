@@ -172,4 +172,14 @@ export class EventsController {
       fotoPerfil: u.fotoPerfil,
     }));
   }
+
+  @Get('user/:userId')
+  async findEventsByUser(@Param('userId') userId: string): Promise<Event[]> {
+    return this.eventsService.findEventsByUser(userId);
+  }
+
+  @Get('attending/:userId')
+  async findEventsAttending(@Param('userId') userId: string): Promise<Event[]> {
+    return this.eventsService.findEventsAttending(userId);
+  }
 }

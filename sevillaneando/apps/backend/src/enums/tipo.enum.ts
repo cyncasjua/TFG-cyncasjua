@@ -3,4 +3,5 @@ export enum TipoEnum {
   Aprobacion = 'Aprobacion',
   Rechazado = 'Rechazado',
   EventoCercano = 'EventoCercano',
+  EventoProximo = 'EventoProximo',
 }

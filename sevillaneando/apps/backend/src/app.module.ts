@@ -9,10 +9,8 @@ import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
 import { SeedService } from './database/seed.service';
 import { Categoria } from './entities/categoria.entity';
-import { Imagen } from './entities/imagen.entity';
 import { Resena } from './entities/resena.entity';
 import { Ruta } from './entities/ruta.entity';
-import { Coordenadas } from './entities/coordenadas.entity';
 import { Notificacion } from './entities/notificacion.entity';
 import { Recomendacion } from './entities/recomendacion.entity';
 import { CategoriasModule } from './categorias/categorias.module';
@@ -22,6 +20,7 @@ import { ChatModule } from './chat/chat.module';
 import { MensajePrivado } from './entities/mensaje-privado.entity';
 import { ScrapingModule } from './scraping/scraping.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { EventEditRequest } from './events/event-edit-request.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -38,14 +37,13 @@ import { SchedulerModule } from './scheduler/scheduler.module';
           Event,
           User,
           Categoria,
-          Imagen,
           Resena,
           Ruta,
-          Coordenadas,
           Notificacion,
           Recomendacion,
           Mensaje,
           MensajePrivado,
+          EventEditRequest
         ],
         synchronize: true,
       }),
@@ -58,7 +56,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     NotificacionesModule,
     ChatModule,
     ScrapingModule,
-    SchedulerModule, // Tareas programadas - comenta esta línea si no quieres scraping automático
+    SchedulerModule
   ],
 })
 export class AppModule {

@@ -10,7 +10,6 @@ import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Mensaje } from '../entities/mensaje.entity';
 import { Resena } from '../entities/resena.entity';
-import { Imagen } from '../entities/imagen.entity';
 
 @Injectable()
 export class EventsService {
@@ -23,8 +22,7 @@ export class EventsService {
     private readonly mensajeRepo: Repository<Mensaje>,
     @InjectRepository(Resena)
     private readonly resenaRepo: Repository<Resena>,
-    @InjectRepository(Imagen)
-    private readonly imagenRepo: Repository<Imagen>
+
   ) { }
 
   async create(dto: CreateEventDto): Promise<Event> {
@@ -140,13 +138,6 @@ export class EventsService {
       .where('eventoId = :id', { id })
       .execute();
 
-    await this.imagenRepo
-      .createQueryBuilder()
-      .delete()
-      .from(Imagen)
-      .where('eventoId = :id', { id })
-      .execute();
-
     await this.eventRepo.delete(id);
   }
 
@@ -196,5 +187,22 @@ export class EventsService {
     event.asistentes = (event.asistentes ?? []).filter((att) => att.id !== userId);
     await this.eventRepo.save(event);
     return event.asistentes;
+  }
+
+    async findEventsAttending(userId: string): Promise<Event[]> {
+      return this.eventRepo
+        .createQueryBuilder('event')
+        .leftJoinAndSelect('event.categoria', 'categoria')
+        .leftJoinAndSelect('event.creador', 'creador')
+        .leftJoinAndSelect('event.asistentes', 'asistentes')
+        .innerJoin('event.asistentes', 'user', 'user.id = :userId', { userId })
+        .getMany();
+    }
+
+    async findEventsByUser(userId: string): Promise<Event[]> {
+    return this.eventRepo.find({
+      where: { creador: { id: userId } },
+      relations: ['categoria', 'creador'],
+    });
   }
 }

@@ -27,6 +27,9 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { DirectMessageScreen } from './screens/DirectMessageScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
 import { AccessPrivateEventScreen } from './screens/AccessPrivateEventScreen';
+import UserEventsScreen from './screens/UserEventsScreen';
+import CalendarEventsScreen from './screens/CalendarEventsScreen';
+import { EditEventScreen } from './screens/UserEditEventScreen';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -51,6 +54,8 @@ export type RootStackParamList = {
   DirectMessage: { userId: string; userName: string };
   Messages: undefined;
   AccessPrivateEvent: { linkAcceso: string };
+  UserEvents: undefined;
+  CalendarEvents: undefined;
 };
 
 export type AuthStackParamList = {
@@ -191,6 +196,21 @@ const Navigator = () => {
             name="AccessPrivateEvent"
             component={AccessPrivateEventScreen}
             options={{ title: 'Acceso privado' }}
+          />
+          <AppStack.Screen
+            name="EditEvent"
+            component={EditEventScreen}
+            options={{ title: 'Editar evento' }}
+          />
+          <AppStack.Screen
+            name="UserEvents"
+            component={UserEventsScreen}
+            options={{ title: 'Mis eventos' }}
+          />
+          <AppStack.Screen
+            name="CalendarEvents"
+            component={CalendarEventsScreen}
+            options={{ title: 'Calendario' }}
           />
         </AppStack.Navigator>
       ) : (

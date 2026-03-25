@@ -9,7 +9,7 @@ import { IScraper, ScrapedEvent } from './interfaces/scraper.interface';
 import { EstadoEnum } from '../enums/estado.enum';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
-import { GeminiScraperService } from './scrapers/gemini-scraper.service';
+//import { GeminiScraperService } from './scrapers/gemini-scraper.service';
 
 @Injectable()
 export class ScrapingService {
@@ -177,7 +177,7 @@ export class ScrapingService {
 
     const sevillaScraperService = this.moduleRef.get(SevillaScraperService, { strict: false });
     const ticketmasterScraperService = this.moduleRef.get(TicketmasterScraperService, { strict: false });
-    const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
+    //const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
 
     if (sevillaScraperService) {
       scrapers.push(sevillaScraperService);
@@ -191,11 +191,11 @@ export class ScrapingService {
       this.logger.warn('TicketmasterScraperService no está disponible');
     }
 
-    if (geminiScraperService) {
-      scrapers.push(geminiScraperService);
-    } else {
-      this.logger.warn('GeminiScraperService no está disponible');
-    }
+    //if (geminiScraperService) {
+      //scrapers.push(geminiScraperService);
+    //} else {
+      //this.logger.warn('GeminiScraperService no está disponible');
+    //}
 
     this.logger.log(`Scrapers activos: ${scrapers.map((s) => s.name).join(', ') || 'ninguno'}`);
     return scrapers;

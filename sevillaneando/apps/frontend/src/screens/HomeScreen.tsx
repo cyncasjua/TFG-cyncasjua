@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
@@ -500,6 +501,26 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             accessibilityLabel="Crear evento"
           >
             <MaterialIcons name="add-circle" size={56} color="#6c2eb7" />
+          </TouchableOpacity>
+        )}
+
+        {role === 'user' && (
+          <TouchableOpacity
+            style={styles.fabSecondary}
+            onPress={() => navigation.navigate('UserEvents')}
+            accessibilityLabel="Mis eventos"
+          >
+            <MaterialIcons name="edit" size={44} color="#6c2eb7" />
+          </TouchableOpacity>
+        )}
+
+        {role === 'user' && (
+          <TouchableOpacity
+            style={styles.fabCalendar}
+            onPress={() => navigation.navigate('CalendarEvents')}
+            accessibilityLabel="Calendario de eventos"
+          >
+            <MaterialIcons name="calendar-today" size={44} color="#6c2eb7" />
           </TouchableOpacity>
         )}
 
@@ -1107,5 +1128,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
+  },
+  fabSecondary: {
+    position: 'absolute',
+    bottom: 100,
+    right: 32,
+    zIndex: 20,
+    elevation: 8,
+    backgroundColor: 'transparent',
+  },
+    fabCalendar: {
+    position: 'absolute',
+    bottom: 168,
+    right: 32,
+    zIndex: 20,
+    elevation: 8,
+    backgroundColor: 'transparent',
   },
 });
