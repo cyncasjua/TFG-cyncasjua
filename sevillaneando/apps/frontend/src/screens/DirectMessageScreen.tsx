@@ -13,6 +13,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import * as ImagePicker from 'expo-image-picker';
@@ -38,7 +42,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const { userId, userName } = route.params;
   const { colors } = useTheme();
   const { user, token } = useAuth();
-  const { socket, isConnected } = useSocket();
+  const { socket, isConnected, sendMessage } = useSocket();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [input, setInput] = useState('');
   const [chatError, setChatError] = useState('');
@@ -183,13 +187,11 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       'Borrar mensaje',
       '¿Estás seguro de que quieres borrar este mensaje?',
       [
-        { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Borrar',
           onPress: () => {
-            if (socket) {
-              socket.emit('delete_dm', { messageId });
-            }
+            sendMessage('delete_dm', { messageId });
           },
           style: 'destructive',
         },
@@ -342,7 +344,11 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                         color: colors.text + '99',
                       }}
                     >
-                      {dayjs(item.fechaCreacion).format('HH:mm')}
+                      {(() => {
+                        const date = new Date(item.fechaCreacion);
+                        const fixedDate = new Date(date.getTime() + 1 * 60 * 60 * 1000);
+                        return fixedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+                      })()}
                     </ThemedTextSecondary>
                   </TouchableOpacity>
                 </ThemedView>
@@ -403,12 +409,14 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           <TouchableOpacity
             onPress={() => {
               const trimmedText = input.trim();
-              if ((!trimmedText && !pendingImageUrl) || !socket) return;
-              socket.emit('dm_message', {
+              if (!trimmedText && !pendingImageUrl) return;
+
+              sendMessage('dm_message', {
                 toUserId: userId,
                 text: trimmedText,
                 imageUrl: pendingImageUrl ?? undefined,
               });
+
               setInput('');
               setPendingImageLocalUri(null);
               setPendingImageUrl(null);

@@ -15,6 +15,10 @@ import {
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
@@ -39,6 +43,7 @@ import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
 import { attendEvent, getEventAttendees, getMyAttendance, unattendEvent } from '../services/api';
 import { Dimensions } from 'react-native';
+import { useSocket } from '../context/SocketContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -122,11 +127,11 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [attendees, setAttendees] = useState<PublicUser[]>([]);
   const [isAttending, setIsAttending] = useState(false);
   const [attendeesError, setAttendeesError] = useState('');
-  const socketRef = useRef<Socket | null>(null);
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
   const lastScaleRef = useRef(1);
   const imageScale = Animated.multiply(baseScale, pinchScale);
+  const { socket, sendMessage, isConnected } = useSocket();
 
   const onPinchEvent = Animated.event([{ nativeEvent: { scale: pinchScale } }], {
     useNativeDriver: true,
@@ -186,38 +191,27 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    if (!token) return;
-    const socket = io(process.env.EXPO_PUBLIC_API_URL, {
-      auth: { token },
-    });
+    if (!socket || !token) return;
 
-    socketRef.current = socket;
+    socket.emit('join_room', event.id);
 
-    socket.on('connect', () => {
-      socket.emit('join_room', event.id);
-    });
+    const onHistory = (history: ChatMessage[]) => setMessages(history);
+    const onMessage = (message: ChatMessage) => setMessages((prev) => [...prev, message]);
+    const onDelete = (messageId: string) => setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    const onError = (err: { message: string }) => setChatError(err.message);
 
-    socket.on('chat_history', (history: ChatMessage[]) => {
-      setMessages(history);
-    });
-
-    socket.on('chat_message', (message: ChatMessage) => {
-      setMessages((prev) => [...prev, message]);
-    });
-
-    socket.on('delete_event_message_success', (messageId: string) => {
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-    });
-
-    socket.on('chat_error', (err: { message: string }) => {
-      setChatError(err.message);
-    });
+    socket.on('chat_history', onHistory);
+    socket.on('chat_message', onMessage);
+    socket.on('delete_event_message_success', onDelete);
+    socket.on('chat_error', onError);
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      socket.off('chat_history', onHistory);
+      socket.off('chat_message', onMessage);
+      socket.off('delete_event_message_success', onDelete);
+      socket.off('chat_error', onError);
     };
-  }, [event.id, token]);
+  }, [socket, event.id, token]);
 
   const formatDuration = (totalMinutes: number, label: string) => {
     if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return `${label}: -`;
@@ -387,9 +381,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         {
           text: 'Borrar',
           onPress: () => {
-            if (socketRef.current) {
-              socketRef.current.emit('delete_event_message', { eventId: event?.id, messageId });
-            }
+            sendMessage('delete_event_message', {
+              eventId: event?.id,
+              messageId
+            });
           },
           style: 'destructive',
         },
@@ -724,7 +719,11 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                               color: colors.text + '99',
                             }}
                           >
-                            {dayjs(item.fechaCreacion).format('HH:mm')}
+                            {(() => {
+                              const date = new Date(item.fechaCreacion);
+                              const fixedDate = new Date(date.getTime() + 1 * 60 * 60 * 1000);
+                              return fixedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+                            })()}
                           </ThemedTextSecondary>
                         </TouchableOpacity>
                         {!isOwn && item.usuario?.id && (
@@ -798,12 +797,14 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <TouchableOpacity
                   onPress={() => {
                     const trimmedText = input.trim();
-                    if ((!trimmedText && !pendingImageUrl) || !socketRef.current) return;
-                    socketRef.current.emit('chat_message', {
+                    if (!trimmedText && !pendingImageUrl) return;
+
+                    sendMessage('chat_message', {
                       eventId: event.id,
                       text: trimmedText,
                       imageUrl: pendingImageUrl ?? undefined,
                     });
+
                     setInput('');
                     setPendingImageLocalUri(null);
                     setPendingImageUrl(null);

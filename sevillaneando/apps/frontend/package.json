@@ -25,7 +25,7 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@react-navigation/stack": "^6.3.21",
     "axios": "1.13.5",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "expo": "~54.0.33",
     "expo-image-picker": "^17.0.10",
     "expo-linking": "~8.0.11",
