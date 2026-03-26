@@ -68,7 +68,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const remote = await getEvents();
+        const remote = await getEvents(user?.id);
 
         if (user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2) {
           const userLon = user.ubicacion.coordinates[0];

@@ -30,7 +30,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
   const fetchPendingEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get('/events?estado=Pendiente');
+      const res = await api.get('/events/moderacion/list');
       setPendingEvents(res.data);
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));

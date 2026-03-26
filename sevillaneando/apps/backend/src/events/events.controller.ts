@@ -41,9 +41,8 @@ export class EventsController {
   }
 
   @Get()
-  async findAll(@Query('estado') estado?: string): Promise<Event[]> {
-    const estadoEnum = estado ? EstadoEnum[estado as keyof typeof EstadoEnum] : undefined;
-    return this.eventsService.findAll(estadoEnum);
+  async findAll(@Query('userId') userId?: string): Promise<Event[]> {
+    return this.eventsService.findAll(userId);
   }
 
   @Get(':id')
@@ -66,23 +65,19 @@ export class EventsController {
     return this.eventsService.remove(id);
   }
 
-  @Patch(':id/aprobar')
+@Patch(':id/aprobar')
   async aprobar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Aprobado)
       throw new ForbiddenException('El evento ya está aprobado');
+
     event.estado = EstadoEnum.Aprobado;
-    const updateDto: UpdateEventDto = {
-      ...event,
-      fechaInicio:
-        event.fechaInicio instanceof Date ? event.fechaInicio.toISOString() : event.fechaInicio,
-      fechaFin: event.fechaFin instanceof Date ? event.fechaFin.toISOString() : event.fechaFin,
-    };
-    const updated = await this.eventsService.update(id, updateDto);
+    const updated = await this.eventsService.saveDirectly(event);
+
     if (event.creador) {
       await this.notificacionesService.crearParaUsuario(
         event.creador,
-        `Tu evento "${event.title}" ha sido aprobado y ya es visible para todos los usuarios.`,
+        `Tu evento "${event.title}" ha sido aprobado y ya es visible para todos.`,
         TipoEnum.Aprobacion
       );
     }
@@ -94,18 +89,14 @@ export class EventsController {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Rechazado)
       throw new ForbiddenException('El evento ya está rechazado');
+
     event.estado = EstadoEnum.Rechazado;
-    const updateDto: UpdateEventDto = {
-      ...event,
-      fechaInicio:
-        event.fechaInicio instanceof Date ? event.fechaInicio.toISOString() : event.fechaInicio,
-      fechaFin: event.fechaFin instanceof Date ? event.fechaFin.toISOString() : event.fechaFin,
-    };
-    const updated = await this.eventsService.update(id, updateDto);
+    const updated = await this.eventsService.saveDirectly(event);
+
     if (event.creador) {
       await this.notificacionesService.crearParaUsuario(
         event.creador,
-        `Tu evento "${event.title}" ha sido rechazado. No será visible para otros usuarios.`,
+        `Tu evento "${event.title}" ha sido rechazado.`,
         TipoEnum.Rechazado
       );
     }
@@ -176,6 +167,11 @@ export class EventsController {
   @Get('user/:userId')
   async findEventsByUser(@Param('userId') userId: string): Promise<Event[]> {
     return this.eventsService.findEventsByUser(userId);
+  }
+
+  @Get('moderacion/list')
+  async findEventsToModerate(): Promise<Event[]> {
+    return this.eventsService.findEventsToModerate();
   }
 
   @Get('attending/:userId')

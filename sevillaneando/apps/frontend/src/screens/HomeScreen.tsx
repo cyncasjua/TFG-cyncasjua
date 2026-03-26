@@ -39,6 +39,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
+    // Modal para buscador/filtros
+    const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [items, setItems] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +57,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const [privateAccessVisible, setPrivateAccessVisible] = useState(false);
   const [privateAccessInput, setPrivateAccessInput] = useState('');
+
+  const [searchText, setSearchText] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
 
   const sortWithOtrosLast = useCallback((data: { id: string; nombre: string }[]) => {
     const others = data.filter((item) => item.nombre.trim().toLowerCase() === 'otros');
@@ -179,7 +185,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setError(null);
 
     try {
-      const publicEvents = await getEvents();
+      const publicEvents = await getEvents(user?.id);
 
       const raw = await AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY);
       const links: string[] = raw ? JSON.parse(raw) : [];
@@ -284,37 +290,56 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText style={{ fontWeight: 'bold' }}>{role}</ThemedText>
             </ThemedTextSecondary>
           </ThemedView>
-          {user?.ubicacion && (
+          <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {user?.ubicacion && (
+              <TouchableOpacity
+                style={{
+                  paddingVertical: 7,
+                  paddingHorizontal: 14,
+                  borderRadius: 18,
+                  backgroundColor: filterNearby ? '#ffd700' : colors.card,
+                  borderWidth: 1.5,
+                  borderColor: '#ffd700',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+                onPress={() => setFilterNearby(!filterNearby)}
+              >
+                <MaterialIcons
+                  name="near-me"
+                  size={15}
+                  color={filterNearby ? '#fff' : '#ffd700'}
+                  style={{ marginRight: 4 }}
+                />
+                <ThemedText
+                  style={{
+                    color: filterNearby ? '#fff' : colors.text + '99',
+                    fontWeight: '500',
+                    fontSize: 11,
+                  }}
+                >
+                  Cerca
+                </ThemedText>
+              </TouchableOpacity>
+            )}
+            {/* Botón lupa para abrir modal de búsqueda */}
             <TouchableOpacity
               style={{
                 paddingVertical: 7,
-                paddingHorizontal: 14,
+                paddingHorizontal: 10,
                 borderRadius: 18,
-                backgroundColor: filterNearby ? '#ffd700' : colors.card,
+                backgroundColor: colors.card,
                 borderWidth: 1.5,
-                borderColor: '#ffd700',
+                borderColor: colors.primary,
                 flexDirection: 'row',
                 alignItems: 'center',
               }}
-              onPress={() => setFilterNearby(!filterNearby)}
+              onPress={() => setSearchModalVisible(true)}
+              accessibilityLabel="Buscar y filtrar"
             >
-              <MaterialIcons
-                name="near-me"
-                size={15}
-                color={filterNearby ? '#fff' : '#ffd700'}
-                style={{ marginRight: 4 }}
-              />
-              <ThemedText
-                style={{
-                  color: filterNearby ? '#fff' : colors.text + '99',
-                  fontWeight: '500',
-                  fontSize: 11,
-                }}
-              >
-                Cerca
-              </ThemedText>
+              <MaterialIcons name="search" size={18} color={colors.primary} />
             </TouchableOpacity>
-          )}
+          </ThemedView>
         </ThemedView>
         {filterNearby && user?.ubicacion && (
           <ThemedView style={{ marginBottom: 12 }}>
@@ -575,6 +600,52 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
 
       {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
+
+
+      <Modal
+        visible={searchModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSearchModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: '#0008', justifyContent: 'center', alignItems: 'center' }}>
+          <ThemedView style={{ width: '90%', backgroundColor: colors.card, borderRadius: 18, padding: 20 }}>
+            <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
+            <TextInput
+              style={{ backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 10, height: 38, borderWidth: 1, borderColor: colors.primary + '33', marginBottom: 12 }}
+              placeholder="Buscar por título o descripción"
+              placeholderTextColor={colors.text + '66'}
+              value={searchText}
+              onChangeText={setSearchText}
+              autoFocus
+            />
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+              <TextInput
+                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
+                placeholder="Min €"
+                placeholderTextColor={colors.text + '66'}
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
+                placeholder="Max €"
+                placeholderTextColor={colors.text + '66'}
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+              <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); }} />
+              <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} />
+              <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} />
+            </View>
+          </ThemedView>
+        </View>
+      </Modal>
+
       <FlatList
         data={(() => {
           let filtered = items;
@@ -587,6 +658,35 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             filtered = filtered.filter(
               (ev) => ev.distance !== undefined && ev.distance <= searchRadius
             );
+          }
+
+          if (searchText.trim() !== '') {
+            const text = searchText.trim().toLowerCase();
+            filtered = filtered.filter(ev =>
+              (ev.title?.toLowerCase().includes(text) || ev.description?.toLowerCase().includes(text))
+            );
+          }
+
+          const min = minPrice !== '' ? parseFloat(minPrice) : null;
+          const max = maxPrice !== '' ? parseFloat(maxPrice) : null;
+          if (min !== null) {
+            filtered = filtered.filter(ev => {
+              const isGratis =
+                (ev.precio == null && ev.precioMin == null && ev.precioMax == null) ||
+                (ev.precio === 0) ||
+                (ev.precioMin === 0 && ev.precioMax === 0);
+              if (isGratis) return min === 0 || min === null;
+              if (ev.precio != null) return ev.precio >= min;
+              if (ev.precioMin != null) return ev.precioMin >= min;
+              return true;
+            });
+          }
+          if (max !== null) {
+            filtered = filtered.filter(ev => {
+              if (ev.precio != null) return ev.precio <= max;
+              if (ev.precioMax != null) return ev.precioMax <= max;
+              return true;
+            });
           }
 
           return filtered;

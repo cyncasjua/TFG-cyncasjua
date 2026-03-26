@@ -99,8 +99,8 @@ function parsePoint(location?: string | any) {
   return null;
 }
 
-export async function getEvents(): Promise<Event[]> {
-  const res = await api.get('/events');
+export async function getEvents(userId?: string): Promise<Event[]> {
+  const res = await api.get('/events', userId ? { params: { userId } } : undefined);
   return (res.data as any[]).map((event) => {
     const coords = parsePoint(event.location);
     return {

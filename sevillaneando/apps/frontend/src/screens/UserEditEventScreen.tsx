@@ -1,3 +1,4 @@
+import { PrivateEventLinkModal } from './PrivateEventLinkModal';
 import React, { useState, useRef, useEffect, ComponentType } from 'react';
 import {
   Alert,
@@ -37,10 +38,12 @@ type Categoria = {
   nombre: string;
 };
 
-export const EditEventScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { event } = route.params;
+const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { event, onEventEdited } = route.params as { event: any; onEventEdited?: () => void };
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
+  const [showPrivateLinkModal, setShowPrivateLinkModal] = useState(false);
+  const [eventLinkAcceso, setEventLinkAcceso] = useState<string | null>(null);
 
   const ArrowUpIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
     <Icon name="chevron-up" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
@@ -263,10 +266,20 @@ export const EditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         imagen: coverImageUrl || undefined,
       };
 
-      await api.put(`/events/${event.id}`, payload);
+      const wasPublic = !event.privado;
+      const willBePrivate = privado;
 
-      Alert.alert('Éxito', 'El evento ha sido actualizado correctamente.');
-      navigation.goBack();
+      const res = await api.put(`/events/${event.id}`, payload);
+      const linkAcceso = res.data?.linkAcceso;
+
+      if (wasPublic && willBePrivate && linkAcceso) {
+        setEventLinkAcceso(linkAcceso);
+        setShowPrivateLinkModal(true);
+      } else {
+        Alert.alert('Éxito', 'El evento ha sido actualizado correctamente.');
+        if (onEventEdited) onEventEdited();
+        navigation.goBack();
+      }
     } catch (error: any) {
       let msg = 'No se pudo actualizar el evento.';
       if (error?.response?.data?.message) {
@@ -292,6 +305,19 @@ export const EditEventScreen: React.FC<Props> = ({ route, navigation }) => {
           nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
+            {privado && eventLinkAcceso && (
+              <PrivateEventLinkModal
+                visible={showPrivateLinkModal}
+                linkAcceso={eventLinkAcceso}
+                eventTitle={title}
+                apiUrl={process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}
+                onClose={() => {
+                  setShowPrivateLinkModal(false);
+                  if (onEventEdited) onEventEdited();
+                  navigation.goBack();
+                }}
+              />
+            )}
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
 
             <ThemedText style={styles.label}>Título</ThemedText>
@@ -691,6 +717,8 @@ export const EditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 };
 
+export default UserEditEventScreen;
+
 const styles = StyleSheet.create({
   scrollContainer: {
     padding: 16,
@@ -768,3 +796,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   }
 });
+

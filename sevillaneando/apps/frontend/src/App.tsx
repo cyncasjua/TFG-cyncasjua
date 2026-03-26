@@ -29,7 +29,7 @@ import { MessagesScreen } from './screens/MessagesScreen';
 import { AccessPrivateEventScreen } from './screens/AccessPrivateEventScreen';
 import UserEventsScreen from './screens/UserEventsScreen';
 import CalendarEventsScreen from './screens/CalendarEventsScreen';
-import { EditEventScreen } from './screens/UserEditEventScreen';
+import UserEditEventScreen from './screens/UserEditEventScreen';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -199,7 +199,7 @@ const Navigator = () => {
           />
           <AppStack.Screen
             name="EditEvent"
-            component={EditEventScreen}
+            component={UserEditEventScreen}
             options={{ title: 'Editar evento' }}
           />
           <AppStack.Screen

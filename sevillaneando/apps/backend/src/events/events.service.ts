@@ -26,6 +26,7 @@ export class EventsService {
   ) { }
 
   async create(dto: CreateEventDto): Promise<Event> {
+    const isPrivado = dto.privado === true;
     const event = this.eventRepo.create({
       title: dto.title,
       description: dto.description,
@@ -36,19 +37,15 @@ export class EventsService {
       precio: dto.precio !== undefined ? dto.precio : null,
       precioMin: dto.precioMin !== undefined ? dto.precioMin : null,
       precioMax: dto.precioMax !== undefined ? dto.precioMax : null,
-      privado: dto.privado !== undefined ? dto.privado : null,
-      linkAcceso: dto.linkAcceso !== undefined ? dto.linkAcceso : null,
+      privado: isPrivado,
+      linkAcceso: isPrivado ? uuidv4() : null,
       categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
-      estado: EstadoEnum.Pendiente,
+      estado: isPrivado ? EstadoEnum.Aprobado : EstadoEnum.Pendiente,
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
       imagenes: dto.imagenes ?? undefined,
     });
-    if (event.privado ){
-      event.linkAcceso = uuidv4();
-    }
-    const saved = await this.eventRepo.save(event);
-    return saved;
+    return this.eventRepo.save(event);
   }
 
   async findOneByLinkAcceso(linkAcceso: string): Promise<Event> {
@@ -58,13 +55,16 @@ export class EventsService {
     return event;
   }
 
-  findAll(estado: EstadoEnum = EstadoEnum.Aprobado): Promise<Event[]> {
-    const where = estado ? { estado } : {};
-    return this.eventRepo.find({
-      where,
-      relations: ['categoria', 'creador'],
-    });
+findAll(userId?: string): Promise<Event[]> {
+  const query = this.eventRepo.createQueryBuilder('event')
+    .leftJoinAndSelect('event.categoria', 'categoria')
+    .leftJoinAndSelect('event.creador', 'creador')
+    .where('(event.privado = false AND event.estado = :aprobado)', { aprobado: EstadoEnum.Aprobado });
+  if (userId) {
+    query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
   }
+  return query.getMany();
+}
 
   async findOne(id: string): Promise<Event> {
     const found = await this.eventRepo.findOne({
@@ -87,16 +87,17 @@ export class EventsService {
     const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
     const fechaFin = dto.fechaFin ? new Date(dto.fechaFin) : event.fechaFin;
 
+    const wasPrivado = event.privado;
+    const willBePrivado = dto.privado !== undefined ? dto.privado : event.privado;
+
     event.title = dto.title !== undefined ? dto.title : event.title;
     event.description = dto.description !== undefined ? dto.description : event.description;
     event.address = dto.address !== undefined ? dto.address : event.address;
     event.precio = dto.precio !== undefined ? dto.precio : event.precio;
     event.precioMin = dto.precioMin !== undefined ? dto.precioMin : event.precioMin;
     event.precioMax = dto.precioMax !== undefined ? dto.precioMax : event.precioMax;
-    event.privado = dto.privado !== undefined ? dto.privado : event.privado;
-    event.linkAcceso = dto.linkAcceso !== undefined ? dto.linkAcceso : event.linkAcceso;
+    event.privado = willBePrivado;
     event.categoria = dto.categoriaId ? { id: dto.categoriaId } as Categoria : event.categoria;
-    event.estado = dto.estado !== undefined ? (dto.estado as EstadoEnum) : event.estado;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
     event.imagenes = dto.imagenes !== undefined ? dto.imagenes : event.imagenes;
     event.location = location;
@@ -104,8 +105,29 @@ export class EventsService {
     event.fechaFin = fechaFin;
     event.asistentes = event.asistentes ?? [];
 
-    const saved = await this.eventRepo.save(event);
-    return saved;
+    if (wasPrivado && !willBePrivado) {
+      // Privado -> Público: va a moderación
+      event.estado = EstadoEnum.Pendiente;
+      event.linkAcceso = null;
+    } else if (!wasPrivado && willBePrivado) {
+      // Público -> Privado: se aprueba y genera enlace
+      event.estado = EstadoEnum.Aprobado;
+      event.linkAcceso = uuidv4();
+    } else if (!willBePrivado) {
+      // Sigue siendo público: va a moderación
+      event.estado = EstadoEnum.Pendiente;
+      event.linkAcceso = null;
+    } else {
+      // Sigue siendo privado: se aprueba
+      event.estado = EstadoEnum.Aprobado;
+      if (!event.linkAcceso) event.linkAcceso = uuidv4();
+    }
+
+    return this.eventRepo.save(event);
+  }
+
+  async saveDirectly(event: Event): Promise<Event> {
+    return this.eventRepo.save(event);
   }
 
   async remove(id: string): Promise<void> {
@@ -200,9 +222,23 @@ export class EventsService {
     }
 
     async findEventsByUser(userId: string): Promise<Event[]> {
-    return this.eventRepo.find({
-      where: { creador: { id: userId } },
-      relations: ['categoria', 'creador'],
-    });
-  }
+      // Listado de edición: eventos del usuario que no están en moderación
+      return this.eventRepo.createQueryBuilder('event')
+        .leftJoinAndSelect('event.categoria', 'categoria')
+        .leftJoinAndSelect('event.creador', 'creador')
+        .where('event.creador = :userId', { userId })
+        .andWhere('event.estado != :pendiente', { pendiente: EstadoEnum.Pendiente })
+        .orderBy('event.fechaInicio', 'DESC')
+        .getMany();
+    }
+
+    async findEventsToModerate(): Promise<Event[]> {
+      // Listado de moderación: públicos pendientes
+      return this.eventRepo.createQueryBuilder('event')
+        .leftJoinAndSelect('event.categoria', 'categoria')
+        .leftJoinAndSelect('event.creador', 'creador')
+        .where('event.privado = false AND event.estado = :pendiente', { pendiente: EstadoEnum.Pendiente })
+        .orderBy('event.fechaInicio', 'DESC')
+        .getMany();
+    }
 }
