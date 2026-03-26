@@ -1,11 +1,10 @@
+
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../events/events.service';
 import { UsersService } from '../users/users.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { TipoEnum } from '../enums/tipo.enum';
-// import { Event } from '../events/event.entity';
-// import { User } from '../users/user.entity';
 
 const RADIO_KM = 1;
 
@@ -61,30 +60,78 @@ export class NotificacionesScheduler {
     }
   }
 
+@Cron(CronExpression.EVERY_HOUR)
+async notificarEventosProximos() {
+  this.logger.log('Ejecutando notificación de eventos próximos...');
+
+  const ahora = new Date();
+  const dentroUnaSemana = new Date();
+  dentroUnaSemana.setDate(ahora.getDate() + 7);
+
+  const eventos = await this.eventsService.findAll();
+
+  for (const evento of eventos) {
+    if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0) continue;
+
+    const fechaEvento = new Date(evento.fechaInicio);
+
+    if (fechaEvento.getTime() > ahora.getTime() && fechaEvento.getTime() <= dentroUnaSemana.getTime()) {
+
+      for (const usuario of evento.asistentes) {
+        const notificaciones = await this.notificacionesService.obtenerParaUsuario(usuario.id);
+
+        const yaNotificado = notificaciones.some(n =>
+          n.tipo === TipoEnum.EventoProximo &&
+          n.mensaje.includes(evento.title)
+        );
+
+        if (!yaNotificado) {
+
+          await this.notificacionesService.crearParaUsuario(
+            usuario,
+            `Recuerda: el evento "${evento.title}" al que te apuntaste es esta semana (${fechaEvento.toLocaleDateString()})`,
+            TipoEnum.EventoProximo
+          );
+        }
+      }
+    }
+  }
+  this.logger.log('Proceso finalizado.');
+}
+
   @Cron(CronExpression.EVERY_HOUR)
-  async notificarEventosProximos() {
-    this.logger.log('Ejecutando notificación de eventos próximos (24h)...');
+  async notificarEventosMenos24h() {
+    this.logger.log('Ejecutando notificación de eventos en menos de 24h...');
+
     const ahora = new Date();
-    const dentro24h = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
+    const en24h = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
+
     const eventos = await this.eventsService.findAll();
+
     for (const evento of eventos) {
       if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0) continue;
+
       const fechaEvento = new Date(evento.fechaInicio);
-      if (fechaEvento > ahora && fechaEvento <= dentro24h) {
+
+      if (fechaEvento.getTime() > ahora.getTime() && fechaEvento.getTime() <= en24h.getTime()) {
         for (const usuario of evento.asistentes) {
           const notificaciones = await this.notificacionesService.obtenerParaUsuario(usuario.id);
-          const yaNotificado = notificaciones.some(n => n.tipo === TipoEnum.EventoProximo && n.mensaje.includes(evento.title));
+          const yaNotificado = notificaciones.some(n =>
+            n.tipo === TipoEnum.EventoProximo &&
+            n.mensaje.includes(evento.title) &&
+            n.mensaje.includes('mañana')
+          );
           if (!yaNotificado) {
-            await this.notificacionesService.crearParaUsuario(
-              usuario,
-              `Recuerda: el evento "${evento.title}" al que te apuntaste es mañana (${fechaEvento.toLocaleString()})`,
-              TipoEnum.EventoProximo
-            );
+              const hora = fechaEvento.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              await this.notificacionesService.crearParaUsuario(
+                usuario,
+                `Recuerda: el evento "${evento.title}" al que te apuntaste es mañana a las ${hora}`,
+                TipoEnum.EventoProximo
+              );
           }
         }
       }
     }
-    this.logger.log('Notificación de eventos próximos completada.');
+    this.logger.log('Notificación de eventos en menos de 24h completada.');
   }
-
 }

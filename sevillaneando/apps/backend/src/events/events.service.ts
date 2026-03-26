@@ -59,6 +59,7 @@ findAll(userId?: string): Promise<Event[]> {
   const query = this.eventRepo.createQueryBuilder('event')
     .leftJoinAndSelect('event.categoria', 'categoria')
     .leftJoinAndSelect('event.creador', 'creador')
+    .leftJoinAndSelect('event.asistentes', 'asistentes')
     .where('(event.privado = false AND event.estado = :aprobado)', { aprobado: EstadoEnum.Aprobado });
   if (userId) {
     query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
