@@ -1,5 +1,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import dayjs from 'dayjs';
 import {
   ActivityIndicator,
   FlatList,
@@ -61,6 +63,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [searchText, setSearchText] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [showDateFromPicker, setShowDateFromPicker] = useState(false);
+  const [showDateToPicker, setShowDateToPicker] = useState(false);
 
   const sortWithOtrosLast = useCallback((data: { id: string; nombre: string }[]) => {
     const others = data.filter((item) => item.nombre.trim().toLowerCase() === 'otros');
@@ -637,8 +643,46 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 keyboardType="numeric"
               />
             </View>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
+                onPress={() => setShowDateFromPicker(true)}
+              >
+                <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
+                  {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : 'Desde '}
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
+                onPress={() => setShowDateToPicker(true)}
+              >
+                <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
+                  {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : 'Hasta'}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+            <DateTimePickerModal
+              isVisible={showDateFromPicker}
+              mode="date"
+              onConfirm={date => {
+                setDateFrom(dayjs(date).format('YYYY-MM-DD'));
+                setShowDateFromPicker(false);
+              }}
+              onCancel={() => setShowDateFromPicker(false)}
+              maximumDate={dateTo ? new Date(dateTo) : undefined}
+            />
+            <DateTimePickerModal
+              isVisible={showDateToPicker}
+              mode="date"
+              onConfirm={date => {
+                setDateTo(dayjs(date).format('YYYY-MM-DD'));
+                setShowDateToPicker(false);
+              }}
+              onCancel={() => setShowDateToPicker(false)}
+              minimumDate={dateFrom ? new Date(dateFrom) : undefined}
+            />
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
-              <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); }} />
+              <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo(''); }} />
               <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} />
               <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} />
             </View>
@@ -665,6 +709,23 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             filtered = filtered.filter(ev =>
               (ev.title?.toLowerCase().includes(text) || ev.description?.toLowerCase().includes(text))
             );
+          }
+
+          if (dateFrom) {
+            const from = new Date(dateFrom);
+            filtered = filtered.filter(ev => {
+              if (!ev.fechaInicio) return false;
+              const evDate = new Date(ev.fechaInicio);
+              return evDate >= from;
+            });
+          }
+          if (dateTo) {
+            const to = new Date(dateTo);
+            filtered = filtered.filter(ev => {
+              if (!ev.fechaInicio) return false;
+              const evDate = new Date(ev.fechaInicio);
+              return evDate <= to;
+            });
           }
 
           const min = minPrice !== '' ? parseFloat(minPrice) : null;
