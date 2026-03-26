@@ -87,6 +87,7 @@ type ChatMessage = {
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const { event } = route.params;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const defaultEventImage = require('../../assets/splash.png');
   const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
@@ -626,8 +627,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
                 {messages.map((item) => {
                   const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
-                  const nameColor = theme === 'dark' ? '#9bbcff' : '#3b5bdb';
-                  const messageColor = theme === 'dark' ? '#e6e8ef' : '#1f2937';
+                  const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
+                  const nameColor = isOwn && isLight ? '#e0e0e0' : (theme === 'dark' ? '#9bbcff' : '#3b5bdb');
+                  const messageColor = isOwn && isLight ? '#fff' : (theme === 'dark' ? '#e6e8ef' : '#1f2937');
 
                   return (
                     <ThemedView

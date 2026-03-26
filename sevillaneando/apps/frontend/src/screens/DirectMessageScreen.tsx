@@ -241,8 +241,9 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
           {messages.map((item) => {
             const isOwn = item.emisor?.id === user?.id;
-            const nameColor = '#9bbcff';
-            const messageColor = '#e6e8ef';
+            const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
+            const nameColor = isOwn && isLight ? '#e0e0e0' : '#9bbcff';
+            const messageColor = isOwn && isLight ? '#fff' : '#e6e8ef';
 
             return (
               <ThemedView
