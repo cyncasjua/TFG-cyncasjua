@@ -21,4 +21,7 @@ export class MensajePrivado {
 
   @CreateDateColumn()
   fechaCreacion: Date;
+
+  @Column({ default: false })
+  leido: boolean;
 }

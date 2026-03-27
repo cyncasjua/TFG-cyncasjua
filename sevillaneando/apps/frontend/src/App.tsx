@@ -12,6 +12,7 @@ import { AdminScreen } from './screens/AdminScreen';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SocketProvider } from './context/SocketContext';
+import { NotificacionesProvider } from './context/NotificacionesContext';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import type { Event } from './types/event';
@@ -228,7 +229,9 @@ const App = () => (
     <ThemeProvider>
       <AuthProvider>
         <SocketProvider>
-          <Navigator />
+          <NotificacionesProvider>
+            <Navigator />
+          </NotificacionesProvider>
         </SocketProvider>
       </AuthProvider>
     </ThemeProvider>

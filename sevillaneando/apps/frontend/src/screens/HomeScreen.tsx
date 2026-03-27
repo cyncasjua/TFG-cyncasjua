@@ -12,6 +12,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  Text,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,6 +23,7 @@ import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNotificaciones } from '../context/NotificacionesContext';
 
 type EventWithDistance = Event & { distance?: number };
 import {
@@ -35,14 +37,15 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
 import { ProfileHeader } from './ProfileHeader';
+import { useSocket } from '../context/SocketContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
-    // Modal para buscador/filtros
-    const [searchModalVisible, setSearchModalVisible] = useState(false);
+
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [items, setItems] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +70,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [dateTo, setDateTo] = useState('');
   const [showDateFromPicker, setShowDateFromPicker] = useState(false);
   const [showDateToPicker, setShowDateToPicker] = useState(false);
+
+
+  const { unread } = useNotificaciones();
 
   const sortWithOtrosLast = useCallback((data: { id: string; nombre: string }[]) => {
     const others = data.filter((item) => item.nombre.trim().toLowerCase() === 'otros');
@@ -150,6 +156,56 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       persistRadiusOptions(newRadiusOptions);
     }
   };
+
+
+  const { socket, isConnected } = useSocket();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  const fetchUnreadCount = useCallback(() => {
+    if (socket && isConnected) {
+      console.log('Solicitando actualización de conversaciones...');
+      socket.emit('get_conversations');
+    } else {
+      console.log('Socket no conectado, no se puede solicitar conversaciones');
+    }
+  }, [socket, isConnected]);
+
+  useEffect(() => {
+    if (!socket || !isConnected) {
+      console.log('Socket o conexión no disponible en useEffect');
+      return;
+    }
+
+    const handleConversations = (data: any[]) => {
+      console.log('Recibidas conversaciones:', data);
+      const total = data.reduce((acc: number, conv: any) => {
+        return acc + (conv.unreadCount || 0);
+      }, 0);
+      console.log('Total mensajes privados no leídos:', total);
+      setUnreadMessages(total);
+    };
+
+    socket.on('conversations', handleConversations);
+
+    socket.on('refresh_conversations', fetchUnreadCount);
+    socket.on('dm_message', fetchUnreadCount);
+
+    fetchUnreadCount();
+
+    return () => {
+      socket.off('conversations', handleConversations);
+      socket.off('refresh_conversations', fetchUnreadCount);
+      socket.off('dm_message', fetchUnreadCount);
+    };
+  }, [socket, isConnected, fetchUnreadCount]);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log('useFocusEffect: llamando fetchUnreadCount');
+      fetchUnreadCount();
+    }, [fetchUnreadCount])
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -586,7 +642,28 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onPress={() => navigation.navigate('Notifications')}
           accessibilityLabel="Ver notificaciones"
         >
-          <MaterialIcons name="notifications" size={35} color="#ffd700" />
+          <View>
+            <MaterialIcons name="notifications" size={35} color="#ffd700" />
+            {unread > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  right: 2,
+                  top: 2,
+                  backgroundColor: 'red',
+                  borderRadius: 8,
+                  width: 18,
+                  height: 18,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+                  {unread}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -594,7 +671,28 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           onPress={() => navigation.navigate('Messages')}
           accessibilityLabel="Ver mensajes privados"
         >
-          <MaterialIcons name="mail" size={35} color="#6c2eb7" />
+          <View>
+            <MaterialIcons name="mail" size={35} color="#6c2eb7" />
+            {unreadMessages > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  right: 2,
+                  top: 2,
+                  backgroundColor: 'red',
+                  borderRadius: 8,
+                  width: 18,
+                  height: 18,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+                  {unreadMessages}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity

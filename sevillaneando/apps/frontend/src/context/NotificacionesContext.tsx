@@ -20,7 +20,6 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
 
   useEffect(() => {
     fetchUnread();
-    // Opcional: polling cada 30s
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
   }, [user, fetchUnread]);

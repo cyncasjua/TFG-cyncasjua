@@ -76,41 +76,36 @@ async function bootstrap() {
     socket.on('get_conversations', async () => {
       try {
         const me = socket.data.userId;
-        if (!me) {
-          console.warn('get_conversations: userId no encontrado. FirebaseUid:', socket.data.user?.uid);
-          return socket.emit('conversations', []);
-        }
+        if (!me) return socket.emit('conversations', []);
 
         const messages = await privateRepo.find({
-          where: [
-            { emisor: { id: me } },
-            { receptor: { id: me } },
-          ],
+          where: [{ emisor: { id: me } }, { receptor: { id: me } }],
           relations: ['emisor', 'receptor'],
           order: { fechaCreacion: 'DESC' },
         });
 
-        interface Conversation {
-          userId: string;
-          userName: string;
-          userPhoto: string | null;
-          lastMessage: string;
-          lastMessageTime: Date;
-        }
-
-        const conversationMap = new Map<string, Conversation>();
+        const conversationMap = new Map();
 
         for (const msg of messages) {
-          const otherId = msg.emisor.id === me ? msg.receptor.id : msg.emisor.id;
           const otherUser = msg.emisor.id === me ? msg.receptor : msg.emisor;
+          const otherId = otherUser.id;
 
           if (!conversationMap.has(otherId)) {
+            const unreadCount = await privateRepo.count({
+              where: {
+                receptor: { id: me },
+                emisor: { id: otherId },
+                leido: false
+              }
+            });
+
             conversationMap.set(otherId, {
               userId: otherId,
               userName: otherUser.nombre,
               userPhoto: otherUser.fotoPerfil,
               lastMessage: msg.contenido,
               lastMessageTime: msg.fechaCreacion,
+              unreadCount: unreadCount,
             });
           }
         }
@@ -118,11 +113,9 @@ async function bootstrap() {
         const conversations = Array.from(conversationMap.values());
         socket.emit('conversations', conversations);
       } catch (err) {
-        console.error('Error al obtener conversaciones:', err);
         socket.emit('conversations', []);
       }
     });
-
     socket.on('join_room', async (eventId: string) => {
       try {
         if (!eventId) {
@@ -263,6 +256,7 @@ async function bootstrap() {
           });
 
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
+          io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');
         } catch (err) {
           console.error('dm_message error:', err);
           emitSocketError(socket, 'dm_send_failed', 'Error al enviar mensaje privado');

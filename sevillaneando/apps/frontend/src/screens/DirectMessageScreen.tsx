@@ -204,12 +204,18 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
     socket.emit('dm_history', { withUserId: userId });
 
+    socket.emit('mark_as_read', { senderId: userId });
+
     const handleDmHistory = (history: DirectMessage[]) => {
       setMessages(history);
     };
 
     const handleDmMessage = (message: DirectMessage) => {
       setMessages((prev) => [...prev, message]);
+
+      if (message.emisor?.id === userId) {
+        socket.emit('mark_as_read', { senderId: userId });
+      }
     };
 
     const handleDeleteDmSuccess = (messageId: string) => {
