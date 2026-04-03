@@ -19,7 +19,7 @@ export class MensajePrivado {
   @ManyToOne(() => User)
   receptor: User;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   fechaCreacion: Date;
 
   @Column({ default: false })

@@ -28,6 +28,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { getFullImageUrl } from '../utils/imageUrl';
+import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 import { api } from '../services/api';
@@ -433,11 +434,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                         color: colors.text + '99',
                       }}
                     >
-                      {(() => {
-                        const date = new Date(item.fechaCreacion);
-                        const fixedDate = new Date(date.getTime() + 1 * 60 * 60 * 1000);
-                        return fixedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-                      })()}
+                      {formatSevillaTime(item.fechaCreacion)}
                     </ThemedTextSecondary>
                   </TouchableOpacity>
                 </ThemedView>

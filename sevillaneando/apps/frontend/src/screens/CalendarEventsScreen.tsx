@@ -10,6 +10,7 @@ import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
+import { formatSevillaTime, getSevillaDayKey } from '../utils/sevillaTime';
 
 export const CalendarEventsScreen: React.FC = () => {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export const CalendarEventsScreen: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(getSevillaDayKey(new Date()));
 
   useEffect(() => {
     if (!user?.id) {
@@ -34,7 +35,7 @@ export const CalendarEventsScreen: React.FC = () => {
   const markedDates = useMemo(() => {
     const marks: any = {};
     events.forEach(event => {
-      const date = event.fechaInicio.split('T')[0];
+      const date = getSevillaDayKey(event.fechaInicio);
       marks[date] = {
         marked: true,
         dotColor: '#6c2eb7'
@@ -50,7 +51,7 @@ export const CalendarEventsScreen: React.FC = () => {
   }, [events, selectedDate]);
 
   const eventsForSelectedDate = useMemo(() => {
-    return events.filter(event => event.fechaInicio.split('T')[0] === selectedDate);
+    return events.filter(event => getSevillaDayKey(event.fechaInicio) === selectedDate);
   }, [events, selectedDate]);
 
   if (loading) {
@@ -106,7 +107,7 @@ export const CalendarEventsScreen: React.FC = () => {
                 <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
                 <ThemedText style={styles.eventSubtitle}>📍 {item.address}</ThemedText>
                 <ThemedText style={styles.eventTime}>
-                  🗓️ {new Date(item.fechaInicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  🗓️ {formatSevillaTime(item.fechaInicio)}
                 </ThemedText>
               </View>
             </TouchableOpacity>

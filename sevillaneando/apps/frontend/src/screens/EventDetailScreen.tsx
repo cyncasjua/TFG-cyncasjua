@@ -44,6 +44,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
+import { formatSevillaTime } from '../utils/sevillaTime';
 import {
   attendEvent,
   getErrorMessage,
@@ -1074,11 +1075,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                               color: colors.text + '99',
                             }}
                           >
-                            {(() => {
-                              const date = new Date(item.fechaCreacion);
-                              const fixedDate = new Date(date.getTime() + 1 * 60 * 60 * 1000);
-                              return fixedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-                            })()}
+                            {formatSevillaTime(item.fechaCreacion)}
                           </ThemedTextSecondary>
                         </TouchableOpacity>
                         {!isOwn && item.usuario?.id && (

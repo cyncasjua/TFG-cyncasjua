@@ -20,6 +20,6 @@ export class Mensaje {
   @ManyToOne(() => Event)
   evento: Event;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   fechaCreacion: Date;
 }

@@ -11,6 +11,7 @@ import type { RootStackParamList } from '../App';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Alert } from 'react-native';
 import { reportError } from '../utils/telemetry';
+import { formatSevillaDateTime } from '../utils/sevillaTime';
 
 type Notificacion = {
   id: string;
@@ -113,7 +114,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity onPress={() => marcarLeida(item.id)}>
               <ThemedText style={styles.mensaje}>{item.mensaje}</ThemedText>
               <ThemedTextSecondary style={styles.fecha}>
-                {new Date(item.fecha).toLocaleString()}
+                {formatSevillaDateTime(item.fecha)}
               </ThemedTextSecondary>
               {!item.leida && (
                 <ThemedText style={[styles.badge, { backgroundColor: colors.primary }]}>

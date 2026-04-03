@@ -7,6 +7,7 @@ import { Resena } from '../entities/resena.entity';
 import { Recomendacion } from '../entities/recomendacion.entity';
 import { EstadoEnum } from '../enums/estado.enum';
 import { RateEventDto } from './dto/rate-event.dto';
+import { getSevillaDayKey } from '../common/sevilla-time';
 
 type RecommendOptions = {
   lat?: number;
@@ -201,8 +202,8 @@ export class RecomendacionesService {
 
     const fromDate = options.from ? new Date(options.from) : new Date();
     const toDate = options.to ? new Date(options.to) : null;
-    const radiusKm = Number.isFinite(options.radiusKm) ? Number(options.radiusKm) : 12;
-    const limit = Number.isFinite(options.limit) ? Number(options.limit) : 20;
+    const radiusKm = this.clampNumber(options.radiusKm, 12, 1, 200);
+    const limit = this.clampNumber(options.limit, 20, 1, 100);
 
     const query = this.eventRepo
       .createQueryBuilder('event')
@@ -361,18 +362,18 @@ export class RecomendacionesService {
 
   async recommendRoutes(userId: string, options: RecommendOptions = {}) {
     const strategy = options.strategy ?? 'balanced';
-    const routesLimit = Math.max(1, Math.min(10, Number(options.routesLimit ?? 3)));
-    const minEventsPerRoute = Math.max(2, Math.min(6, Number(options.minEventsPerRoute ?? 3)));
+    const routesLimit = this.clampNumber(options.routesLimit, 3, 1, 10);
+    const minEventsPerRoute = this.clampNumber(options.minEventsPerRoute, 3, 2, 6);
     const maxEventsPerRoute = Math.max(
       minEventsPerRoute,
-      Math.min(8, Number(options.maxEventsPerRoute ?? 5)),
+      this.clampNumber(options.maxEventsPerRoute, 5, minEventsPerRoute, 8),
     );
-    const maxGapMinutes = Math.max(30, Math.min(24 * 60, Number(options.maxGapMinutes ?? 6 * 60)));
-    const maxOverlapMinutes = Math.max(0, Math.min(120, Number(options.maxOverlapMinutes ?? 20)));
+    const maxGapMinutes = this.clampNumber(options.maxGapMinutes, 6 * 60, 30, 24 * 60);
+    const maxOverlapMinutes = this.clampNumber(options.maxOverlapMinutes, 20, 0, 120);
 
     const eventResult = await this.recommendEvents(userId, {
       ...options,
-      limit: Math.max(Number(options.limit ?? 24), 12),
+      limit: this.clampNumber(options.limit, 24, 12, 200),
     });
 
     const fromDate = options.from ? new Date(options.from) : new Date();
@@ -386,7 +387,7 @@ export class RecomendacionesService {
       if (fecha < fromDate) continue;
       if (toDate && fecha > toDate) continue;
 
-      const dayKey = fecha.toISOString().slice(0, 10);
+      const dayKey = getSevillaDayKey(fecha);
       grouped.set(dayKey, [...(grouped.get(dayKey) ?? []), event]);
     }
 
@@ -657,7 +658,7 @@ export class RecomendacionesService {
         if (!dayKey) return true;
         const eventDate = new Date(event.fechaInicio);
         if (isNaN(eventDate.getTime())) return false;
-        return eventDate.toISOString().slice(0, 10) === dayKey;
+        return getSevillaDayKey(eventDate) === dayKey;
       })
       .map((event) => {
         const start = new Date(event.fechaInicio).getTime();
@@ -689,7 +690,7 @@ export class RecomendacionesService {
           if (!dayKey) return true;
           const eventDate = new Date(event.fechaInicio);
           if (isNaN(eventDate.getTime())) return false;
-          return eventDate.toISOString().slice(0, 10) === dayKey;
+          return getSevillaDayKey(eventDate) === dayKey;
         })
         .sort((a, b) => b.score - a.score);
 
@@ -846,5 +847,11 @@ export class RecomendacionesService {
 
     const parsed = Number(rawValue);
     return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  private clampNumber(value: unknown, fallback: number, min: number, max: number): number {
+    const parsed = Number(value);
+    const candidate = Number.isFinite(parsed) ? parsed : fallback;
+    return Math.max(min, Math.min(max, candidate));
   }
 }
