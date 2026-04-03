@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
+import { useNotificaciones } from '../context/NotificacionesContext';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import type { RootStackParamList } from '../App';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -22,6 +23,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
 export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const { colors, theme } = useTheme();
+  const { refresh } = useNotificaciones();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,13 +48,14 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
   const marcarLeida = async (id: string) => {
     await api.patch(`/notificaciones/${id}/leida`);
-    fetchNotificaciones();
+    await Promise.all([fetchNotificaciones(), refresh()]);
   };
 
   const borrarNotificacion = async (id: string) => {
     try {
       await api.delete(`/notificaciones/${id}`);
       setNotificaciones((prev) => prev.filter((n) => n.id !== id));
+      await refresh();
     } catch (err) {
       console.error('Error borrando notificación:', getErrorMessage(err));
     }
@@ -99,7 +102,6 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => marcarLeida(item.id)}>
-
               <ThemedText style={styles.mensaje}>{item.mensaje}</ThemedText>
               <ThemedTextSecondary style={styles.fecha}>
                 {new Date(item.fecha).toLocaleString()}
@@ -109,7 +111,6 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
                   Nueva
                 </ThemedText>
               )}
-
             </TouchableOpacity>
           </ThemedView>
         )}

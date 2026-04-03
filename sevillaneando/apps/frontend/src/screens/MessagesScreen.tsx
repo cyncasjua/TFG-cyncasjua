@@ -13,7 +13,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { getFullImageUrl } from '../utils/imageUrl';
-import { ThemedText, ThemedTextSecondary, ThemedView, ThemedButton } from '../components';
+import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Messages'>;
 
@@ -91,13 +91,19 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
         });
       };
 
+      const handleRefreshConversations = () => {
+        socket.emit('get_conversations');
+      };
+
       socket.on('conversations', handleConversations);
       socket.on('dm_message', handleDmMessage);
+      socket.on('refresh_conversations', handleRefreshConversations);
 
       return () => {
         clearTimeout(timeout);
         socket.off('conversations', handleConversations);
         socket.off('dm_message', handleDmMessage);
+        socket.off('refresh_conversations', handleRefreshConversations);
       };
     }, [socket, isConnected, user, loading])
   );
@@ -106,62 +112,66 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('DirectMessage', { userId, userName });
   };
 
-  const renderConversation = ({ item }: { item: Conversation }) => (
-    <TouchableOpacity
-      onPress={() => handleOpenConversation(item.userId, item.userName)}
-      activeOpacity={0.7}
-    >
-      <ThemedView
-        style={[
-          styles.conversationCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-          {item.userPhoto ? (
-            <Image
-              source={{ uri: getFullImageUrl(item.userPhoto) || item.userPhoto }}
-              style={styles.avatar}
-            />
-          ) : (
-            <View style={[styles.avatar, styles.avatarFallback]} />
-          )}
+  const renderConversation = ({ item }: { item: Conversation }) => {
+    const unreadCount = item.unreadCount ?? 0;
 
-          <View style={{ flex: 1 }}>
-            <ThemedText style={{ fontWeight: '600' }}>{item.userName}</ThemedText>
-            {item.lastMessage && (
-              <ThemedTextSecondary
-                style={{ marginTop: 4, fontSize: 12 }}
-                numberOfLines={1}
-              >
-                {item.lastMessage}
-              </ThemedTextSecondary>
+    return (
+      <TouchableOpacity
+        onPress={() => handleOpenConversation(item.userId, item.userName)}
+        activeOpacity={0.7}
+      >
+        <ThemedView
+          style={[
+            styles.conversationCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+            {item.userPhoto ? (
+              <Image
+                source={{ uri: getFullImageUrl(item.userPhoto) || item.userPhoto }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, styles.avatarFallback]} />
             )}
-            {item.lastMessageTime && (
-              <ThemedTextSecondary style={{ marginTop: 2, fontSize: 10 }}>
-                {dayjs(item.lastMessageTime).fromNow()}
-              </ThemedTextSecondary>
+
+            <View style={{ flex: 1 }}>
+              <ThemedText style={{ fontWeight: '600' }}>{item.userName}</ThemedText>
+              {item.lastMessage && (
+                <ThemedTextSecondary
+                  style={{ marginTop: 4, fontSize: 12 }}
+                  numberOfLines={1}
+                >
+                  {item.lastMessage}
+                </ThemedTextSecondary>
+              )}
+              {item.lastMessageTime && (
+                <ThemedTextSecondary style={{ marginTop: 2, fontSize: 10 }}>
+                  {dayjs(item.lastMessageTime).fromNow()}
+                </ThemedTextSecondary>
+              )}
+            </View>
+
+            {unreadCount > 0 && (
+              <View
+                style={[
+                  styles.badge,
+                  { backgroundColor: '#6c2eb7' },
+                ]}
+              >
+                <ThemedText style={{ color: '#fff', fontSize: 11, fontWeight: 'bold' }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </ThemedText>
+              </View>
             )}
           </View>
 
-          {item.unreadCount && item.unreadCount > 0 && (
-            <View
-              style={[
-                styles.badge,
-                { backgroundColor: '#6c2eb7' },
-              ]}
-            >
-              <ThemedText style={{ color: '#fff', fontSize: 11, fontWeight: 'bold' }}>
-                {item.unreadCount > 99 ? '99+' : item.unreadCount}
-              </ThemedText>
-            </View>
-          )}
-        </View>
-
-        <MaterialIcons name="chevron-right" size={24} color={colors.text} />
-      </ThemedView>
-    </TouchableOpacity>
-  );
+          <MaterialIcons name="chevron-right" size={24} color={colors.text} />
+        </ThemedView>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (

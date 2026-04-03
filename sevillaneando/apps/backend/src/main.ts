@@ -212,6 +212,26 @@ async function bootstrap() {
       }
     });
 
+    socket.on('mark_as_read', async ({ senderId }: { senderId: string }) => {
+      try {
+        const me = socket.data.userId;
+        if (!me || !senderId) return;
+
+        await privateRepo.update(
+          {
+            receptor: { id: me },
+            emisor: { id: senderId },
+            leido: false,
+          },
+          { leido: true }
+        );
+
+        io.to(`user:${me}`).emit('refresh_conversations');
+      } catch (err) {
+        emitSocketError(socket, 'dm_mark_read_failed', 'Error al marcar mensajes privados como leidos');
+      }
+    });
+
     socket.on(
       'dm_message',
       async ({ toUserId, text, imageUrl }: { toUserId: string; text?: string; imageUrl?: string }) => {
@@ -244,16 +264,6 @@ async function bootstrap() {
             relations: ['emisor', 'receptor'],
           });
 
-          console.log('dm_message emitiendo:', {
-            to: [me, toUserId],
-            message: {
-              id: hydrated?.id,
-              contenido: hydrated?.contenido,
-              imageUrl: hydrated?.imageUrl,
-              emisor: { id: hydrated?.emisor?.id, nombre: hydrated?.emisor?.nombre, fotoPerfil: hydrated?.emisor?.fotoPerfil },
-              receptor: { id: hydrated?.receptor?.id, nombre: hydrated?.receptor?.nombre, fotoPerfil: hydrated?.receptor?.fotoPerfil },
-            },
-          });
 
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');

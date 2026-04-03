@@ -163,7 +163,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const fetchUnreadCount = useCallback(() => {
     if (socket && isConnected) {
-      console.log('Solicitando actualización de conversaciones...');
       socket.emit('get_conversations');
     } else {
       console.log('Socket no conectado, no se puede solicitar conversaciones');
@@ -177,11 +176,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     const handleConversations = (data: any[]) => {
-      console.log('Recibidas conversaciones:', data);
       const total = data.reduce((acc: number, conv: any) => {
         return acc + (conv.unreadCount || 0);
       }, 0);
-      console.log('Total mensajes privados no leídos:', total);
       setUnreadMessages(total);
     };
 
@@ -202,7 +199,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      console.log('useFocusEffect: llamando fetchUnreadCount');
       fetchUnreadCount();
     }, [fetchUnreadCount])
   );

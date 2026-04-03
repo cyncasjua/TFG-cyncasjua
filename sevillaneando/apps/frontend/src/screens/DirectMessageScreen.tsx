@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -9,6 +9,8 @@ import {
   Modal,
   Animated,
   Alert,
+  Keyboard,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -24,8 +26,10 @@ import { RootStackParamList } from '../App';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
+import { useNotificaciones } from '../context/NotificacionesContext';
 import { getFullImageUrl } from '../utils/imageUrl';
 import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
+import { api } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DirectMessage'>;
 
@@ -42,6 +46,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const { userId, userName } = route.params;
   const { colors } = useTheme();
   const { user, token } = useAuth();
+  const { refresh: refreshNotificaciones } = useNotificaciones();
   const { socket, isConnected, sendMessage } = useSocket();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [input, setInput] = useState('');
@@ -50,6 +55,9 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const chatScrollRef = useRef<ScrollView>(null);
 
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
@@ -59,6 +67,26 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const onPinchEvent = Animated.event([{ nativeEvent: { scale: pinchScale } }], {
     useNativeDriver: true,
   });
+
+  const marcarNotificacionesPrivadasLeidas = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await api.get(`/notificaciones/usuario/${user.id}`);
+      const privadasNoLeidas = res.data.filter(
+        (n: any) =>
+          !n.leida &&
+          n.mensaje?.toLowerCase().includes(userName.toLowerCase())
+      );
+      await Promise.all(
+        privadasNoLeidas.map((n: any) =>
+          api.patch(`/notificaciones/${n.id}/leida`)
+        )
+      );
+      await refreshNotificaciones();
+    } catch (e) {
+      // Silenciar error
+    }
+  }, [user, userName, refreshNotificaciones]);
 
   const handlePinchStateChange = ({ nativeEvent }: any) => {
     if (nativeEvent.state === State.END) {
@@ -73,6 +101,52 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
     baseScale.setValue(1);
     pinchScale.setValue(1);
     lastScaleRef.current = 1;
+  };
+
+  const scrollChatToBottom = useCallback(() => {
+    requestAnimationFrame(() => {
+      chatScrollRef.current?.scrollToEnd({ animated: true });
+    });
+  }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
+      setIsKeyboardVisible(true);
+      scrollChatToBottom();
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    scrollChatToBottom();
+  }, [messages, scrollChatToBottom]);
+
+  const handleSend = () => {
+    const trimmedText = input.trim();
+    if (!trimmedText && !pendingImageUrl) return;
+
+    sendMessage('dm_message', {
+      toUserId: userId,
+      text: trimmedText,
+      imageUrl: pendingImageUrl ?? undefined,
+    });
+
+    setInput('');
+    setPendingImageLocalUri(null);
+    setPendingImageUrl(null);
+    Keyboard.dismiss();
   };
 
   const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
@@ -206,6 +280,8 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
     socket.emit('mark_as_read', { senderId: userId });
 
+    marcarNotificacionesPrivadasLeidas();
+
     const handleDmHistory = (history: DirectMessage[]) => {
       setMessages(history);
     };
@@ -231,7 +307,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       socket.off('dm_message', handleDmMessage);
       socket.off('delete_dm_success', handleDeleteDmSuccess);
     };
-  }, [socket, isConnected, userId]);
+  }, [socket, isConnected, userId, marcarNotificacionesPrivadasLeidas]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -246,7 +322,13 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           </ThemedTextSecondary>
         )}
 
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
+        <ScrollView
+          ref={chatScrollRef}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 12 }}
+          onContentSizeChange={scrollChatToBottom}
+          onLayout={scrollChatToBottom}
+        >
           {messages.map((item) => {
             const isOwn = item.emisor?.id === user?.id;
             const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
@@ -363,27 +445,30 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           })}
         </ScrollView>
 
-        {
-          !!pendingImageLocalUri && (
-            <ThemedView style={styles.chatAttachment}>
-              <Image
-                source={{ uri: pendingImageLocalUri }}
-                style={styles.chatAttachmentImage}
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  setPendingImageLocalUri(null);
-                  setPendingImageUrl(null);
-                }}
-                style={styles.chatAttachmentRemove}
-              >
-                <MaterialIcons name="close" size={16} color={colors.text} />
-              </TouchableOpacity>
-            </ThemedView>
-          )
-        }
+        {!!pendingImageLocalUri && (
+          <ThemedView style={styles.chatAttachment}>
+            <Image
+              source={{ uri: pendingImageLocalUri }}
+              style={styles.chatAttachmentImage}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                setPendingImageLocalUri(null);
+                setPendingImageUrl(null);
+              }}
+              style={styles.chatAttachmentRemove}
+            >
+              <MaterialIcons name="close" size={16} color={colors.text} />
+            </TouchableOpacity>
+          </ThemedView>
+        )}
 
-        <ThemedView style={{ flexDirection: 'row', marginTop: 8, alignItems: 'center' }}>
+        <ThemedView
+          style={[
+            styles.chatComposer,
+            { marginBottom: isKeyboardVisible ? Math.max(keyboardHeight - 10, 0) : 0 },
+          ]}
+        >
           <TouchableOpacity
             onPress={handlePickImage}
             disabled={isUploadingImage}
@@ -413,20 +498,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
             placeholderTextColor={colors.text + '99'}
           />
           <TouchableOpacity
-            onPress={() => {
-              const trimmedText = input.trim();
-              if (!trimmedText && !pendingImageUrl) return;
-
-              sendMessage('dm_message', {
-                toUserId: userId,
-                text: trimmedText,
-                imageUrl: pendingImageUrl ?? undefined,
-              });
-
-              setInput('');
-              setPendingImageLocalUri(null);
-              setPendingImageUrl(null);
-            }}
+            onPress={handleSend}
             style={{
               marginLeft: 8,
               paddingHorizontal: 14,
@@ -438,7 +510,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
             <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
           </TouchableOpacity>
         </ThemedView>
-      </ThemedView >
+      </ThemedView>
 
       <Modal
         visible={!!previewImageUrl}
@@ -471,7 +543,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           )}
         </View>
       </Modal>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 
@@ -516,6 +588,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: 'rgba(108, 46, 183, 0.1)',
   },
+  chatComposer: {
+    flexDirection: 'row',
+    marginTop: 8,
+    alignItems: 'center',
+  },
   imagePreviewOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.9)',
@@ -540,3 +617,6 @@ const styles = StyleSheet.create({
     height: '90%',
   },
 });
+
+
+

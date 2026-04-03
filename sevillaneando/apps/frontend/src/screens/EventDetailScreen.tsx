@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef, useState } from 'react';
+import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -12,6 +12,7 @@ import {
   Modal,
   Animated,
   Alert,
+  Keyboard,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import dayjs from 'dayjs';
@@ -124,6 +125,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const eventChatScrollRef = useRef<ScrollView>(null);
   const [attendees, setAttendees] = useState<PublicUser[]>([]);
   const [isAttending, setIsAttending] = useState(false);
   const [attendeesError, setAttendeesError] = useState('');
@@ -188,6 +192,54 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     baseScale.setValue(1);
     pinchScale.setValue(1);
     setPreviewImageUrl(null);
+  };
+
+  const scrollEventChatToBottom = useCallback(() => {
+    requestAnimationFrame(() => {
+      eventChatScrollRef.current?.scrollToEnd({ animated: true });
+    });
+  }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
+      setIsKeyboardVisible(true);
+      scrollEventChatToBottom();
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [scrollEventChatToBottom]);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      scrollEventChatToBottom();
+    }
+  }, [messages, isChatOpen, scrollEventChatToBottom]);
+
+  const handleSendEventMessage = () => {
+    const trimmedText = input.trim();
+    if (!trimmedText && !pendingImageUrl) return;
+
+    sendMessage('chat_message', {
+      eventId: event.id,
+      text: trimmedText,
+      imageUrl: pendingImageUrl ?? undefined,
+    });
+
+    setInput('');
+    setPendingImageLocalUri(null);
+    setPendingImageUrl(null);
+    Keyboard.dismiss();
   };
 
   useEffect(() => {
@@ -619,7 +671,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   {chatError}
                 </ThemedTextSecondary>
               )}
-              <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }}>
+              <ScrollView
+                ref={eventChatScrollRef}
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingBottom: 12 }}
+                onContentSizeChange={scrollEventChatToBottom}
+                onLayout={scrollEventChatToBottom}
+              >
                 {messages.map((item) => {
                   const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
                   const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
@@ -765,7 +823,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   </TouchableOpacity>
                 </ThemedView>
               )}
-              <ThemedView style={{ flexDirection: 'row', marginTop: 8, alignItems: 'center' }}>
+              <ThemedView
+                style={[
+                  styles.chatComposer,
+                  { marginBottom: isKeyboardVisible ? Math.max(keyboardHeight - 10, 0) : 0 },
+                ]}
+              >
                 <TouchableOpacity
                   onPress={handlePickImage}
                   disabled={isUploadingImage}
@@ -795,20 +858,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   placeholderTextColor={colors.text + '99'}
                 />
                 <TouchableOpacity
-                  onPress={() => {
-                    const trimmedText = input.trim();
-                    if (!trimmedText && !pendingImageUrl) return;
-
-                    sendMessage('chat_message', {
-                      eventId: event.id,
-                      text: trimmedText,
-                      imageUrl: pendingImageUrl ?? undefined,
-                    });
-
-                    setInput('');
-                    setPendingImageLocalUri(null);
-                    setPendingImageUrl(null);
-                  }}
+                  onPress={handleSendEventMessage}
                   style={{
                     marginLeft: 8,
                     paddingHorizontal: 14,
@@ -917,6 +967,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#6c2eb7',
+  },
+  chatComposer: {
+    flexDirection: 'row',
+    marginTop: 8,
+    alignItems: 'center',
   },
   imagePreviewOverlay: {
     flex: 1,

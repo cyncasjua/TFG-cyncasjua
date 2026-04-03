@@ -2,7 +2,15 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { api } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
-const NotificacionesContext = createContext({ unread: 0, refresh: () => {} });
+type NotificacionesContextValue = {
+  unread: number;
+  refresh: () => Promise<void>;
+};
+
+const NotificacionesContext = createContext<NotificacionesContextValue>({
+  unread: 0,
+  refresh: async () => {},
+});
 
 export const NotificacionesProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
