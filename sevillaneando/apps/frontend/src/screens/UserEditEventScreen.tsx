@@ -311,7 +311,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 visible={showPrivateLinkModal}
                 linkAcceso={eventLinkAcceso}
                 eventTitle={title}
-                apiUrl={process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}
                 onClose={() => {
                   setShowPrivateLinkModal(false);
                   if (onEventEdited) onEventEdited();

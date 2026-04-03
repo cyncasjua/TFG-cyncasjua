@@ -271,10 +271,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleShareEvent = async () => {
     const shareBaseUrl = (process.env.EXPO_PUBLIC_SHARE_BASE_URL || '').replace(/\/$/, '');
-    const deepLink = `sevillaneando://evento/${event.id}`;
+    const isPrivate = Boolean(event.privado && event.linkAcceso);
+    const deepLink = isPrivate
+      ? `sevillaneando://acceso/${event.linkAcceso}`
+      : `sevillaneando://evento/${event.id}`;
     const webEventLink = shareBaseUrl ? `${shareBaseUrl}/evento/${event.id}` : '';
     const webPrivateLink =
-      shareBaseUrl && event.privado && event.linkAcceso
+      shareBaseUrl && isPrivate
         ? `${shareBaseUrl}/acceso/${event.linkAcceso}`
         : '';
     const webLink = webPrivateLink || webEventLink;
@@ -287,16 +290,17 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     })();
 
     const shareMessage = [
-      'Te recomiendo este plan en Sevillaneando:',
-      event.title,
+      isPrivate
+        ? `Te invito a un evento privado en Sevillaneando: ${event.title}`
+        : `Te recomiendo este plan en Sevillaneando: ${event.title}`,
       '',
       `Cuando: ${startText}`,
       `Donde: ${event.address}`,
       `Categoria: ${event.categoria?.nombre || 'General'}`,
       `Precio: ${priceText}`,
       '',
-      webLink ? `Enlace web: ${webLink}` : null,
-      `Abrir en la app: ${deepLink}`,
+      `Acceso directo: ${eventLink}`,
+      webLink ? `Abrir en la app: ${deepLink}` : null,
       webLink ? 'Si no tienes la app, usa el enlace web.' : null,
     ]
       .filter((line): line is string => !!line)
@@ -306,7 +310,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       const shareResult = await Share.share({
         title: event.title,
         message: shareMessage,
-        url: eventLink,
       });
 
       const wasShared =

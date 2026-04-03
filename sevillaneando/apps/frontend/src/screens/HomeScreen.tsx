@@ -121,7 +121,31 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert('Enlace inválido', 'Introduce un enlace o código de acceso.');
       return;
     }
-    const normalized = raw.includes('/') ? raw.split('/').filter(Boolean).pop() ?? '' : raw;
+    const extractAccessCode = (input: string): string => {
+      const trimmed = input.trim();
+
+      const regexMatch = trimmed.match(/acceso\/([^/?#]+)/i);
+      if (regexMatch?.[1]) return decodeURIComponent(regexMatch[1]);
+
+      if (trimmed.includes('://')) {
+        try {
+          const parsed = new URL(trimmed);
+          const segments = parsed.pathname.split('/').filter(Boolean);
+          const candidate = segments[segments.length - 1] || '';
+          return decodeURIComponent(candidate);
+        } catch (err) {
+          void err;
+        }
+      }
+
+      const clean = trimmed.split(/[?#]/)[0].replace(/\/+$/, '');
+      if (!clean.includes('/')) return clean;
+
+      const segments = clean.split('/').filter(Boolean);
+      return decodeURIComponent(segments[segments.length - 1] || '');
+    };
+
+    const normalized = extractAccessCode(raw);
     if (!normalized) {
       Alert.alert('Enlace inválido', 'No se pudo extraer el código de acceso.');
       return;
@@ -332,7 +356,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         );
       } catch (err) {
         reportWarning('home.persist-routes-settings', 'No se pudieron guardar ajustes de rutas', err);
-        // Non-blocking persistence.
       }
     };
 

@@ -47,7 +47,7 @@ export class EventsController {
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Event> {
-    return this.eventsService.findOne(id);
+    return this.eventsService.findOnePublicById(id);
   }
 
   @Get('acceso/:linkAcceso')

@@ -76,6 +76,15 @@ findAll(userId?: string): Promise<Event[]> {
     return found;
   }
 
+  async findOnePublicById(id: string): Promise<Event> {
+    const found = await this.eventRepo.findOne({
+      where: { id, privado: false, estado: EstadoEnum.Aprobado },
+      relations: ['categoria', 'creador'],
+    });
+    if (!found) throw new NotFoundException('Evento no encontrado');
+    return found;
+  }
+
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
     const event = await this.findOne(id);
     let location = event.location;

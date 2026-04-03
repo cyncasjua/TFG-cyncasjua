@@ -9,7 +9,6 @@ interface PrivateEventLinkModalProps {
   linkAcceso: string;
   eventTitle: string;
   onClose: () => void;
-  apiUrl: string;
 }
 
 export const PrivateEventLinkModal: React.FC<PrivateEventLinkModalProps> = ({
@@ -17,10 +16,12 @@ export const PrivateEventLinkModal: React.FC<PrivateEventLinkModalProps> = ({
   linkAcceso,
   eventTitle,
   onClose,
-  apiUrl,
 }) => {
   const { colors } = useTheme();
-  const fullLink = `${apiUrl}/eventos/acceso/${linkAcceso}`;
+  const shareBaseUrl = (process.env.EXPO_PUBLIC_SHARE_BASE_URL || '').replace(/\/$/, '');
+  const appDeepLink = `sevillaneando://acceso/${linkAcceso}`;
+  const webPrivateLink = shareBaseUrl ? `${shareBaseUrl}/acceso/${linkAcceso}` : '';
+  const fullLink = webPrivateLink || appDeepLink;
 
   const handleCopyLink = () => {
     Clipboard.setString(fullLink);
@@ -28,9 +29,19 @@ export const PrivateEventLinkModal: React.FC<PrivateEventLinkModalProps> = ({
   };
 
   const handleShareLink = async () => {
-    try{
+    const shareMessage = [
+      `Te invito a un evento privado en Sevillaneando: ${eventTitle}`,
+      '',
+      `Acceso directo: ${fullLink}`,
+      webPrivateLink ? `Abrir en la app: ${appDeepLink}` : null,
+      'Nos vemos dentro.',
+    ]
+      .filter((line): line is string => !!line)
+      .join('\n');
+
+    try {
       await Share.share({
-        message: `Te invito al evento privado: ${eventTitle}\n\n${fullLink}`,
+        message: shareMessage,
         title: eventTitle,
       });
     } catch (error) {

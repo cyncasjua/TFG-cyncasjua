@@ -681,7 +681,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                   setShowPrivateLinkModal(false);
                   navigation.goBack();
                 }}
-                apiUrl={process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}
               />
             )}
             <ThemedText style={styles.label}>Imagen del evento</ThemedText>
