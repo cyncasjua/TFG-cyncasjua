@@ -13,6 +13,7 @@ import {
   Modal,
   Alert,
   Text,
+  Linking,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -636,6 +637,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     return `Buenas noches, ${name}`;
   }, [user?.nombre]);
 
+  const handleOpenLink = useCallback(async (url: string) => {
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert('Enlace no disponible', 'No se pudo abrir este enlace en tu dispositivo.');
+      return;
+    }
+
+    await Linking.openURL(url);
+  }, []);
+
   if (loading) {
     return (
       <ThemedView style={styles.centered}>
@@ -1248,6 +1259,45 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           );
         })}
+
+        <ThemedView
+          style={[
+            styles.creatorCard,
+            {
+              backgroundColor: colors.card + 'E6',
+              borderColor: colors.primary + '44',
+            },
+          ]}
+        >
+          <View style={[styles.creatorBadge, { backgroundColor: colors.primary + '22' }]}>
+            <MaterialIcons name="verified" size={16} color={colors.primary} />
+            <ThemedText style={[styles.creatorBadgeText, { color: colors.primary }]}>Creado por</ThemedText>
+          </View>
+
+          <ThemedText style={styles.creatorName}>Cynthia Castaño Juan</ThemedText>
+
+          <TouchableOpacity
+            style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+            onPress={() => handleOpenLink('mailto:cynthiacj04@gmail.com')}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="email" size={18} color={colors.primary} />
+            <ThemedText style={styles.creatorLinkText}>cynthiacj04@gmail.com</ThemedText>
+            <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+            onPress={() =>
+              handleOpenLink('https://www.linkedin.com/in/cynthia-casta%C3%B1o-juan-4b7195387/')
+            }
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="work-outline" size={18} color={colors.primary} />
+            <ThemedText style={styles.creatorLinkText}>LinkedIn: cynthia-castaño-juan</ThemedText>
+            <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
+          </TouchableOpacity>
+        </ThemedView>
         </ScrollView>
 
         <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
@@ -2257,5 +2307,47 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
+  },
+  creatorCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 8,
+    marginBottom: 28,
+  },
+  creatorBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginBottom: 8,
+    gap: 5,
+  },
+  creatorBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  creatorName: {
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  creatorLinkRow: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  creatorLinkText: {
+    flex: 1,
+    marginLeft: 8,
+    marginRight: 8,
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
