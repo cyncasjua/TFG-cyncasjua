@@ -169,7 +169,8 @@ export class PlantillaScraperService implements IScraper {
     try {
       const base = new URL(this.BASE_URL);
       return new URL(url, base.origin).toString();
-    } catch {
+    } catch (err) {
+      this.logger.debug(`No se pudo normalizar URL "${url}": ${String(err)}`);
       return url;
     }
   }

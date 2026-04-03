@@ -18,6 +18,19 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const socketRef = useRef<Socket | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const disconnectDueToInactivity = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+      setIsConnected(false);
+    }
+  };
+
+  const resetInactivityTimeout = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(disconnectDueToInactivity, INACTIVITY_TIMEOUT);
+  }, []);
+
   const connect = useCallback(() => {
     if (!token || socketRef.current?.connected) return;
 
@@ -31,20 +44,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     socketRef.current = socket;
     resetInactivityTimeout();
-  }, [token]);
-
-  const disconnectDueToInactivity = () => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-      setIsConnected(false);
-    }
-  };
-
-  const resetInactivityTimeout = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(disconnectDueToInactivity, INACTIVITY_TIMEOUT);
-  }, []);
+  }, [token, resetInactivityTimeout]);
 
   const sendMessage = useCallback((event: string, data: any) => {
     if (!socketRef.current || !socketRef.current.connected) {

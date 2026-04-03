@@ -12,9 +12,10 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { ThemedTitle, ThemedButton, ThemedText } from '../components';
+import { ThemedTitle, ThemedButton, ThemedText, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
+import { reportWarning } from '../utils/telemetry';
 import { Button } from 'react-native';
 import { Alert } from 'react-native';
 import { getAuth, deleteUser } from 'firebase/auth';
@@ -61,7 +62,8 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         if (Array.isArray(data)) {
           setCategorias(data);
         }
-      } catch {
+      } catch (err) {
+        reportWarning('edit-profile.fetch-categories', 'No se pudieron cargar categorías', err);
         // Non blocking.
       }
     };
@@ -277,7 +279,8 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                 } else {
                   setError('No se ha encontrado la dirección o lugar especificado.');
                 }
-              } catch {
+              } catch (err) {
+                reportWarning('edit-profile.search-submit', 'Error buscando dirección por submit', err);
                 setError('No se pudo buscar la dirección o lugar.');
               } finally {
                 setSearchLoading(false);
@@ -303,7 +306,8 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                 } else {
                   setError('No se ha encontrado la dirección o lugar especificado.');
                 }
-              } catch {
+              } catch (err) {
+                reportWarning('edit-profile.search-button', 'Error buscando dirección por botón', err);
                 setError('No se pudo buscar la dirección o lugar.');
               } finally {
                 setSearchLoading(false);
@@ -351,6 +355,9 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             )}
             <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
           </MapView>
+        </View>
+        <View style={{ marginBottom: 8 }}>
+          <OsmAttribution compact />
         </View>
         <View
           style={{
@@ -429,6 +436,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         onPress={() => navigation.navigate('EditPassword')}
         style={[styles.cancelButton, { backgroundColor: colors.primary }]}
         textStyle={{ color: '#fff' }}
+      />
+      <ThemedButton
+        title="Licencias y atribuciones"
+        variant="secondary"
+        onPress={() => navigation.navigate('LegalAttributions')}
+        style={styles.cancelButton}
       />
       <ThemedButton
         title="Cancelar"

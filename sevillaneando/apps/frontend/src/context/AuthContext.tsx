@@ -8,6 +8,7 @@ import {
 import { auth } from '../firebase/config';
 import { api, setAuthToken } from '../services/api';
 import type { User as AppUser } from '../types/user';
+import { reportWarning } from '../utils/telemetry';
 
 export type UserRole = 'admin' | 'moderator' | 'user';
 
@@ -39,7 +40,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
           setAuthToken(tokenResult.token);
           setToken(tokenResult.token);
         } catch (err) {
-          console.warn('Error refrescando token:', err);
+          reportWarning('auth.refresh-token', 'Error refrescando token', err);
         }
       }
     }, 50 * 60 * 1000); // 50 minutos

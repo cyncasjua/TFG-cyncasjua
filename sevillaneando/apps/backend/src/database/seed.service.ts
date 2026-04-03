@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolEnum, User } from '../users/user.entity';
 
 @Injectable()
 export class SeedService {
+  private readonly logger = new Logger(SeedService.name);
+
   constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
 
   async seed() {
     const existingUsers = await this.usersRepo.count();
     if (existingUsers > 0) {
-      console.log('Base de datos ya tiene usuarios, saltando seed.');
+      this.logger.log('Base de datos ya tiene usuarios, saltando seed.');
       return;
     }
 
@@ -52,6 +54,6 @@ export class SeedService {
       await this.usersRepo.save(user);
     }
 
-    console.log('Seed de usuarios completado: admin, moderator, user.');
+    this.logger.log('Seed de usuarios completado: admin, moderator, user.');
   }
 }

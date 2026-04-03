@@ -28,6 +28,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { getFullImageUrl } from '../utils/imageUrl';
+import { reportError } from '../utils/telemetry';
 import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 import { api } from '../services/api';
 
@@ -127,7 +128,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [scrollChatToBottom]);
 
   useEffect(() => {
     scrollChatToBottom();
@@ -192,7 +193,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
       setPendingImageUrl(data.imageUrl);
     } catch (error) {
-      console.error(error);
+      reportError('dm.upload-image', 'Error al subir imagen de chat directo', error);
       setChatError('Error al subir la imagen');
       setPendingImageLocalUri(null);
       setPendingImageUrl(null);
@@ -224,7 +225,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       if (!asset?.uri) return;
       await uploadChatImage(asset);
     } catch (error) {
-      console.error(error);
+      reportError('dm.pick-image', 'Error al seleccionar imagen de galería', error);
       setChatError('Error al seleccionar la imagen');
     }
   };
@@ -251,7 +252,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       if (!asset?.uri) return;
       await uploadChatImage(asset);
     } catch (error) {
-      console.error(error);
+      reportError('dm.take-photo', 'Error al tomar foto en chat directo', error);
       setChatError('Error al tomar la foto');
     }
   };

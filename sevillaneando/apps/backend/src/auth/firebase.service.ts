@@ -13,7 +13,7 @@ export class FirebaseService {
 
     if (!admin.apps.length && projectId && clientEmail && privateKey) {
       try {
-        console.log('Intentando inicializar Firebase...');
+        this.logger.log('Intentando inicializar Firebase...');
         admin.initializeApp({
           credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
         });

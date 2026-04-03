@@ -4,16 +4,19 @@ import { Categoria } from '../entities/categoria.entity';
 import { User } from '../users/user.entity';
 import { EstadoEnum } from '../enums/estado.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('SeedEvents');
 
 export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataSource) => {
   try {
     const count = await eventRepo.count();
     if (count > 0) {
-      console.log('✅ Eventos ya existen, saltando seed');
+      logger.log('Eventos ya existen, saltando seed');
       return;
     }
 
-    console.log('🌱 Iniciando seed de eventos de prueba...');
+    logger.log('Iniciando seed de eventos de prueba...');
 
     const categoriasRepo = dataSource.getRepository(Categoria);
     const categoriasExistentes = await categoriasRepo.count();
@@ -33,7 +36,7 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
           descripcion: 'Rutas y eventos gastronómicos',
         }),
       ]);
-      console.log('✅ Categorías de prueba creadas');
+      logger.log('Categorías de prueba creadas');
     } else {
       categorias = await categoriasRepo.find();
     }
@@ -45,7 +48,7 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
         descripcion: 'Eventos festivos y celebraciones',
       });
       categoria = await dataSource.getRepository(Categoria).save(categoria);
-      console.log('✅ Categoría de prueba creada');
+      logger.log('Categoría de prueba creada');
     }
 
     let creador = await dataSource.getRepository(User).findOne({ where: {} });
@@ -56,7 +59,7 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
         contrasena: '123456',
       });
       creador = await dataSource.getRepository(User).save(creador);
-      console.log('✅ Usuario de prueba creado');
+      logger.log('Usuario de prueba creado');
     }
 
     const testEvents = [
@@ -109,8 +112,8 @@ export const seedEvents = async (eventRepo: Repository<Event>, dataSource: DataS
       await eventRepo.save(event);
     }
 
-    console.log(`✅ Se han creado ${testEvents.length} eventos de prueba`);
+    logger.log(`Se han creado ${testEvents.length} eventos de prueba`);
   } catch (error) {
-    console.error('❌ Error al ejecutar seed:', error.message);
+    logger.error('Error al ejecutar seed', error as Error);
   }
 };

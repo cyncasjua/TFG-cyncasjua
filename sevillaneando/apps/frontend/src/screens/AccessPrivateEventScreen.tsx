@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { getEventByAccessLink } from '../services/api';
+import { getErrorMessage, getEventByAccessLink } from '../services/api';
 import { Event } from '../types/event';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AccessPrivateEvent'>;
@@ -32,8 +32,8 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
           links.push(linkAcceso);
           await AsyncStorage.setItem(ACCESSED_PRIVATE_LINKS_KEY, JSON.stringify(links));
         }
-      } catch (err: any) {
-        setError(err.message || 'No se pudo cargar el evento privado');
+      } catch (err) {
+        setError(getErrorMessage(err) || 'No se pudo cargar el evento privado');
       } finally {
         setLoading(false);
       }

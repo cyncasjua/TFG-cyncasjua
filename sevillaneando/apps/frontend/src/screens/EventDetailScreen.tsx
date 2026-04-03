@@ -27,6 +27,7 @@ import { useNsfwGuard } from '../hooks/useNsfwGuard';
 import { useTheme } from '../hooks/useTheme';
 import {
   ThemedButton,
+  OsmAttribution,
   ThemedText,
   ThemedTextSecondary,
   ThemedTitle,
@@ -45,6 +46,7 @@ import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
 import {
   attendEvent,
+  getErrorMessage,
   getEventAttendees,
   getMyAttendance,
   rateRecommendedEvent,
@@ -56,6 +58,7 @@ import {
 } from '../services/api';
 import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
+import { reportError } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -64,8 +67,9 @@ const uploadProbe = async () => {
     const storageRef = ref(storage, 'demo.txt');
     await uploadString(storageRef, 'Contenido de prueba', 'raw');
     const url = await getDownloadURL(storageRef);
+    void url;
   } catch (error) {
-    console.error('Error al subir archivo:', error);
+    reportError('event-detail.upload-probe', 'Error al subir archivo de prueba', error);
   }
 };
 
@@ -169,9 +173,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         setAttendees(list);
         setIsAttending(me.attending);
       })
-      .catch(() => {
+      .catch((err) => {
         if (!mounted) return;
-        setAttendeesError('No se pudo cargar la lista de asistentes');
+        setAttendeesError(getErrorMessage(err) || 'No se pudo cargar la lista de asistentes');
       });
 
     return () => {
@@ -201,8 +205,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         setAttendees(list);
         setIsAttending(true);
       }
-    } catch {
-      setAttendeesError('No se pudo actualizar tu asistencia');
+    } catch (err) {
+      setAttendeesError(getErrorMessage(err) || 'No se pudo actualizar tu asistencia');
     }
   };
 
@@ -258,8 +262,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         await saveRecommendedEvent(event.id);
         setIsSaved(true);
       }
-    } catch {
-      Alert.alert('Error', 'No se pudo actualizar el guardado del evento.');
+    } catch (err) {
+      Alert.alert('Error', getErrorMessage(err) || 'No se pudo actualizar el guardado del evento.');
     } finally {
       setIsRecommendationLoading(false);
     }
@@ -312,8 +316,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       if (token && wasShared) {
         await shareRecommendedEvent(event.id);
       }
-    } catch {
-      Alert.alert('Error', 'No se pudo compartir el evento.');
+    } catch (err) {
+      Alert.alert('Error', getErrorMessage(err) || 'No se pudo compartir el evento.');
     }
   };
 
@@ -335,8 +339,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       setRatingModalVisible(false);
       setRatingComment('');
       Alert.alert('Gracias', 'Tu valoración se ha guardado correctamente.');
-    } catch {
-      Alert.alert('Error', 'No se pudo guardar la valoración.');
+    } catch (err) {
+      Alert.alert('Error', getErrorMessage(err) || 'No se pudo guardar la valoración.');
     } finally {
       setRatingSubmitting(false);
     }
@@ -482,7 +486,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
       setPendingImageUrl(data.imageUrl);
     } catch (error) {
-      console.error(error);
+      reportError('event-detail.upload-chat-image', 'Error al subir imagen en chat de evento', error);
       setChatError('Error al subir la imagen');
       setPendingImageLocalUri(null);
       setPendingImageUrl(null);
@@ -514,7 +518,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       if (!asset?.uri) return;
       await uploadChatImage(asset);
     } catch (error) {
-      console.error(error);
+      reportError('event-detail.pick-image', 'Error al seleccionar imagen del chat de evento', error);
       setChatError('Error al seleccionar la imagen');
     }
   };
@@ -541,7 +545,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       if (!asset?.uri) return;
       await uploadChatImage(asset);
     } catch (error) {
-      console.error(error);
+      reportError('event-detail.take-photo', 'Error al abrir cámara en chat de evento', error);
       setChatError('Error al abrir la camara');
     }
   };
@@ -779,6 +783,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
               <Marker coordinate={coords} title={event.title} />
             </MapView>
+          </ThemedView>
+          <ThemedView style={{ marginBottom: 12 }}>
+            <OsmAttribution compact />
           </ThemedView>
           <ThemedView
             style={[

@@ -395,8 +395,8 @@ export class SevillaScraperService implements IScraper {
 
             jsonLdEvents++;
           }
-        } catch {
-          this.logger.warn('Agenda Sevilla: bloque JSON-LD no parseable');
+        } catch (err) {
+          this.logger.warn(`Agenda Sevilla: bloque JSON-LD no parseable (${String(err)})`);
         }
       });
 
@@ -473,8 +473,8 @@ export class SevillaScraperService implements IScraper {
                 externalId: sourceUrl,
                 categoriaHint: 'Cultura',
               });
-            } catch {
-              this.logger.warn('Agenda Sevilla: error parseando tarjeta de evento');
+            } catch (err) {
+              this.logger.warn(`Agenda Sevilla: error parseando tarjeta de evento (${String(err)})`);
             }
           });
 

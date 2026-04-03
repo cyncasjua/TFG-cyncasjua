@@ -6,6 +6,7 @@ import { getAuth, initializeAuth } from 'firebase/auth';
 import { getReactNativePersistence } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { reportWarning } from '../utils/telemetry';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '',
@@ -15,8 +16,6 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
 };
 
-console.log('Firebase Config:', firebaseConfig);
-
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 let auth = getAuth(app);
@@ -25,6 +24,7 @@ try {
     persistence: getReactNativePersistence(AsyncStorage),
   });
 } catch (err) {
+  reportWarning('firebase.config', 'initializeAuth fallback a getAuth', err);
   auth = getAuth(app);
 }
 

@@ -33,9 +33,10 @@ import { AccessPrivateEventScreen } from './screens/AccessPrivateEventScreen';
 import UserEventsScreen from './screens/UserEventsScreen';
 import CalendarEventsScreen from './screens/CalendarEventsScreen';
 import UserEditEventScreen from './screens/UserEditEventScreen';
-import { RoutePreviewScreen } from './screens/RoutePreviewScreen';
+import { RoutePreviewScreen } from './screens/RoutePreview';
 import { SavedAndPrivateEventsScreen } from './screens/SavedAndPrivateEventsScreen';
-import { getEventById } from './services/api';
+import { LegalAttributionsScreen } from './screens/LegalAttributionsScreen';
+import { getErrorMessage, getEventById } from './services/api';
 import type { RecommendedRoute } from './services/api';
 
 LogBox.ignoreLogs([
@@ -66,6 +67,7 @@ export type RootStackParamList = {
   CalendarEvents: undefined;
   RoutePreview: { routePlan: RecommendedRoute };
   SavedAndPrivateEvents: { mode?: 'saved' | 'private' | 'both' };
+  LegalAttributions: undefined;
 };
 
 export type AuthStackParamList = {
@@ -89,9 +91,9 @@ const EventDetailLinkScreen = ({
         if (!isMounted) return;
         navigation.replace('EventDetail', { event });
       })
-      .catch(() => {
+      .catch((err) => {
         if (!isMounted) return;
-        setError('No se pudo abrir el evento.');
+        setError(getErrorMessage(err) || 'No se pudo abrir el evento.');
       });
 
     return () => {
@@ -295,6 +297,11 @@ const Navigator = () => {
             name="SavedAndPrivateEvents"
             component={SavedAndPrivateEventsScreen}
             options={{ title: 'Guardados y privados' }}
+          />
+          <AppStack.Screen
+            name="LegalAttributions"
+            component={LegalAttributionsScreen}
+            options={{ title: 'Licencias y atribuciones' }}
           />
         </AppStack.Navigator>
       ) : (

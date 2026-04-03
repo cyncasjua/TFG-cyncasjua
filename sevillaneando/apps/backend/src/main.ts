@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DataSource } from 'typeorm';
 import { Event } from './events/event.entity';
@@ -13,6 +13,7 @@ import { User } from './users/user.entity';
 import { MensajePrivado } from './entities/mensaje-privado.entity';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -49,7 +50,8 @@ async function bootstrap() {
       if (!decoded) return next(new Error('auth_invalid'));
       socket.data.user = decoded;
       return next();
-    } catch {
+    } catch (err) {
+      logger.warn('Fallo en autenticacion de socket', err as Error);
       return next(new Error('auth_failed'));
     }
   });
@@ -64,10 +66,10 @@ async function bootstrap() {
         socket.data.userId = currentUser.id;
         socket.join(`user:${currentUser.id}`);
       } else {
-        console.warn('Usuario no encontrado en DB con firebaseUid:', firebaseUid);
+        logger.warn(`Usuario no encontrado en DB con firebaseUid: ${firebaseUid}`);
       }
     } else {
-      console.warn('Sin firebaseUid en socket.data.user');
+      logger.warn('Sin firebaseUid en socket.data.user');
     }
 
     socket.on('disconnect', () => {
@@ -113,6 +115,7 @@ async function bootstrap() {
         const conversations = Array.from(conversationMap.values());
         socket.emit('conversations', conversations);
       } catch (err) {
+        logger.error('Error obteniendo conversaciones', err as Error);
         socket.emit('conversations', []);
       }
     });
@@ -143,7 +146,8 @@ async function bootstrap() {
         });
 
         socket.emit('chat_history', history);
-      } catch {
+      } catch (err) {
+        logger.error('Error al cargar historial de chat de evento', err as Error);
         emitSocketError(socket, 'history_failed', 'Error al cargar el historial');
       }
     });
@@ -185,7 +189,7 @@ async function bootstrap() {
           });
           io.to(`event:${eventId}`).emit('chat_message', hydrated ?? saved);
         } catch (err) {
-          console.error(err);
+          logger.error('Error guardando mensaje de evento', err as Error);
           socket.emit('chat_error', { message: 'Error al guardar mensaje' });
         }
       }
@@ -240,7 +244,9 @@ async function bootstrap() {
           const trimmedText = text?.trim() ?? '';
 
           if (!me || !toUserId || (trimmedText.length === 0 && !imageUrl)) {
-            console.warn('dm_message: datos inválidos', { me, toUserId, textLength: trimmedText.length, hasImage: !!imageUrl });
+            logger.warn(
+              `dm_message: datos inválidos ${JSON.stringify({ me, toUserId, textLength: trimmedText.length, hasImage: !!imageUrl })}`,
+            );
             return;
           }
 
@@ -248,7 +254,9 @@ async function bootstrap() {
           const receiver = await usersRepo.findOne({ where: { id: toUserId } });
 
           if (!sender || !receiver) {
-            console.warn('dm_message: usuario no encontrado', { sender: !!sender, receiver: !!receiver });
+            logger.warn(
+              `dm_message: usuario no encontrado ${JSON.stringify({ sender: !!sender, receiver: !!receiver })}`,
+            );
             return;
           }
 
@@ -268,7 +276,7 @@ async function bootstrap() {
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');
         } catch (err) {
-          console.error('dm_message error:', err);
+          logger.error('dm_message error', err as Error);
           emitSocketError(socket, 'dm_send_failed', 'Error al enviar mensaje privado');
         }
       }
@@ -280,7 +288,7 @@ async function bootstrap() {
         try {
           const me = socket.data.userId;
           if (!me || !messageId) {
-            console.warn('delete_dm: datos inválidos', { me, messageId });
+            logger.warn(`delete_dm: datos inválidos ${JSON.stringify({ me, messageId })}`);
             return;
           }
 
@@ -290,12 +298,14 @@ async function bootstrap() {
           });
 
           if (!message) {
-            console.warn('delete_dm: mensaje no encontrado', { messageId });
+            logger.warn(`delete_dm: mensaje no encontrado ${JSON.stringify({ messageId })}`);
             return;
           }
 
           if (message.emisor.id !== me) {
-            console.warn('delete_dm: no autorizado', { messageOwner: message.emisor.id, requester: me });
+            logger.warn(
+              `delete_dm: no autorizado ${JSON.stringify({ messageOwner: message.emisor.id, requester: me })}`,
+            );
             return;
           }
 
@@ -304,7 +314,7 @@ async function bootstrap() {
 
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('delete_dm_success', messageId);
         } catch (err) {
-          console.error('delete_dm error:', err);
+          logger.error('delete_dm error', err as Error);
           emitSocketError(socket, 'delete_dm_failed', 'Error al borrar mensaje privado');
         }
       }
@@ -316,7 +326,7 @@ async function bootstrap() {
         try {
           const me = socket.data.userId;
           if (!me || !eventId || !messageId) {
-            console.warn('delete_event_message: datos inválidos', { me, eventId, messageId });
+            logger.warn(`delete_event_message: datos inválidos ${JSON.stringify({ me, eventId, messageId })}`);
             return;
           }
 
@@ -326,12 +336,16 @@ async function bootstrap() {
           });
 
           if (!message) {
-            console.warn('delete_event_message: mensaje no encontrado', { eventId, messageId });
+            logger.warn(
+              `delete_event_message: mensaje no encontrado ${JSON.stringify({ eventId, messageId })}`,
+            );
             return;
           }
 
           if (message.usuario.id !== me) {
-            console.warn('delete_event_message: no autorizado', { messageOwner: message.usuario.id, requester: me });
+            logger.warn(
+              `delete_event_message: no autorizado ${JSON.stringify({ messageOwner: message.usuario.id, requester: me })}`,
+            );
             return;
           }
 
@@ -339,7 +353,7 @@ async function bootstrap() {
 
           io.to(`event:${eventId}`).emit('delete_event_message_success', messageId);
         } catch (err) {
-          console.error('delete_event_message error:', err);
+          logger.error('delete_event_message error', err as Error);
           emitSocketError(socket, 'delete_event_message_failed', 'Error al borrar mensaje del evento');
         }
       }
@@ -355,7 +369,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`API escuchando en http://localhost:${port}`);
+  logger.log(`API escuchando en http://localhost:${port}`);
 }
 
 bootstrap();

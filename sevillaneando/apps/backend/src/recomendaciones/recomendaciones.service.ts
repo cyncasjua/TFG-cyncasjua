@@ -454,7 +454,7 @@ export class RecomendacionesService {
       .filter((route): route is NonNullable<typeof route> => route !== null)
       .sort((a, b) => b.ranking - a.ranking)
       .slice(0, routesLimit)
-      .map(({ ranking, ...route }) => route);
+      .map(({ ranking: _ranking, ...route }) => route);
 
     return {
       total: routes.length,

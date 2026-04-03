@@ -18,7 +18,7 @@ import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { ThemedView, ThemedText, ThemedTitle, ThemedButton } from '../components';
+import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
@@ -30,6 +30,7 @@ import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { ComponentType } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { PrivateEventLinkModal } from './PrivateEventLinkModal';
+import { reportWarning } from '../utils/telemetry';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -217,7 +218,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         setAddress(data.display_name);
       }
     } catch (e) {
-      console.log('Error en geocodificación inversa:', e);
+      reportWarning('create-event.reverse-geocode', 'Error en geocodificación inversa', e);
     }
   };
 
@@ -547,6 +548,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                   maximumZ={19}
                 />
               </MapView>
+            </View>
+            <View style={{ marginBottom: 8 }}>
+              <OsmAttribution compact />
             </View>
             <ThemedText style={{ marginBottom: 8, color: colors.text + '99' }}>
               {latitude && longitude

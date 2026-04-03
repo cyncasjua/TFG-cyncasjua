@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { reportWarning } from '../utils/telemetry';
 
 type Theme = 'light' | 'dark';
 
@@ -56,7 +57,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           setThemeState(stored);
         }
       } catch (err) {
-        console.warn('No se pudo leer la preferencia de tema', err);
+        reportWarning('theme.load-preference', 'No se pudo leer la preferencia de tema', err);
       }
     };
     loadPreference();
@@ -69,7 +70,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     try {
       await AsyncStorage.setItem('themePreference', value);
     } catch (err) {
-      console.warn('No se pudo guardar la preferencia de tema', err);
+      reportWarning('theme.persist-preference', 'No se pudo guardar la preferencia de tema', err);
     }
   };
 

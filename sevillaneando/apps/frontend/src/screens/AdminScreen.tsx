@@ -16,6 +16,7 @@ import { useTheme } from '../hooks/useTheme';
 import { api, getErrorMessage } from '../services/api';
 import { User } from '../types/user';
 import { RootStackParamList } from '../App';
+import { reportError } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
@@ -38,7 +39,7 @@ export const AdminScreen: React.FC<Props> = () => {
       setUsers(res.data);
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));
-      console.error(err);
+      reportError('admin.load-users', 'Error cargando usuarios', err);
     } finally {
       setLoading(false);
     }
@@ -63,7 +64,7 @@ export const AdminScreen: React.FC<Props> = () => {
             : 'No se pudo cambiar el rol.';
       if (error instanceof Error && 'response' in error) {
         const axiosErr = error as AxiosError;
-        console.error('Error completo:', {
+        reportError('admin.change-role', 'Error cambiando rol de usuario', err, {
           status: axiosErr.response?.status,
           data: axiosErr.response?.data,
           message: error.message,

@@ -10,6 +10,7 @@ import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../com
 import type { RootStackParamList } from '../App';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Alert } from 'react-native';
+import { reportError } from '../utils/telemetry';
 
 type Notificacion = {
   id: string;
@@ -34,7 +35,11 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       const res = await api.get(`/notificaciones/usuario/${user.id}`);
       setNotificaciones(res.data);
     } catch (err) {
-      console.error('Error cargando notificaciones:', getErrorMessage(err));
+      reportError(
+        'notifications.fetch',
+        `Error cargando notificaciones: ${getErrorMessage(err)}`,
+        err,
+      );
     } finally {
       setLoading(false);
     }
@@ -57,7 +62,11 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       setNotificaciones((prev) => prev.filter((n) => n.id !== id));
       await refresh();
     } catch (err) {
-      console.error('Error borrando notificación:', getErrorMessage(err));
+      reportError(
+        'notifications.delete',
+        `Error borrando notificación: ${getErrorMessage(err)}`,
+        err,
+      );
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { api } from '../services/api';
+import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { reportWarning } from '../utils/telemetry';
 
 type NotificacionesContextValue = {
   unread: number;
@@ -21,7 +22,12 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
     try {
       const res = await api.get(`/notificaciones/usuario/${user.id}`);
       setUnread(res.data.filter((n: { leida: boolean }) => !n.leida).length);
-    } catch {
+    } catch (err) {
+      reportWarning(
+        'notifications.refresh-unread',
+        `No se pudieron actualizar las notificaciones: ${getErrorMessage(err)}`,
+        err,
+      );
       setUnread(0);
     }
   }, [user]);

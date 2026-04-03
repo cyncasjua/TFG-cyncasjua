@@ -12,6 +12,7 @@ import { RootStackParamList } from '../App';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
+import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl } from '../utils/imageUrl';
 import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 
@@ -62,8 +63,11 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
           const otherUserName = message.emisor?.id === user?.id ? message.receptor?.nombre : message.emisor?.nombre;
           const otherUserPhoto = message.emisor?.id === user?.id ? message.receptor?.fotoPerfil : message.emisor?.fotoPerfil;
 
-          if (!otherUserId || !otherUserName) {
-            console.warn('dm_message: datos incompletos', { otherUserId, otherUserName });
+                if (!otherUserId || !otherUserName) {
+                  reportWarning('messages.dm-message', 'Datos incompletos en dm_message', undefined, {
+                    otherUserId,
+                    otherUserName,
+                  });
             return prev;
           }
 

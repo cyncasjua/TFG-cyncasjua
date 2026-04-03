@@ -5,12 +5,18 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
-import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { getEventById, getErrorMessage } from '../services/api';
+import { getEventById, getErrorMessage, type RecommendedRoute } from '../services/api';
+import type { Event } from '../types/event';
+import { reportError } from '../utils/telemetry';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RoutePreview'>;
+type RoutePreviewStackParamList = {
+  RoutePreview: { routePlan: RecommendedRoute };
+  EventDetail: { event: Event };
+};
+
+type Props = NativeStackScreenProps<RoutePreviewStackParamList, 'RoutePreview'>;
 
 export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { colors, theme } = useTheme();
@@ -56,7 +62,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
       const event = await getEventById(eventId);
       navigation.navigate('EventDetail', { event });
     } catch (error) {
-      console.error('No se pudo abrir evento desde ruta:', getErrorMessage(error));
+        reportError('route-preview.open-event', `No se pudo abrir evento desde ruta: ${getErrorMessage(error)}`, error);
     }
   };
 

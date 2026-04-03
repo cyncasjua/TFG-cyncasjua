@@ -13,6 +13,7 @@ import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { InteresCategoriaEnum } from './enums/interes-categoria.enum';
+import { Logger } from '@nestjs/common';
 
 export enum RolEnum {
   ADMIN = 'admin',
@@ -22,6 +23,8 @@ export enum RolEnum {
 
 @Entity({ name: 'users' })
 export class User {
+  private static readonly logger = new Logger(User.name);
+
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -135,13 +138,15 @@ export class User {
         typeof loc.coordinates[0] !== 'number' ||
         typeof loc.coordinates[1] !== 'number'
       ) {
-        console.error('Validación de ubicación falló:', {
-          type: loc.type,
-          isArray: Array.isArray(loc.coordinates),
-          length: loc.coordinates?.length,
-          coord0Type: typeof loc.coordinates?.[0],
-          coord1Type: typeof loc.coordinates?.[1],
-        });
+        User.logger.error(
+          `Validación de ubicación falló: ${JSON.stringify({
+            type: loc.type,
+            isArray: Array.isArray(loc.coordinates),
+            length: loc.coordinates?.length,
+            coord0Type: typeof loc.coordinates?.[0],
+            coord1Type: typeof loc.coordinates?.[1],
+          })}`,
+        );
         throw new Error('La ubicación debe ser un GeoJsonPoint válido.');
       }
     }

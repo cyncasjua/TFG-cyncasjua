@@ -18,7 +18,7 @@ import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { ThemedView, ThemedText, ThemedTitle, ThemedButton } from '../components';
+import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api } from '../services/api';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -369,6 +369,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               />
               <Marker coordinate={{ latitude, longitude }} />
             </MapView>
+            <View style={{ marginBottom: 8 }}>
+              <OsmAttribution compact />
+            </View>
             <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput

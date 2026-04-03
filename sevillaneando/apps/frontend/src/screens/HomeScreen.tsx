@@ -48,6 +48,7 @@ import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
 import { ProfileHeader } from './ProfileHeader';
 import { useSocket } from '../context/SocketContext';
+import { reportError, reportWarning } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type RouteStrategy = 'balanced' | 'walkable' | 'score';
@@ -134,7 +135,11 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await api.patch('/users/me/firebase', { categoryOrder: order });
     } catch (err) {
-      console.error('Error guardando orden de categorías:', getErrorMessage(err));
+      reportWarning(
+        'home.persist-category-order',
+        `Error guardando orden de categorías: ${getErrorMessage(err)}`,
+        err,
+      );
     }
   };
 
@@ -142,7 +147,11 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await api.patch('/users/me/firebase', { radiusOptions: options });
     } catch (err) {
-      console.error('Error guardando radios personalizados:', getErrorMessage(err));
+      reportWarning(
+        'home.persist-radius-options',
+        `Error guardando radios personalizados: ${getErrorMessage(err)}`,
+        err,
+      );
     }
   };
 
@@ -200,13 +209,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     if (socket && isConnected) {
       socket.emit('get_conversations');
     } else {
-      console.log('Socket no conectado, no se puede solicitar conversaciones');
+      reportWarning('home.socket', 'Socket no conectado al solicitar conversaciones');
     }
   }, [socket, isConnected]);
 
   useEffect(() => {
     if (!socket || !isConnected) {
-      console.log('Socket o conexión no disponible en useEffect');
+      reportWarning('home.socket', 'Socket o conexión no disponible en HomeScreen');
       return;
     }
 
@@ -299,7 +308,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         if (Number.isFinite(parsed.routeMaxEvents)) setRouteMaxEvents(Math.max(3, Math.min(8, Number(parsed.routeMaxEvents))));
         if (Number.isFinite(parsed.routeMaxGapMinutes)) setRouteMaxGapMinutes(Math.max(30, Math.min(360, Number(parsed.routeMaxGapMinutes))));
         if (Number.isFinite(parsed.routeMaxOverlapMinutes)) setRouteMaxOverlapMinutes(Math.max(0, Math.min(60, Number(parsed.routeMaxOverlapMinutes))));
-      } catch {
+      } catch (err) {
+        reportWarning('home.load-routes-settings', 'No se pudieron cargar ajustes de rutas', err);
         // Ignore invalid persisted settings.
       }
     };
@@ -320,7 +330,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             routeMaxOverlapMinutes,
           }),
         );
-      } catch {
+      } catch (err) {
+        reportWarning('home.persist-routes-settings', 'No se pudieron guardar ajustes de rutas', err);
         // Non-blocking persistence.
       }
     };
@@ -375,7 +386,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         setItems(remote as EventWithDistance[]);
       }
     } catch (err) {
-      console.error('Error cargando eventos:', err);
+      reportError('home.fetch-events', 'Error cargando eventos', err);
       const message = getErrorMessage(err);
       setError(message);
     } finally {
@@ -500,8 +511,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         const event = await getEventById(eventId);
         navigation.navigate('EventDetail', { event });
-      } catch {
-        Alert.alert('Error', 'No se pudo abrir el evento recomendado.');
+      } catch (err) {
+        Alert.alert('Error', getErrorMessage(err) || 'No se pudo abrir el evento recomendado.');
       }
     },
     [items, navigation],
@@ -511,7 +522,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await logout();
     } catch (err) {
-      console.error('Error al cerrar sesión:', err);
+      reportError('home.logout', 'Error al cerrar sesión', err);
     }
   };
 

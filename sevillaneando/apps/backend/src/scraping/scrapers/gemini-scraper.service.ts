@@ -93,7 +93,8 @@ export class GeminiScraperService implements IScraper {
           try {
             const base = new URL(url);
             urlFinal = new URL(src, base).href;
-          } catch {
+          } catch (err) {
+            this.logger.debug(`No se pudo normalizar URL de imagen ${src}: ${String(err)}`);
             urlFinal = src;
           }
         }
@@ -196,8 +197,8 @@ ${htmlLimpio}
             if (geoResp.ok) {
               geoData = await geoResp.json();
             }
-          } catch {
-            // Evitar error de linter por bloque vacío
+          } catch (err) {
+            this.logger.debug(`Geocodificación principal fallida para "${addressFinal}": ${String(err)}`);
           }
 
           if (!geoData || geoData.length === 0) {
@@ -212,8 +213,8 @@ ${htmlLimpio}
                 if (geoResp.ok) {
                   geoData = await geoResp.json();
                 }
-              } catch {
-                // Evitar error de linter por bloque vacío
+              } catch (err) {
+                this.logger.debug(`Geocodificación por nombre fallida para "${soloNombre}": ${String(err)}`);
               }
             }
           }
@@ -228,8 +229,8 @@ ${htmlLimpio}
               if (geoResp.ok) {
                 geoData = await geoResp.json();
               }
-            } catch {
-              // Evitar error de linter por bloque vacío
+            } catch (err) {
+              this.logger.debug(`Geocodificación sin país fallida para "${addressFinal}": ${String(err)}`);
             }
           }
 

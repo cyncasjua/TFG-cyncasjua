@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText } from '../components';
 import type { Event } from '../types/event';
+import { reportError } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventsMap'>;
 
@@ -92,7 +93,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           setEvents(remote);
         }
       } catch (err) {
-        console.error('Error cargando eventos', getErrorMessage(err));
+        reportError('events-map.fetch-events', `Error cargando eventos: ${getErrorMessage(err)}`, err);
       } finally {
         setLoading(false);
       }
