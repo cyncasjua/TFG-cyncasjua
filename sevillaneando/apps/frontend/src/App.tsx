@@ -1,7 +1,7 @@
 import React from 'react';
 import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, LogBox, Text, View, Image, Pressable, Linking } from 'react-native';
+import { ActivityIndicator, LogBox, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ExpoLinking from 'expo-linking';
@@ -314,65 +314,13 @@ const Navigator = () => {
   );
 };
 
-const AppFooter = () => {
-  const { colors } = useTheme();
-
-  const openExternalLink = async (url: string) => {
-    const canOpen = await Linking.canOpenURL(url);
-    if (canOpen) {
-      await Linking.openURL(url);
-    }
-  };
-
-  return (
-    <SafeAreaView
-      edges={['bottom']}
-      style={{
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        paddingBottom: 10,
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-        backgroundColor: colors.background,
-      }}
-    >
-      <Text style={{ color: colors.text, fontSize: 12, fontWeight: '600' }}>Cynthia Castaño Juan</Text>
-      <Pressable onPress={() => openExternalLink('mailto:cynthiacj04@gmail.com')}>
-        <Text style={{ color: colors.primary, fontSize: 12 }}>cynthiacj04@gmail.com</Text>
-      </Pressable>
-      <Pressable
-        onPress={() =>
-          openExternalLink('https://www.linkedin.com/in/cynthia-casta%C3%B1o-juan-4b7195387/')
-        }
-      >
-        <Text numberOfLines={1} style={{ color: colors.primary, fontSize: 12 }}>
-          linkedin.com/in/cynthia-castano-juan-4b7195387
-        </Text>
-      </Pressable>
-    </SafeAreaView>
-  );
-};
-
-const AppContent = () => {
-  const { colors } = useTheme();
-
-  return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ flex: 1 }}>
-        <Navigator />
-      </View>
-      <AppFooter />
-    </View>
-  );
-};
-
 const App = () => (
   <GestureHandlerRootView style={{ flex: 1 }}>
     <ThemeProvider>
       <AuthProvider>
         <SocketProvider>
           <NotificacionesProvider>
-            <AppContent />
+            <Navigator />
           </NotificacionesProvider>
         </SocketProvider>
       </AuthProvider>
