@@ -12,7 +12,6 @@
     "@react-native-firebase/storage": "^23.7.0",
     "dayjs": "^1.11.20",
     "expo": "~54.0.33",
-    "lodash": "^4.17.23",
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-date-picker": "^5.0.13",
