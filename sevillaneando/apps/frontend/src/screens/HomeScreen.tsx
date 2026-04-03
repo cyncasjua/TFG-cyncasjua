@@ -1,10 +1,10 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import {
   ActivityIndicator,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -18,7 +18,17 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { getEvents, api, getErrorMessage, getEventByAccessLink } from '../services/api';
+import {
+  getEvents,
+  api,
+  getErrorMessage,
+  getEventByAccessLink,
+  getEventById,
+  getRecommendedEvents,
+  getRecommendedRoutes,
+  RecommendedEvent,
+  RecommendedRoute,
+} from '../services/api';
 import { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
@@ -40,13 +50,31 @@ import { ProfileHeader } from './ProfileHeader';
 import { useSocket } from '../context/SocketContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type RouteStrategy = 'balanced' | 'walkable' | 'score';
+type RecommendedRouteWithSource = RecommendedRoute & { sourceStrategy?: RouteStrategy };
 
 const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
+const ROUTES_SETTINGS_KEY = 'routesSettingsV1';
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [items, setItems] = useState<EventWithDistance[]>([]);
+  const [recommendedEvents, setRecommendedEvents] = useState<RecommendedEvent[]>([]);
+  const [recommendedRoutes, setRecommendedRoutes] = useState<RecommendedRoute[]>([]);
+  const [adjustedRoutes, setAdjustedRoutes] = useState<RecommendedRouteWithSource[]>([]);
+  const [loadingAdjustedRoutes, setLoadingAdjustedRoutes] = useState(false);
+  const [adjustedRoutesError, setAdjustedRoutesError] = useState<string | null>(null);
+  const [routesSettingsVisible, setRoutesSettingsVisible] = useState(false);
+  const [routeStrategies, setRouteStrategies] = useState<RouteStrategy[]>(['balanced']);
+  const [routeCount, setRouteCount] = useState(3);
+  const [routeMaxEvents, setRouteMaxEvents] = useState(5);
+  const [routeMaxGapMinutes, setRouteMaxGapMinutes] = useState(180);
+  const [routeMaxOverlapMinutes, setRouteMaxOverlapMinutes] = useState(15);
+  const [showRecommendedEvents, setShowRecommendedEvents] = useState(false);
+  const [showRecommendedRoutes, setShowRecommendedRoutes] = useState(false);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [recommendationsError, setRecommendationsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -131,18 +159,25 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
+
+  const formatDuration = (minutes: number): string => {
+    if (minutes < 1) return '< 1 min';
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes === 0 ? `${hours} h` : `${hours} h ${remainingMinutes} min`;
+  };
+
   const calculateWalkingTime = (distanceKm: number): string => {
     // Velocidad promedio a pie: 1.4 m/s = 5.04 km/h
     const minutes = Math.round((distanceKm / 5.04) * 60);
-    if (minutes < 1) return '< 1 min';
-    return `${minutes} min`;
+    return formatDuration(minutes);
   };
 
   const calculateDrivingTime = (distanceKm: number): string => {
     // Velocidad promedio en coche en ciudad: 13.9 m/s = 50 km/h
     const minutes = Math.round((distanceKm / 50) * 60);
-    if (minutes < 1) return '< 1 min';
-    return `${minutes} min`;
+    return formatDuration(minutes);
   };
 
   const handleAddCustomRadius = () => {
@@ -238,6 +273,61 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [user?.radiusOptions, searchRadius]);
 
+  useEffect(() => {
+    const loadRoutesSettings = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(ROUTES_SETTINGS_KEY);
+        if (!raw) return;
+
+        const parsed = JSON.parse(raw) as {
+          routeStrategies?: RouteStrategy[];
+          routeCount?: number;
+          routeMaxEvents?: number;
+          routeMaxGapMinutes?: number;
+          routeMaxOverlapMinutes?: number;
+        };
+
+        if (Array.isArray(parsed.routeStrategies) && parsed.routeStrategies.length > 0) {
+          setRouteStrategies(
+            parsed.routeStrategies.filter(
+              (item): item is RouteStrategy =>
+                item === 'balanced' || item === 'walkable' || item === 'score',
+            ),
+          );
+        }
+        if (Number.isFinite(parsed.routeCount)) setRouteCount(Math.max(1, Math.min(8, Number(parsed.routeCount))));
+        if (Number.isFinite(parsed.routeMaxEvents)) setRouteMaxEvents(Math.max(3, Math.min(8, Number(parsed.routeMaxEvents))));
+        if (Number.isFinite(parsed.routeMaxGapMinutes)) setRouteMaxGapMinutes(Math.max(30, Math.min(360, Number(parsed.routeMaxGapMinutes))));
+        if (Number.isFinite(parsed.routeMaxOverlapMinutes)) setRouteMaxOverlapMinutes(Math.max(0, Math.min(60, Number(parsed.routeMaxOverlapMinutes))));
+      } catch {
+        // Ignore invalid persisted settings.
+      }
+    };
+
+    loadRoutesSettings();
+  }, []);
+
+  useEffect(() => {
+    const persistRoutesSettings = async () => {
+      try {
+        await AsyncStorage.setItem(
+          ROUTES_SETTINGS_KEY,
+          JSON.stringify({
+            routeStrategies,
+            routeCount,
+            routeMaxEvents,
+            routeMaxGapMinutes,
+            routeMaxOverlapMinutes,
+          }),
+        );
+      } catch {
+        // Non-blocking persistence.
+      }
+    };
+
+    persistRoutesSettings();
+  }, [routeStrategies, routeCount, routeMaxEvents, routeMaxGapMinutes, routeMaxOverlapMinutes]);
+
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -299,6 +389,124 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     }, [fetchEvents])
   );
 
+  const fetchRecommendations = useCallback(async () => {
+    setLoadingRecommendations(true);
+    setRecommendationsError(null);
+
+    try {
+      const lat = user?.ubicacion?.coordinates?.[1];
+      const lng = user?.ubicacion?.coordinates?.[0];
+      const params =
+        Number.isFinite(lat) && Number.isFinite(lng)
+          ? { lat: Number(lat), lng: Number(lng), radiusKm: searchRadius || 12, limit: 8 }
+          : { limit: 8 };
+
+      const [eventsResult, routesResult] = await Promise.all([
+        getRecommendedEvents(params),
+        getRecommendedRoutes({ ...params, routesLimit: 3, strategy: 'balanced' }),
+      ]);
+
+      setRecommendedEvents(eventsResult.eventos ?? []);
+      setRecommendedRoutes(routesResult.rutas ?? []);
+    } catch (err) {
+      setRecommendationsError(getErrorMessage(err));
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  }, [searchRadius, user?.ubicacion?.coordinates]);
+
+  const fetchAdjustedRoutes = useCallback(async () => {
+    if (routeStrategies.length === 0) {
+      setAdjustedRoutesError('Selecciona al menos una prioridad.');
+      return;
+    }
+
+    setLoadingAdjustedRoutes(true);
+    setAdjustedRoutesError(null);
+
+    try {
+      const lat = user?.ubicacion?.coordinates?.[1];
+      const lng = user?.ubicacion?.coordinates?.[0];
+      const params =
+        Number.isFinite(lat) && Number.isFinite(lng)
+          ? { lat: Number(lat), lng: Number(lng), radiusKm: searchRadius || 12 }
+          : {};
+
+      const results = await Promise.all(
+        routeStrategies.map((strategy) =>
+          getRecommendedRoutes({
+            ...params,
+            strategy,
+            routesLimit: routeCount,
+            minEventsPerRoute: Math.max(2, routeMaxEvents - 2),
+            maxEventsPerRoute: routeMaxEvents,
+            maxGapMinutes: routeMaxGapMinutes,
+            maxOverlapMinutes: routeMaxOverlapMinutes,
+          }),
+        ),
+      );
+
+      const seen = new Set<string>();
+      const merged: RecommendedRouteWithSource[] = [];
+
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const sourceStrategy = routeStrategies[i];
+        for (const route of result.rutas ?? []) {
+          const signature = `${route.day}|${route.eventos.map((event) => event.id).join('-')}`;
+          if (seen.has(signature)) continue;
+          seen.add(signature);
+          merged.push({ ...route, sourceStrategy });
+        }
+      }
+
+      const sortedMerged = [...merged].sort((a, b) => {
+        const qualityDiff = Number(b.quality ?? 0) - Number(a.quality ?? 0);
+        if (qualityDiff !== 0) return qualityDiff;
+        return Number(b.scoreMedio) - Number(a.scoreMedio);
+      });
+
+      setAdjustedRoutes(sortedMerged.slice(0, routeCount * routeStrategies.length));
+      setRoutesSettingsVisible(false);
+    } catch (err) {
+      setAdjustedRoutesError(getErrorMessage(err));
+    } finally {
+      setLoadingAdjustedRoutes(false);
+    }
+  }, [
+    routeCount,
+    routeMaxEvents,
+    routeMaxGapMinutes,
+    routeMaxOverlapMinutes,
+    routeStrategies,
+    searchRadius,
+    user?.ubicacion?.coordinates,
+  ]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRecommendations();
+    }, [fetchRecommendations])
+  );
+
+  const openRecommendedEvent = useCallback(
+    async (eventId: string) => {
+      try {
+        const existing = items.find((event) => event.id === eventId);
+        if (existing) {
+          navigation.navigate('EventDetail', { event: existing });
+          return;
+        }
+
+        const event = await getEventById(eventId);
+        navigation.navigate('EventDetail', { event });
+      } catch {
+        Alert.alert('Error', 'No se pudo abrir el evento recomendado.');
+      }
+    },
+    [items, navigation],
+  );
+
   const onLogout = async () => {
     try {
       await logout();
@@ -306,6 +514,93 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       console.error('Error al cerrar sesión:', err);
     }
   };
+
+  const filteredItems = useMemo(() => {
+    let filtered = items;
+
+    if (selectedCategory) {
+      filtered = filtered.filter((ev) => ev.categoria?.id === selectedCategory);
+    }
+
+    if (filterNearby && searchRadius) {
+      filtered = filtered.filter(
+        (ev) => ev.distance !== undefined && ev.distance <= searchRadius,
+      );
+    }
+
+    if (searchText.trim() !== '') {
+      const text = searchText.trim().toLowerCase();
+      filtered = filtered.filter(
+        (ev) =>
+          ev.title?.toLowerCase().includes(text) || ev.description?.toLowerCase().includes(text),
+      );
+    }
+
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      filtered = filtered.filter((ev) => {
+        if (!ev.fechaInicio) return false;
+        const evDate = new Date(ev.fechaInicio);
+        return evDate >= from;
+      });
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      filtered = filtered.filter((ev) => {
+        if (!ev.fechaInicio) return false;
+        const evDate = new Date(ev.fechaInicio);
+        return evDate <= to;
+      });
+    }
+
+    const min = minPrice !== '' ? parseFloat(minPrice) : null;
+    const max = maxPrice !== '' ? parseFloat(maxPrice) : null;
+    if (min !== null) {
+      filtered = filtered.filter((ev) => {
+        const isGratis =
+          (ev.precio == null && ev.precioMin == null && ev.precioMax == null) ||
+          ev.precio === 0 ||
+          (ev.precioMin === 0 && ev.precioMax === 0);
+        if (isGratis) return min === 0 || min === null;
+        if (ev.precio != null) return ev.precio >= min;
+        if (ev.precioMin != null) return ev.precioMin >= min;
+        return true;
+      });
+    }
+    if (max !== null) {
+      filtered = filtered.filter((ev) => {
+        if (ev.precio != null) return ev.precio <= max;
+        if (ev.precioMax != null) return ev.precioMax <= max;
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [
+    items,
+    selectedCategory,
+    filterNearby,
+    searchRadius,
+    searchText,
+    dateFrom,
+    dateTo,
+    minPrice,
+    maxPrice,
+  ]);
+
+  const discoveryTitle = useMemo(() => {
+    if (filterNearby) return 'Descubre cerca de ti';
+    return 'Descubre algo nuevo';
+  }, [filterNearby]);
+
+  const homeGreeting = useMemo(() => {
+    const hour = dayjs().hour();
+    const name = user?.nombre || 'sevillaneante';
+
+    if (hour < 13) return `Buenos dias, ${name}`;
+    if (hour < 21) return `Buenas tardes, ${name}`;
+    return `Buenas noches, ${name}`;
+  }, [user?.nombre]);
 
   if (loading) {
     return (
@@ -335,70 +630,71 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         ]}
       />
       <ThemedView style={styles.container}>
-        <ThemedView
-          style={[
-            styles.header,
-            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-          ]}
+        <ScrollView
+          style={{ flex: 1, minHeight: 0 }}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          nestedScrollEnabled
+          showsVerticalScrollIndicator
         >
-          <ThemedView>
-            <ThemedTitle>Eventos en Sevilla</ThemedTitle>
-            <ThemedTextSecondary style={{ marginTop: 4 }}>
-              Rol actual:{' '}
-              <ThemedText style={{ fontWeight: 'bold' }}>{role}</ThemedText>
-            </ThemedTextSecondary>
-          </ThemedView>
-          <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {user?.ubicacion && (
+        <ThemedView style={styles.header}>
+          <View style={styles.headerTopRow}>
+            <ThemedText style={styles.heroEyebrow}>{homeGreeting}</ThemedText>
+
+            <View style={styles.heroActionsRow}>
+              {user?.ubicacion && (
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 7,
+                    paddingHorizontal: 14,
+                    borderRadius: 18,
+                    backgroundColor: filterNearby ? '#ffd700' : colors.card,
+                    borderWidth: 1.5,
+                    borderColor: '#ffd700',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                  onPress={() => setFilterNearby(!filterNearby)}
+                >
+                  <MaterialIcons
+                    name="near-me"
+                    size={15}
+                    color={filterNearby ? '#fff' : '#ffd700'}
+                    style={{ marginRight: 4 }}
+                  />
+                  <ThemedText
+                    style={{
+                      color: filterNearby ? '#fff' : colors.text + '99',
+                      fontWeight: '500',
+                      fontSize: 11,
+                    }}
+                  >
+                    Cerca
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 style={{
                   paddingVertical: 7,
-                  paddingHorizontal: 14,
+                  paddingHorizontal: 10,
                   borderRadius: 18,
-                  backgroundColor: filterNearby ? '#ffd700' : colors.card,
+                  backgroundColor: colors.card,
                   borderWidth: 1.5,
-                  borderColor: '#ffd700',
+                  borderColor: colors.primary,
                   flexDirection: 'row',
                   alignItems: 'center',
                 }}
-                onPress={() => setFilterNearby(!filterNearby)}
+                onPress={() => setSearchModalVisible(true)}
+                accessibilityLabel="Buscar y filtrar"
               >
-                <MaterialIcons
-                  name="near-me"
-                  size={15}
-                  color={filterNearby ? '#fff' : '#ffd700'}
-                  style={{ marginRight: 4 }}
-                />
-                <ThemedText
-                  style={{
-                    color: filterNearby ? '#fff' : colors.text + '99',
-                    fontWeight: '500',
-                    fontSize: 11,
-                  }}
-                >
-                  Cerca
-                </ThemedText>
+                <MaterialIcons name="search" size={16} color={colors.primary} />
               </TouchableOpacity>
-            )}
-            {/* Botón lupa para abrir modal de búsqueda */}
-            <TouchableOpacity
-              style={{
-                paddingVertical: 7,
-                paddingHorizontal: 10,
-                borderRadius: 18,
-                backgroundColor: colors.card,
-                borderWidth: 1.5,
-                borderColor: colors.primary,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-              onPress={() => setSearchModalVisible(true)}
-              accessibilityLabel="Buscar y filtrar"
-            >
-              <MaterialIcons name="search" size={18} color={colors.primary} />
-            </TouchableOpacity>
-          </ThemedView>
+            </View>
+          </View>
+
+          <ThemedTitle style={styles.heroTitle}>{discoveryTitle}</ThemedTitle>
         </ThemedView>
+
         {filterNearby && user?.ubicacion && (
           <ThemedView style={{ marginBottom: 12 }}>
             <ThemedText
@@ -565,290 +861,208 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
-          <MaterialIcons name="menu" size={32} color="#6c2eb7" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.mapIconButton}
-          onPress={() => navigation.navigate('EventsMap')}
-          accessibilityLabel="Ver mapa"
+
+        <ThemedView
+          style={[
+            styles.recommendationSection,
+            { backgroundColor: colors.card + 'D9', borderColor: colors.border },
+          ]}
         >
-          <MaterialIcons name="map" size={32} color="#6c2eb7" />
-
-        </TouchableOpacity>
-
-        {role === 'user' && (
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => navigation.navigate('CreateEvent')}
-            accessibilityLabel="Crear evento"
-          >
-            <MaterialIcons name="add-circle" size={56} color="#6c2eb7" />
-          </TouchableOpacity>
-        )}
-
-        {role === 'user' && (
-          <View style={styles.fabRowRightAligned}>
-            <TouchableOpacity
-              style={styles.fabSecondary}
-              onPress={() => navigation.navigate('UserEvents')}
-              accessibilityLabel="Mis eventos"
-            >
-              <MaterialIcons name="edit" size={35} color="#6c2eb7" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.fabCalendar}
-              onPress={() => navigation.navigate('CalendarEvents')}
-              accessibilityLabel="Calendario de eventos"
-            >
-              <MaterialIcons name="calendar-today" size={35} color="#6c2eb7" />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {role === 'moderator' && (
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => navigation.navigate('ModeratorEvents')}
-            accessibilityLabel="Aprobar eventos"
-          >
-            <MaterialIcons name="check-circle" size={56} color="#4caf50" />
-          </TouchableOpacity>
-        )}
-
-        {role === 'admin' && (
-          <ThemedView style={styles.adminActions}>
-            <TouchableOpacity
-              style={styles.adminActionButton}
-              onPress={() => navigation.navigate('Admin')}
-            >
-              <MaterialIcons name="admin-panel-settings" size={28} color="#6c2eb7" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.adminActionButton}
-              onPress={() => navigation.navigate('Categories')}
-            >
-              <MaterialIcons name="category" size={28} color="#6c2eb7" />
-            </TouchableOpacity>
-          </ThemedView>
-        )}
-
-        <TouchableOpacity
-          style={styles.notificationsButton}
-          onPress={() => navigation.navigate('Notifications')}
-          accessibilityLabel="Ver notificaciones"
-        >
-          <View>
-            <MaterialIcons name="notifications" size={35} color="#ffd700" />
-            {unread > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  right: 2,
-                  top: 2,
-                  backgroundColor: 'red',
-                  borderRadius: 8,
-                  width: 18,
-                  height: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
-                  {unread}
-                </Text>
+          <ThemedView style={styles.recommendationHeader}>
+            <ThemedView style={styles.recommendationHeaderLeft}>
+              <View style={[styles.recommendationHeaderIcon, { backgroundColor: colors.primary + '22' }]}>
+                <MaterialIcons name="auto-awesome" size={16} color={colors.primary} />
               </View>
-            )}
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.messagesButton}
-          onPress={() => navigation.navigate('Messages')}
-          accessibilityLabel="Ver mensajes privados"
-        >
-          <View>
-            <MaterialIcons name="mail" size={35} color="#6c2eb7" />
-            {unreadMessages > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  right: 2,
-                  top: 2,
-                  backgroundColor: 'red',
-                  borderRadius: 8,
-                  width: 18,
-                  height: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
-                  {unreadMessages}
-                </Text>
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.privateAccessButton}
-          onPress={openPrivateAccess}
-          accessibilityLabel="Abrir acceso a eventos privados"
-        >
-          <MaterialIcons name="vpn-key" size={35} color="#6c2eb7" />
-        </TouchableOpacity>
-
-      {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-
-
-      <Modal
-        visible={searchModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSearchModalVisible(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: '#0008', justifyContent: 'center', alignItems: 'center' }}>
-          <ThemedView style={{ width: '90%', backgroundColor: colors.card, borderRadius: 18, padding: 20 }}>
-            <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
-            <TextInput
-              style={{ backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 10, height: 38, borderWidth: 1, borderColor: colors.primary + '33', marginBottom: 12 }}
-              placeholder="Buscar por título o descripción"
-              placeholderTextColor={colors.text + '66'}
-              value={searchText}
-              onChangeText={setSearchText}
-              autoFocus
-            />
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-              <TextInput
-                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
-                placeholder="Min €"
-                placeholderTextColor={colors.text + '66'}
-                value={minPrice}
-                onChangeText={setMinPrice}
-                keyboardType="numeric"
-              />
-              <TextInput
-                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
-                placeholder="Max €"
-                placeholderTextColor={colors.text + '66'}
-                value={maxPrice}
-                onChangeText={setMaxPrice}
-                keyboardType="numeric"
-              />
-            </View>
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-              <TouchableOpacity
-                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
-                onPress={() => setShowDateFromPicker(true)}
-              >
-                <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
-                  {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : 'Desde '}
-                </ThemedText>
+              <ThemedTitle style={styles.recommendationTitle}>Para ti</ThemedTitle>
+            </ThemedView>
+            <View style={styles.recommendationHeaderActions}>
+              <TouchableOpacity onPress={fetchRecommendations} style={styles.recommendationRefreshButton}>
+                <MaterialIcons name="refresh" size={18} color={colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
-                onPress={() => setShowDateToPicker(true)}
+                onPress={() => setShowRecommendedEvents((prev) => !prev)}
+                style={styles.recommendationToggleButton}
               >
-                <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
-                  {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : 'Hasta'}
-                </ThemedText>
+                <MaterialIcons
+                  name={showRecommendedEvents ? 'expand-less' : 'expand-more'}
+                  size={20}
+                  color={colors.primary}
+                />
               </TouchableOpacity>
             </View>
-            <DateTimePickerModal
-              isVisible={showDateFromPicker}
-              mode="date"
-              onConfirm={date => {
-                setDateFrom(dayjs(date).format('YYYY-MM-DD'));
-                setShowDateFromPicker(false);
-              }}
-              onCancel={() => setShowDateFromPicker(false)}
-              maximumDate={dateTo ? new Date(dateTo) : undefined}
-            />
-            <DateTimePickerModal
-              isVisible={showDateToPicker}
-              mode="date"
-              onConfirm={date => {
-                setDateTo(dayjs(date).format('YYYY-MM-DD'));
-                setShowDateToPicker(false);
-              }}
-              onCancel={() => setShowDateToPicker(false)}
-              minimumDate={dateFrom ? new Date(dateFrom) : undefined}
-            />
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
-              <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo(''); }} />
-              <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} />
-              <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} />
+          </ThemedView>
+          {showRecommendedEvents && (loadingRecommendations ? (
+            <ThemedTextSecondary>Cargando recomendaciones...</ThemedTextSecondary>
+          ) : recommendationsError ? (
+            <ThemedTextSecondary style={{ color: colors.error }}>
+              {recommendationsError}
+            </ThemedTextSecondary>
+          ) : recommendedEvents.length === 0 ? (
+            <ThemedTextSecondary>Aun no hay suficientes señales para recomendarte eventos.</ThemedTextSecondary>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.recommendedListContent}
+            >
+              {recommendedEvents.map((event) => (
+                <TouchableOpacity
+                  key={event.id}
+                  onPress={() => openRecommendedEvent(event.id)}
+                  activeOpacity={0.88}
+                  style={[
+                    styles.recommendedCard,
+                    { backgroundColor: colors.background, borderColor: colors.border },
+                  ]}
+                >
+                  <View style={styles.recommendedCardTop}>
+                    <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
+                      {event.title}
+                    </ThemedText>
+                    <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
+                  </View>
+                  <ThemedTextSecondary numberOfLines={1}>{event.categoria || 'General'}</ThemedTextSecondary>
+                  <ThemedTextSecondary numberOfLines={1}>
+                    {dayjs(event.fechaInicio).format('DD/MM HH:mm')}
+                  </ThemedTextSecondary>
+                  <ThemedView style={styles.recommendedMetaRow}>
+                    <MaterialIcons name="star" size={14} color="#f39c12" />
+                    <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
+                    {event.distanceKm != null && (
+                      <>
+                        <MaterialIcons name="near-me" size={14} color={colors.primary} style={{ marginLeft: 8 }} />
+                        <ThemedTextSecondary>{event.distanceKm.toFixed(1)} km</ThemedTextSecondary>
+                      </>
+                    )}
+                  </ThemedView>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          ))}
+        </ThemedView>
+
+        <ThemedView
+          style={[
+            styles.recommendationSection,
+            { backgroundColor: colors.card + 'D9', borderColor: colors.border },
+          ]}
+        >
+          <ThemedView style={styles.recommendationHeader}>
+            <ThemedView style={styles.recommendationHeaderLeft}>
+              <View style={[styles.recommendationHeaderIcon, { backgroundColor: colors.primary + '22' }]}>
+                <MaterialIcons name="route" size={16} color={colors.primary} />
+              </View>
+              <ThemedTitle style={styles.recommendationTitle}>Rutas recomendadas</ThemedTitle>
+            </ThemedView>
+            <View style={styles.recommendationHeaderActions}>
+              <TouchableOpacity
+                onPress={() => setRoutesSettingsVisible(true)}
+                style={styles.recommendationRefreshButton}
+              >
+                <MaterialIcons name="tune" size={18} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShowRecommendedRoutes((prev) => !prev)}
+                style={styles.recommendationToggleButton}
+              >
+                <MaterialIcons
+                  name={showRecommendedRoutes ? 'expand-less' : 'expand-more'}
+                  size={20}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
             </View>
           </ThemedView>
-        </View>
-      </Modal>
+          {showRecommendedRoutes && (loadingRecommendations ? (
+            <ThemedTextSecondary>Preparando rutas...</ThemedTextSecondary>
+          ) : recommendedRoutes.length === 0 ? (
+            <ThemedTextSecondary>Todavia no hay rutas optimizadas para tus gustos.</ThemedTextSecondary>
+          ) : (
+            <ThemedView style={styles.routesList}>
+              {recommendedRoutes.map((route) => (
+                <TouchableOpacity
+                  key={route.day}
+                  activeOpacity={0.88}
+                  style={[styles.routeCard, { backgroundColor: colors.background, borderColor: colors.border }]}
+                  onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
+                >
+                  <View style={styles.routeCardTop}>
+                    <ThemedText style={styles.routeCardTitle}>
+                      {dayjs(route.day).locale('es').format('dddd DD/MM')}
+                    </ThemedText>
+                    <ThemedTextSecondary>Score {route.scoreMedio.toFixed(1)}</ThemedTextSecondary>
+                  </View>
+                  <ThemedTextSecondary>
+                    {route.eventos.length} eventos · {route.distanceTotalKm.toFixed(1)} km · {formatDuration(route.temporizacionMinutos)}
+                  </ThemedTextSecondary>
+                  <ThemedTextSecondary numberOfLines={1}>
+                    {route.eventos.map((event) => event.title).join(' · ')}
+                  </ThemedTextSecondary>
+                </TouchableOpacity>
+              ))}
+            </ThemedView>
+          ))}
 
-      <FlatList
-        data={(() => {
-          let filtered = items;
+          {showRecommendedRoutes && (
+            <ThemedView style={{ marginTop: 10 }}>
+              <ThemedText style={{ fontWeight: '700', marginBottom: 6 }}>
+                Segun tus ajustes
+              </ThemedText>
 
-          if (selectedCategory) {
-            filtered = filtered.filter((ev) => ev.categoria?.id === selectedCategory);
-          }
+              {loadingAdjustedRoutes ? (
+                <ThemedTextSecondary>Generando rutas personalizadas...</ThemedTextSecondary>
+              ) : adjustedRoutesError ? (
+                <ThemedTextSecondary style={{ color: colors.error }}>
+                  {adjustedRoutesError}
+                </ThemedTextSecondary>
+              ) : adjustedRoutes.length === 0 ? (
+                <ThemedTextSecondary>
+                  Pulsa en ajustes para generar rutas alternativas.
+                </ThemedTextSecondary>
+              ) : (
+                <ThemedView style={styles.routesList}>
+                  {adjustedRoutes.map((route) => (
+                    <TouchableOpacity
+                      key={`adjusted-${route.day}-${route.eventos[0]?.id ?? 'x'}`}
+                      activeOpacity={0.88}
+                      style={[styles.routeCard, { backgroundColor: colors.background, borderColor: colors.border }]}
+                      onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
+                    >
+                      <View style={styles.routeCardTop}>
+                        <ThemedText style={styles.routeCardTitle}>
+                          {dayjs(route.day).locale('es').format('dddd DD/MM')}
+                        </ThemedText>
+                        <ThemedTextSecondary>Score {route.scoreMedio.toFixed(1)}</ThemedTextSecondary>
+                      </View>
+                      <View style={styles.routeMetaRow}>
+                        <ThemedTextSecondary>
+                          Calidad {Number(route.quality ?? 0).toFixed(0)}%
+                        </ThemedTextSecondary>
+                        <ThemedTextSecondary>
+                          {route.sourceStrategy === 'walkable'
+                            ? 'Caminable'
+                            : route.sourceStrategy === 'score'
+                              ? 'Top score'
+                              : 'Equilibrada'}
+                        </ThemedTextSecondary>
+                      </View>
+                      <ThemedTextSecondary>
+                        {route.eventos.length} eventos · {route.distanceTotalKm.toFixed(1)} km · {formatDuration(route.temporizacionMinutos)}
+                      </ThemedTextSecondary>
+                      <ThemedTextSecondary numberOfLines={1}>
+                        {route.eventos.map((event) => event.title).join(' · ')}
+                      </ThemedTextSecondary>
+                    </TouchableOpacity>
+                  ))}
+                </ThemedView>
+              )}
+            </ThemedView>
+          )}
+        </ThemedView>
 
-          if (filterNearby && searchRadius) {
-            filtered = filtered.filter(
-              (ev) => ev.distance !== undefined && ev.distance <= searchRadius
-            );
-          }
+        {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
 
-          if (searchText.trim() !== '') {
-            const text = searchText.trim().toLowerCase();
-            filtered = filtered.filter(ev =>
-              (ev.title?.toLowerCase().includes(text) || ev.description?.toLowerCase().includes(text))
-            );
-          }
-
-          if (dateFrom) {
-            const from = new Date(dateFrom);
-            filtered = filtered.filter(ev => {
-              if (!ev.fechaInicio) return false;
-              const evDate = new Date(ev.fechaInicio);
-              return evDate >= from;
-            });
-          }
-          if (dateTo) {
-            const to = new Date(dateTo);
-            filtered = filtered.filter(ev => {
-              if (!ev.fechaInicio) return false;
-              const evDate = new Date(ev.fechaInicio);
-              return evDate <= to;
-            });
-          }
-
-          const min = minPrice !== '' ? parseFloat(minPrice) : null;
-          const max = maxPrice !== '' ? parseFloat(maxPrice) : null;
-          if (min !== null) {
-            filtered = filtered.filter(ev => {
-              const isGratis =
-                (ev.precio == null && ev.precioMin == null && ev.precioMax == null) ||
-                (ev.precio === 0) ||
-                (ev.precioMin === 0 && ev.precioMax === 0);
-              if (isGratis) return min === 0 || min === null;
-              if (ev.precio != null) return ev.precio >= min;
-              if (ev.precioMin != null) return ev.precioMin >= min;
-              return true;
-            });
-          }
-          if (max !== null) {
-            filtered = filtered.filter(ev => {
-              if (ev.precio != null) return ev.precio <= max;
-              if (ev.precioMax != null) return ev.precioMax <= max;
-              return true;
-            });
-          }
-
-          return filtered;
-        })()}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        renderItem={({ item, index }) => {
+        {filteredItems.map((item) => {
           const nowMs = Date.now();
           const startMs = new Date(item.fechaInicio).getTime();
           const endMs = new Date(item.fechaFin).getTime();
@@ -859,7 +1073,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
             : false;
           return (
-            <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
+            <TouchableOpacity key={item.id} onPress={() => navigation.navigate('EventDetail', { event: item })}>
               <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
                 {isOngoing && (
                   <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
@@ -999,8 +1213,160 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </ThemedCard>
             </TouchableOpacity>
           );
-        }}
-      />
+        })}
+        </ScrollView>
+
+        <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
+          <MaterialIcons name="menu" size={32} color="#6c2eb7" />
+        </TouchableOpacity>
+
+        <View style={styles.topShortcutsDock}>
+          <View style={styles.topShortcutsRow}>
+            <TouchableOpacity
+              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => navigation.navigate('Notifications')}
+            >
+              <MaterialIcons name="notifications" size={16} color={colors.primary} />
+              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Notifs</ThemedText>
+              {unread > 0 && (
+                <View style={styles.topShortcutBadge}>
+                  <Text style={styles.topShortcutBadgeText}>{unread > 99 ? '99+' : unread}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => navigation.navigate('Messages')}
+            >
+              <MaterialIcons name="mail" size={16} color={colors.primary} />
+              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Mensajes</ThemedText>
+              {unreadMessages > 0 && (
+                <View style={styles.topShortcutBadge}>
+                  <Text style={styles.topShortcutBadgeText}>{unreadMessages > 99 ? '99+' : unreadMessages}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => navigation.navigate('CalendarEvents')}
+            >
+              <MaterialIcons name="calendar-today" size={16} color={colors.primary} />
+              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Calendario</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => navigation.navigate('EventsMap')}
+            >
+              <MaterialIcons name="map" size={16} color={colors.primary} />
+              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Mapa</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {role === 'user' && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => navigation.navigate('CreateEvent')}
+            accessibilityLabel="Crear evento"
+          >
+            <MaterialIcons name="add-circle" size={56} color="#6c2eb7" />
+          </TouchableOpacity>
+        )}
+
+        {role === 'moderator' && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => navigation.navigate('ModeratorEvents')}
+            accessibilityLabel="Aprobar eventos"
+          >
+            <MaterialIcons name="check-circle" size={56} color="#4caf50" />
+          </TouchableOpacity>
+        )}
+
+      <Modal
+        visible={searchModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSearchModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: '#0008', justifyContent: 'center', alignItems: 'center' }}>
+          <ThemedView style={{ width: '90%', backgroundColor: colors.card, borderRadius: 18, padding: 20 }}>
+            <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
+            <TextInput
+              style={{ backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 10, height: 38, borderWidth: 1, borderColor: colors.primary + '33', marginBottom: 12 }}
+              placeholder="Buscar por título o descripción"
+              placeholderTextColor={colors.text + '66'}
+              value={searchText}
+              onChangeText={setSearchText}
+              autoFocus
+            />
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+              <TextInput
+                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
+                placeholder="Min €"
+                placeholderTextColor={colors.text + '66'}
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
+                placeholder="Max €"
+                placeholderTextColor={colors.text + '66'}
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
+                onPress={() => setShowDateFromPicker(true)}
+              >
+                <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
+                  {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : 'Desde '}
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
+                onPress={() => setShowDateToPicker(true)}
+              >
+                <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
+                  {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : 'Hasta'}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+            <DateTimePickerModal
+              isVisible={showDateFromPicker}
+              mode="date"
+              onConfirm={date => {
+                setDateFrom(dayjs(date).format('YYYY-MM-DD'));
+                setShowDateFromPicker(false);
+              }}
+              onCancel={() => setShowDateFromPicker(false)}
+              maximumDate={dateTo ? new Date(dateTo) : undefined}
+            />
+            <DateTimePickerModal
+              isVisible={showDateToPicker}
+              mode="date"
+              onConfirm={date => {
+                setDateTo(dayjs(date).format('YYYY-MM-DD'));
+                setShowDateToPicker(false);
+              }}
+              onCancel={() => setShowDateToPicker(false)}
+              minimumDate={dateFrom ? new Date(dateFrom) : undefined}
+            />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+              <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo(''); }} />
+              <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} />
+              <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} />
+            </View>
+          </ThemedView>
+        </View>
+      </Modal>
 
       <Modal
         visible={privateAccessVisible}
@@ -1053,47 +1419,340 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </Modal>
 
+      <Modal
+        visible={routesSettingsVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRoutesSettingsVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <ThemedView style={[styles.modalContainer, { backgroundColor: colors.card }]}>
+            <ThemedTitle style={styles.modalTitle}>Ajustes de rutas</ThemedTitle>
+
+            <ThemedTextSecondary style={{ marginBottom: 6 }}>
+              Prioridad (puedes elegir varias)
+            </ThemedTextSecondary>
+            <View style={styles.routeStrategyRow}>
+              {[
+                { key: 'balanced', label: 'Equilibrada' },
+                { key: 'walkable', label: 'Caminable' },
+                { key: 'score', label: 'Top score' },
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.key}
+                  onPress={() => {
+                    const strategy = option.key as RouteStrategy;
+                    setRouteStrategies((prev) =>
+                      prev.includes(strategy)
+                        ? prev.filter((item) => item !== strategy)
+                        : [...prev, strategy],
+                    );
+                  }}
+                  style={[
+                    styles.routeStrategyChip,
+                    {
+                      backgroundColor: routeStrategies.includes(option.key as RouteStrategy)
+                        ? colors.primary
+                        : colors.background,
+                      borderColor: colors.primary,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    style={{
+                      color: routeStrategies.includes(option.key as RouteStrategy)
+                        ? '#fff'
+                        : colors.primary,
+                    }}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.routeStepRow}>
+              <ThemedTextSecondary>Numero de rutas</ThemedTextSecondary>
+              <View style={styles.routeStepper}>
+                <TouchableOpacity onPress={() => setRouteCount((prev) => Math.max(1, prev - 1))}>
+                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+                <ThemedText style={styles.routeStepperValue}>{routeCount}</ThemedText>
+                <TouchableOpacity onPress={() => setRouteCount((prev) => Math.min(8, prev + 1))}>
+                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.routeStepRow}>
+              <ThemedTextSecondary>Eventos maximos por ruta</ThemedTextSecondary>
+              <View style={styles.routeStepper}>
+                <TouchableOpacity onPress={() => setRouteMaxEvents((prev) => Math.max(3, prev - 1))}>
+                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+                <ThemedText style={styles.routeStepperValue}>{routeMaxEvents}</ThemedText>
+                <TouchableOpacity onPress={() => setRouteMaxEvents((prev) => Math.min(8, prev + 1))}>
+                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.routeStepRow}>
+              <ThemedTextSecondary>Hueco maximo entre eventos</ThemedTextSecondary>
+              <View style={styles.routeStepper}>
+                <TouchableOpacity
+                  onPress={() => setRouteMaxGapMinutes((prev) => Math.max(30, prev - 30))}
+                >
+                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+                <ThemedText style={styles.routeStepperValue}>{formatDuration(routeMaxGapMinutes)}</ThemedText>
+                <TouchableOpacity
+                  onPress={() => setRouteMaxGapMinutes((prev) => Math.min(360, prev + 30))}
+                >
+                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.routeStepRow}>
+              <ThemedTextSecondary>Solape maximo permitido</ThemedTextSecondary>
+              <View style={styles.routeStepper}>
+                <TouchableOpacity
+                  onPress={() => setRouteMaxOverlapMinutes((prev) => Math.max(0, prev - 5))}
+                >
+                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+                <ThemedText style={styles.routeStepperValue}>{formatDuration(routeMaxOverlapMinutes)}</ThemedText>
+                <TouchableOpacity
+                  onPress={() => setRouteMaxOverlapMinutes((prev) => Math.min(60, prev + 5))}
+                >
+                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.modalButtonsContainer}>
+              <ThemedButton
+                title="Cancelar"
+                variant="secondary"
+                onPress={() => setRoutesSettingsVisible(false)}
+                style={{ flex: 1 }}
+              />
+              <ThemedButton
+                title="Generar"
+                variant="primary"
+                onPress={fetchAdjustedRoutes}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </ThemedView>
+        </View>
+      </Modal>
+
         {menuVisible && (
           <ThemedView style={styles.menuOverlay}>
             <ThemedView style={[styles.menuContainer, { backgroundColor: colors.card }]}>
-              <ThemedTitle style={styles.menuTitle}>Menú</ThemedTitle>
-              <ProfileHeader
-                onPress={() => {
-                  setMenuVisible(false);
-                  navigation.navigate('EditProfile');
-                }}
-              />
-              <ThemedView style={styles.menuSection}>
-                <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
-                <ThemedView style={styles.themeRow}>
-                  <ThemedButton
-                    title="Claro"
-                    variant={theme === 'light' ? 'primary' : 'secondary'}
-                    onPress={() => setTheme('light')}
-                    style={styles.menuButtonOption}
-                  />
-                  <ThemedButton
-                    title="Oscuro"
-                    variant={theme === 'dark' ? 'primary' : 'secondary'}
-                    onPress={() => setTheme('dark')}
-                    style={styles.menuButtonOption}
-                  />
-                </ThemedView>
-              </ThemedView>
-              <ThemedButton
-                title="Cerrar sesión"
-                variant="danger"
-                onPress={onLogout}
-                style={styles.menuButtonOption}
-              />
               <TouchableOpacity
-                style={styles.closeMenuButton}
+                style={styles.menuCloseTopButton}
                 onPress={() => setMenuVisible(false)}
                 accessibilityLabel="Cerrar menú"
               >
-                <MaterialIcons name="close" size={32} color="#6c2eb7" />
+                <MaterialIcons name="close" size={26} color="#6c2eb7" />
               </TouchableOpacity>
+              <ScrollView
+                style={styles.menuScroll}
+                contentContainerStyle={styles.menuScrollContent}
+                showsVerticalScrollIndicator
+              >
+                <ThemedTitle style={styles.menuTitle}>Menú</ThemedTitle>
+                <ProfileHeader
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('EditProfile');
+                  }}
+                />
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
+                  <ThemedView style={styles.themeRow}>
+                    <ThemedButton
+                      title="Claro"
+                      variant={theme === 'light' ? 'primary' : 'secondary'}
+                      onPress={() => setTheme('light')}
+                      style={styles.menuButtonOption}
+                    />
+                    <ThemedButton
+                      title="Oscuro"
+                      variant={theme === 'dark' ? 'primary' : 'secondary'}
+                      onPress={() => setTheme('dark')}
+                      style={styles.menuButtonOption}
+                    />
+                  </ThemedView>
+                </ThemedView>
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Accesos:</ThemedTextSecondary>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('EventsMap');
+                  }}
+                >
+                  <MaterialIcons name="map" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Mapa de eventos</ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('SavedAndPrivateEvents', { mode: 'saved' });
+                  }}
+                >
+                  <MaterialIcons name="bookmark" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Eventos guardados</ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('SavedAndPrivateEvents', { mode: 'private' });
+                  }}
+                >
+                  <MaterialIcons name="lock" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Eventos privados</ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    openPrivateAccess();
+                  }}
+                >
+                  <MaterialIcons name="vpn-key" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Entrar con enlace privado</ThemedText>
+                </TouchableOpacity>
+                </ThemedView>
+
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Comunicacion:</ThemedTextSecondary>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('Notifications');
+                  }}
+                >
+                  <MaterialIcons name="notifications" size={20} color="#ffd700" />
+                  <ThemedText style={styles.menuActionLabel}>Notificaciones</ThemedText>
+                  {unread > 0 && (
+                    <View style={styles.menuActionBadge}>
+                      <Text style={styles.menuActionBadgeText}>{unread}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('Messages');
+                  }}
+                >
+                  <MaterialIcons name="mail" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Mensajes privados</ThemedText>
+                  {unreadMessages > 0 && (
+                    <View style={styles.menuActionBadge}>
+                      <Text style={styles.menuActionBadgeText}>{unreadMessages}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                </ThemedView>
+
+                {role === 'user' && (
+                  <ThemedView style={styles.menuSection}>
+                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Tu actividad:</ThemedTextSecondary>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('UserEvents');
+                    }}
+                  >
+                    <MaterialIcons name="edit" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Mis eventos</ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('CalendarEvents');
+                    }}
+                  >
+                    <MaterialIcons name="calendar-today" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Calendario</ThemedText>
+                  </TouchableOpacity>
+                  </ThemedView>
+                )}
+
+                {role === 'moderator' && (
+                  <ThemedView style={styles.menuSection}>
+                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Moderacion:</ThemedTextSecondary>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('ModeratorEvents');
+                    }}
+                  >
+                    <MaterialIcons name="check-circle" size={20} color="#4caf50" />
+                    <ThemedText style={styles.menuActionLabel}>Aprobar eventos</ThemedText>
+                  </TouchableOpacity>
+                  </ThemedView>
+                )}
+
+                {role === 'admin' && (
+                  <ThemedView style={styles.menuSection}>
+                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Administracion:</ThemedTextSecondary>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('Admin');
+                    }}
+                  >
+                    <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Panel de administracion</ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('Categories');
+                    }}
+                  >
+                    <MaterialIcons name="category" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Gestionar categorias</ThemedText>
+                  </TouchableOpacity>
+                  </ThemedView>
+                )}
+
+                <ThemedButton
+                  title="Cerrar sesión"
+                  variant="danger"
+                  onPress={onLogout}
+                  style={styles.menuButtonOption}
+                />
+              </ScrollView>
             </ThemedView>
+            <TouchableOpacity
+              style={styles.menuBackdropPressArea}
+              onPress={() => setMenuVisible(false)}
+              accessibilityLabel="Cerrar menú"
+            />
           </ThemedView>
         )}
 
@@ -1155,12 +1814,38 @@ const styles = StyleSheet.create({
   headerTitleText: { fontSize: 22, fontWeight: 'bold' },
   background: { flex: 1 },
   backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 40 }] },
-  container: { flex: 1, padding: 20, justifyContent: 'center' },
+  container: { flex: 1, padding: 20, justifyContent: 'flex-start' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
-    marginTop: 60,
-    marginBottom: 12,
+    marginTop: 64,
+    marginBottom: 10,
     alignItems: 'flex-start',
+  },
+  headerTopRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  heroEyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    opacity: 0.75,
+    marginBottom: 0,
+    flexShrink: 1,
+    marginRight: 8,
+  },
+  heroTitle: {
+    fontSize: 24,
+    lineHeight: 28,
+    marginBottom: 6,
+  },
+  heroActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 0,
   },
   menuButton: {
     position: 'absolute',
@@ -1184,6 +1869,7 @@ const styles = StyleSheet.create({
   menuContainer: {
     width: '80%',
     height: '100%',
+    maxWidth: 360,
     padding: 24,
     borderTopRightRadius: 40,
     borderBottomRightRadius: 40,
@@ -1192,14 +1878,109 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 2, height: 0 },
+    position: 'relative',
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
+  menuBackdropPressArea: {
+    flex: 1,
+  },
+  menuCloseTopButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 3,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 18,
+    padding: 6,
+  },
   menuTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 18 },
+  menuScroll: {
+    width: '100%',
+  },
+  menuScrollContent: {
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
   menuSection: { marginBottom: 24 },
   menuButtonOption: {
-    marginBottom: 0,
+    marginBottom: 16,
     alignSelf: 'stretch',
+  },
+  menuActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    width: '100%',
+  },
+  menuActionLabel: {
+    marginLeft: 10,
+    fontWeight: '600',
+    flex: 1,
+  },
+  menuActionBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#d32f2f',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  menuActionBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  topShortcutsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 0,
+  },
+  topShortcutsDock: {
+    position: 'absolute',
+    top: 22,
+    left: 68,
+    right: 18,
+    zIndex: 10,
+  },
+  topShortcutChip: {
+    borderWidth: 1,
+    borderRadius: 12,
+    width: '23.5%',
+    minHeight: 52,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  topShortcutLabel: {
+    marginTop: 3,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  topShortcutBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -5,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#d32f2f',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  topShortcutBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
   },
   headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
   smallButton: { paddingHorizontal: 14, paddingVertical: 8 },
@@ -1214,38 +1995,6 @@ const styles = StyleSheet.create({
   tinyButtonText: { fontSize: 12 },
   cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
   separator: { height: 12 },
-  closeMenuButton: {
-    alignSelf: 'center',
-    marginTop: 'auto',
-    marginBottom: 12,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 4,
-  },
-  adminActions: {
-    position: 'absolute',
-    top: 18,
-    left: 72,
-    zIndex: 10,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  adminActionButton: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 8,
-  },
-  mapIconButton: {
-    position: 'absolute',
-    top: 18,
-    right: 18,
-    zIndex: 11,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   fab: {
     position: 'absolute',
     bottom: 32,
@@ -1254,31 +2003,132 @@ const styles = StyleSheet.create({
     elevation: 8,
     backgroundColor: 'transparent',
   },
-  fabLeft: {
-    position: 'absolute',
-    bottom: 32,
-    left: 32,
-    zIndex: 20,
-    elevation: 8,
-    backgroundColor: 'transparent',
+  recommendationSection: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 12,
   },
-  notificationsButton: {
-    position: 'absolute',
-    bottom: 30,
-    left: 30,
-    zIndex: 11,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 8,
+  recommendationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
-  messagesButton: {
-    position: 'absolute',
-    top: 15,
-    right: 70,
-    zIndex: 11,
+  recommendationHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  recommendationHeaderIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recommendationRefreshButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 8,
+  },
+  recommendationHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  recommendationToggleButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  recommendationTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  recommendedListContent: {
+    gap: 8,
+    paddingRight: 8,
+  },
+  recommendedCard: {
+    width: 200,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 9,
+  },
+  recommendedCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  recommendedCardTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 4,
+    flex: 1,
+    marginRight: 8,
+  },
+  recommendedMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  routesList: {
+    gap: 8,
+  },
+  routeCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 9,
+  },
+  routeCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  routeMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 3,
+  },
+  routeCardTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 3,
+  },
+  routeStrategyRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+    flexWrap: 'wrap',
+  },
+  routeStrategyChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  routeStepRow: {
+    marginBottom: 12,
+    gap: 6,
+  },
+  routeStepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  routeStepperValue: {
+    minWidth: 22,
+    textAlign: 'center',
+    fontWeight: '700',
+    fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
@@ -1336,15 +2186,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  privateAccessButton: {
-    position: 'absolute',
-    top: 15,
-    right: 122,
-    zIndex: 11,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 8,
-  },
   privateModalCard: {
     borderRadius: 14,
     padding: 18,
@@ -1382,24 +2223,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
-  },
-  fabRowRightAligned: {
-    position: 'absolute',
-    top: 20,
-    right: 122 + 44 + 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 8,
-    gap: 10,
-  },
-  fabSecondary: {
-    backgroundColor: 'transparent',
-    marginRight: 10,
-    elevation: 8,
-  },
-  fabCalendar: {
-    backgroundColor: 'transparent',
-    marginLeft: 0,
-    elevation: 8,
   },
 });

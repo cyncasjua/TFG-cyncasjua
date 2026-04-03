@@ -4,6 +4,10 @@ import { Repository } from 'typeorm';
 import { RolEnum, User } from './user.entity';
 import * as admin from 'firebase-admin';
 import type { GeoJsonPoint } from '../common/geojson-point';
+import {
+  InteresCategoriaEnum,
+  normalizeIntereses,
+} from './enums/interes-categoria.enum';
 
 @Injectable()
 export class UsersService {
@@ -79,7 +83,7 @@ export class UsersService {
       email?: string;
       ubicacion?: GeoJsonPoint;
       fotoPerfil?: string;
-      intereses?: string[];
+      intereses?: InteresCategoriaEnum[];
       categoryOrder?: string[];
       radiusOptions?: number[];
     }
@@ -89,7 +93,7 @@ export class UsersService {
     if (data.email !== undefined) user.email = data.email;
     if (data.ubicacion !== undefined) user.ubicacion = data.ubicacion;
     if (data.fotoPerfil !== undefined) user.fotoPerfil = data.fotoPerfil;
-    if (data.intereses !== undefined) user.intereses = data.intereses;
+    if (data.intereses !== undefined) user.intereses = normalizeIntereses(data.intereses);
     if (data.categoryOrder !== undefined) user.categoryOrder = data.categoryOrder;
     if (data.radiusOptions !== undefined) user.radiusOptions = data.radiusOptions;
     return this.usersRepo.save(user);

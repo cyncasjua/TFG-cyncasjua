@@ -21,6 +21,7 @@ import { MensajePrivado } from './entities/mensaje-privado.entity';
 import { ScrapingModule } from './scraping/scraping.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEditRequest } from './events/event-edit-request.entity';
+import { RecomendacionesModule } from './recomendaciones/recomendaciones.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -56,7 +57,8 @@ import { EventEditRequest } from './events/event-edit-request.entity';
     NotificacionesModule,
     ChatModule,
     ScrapingModule,
-    SchedulerModule
+    SchedulerModule,
+    RecomendacionesModule,
   ],
 })
 export class AppModule {

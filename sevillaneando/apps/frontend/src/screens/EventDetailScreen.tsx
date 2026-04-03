@@ -5,6 +5,7 @@ import MapView, { Marker, UrlTile } from 'react-native-maps';
 import {
   Linking,
   Platform,
+  Share,
   StyleSheet,
   ImageBackground,
   View,
@@ -42,7 +43,17 @@ import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
-import { attendEvent, getEventAttendees, getMyAttendance, unattendEvent } from '../services/api';
+import {
+  attendEvent,
+  getEventAttendees,
+  getMyAttendance,
+  rateRecommendedEvent,
+  saveRecommendedEvent,
+  shareRecommendedEvent,
+  unattendEvent,
+  unsaveRecommendedEvent,
+  visitRecommendedEvent,
+} from '../services/api';
 import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
 
@@ -131,6 +142,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [attendees, setAttendees] = useState<PublicUser[]>([]);
   const [isAttending, setIsAttending] = useState(false);
   const [attendeesError, setAttendeesError] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
+  const [isRecommendationLoading, setIsRecommendationLoading] = useState(false);
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [ratingValue, setRatingValue] = useState(5);
+  const [ratingComment, setRatingComment] = useState('');
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const visitTrackedRef = useRef(false);
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
   const lastScaleRef = useRef(1);
@@ -159,6 +177,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     return () => {
       mounted = false;
     };
+  }, [event.id, token]);
+
+  useEffect(() => {
+    if (!token || visitTrackedRef.current) return;
+    visitTrackedRef.current = true;
+
+    visitRecommendedEvent(event.id).catch(() => {
+      // Si falla no bloquea la experiencia del usuario.
+    });
   }, [event.id, token]);
 
   const handleToggleAttend = async () => {
@@ -219,6 +246,101 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       hideSub.remove();
     };
   }, [scrollEventChatToBottom]);
+
+  const handleToggleSave = async () => {
+    if (!token || isRecommendationLoading) return;
+    setIsRecommendationLoading(true);
+    try {
+      if (isSaved) {
+        await unsaveRecommendedEvent(event.id);
+        setIsSaved(false);
+      } else {
+        await saveRecommendedEvent(event.id);
+        setIsSaved(true);
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo actualizar el guardado del evento.');
+    } finally {
+      setIsRecommendationLoading(false);
+    }
+  };
+
+  const handleShareEvent = async () => {
+    const shareBaseUrl = (process.env.EXPO_PUBLIC_SHARE_BASE_URL || '').replace(/\/$/, '');
+    const deepLink = `sevillaneando://evento/${event.id}`;
+    const webEventLink = shareBaseUrl ? `${shareBaseUrl}/evento/${event.id}` : '';
+    const webPrivateLink =
+      shareBaseUrl && event.privado && event.linkAcceso
+        ? `${shareBaseUrl}/acceso/${event.linkAcceso}`
+        : '';
+    const webLink = webPrivateLink || webEventLink;
+    const eventLink = webLink || deepLink;
+    const startText = dayjs(event.fechaInicio).format('DD/MM/YYYY HH:mm');
+    const priceText = (() => {
+      if (event.precio != null && event.precio !== 0) return `${event.precio} EUR`;
+      if (event.precioMin != null && event.precioMax != null) return `${event.precioMin} - ${event.precioMax} EUR`;
+      return 'Gratis';
+    })();
+
+    const shareMessage = [
+      'Te recomiendo este plan en Sevillaneando:',
+      event.title,
+      '',
+      `Cuando: ${startText}`,
+      `Donde: ${event.address}`,
+      `Categoria: ${event.categoria?.nombre || 'General'}`,
+      `Precio: ${priceText}`,
+      '',
+      webLink ? `Enlace web: ${webLink}` : null,
+      `Abrir en la app: ${deepLink}`,
+      webLink ? 'Si no tienes la app, usa el enlace web.' : null,
+    ]
+      .filter((line): line is string => !!line)
+      .join('\n');
+
+    try {
+      const shareResult = await Share.share({
+        title: event.title,
+        message: shareMessage,
+        url: eventLink,
+      });
+
+      const wasShared =
+        shareResult.action === Share.sharedAction ||
+        (Platform.OS === 'android' && shareResult.action !== Share.dismissedAction);
+
+      if (token && wasShared) {
+        await shareRecommendedEvent(event.id);
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo compartir el evento.');
+    }
+  };
+
+  const handleSubmitRating = async () => {
+    if (!token || ratingSubmitting) return;
+
+    const comentario = ratingComment.trim();
+    if (comentario.length < 10) {
+      Alert.alert('Comentario corto', 'Escribe al menos 10 caracteres para la valoración.');
+      return;
+    }
+
+    try {
+      setRatingSubmitting(true);
+      await rateRecommendedEvent(event.id, {
+        puntuacion: ratingValue,
+        comentario,
+      });
+      setRatingModalVisible(false);
+      setRatingComment('');
+      Alert.alert('Gracias', 'Tu valoración se ha guardado correctamente.');
+    } catch {
+      Alert.alert('Error', 'No se pudo guardar la valoración.');
+    } finally {
+      setRatingSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (isChatOpen) {
@@ -444,6 +566,61 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   };
 
+  const renderActionButton = ({
+    icon,
+    title,
+    subtitle,
+    onPress,
+    disabled,
+    accent,
+  }: {
+    icon: string;
+    title: string;
+    subtitle?: string;
+    onPress: () => void;
+    disabled?: boolean;
+    accent?: boolean;
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.85}
+      style={[
+        styles.actionButton,
+        {
+          backgroundColor: accent ? '#6c2eb7' : colors.card,
+          borderColor: accent ? 'transparent' : colors.border,
+          opacity: disabled ? 0.6 : 1,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.actionIconWrap,
+          { backgroundColor: accent ? 'rgba(255,255,255,0.2)' : '#6c2eb71A' },
+        ]}
+      >
+        <MaterialIcons
+          name={icon as any}
+          size={18}
+          color={accent ? '#FFFFFF' : '#6c2eb7'}
+        />
+      </View>
+      <View style={styles.actionTextWrap}>
+        <ThemedText style={[styles.actionTitle, { color: accent ? '#FFFFFF' : colors.text }]}>
+          {title}
+        </ThemedText>
+        {!!subtitle && (
+          <ThemedTextSecondary
+            style={[styles.actionSubtitle, { color: accent ? 'rgba(255,255,255,0.85)' : colors.text + 'AA' }]}
+          >
+            {subtitle}
+          </ThemedTextSecondary>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
   if (!isFocused) return null;
 
   if (!coords) {
@@ -603,20 +780,67 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <Marker coordinate={coords} title={event.title} />
             </MapView>
           </ThemedView>
-          <ThemedButton
-            title={isAttending ? 'Ya no asistiré' : 'Asistiré'}
-            onPress={handleToggleAttend}
-          />
+          <ThemedView
+            style={[
+              styles.actionsContainer,
+              {
+                backgroundColor: colors.card + 'E8',
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <View style={styles.actionsHeader}>
+              <ThemedText style={[styles.actionsHeaderTitle, { color: colors.text }]}>Acciones del evento</ThemedText>
+              <ThemedTextSecondary style={styles.actionsHeaderHint}>Guarda, comparte y valora para mejorar recomendaciones</ThemedTextSecondary>
+            </View>
+            {renderActionButton({
+              icon: isAttending ? 'event-busy' : 'event-available',
+              title: isAttending ? 'Ya no asistire' : 'Asistire',
+              subtitle: isAttending ? 'Eliminar de tu agenda' : 'Anadir a tu agenda',
+              onPress: handleToggleAttend,
+              accent: true,
+            })}
+            <View style={styles.actionsRow}>
+              {renderActionButton({
+                icon: 'groups',
+                title: `Asistentes (${attendees.length})`,
+                subtitle: 'Ver quienes van',
+                onPress: () => setShowAttendeesModal(true),
+              })}
+              {renderActionButton({
+                icon: 'map',
+                title: 'Abrir mapa',
+                subtitle: 'Google/Apple Maps',
+                onPress: openExternalNavigation,
+              })}
+            </View>
+            <View style={styles.actionsRow}>
+              {renderActionButton({
+                icon: isSaved ? 'bookmark-remove' : 'bookmark-add',
+                title: isSaved ? 'Quitar guardado' : 'Guardar evento',
+                subtitle: 'Para recomendaciones',
+                onPress: handleToggleSave,
+                disabled: isRecommendationLoading,
+              })}
+              {renderActionButton({
+                icon: 'share',
+                title: 'Compartir',
+                subtitle: 'Enviar a tus contactos',
+                onPress: handleShareEvent,
+              })}
+            </View>
+            {renderActionButton({
+              icon: 'star-rate',
+              title: 'Valorar evento',
+              subtitle: 'Tu opinion mejora las rutas',
+              onPress: () => setRatingModalVisible(true),
+            })}
+          </ThemedView>
           {!!attendeesError && (
             <ThemedTextSecondary style={{ color: '#c0392b', marginTop: 6 }}>
               {attendeesError}
             </ThemedTextSecondary>
           )}
-          <ThemedButton
-            title={`Ver asistentes (${attendees.length})`}
-            variant="secondary"
-            onPress={() => setShowAttendeesModal(true)}
-          />
           <Modal
             visible={showAttendeesModal}
             transparent
@@ -649,15 +873,78 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               </View>
             </View>
           </Modal>
-          <ThemedButton title="Abrir en Google/Apple Maps" onPress={openExternalNavigation} />
-          <ThemedButton
-            title="Probar moderación NSFW (demo)"
-            variant="secondary"
-            onPress={async () => {
-              const safe = await evaluateImage();
-            }}
-          />
-          <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />
+          <Modal
+            visible={ratingModalVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setRatingModalVisible(false)}
+          >
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18 }}>
+                <ThemedTitle style={{ marginBottom: 12 }}>Valorar evento</ThemedTitle>
+                <ThemedTextSecondary style={{ marginBottom: 10 }}>
+                  Tu puntuación ayuda a mejorar recomendaciones y rutas.
+                </ThemedTextSecondary>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <TouchableOpacity
+                      key={value}
+                      onPress={() => setRatingValue(value)}
+                      style={{ padding: 4 }}
+                    >
+                      <MaterialIcons
+                        name={value <= ratingValue ? 'star' : 'star-border'}
+                        size={32}
+                        color={value <= ratingValue ? '#f39c12' : colors.text + '88'}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  value={ratingComment}
+                  onChangeText={setRatingComment}
+                  placeholder="Escribe tu opinión (mínimo 10 caracteres)"
+                  multiline
+                  style={{
+                    minHeight: 90,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 10,
+                    padding: 10,
+                    color: colors.text,
+                    marginBottom: 12,
+                  }}
+                  placeholderTextColor={colors.text + '99'}
+                />
+                <ThemedView style={{ flexDirection: 'row', gap: 8 }}>
+                  <ThemedButton
+                    title="Cancelar"
+                    variant="secondary"
+                    onPress={() => setRatingModalVisible(false)}
+                    style={{ flex: 1 }}
+                  />
+                  <ThemedButton
+                    title={ratingSubmitting ? 'Guardando...' : 'Enviar'}
+                    onPress={handleSubmitRating}
+                    style={{ flex: 1 }}
+                    disabled={ratingSubmitting}
+                  />
+                </ThemedView>
+              </View>
+            </View>
+          </Modal>
+          {__DEV__ && (
+            <>
+              <ThemedButton
+                title="Probar moderación NSFW (demo)"
+                variant="secondary"
+                onPress={async () => {
+                  const safe = await evaluateImage();
+                }}
+              />
+              <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />
+            </>
+          )}
         </ScrollView>
         {isChatOpen && (
           <View style={styles.chatOverlay}>
@@ -915,6 +1202,57 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14 },
   description: { fontSize: 14, lineHeight: 20 },
   mapContainer: { height: 260, borderRadius: 30, overflow: 'hidden', borderWidth: 1 },
+  actionsContainer: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 12,
+    marginTop: 12,
+    gap: 10,
+  },
+  actionsHeader: {
+    marginBottom: 2,
+  },
+  actionsHeaderTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  actionsHeaderHint: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 62,
+  },
+  actionIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  actionTextWrap: {
+    flex: 1,
+  },
+  actionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  actionSubtitle: {
+    fontSize: 12,
+    marginTop: 1,
+  },
   background: { flex: 1, padding: 16, gap: 12 },
   backgroundImage: { opacity: 1, transform: [{ scale: 1.5 }, { translateY: 40 }] },
   backgroundOverlay: {

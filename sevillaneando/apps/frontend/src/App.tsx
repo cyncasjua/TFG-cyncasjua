@@ -1,9 +1,11 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, LogBox, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as ExpoLinking from 'expo-linking';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeScreen } from './screens/HomeScreen';
 import { EventDetailScreen } from './screens/EventDetailScreen';
 import { LoginScreen } from './screens/LoginScreen';
@@ -31,6 +33,10 @@ import { AccessPrivateEventScreen } from './screens/AccessPrivateEventScreen';
 import UserEventsScreen from './screens/UserEventsScreen';
 import CalendarEventsScreen from './screens/CalendarEventsScreen';
 import UserEditEventScreen from './screens/UserEditEventScreen';
+import { RoutePreviewScreen } from './screens/RoutePreviewScreen';
+import { SavedAndPrivateEventsScreen } from './screens/SavedAndPrivateEventsScreen';
+import { getEventById } from './services/api';
+import type { RecommendedRoute } from './services/api';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
@@ -41,6 +47,7 @@ LogBox.ignoreLogs([
 export type RootStackParamList = {
   Home: undefined;
   EventDetail: { event: Event };
+  EventDetailLink: { eventId: string };
   Admin: undefined;
   EditProfile: undefined;
   EditPassword: undefined;
@@ -57,6 +64,8 @@ export type RootStackParamList = {
   AccessPrivateEvent: { linkAcceso: string };
   UserEvents: undefined;
   CalendarEvents: undefined;
+  RoutePreview: { routePlan: RecommendedRoute };
+  SavedAndPrivateEvents: { mode?: 'saved' | 'private' | 'both' };
 };
 
 export type AuthStackParamList = {
@@ -66,6 +75,49 @@ export type AuthStackParamList = {
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+
+const EventDetailLinkScreen = ({
+  route,
+  navigation,
+}: NativeStackScreenProps<RootStackParamList, 'EventDetailLink'>) => {
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    getEventById(route.params.eventId)
+      .then((event) => {
+        if (!isMounted) return;
+        navigation.replace('EventDetail', { event });
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError('No se pudo abrir el evento.');
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigation, route.params.eventId]);
+
+  return (
+    <SafeAreaView
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {!error ? (
+        <>
+          <ActivityIndicator size="large" />
+          <Text style={{ marginTop: 8 }}>Abriendo evento...</Text>
+        </>
+      ) : (
+        <Text>{error}</Text>
+      )}
+    </SafeAreaView>
+  );
+};
 
 const Navigator = () => {
   const { user, loading, role } = useAuth();
@@ -87,8 +139,24 @@ const Navigator = () => {
     );
   }
 
+  const shareBaseUrl = process.env.EXPO_PUBLIC_SHARE_BASE_URL?.replace(/\/$/, '');
+  const linking: LinkingOptions<RootStackParamList> = {
+    prefixes: [
+      ExpoLinking.createURL('/'),
+      'sevillaneando://',
+      ...(shareBaseUrl ? [shareBaseUrl] : []),
+    ],
+    config: {
+      screens: {
+        Home: '',
+        EventDetailLink: 'evento/:eventId',
+        AccessPrivateEvent: 'acceso/:linkAcceso',
+      },
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       {user ? (
         <AppStack.Navigator
           screenOptions={{
@@ -124,6 +192,11 @@ const Navigator = () => {
             name="EventDetail"
             component={EventDetailScreen}
             options={{ title: 'Detalle del evento' }}
+          />
+          <AppStack.Screen
+            name="EventDetailLink"
+            component={EventDetailLinkScreen}
+            options={{ title: 'Abriendo evento...' }}
           />
           <AppStack.Screen
             name="EventsMap"
@@ -212,6 +285,16 @@ const Navigator = () => {
             name="CalendarEvents"
             component={CalendarEventsScreen}
             options={{ title: 'Calendario' }}
+          />
+          <AppStack.Screen
+            name="RoutePreview"
+            component={RoutePreviewScreen}
+            options={{ title: 'Ruta recomendada' }}
+          />
+          <AppStack.Screen
+            name="SavedAndPrivateEvents"
+            component={SavedAndPrivateEventsScreen}
+            options={{ title: 'Guardados y privados' }}
           />
         </AppStack.Navigator>
       ) : (

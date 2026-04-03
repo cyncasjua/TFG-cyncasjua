@@ -6,11 +6,13 @@ import {
   BeforeInsert,
   BeforeUpdate,
   ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Notificacion } from '../entities/notificacion.entity';
 import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
 import type { GeoJsonPoint } from '../common/geojson-point';
+import { InteresCategoriaEnum } from './enums/interes-categoria.enum';
 
 export enum RolEnum {
   ADMIN = 'admin',
@@ -38,8 +40,8 @@ export class User {
   @Column({ type: 'text', nullable: true })
   fotoPerfil!: string | null;
 
-  @Column({ type: 'text', array: true, default: '{}' })
-  intereses!: string[];
+  @Column({ type: 'enum', enum: InteresCategoriaEnum, array: true, default: '{}' })
+  intereses!: InteresCategoriaEnum[];
 
   @Column({ type: 'text', array: true, default: '{}' })
   categoryOrder!: string[];
@@ -64,6 +66,30 @@ export class User {
 
   @ManyToMany(() => Event, (event) => event.asistentes)
   eventosAsistidos!: Event[];
+
+  @ManyToMany(() => Event)
+  @JoinTable({
+    name: 'user_saved_events',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
+  })
+  eventosGuardados!: Event[];
+
+  @ManyToMany(() => Event)
+  @JoinTable({
+    name: 'user_shared_events',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
+  })
+  eventosCompartidos!: Event[];
+
+  @ManyToMany(() => Event)
+  @JoinTable({
+    name: 'user_visited_events',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
+  })
+  eventosVisitados!: Event[];
 
   iniciarSesion() { }
   cerrarSesion() { }

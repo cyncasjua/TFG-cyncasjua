@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -33,7 +33,8 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
-  const [intereses, setIntereses] = useState(user?.intereses?.join(', ') ?? '');
+  const [intereses, setIntereses] = useState<string[]>(user?.intereses ?? []);
+  const [categorias, setCategorias] = useState<{ id: string; nombre: string }[]>([]);
   const [fotoPerfil, setFotoPerfil] = useState(user?.fotoPerfil ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +44,30 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
     ? '/users/upload-profile-image/firebase'
     : '/users/upload-profile-image';
   const endpointPerfil = esFirebase ? '/users/me/firebase' : '/users/me';
+
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/categorias`,
+          {
+            headers: {
+              Authorization: `Bearer ${token || ''}`,
+            },
+          },
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCategorias(data);
+        }
+      } catch {
+        // Non blocking.
+      }
+    };
+
+    fetchCategorias();
+  }, [token]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -107,10 +132,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             email,
             ubicacion: ubicacionData,
             fotoPerfil,
-            intereses: intereses
-              .split(',')
-              .map((i) => i.trim())
-              .filter(Boolean),
+            intereses,
           }),
         }
       );
@@ -357,13 +379,43 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </View>
       </View>
-      <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        placeholder="Intereses (separados por coma)"
-        placeholderTextColor={colors.text + '99'}
-        value={intereses}
-        onChangeText={setIntereses}
-      />
+      <View style={styles.interestsContainer}>
+        <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>Intereses</ThemedText>
+        {categorias.length === 0 ? (
+          <ThemedText style={{ color: colors.text + '99', marginBottom: 12 }}>
+            No se pudieron cargar categorías.
+          </ThemedText>
+        ) : (
+          <View style={styles.interestsChipsWrap}>
+            {categorias.map((categoria) => {
+              const selected = intereses.includes(categoria.nombre);
+              return (
+                <TouchableOpacity
+                  key={categoria.id}
+                  style={[
+                    styles.interestChip,
+                    {
+                      backgroundColor: selected ? colors.primary : colors.card,
+                      borderColor: colors.primary,
+                    },
+                  ]}
+                  onPress={() => {
+                    setIntereses((prev) =>
+                      selected
+                        ? prev.filter((item) => item !== categoria.nombre)
+                        : [...prev, categoria.nombre],
+                    );
+                  }}
+                >
+                  <ThemedText style={{ color: selected ? '#fff' : colors.primary, fontSize: 13 }}>
+                    {categoria.nombre}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </View>
       {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
       <ThemedButton
         title={saving ? 'Guardando...' : 'Guardar'}
@@ -427,4 +479,18 @@ const styles = StyleSheet.create({
   },
   saveButton: { marginTop: 8 },
   cancelButton: { marginTop: 8 },
+  interestsContainer: {
+    marginBottom: 12,
+  },
+  interestsChipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  interestChip: {
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
 });
