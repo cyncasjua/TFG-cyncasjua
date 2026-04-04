@@ -445,12 +445,6 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         textStyle={{ color: '#fff' }}
       />
       <ThemedButton
-        title="Licencias y atribuciones"
-        variant="secondary"
-        onPress={() => navigation.navigate('LegalAttributions')}
-        style={styles.cancelButton}
-      />
-      <ThemedButton
         title="Cancelar"
         variant="secondary"
         onPress={() => navigation.goBack()}

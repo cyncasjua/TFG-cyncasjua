@@ -35,6 +35,7 @@ import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNotificaciones } from '../context/NotificacionesContext';
+import { formatEventDateRange, formatSevillaTime } from '../utils/sevillaTime';
 
 type EventWithDistance = Event & { distance?: number };
 import {
@@ -77,7 +78,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [routeStrategies, setRouteStrategies] = useState<RouteStrategy[]>(['balanced']);
   const [routeCount, setRouteCount] = useState(3);
   const [routeMaxEvents, setRouteMaxEvents] = useState(5);
-  const [routeMaxGapMinutes, setRouteMaxGapMinutes] = useState(180);
+  const [routeMaxGapMinutes, setRouteMaxGapMinutes] = useState(360);
   const [routeMaxOverlapMinutes, setRouteMaxOverlapMinutes] = useState(15);
   const [showAllRecommendedEvents, setShowAllRecommendedEvents] = useState(false);
   const [showRecommendedEvents, setShowRecommendedEvents] = useState(false);
@@ -338,7 +339,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         }
         if (Number.isFinite(parsed.routeCount)) setRouteCount(Math.max(1, Math.min(8, Number(parsed.routeCount))));
         if (Number.isFinite(parsed.routeMaxEvents)) setRouteMaxEvents(Math.max(3, Math.min(8, Number(parsed.routeMaxEvents))));
-        if (Number.isFinite(parsed.routeMaxGapMinutes)) setRouteMaxGapMinutes(Math.max(30, Math.min(360, Number(parsed.routeMaxGapMinutes))));
+        if (Number.isFinite(parsed.routeMaxGapMinutes)) setRouteMaxGapMinutes(Math.max(30, Math.min(720, Number(parsed.routeMaxGapMinutes))));
         if (Number.isFinite(parsed.routeMaxOverlapMinutes)) setRouteMaxOverlapMinutes(Math.max(0, Math.min(60, Number(parsed.routeMaxOverlapMinutes))));
       } catch (err) {
         reportWarning('home.load-routes-settings', 'No se pudieron cargar ajustes de rutas', err);
@@ -455,7 +456,15 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
       const [eventsResult, routesResult] = await Promise.all([
         getRecommendedEvents(eventsParams),
-        getRecommendedRoutes({ ...routesParams, routesLimit: 3, strategy: 'balanced' }),
+        getRecommendedRoutes({
+          ...routesParams,
+          routesLimit: 3,
+          strategy: 'balanced',
+          minEventsPerRoute: 3,
+          maxEventsPerRoute: 5,
+          maxGapMinutes: 600,
+          maxOverlapMinutes: 30,
+        }),
       ]);
 
       setRecommendedEvents(eventsResult.eventos ?? []);
@@ -733,68 +742,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedTitle style={styles.heroTitle}>{discoveryTitle}</ThemedTitle>
         </ThemedView>
 
-        {filterNearby && user?.ubicacion && (
-          <ThemedView style={{ marginBottom: 12 }}>
-            <ThemedText
-              style={{
-                fontWeight: 'bold',
-                fontSize: 13,
-                marginLeft: 1,
-                marginBottom: 6,
-                color: colors.primary,
-              }}
-            >
-              Mostrar hasta:
-            </ThemedText>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: 12 }}
-            >
-              {radiusOptions.map((radius) => (
-                <TouchableOpacity
-                  key={radius}
-                  style={{
-                    paddingVertical: 6,
-                    paddingHorizontal: 12,
-                    borderRadius: UNIFIED_BORDER_RADIUS,
-                    backgroundColor: searchRadius === radius ? '#ffd700' : colors.card,
-                    marginRight: 6,
-                    borderWidth: 1,
-                    borderColor: searchRadius === radius ? '#ffd700' : colors.text + '33',
-                  }}
-                  onPress={() => setSearchRadius(radius)}
-                >
-                  <ThemedText
-                    style={{
-                      color: searchRadius === radius ? '#fff' : colors.text,
-                      fontWeight: '500',
-                      fontSize: 11,
-                    }}
-                  >
-                    {radius === 0.5 ? '<= 500 m' : `<= ${radius} km`}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-              <TouchableOpacity
-                style={{
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderRadius: UNIFIED_BORDER_RADIUS,
-                  backgroundColor: colors.card,
-                  marginRight: 6,
-                  borderWidth: 1,
-                  borderColor: colors.primary + '66',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => setCustomRadiusVisible(true)}
-              >
-                <MaterialIcons name="add" size={16} color={colors.primary} />
-              </TouchableOpacity>
-            </ScrollView>
-          </ThemedView>
-        )}
         <ThemedView
           style={[
             styles.recommendationSection,
@@ -857,7 +804,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     </View>
                     <ThemedTextSecondary numberOfLines={1}>{event.categoria || 'General'}</ThemedTextSecondary>
                     <ThemedTextSecondary numberOfLines={1}>
-                      {dayjs(event.fechaInicio).format('DD/MM HH:mm')}
+                      {formatSevillaTime(event.fechaInicio)}
                     </ThemedTextSecondary>
                     <ThemedView style={styles.recommendedMetaRow}>
                       <MaterialIcons name="star" size={14} color="#f39c12" />
@@ -879,7 +826,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   activeOpacity={0.85}
                 >
                   <ThemedText style={[styles.recommendedMoreButtonText, { color: colors.primary }]}>
-                    {showAllRecommendedEvents ? 'Ver menos' : `Ver mas (${recommendedEvents.length})`}
+                    {showAllRecommendedEvents ? 'Ver menos' : `Ver más (${recommendedEvents.length})`}
                   </ThemedText>
                   <MaterialIcons
                     name={showAllRecommendedEvents ? 'expand-less' : 'expand-more'}
@@ -957,7 +904,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           {showRecommendedRoutes && (
             <ThemedView style={{ marginTop: 10 }}>
               <ThemedText style={{ fontWeight: '700', marginBottom: 6 }}>
-                Segun tus ajustes
+                Según tus ajustes
               </ThemedText>
 
               {loadingAdjustedRoutes ? (
@@ -1010,6 +957,69 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </ThemedView>
           )}
         </ThemedView>
+
+        {filterNearby && user?.ubicacion && (
+          <ThemedView style={{ marginBottom: 12 }}>
+            <ThemedText
+              style={{
+                fontWeight: 'bold',
+                fontSize: 13,
+                marginLeft: 1,
+                marginBottom: 6,
+                color: colors.primary,
+              }}
+            >
+              Mostrar hasta:
+            </ThemedText>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 12 }}
+            >
+              {radiusOptions.map((radius) => (
+                <TouchableOpacity
+                  key={radius}
+                  style={{
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    backgroundColor: searchRadius === radius ? '#ffd700' : colors.card,
+                    marginRight: 6,
+                    borderWidth: 1,
+                    borderColor: searchRadius === radius ? '#ffd700' : colors.text + '33',
+                  }}
+                  onPress={() => setSearchRadius(radius)}
+                >
+                  <ThemedText
+                    style={{
+                      color: searchRadius === radius ? '#fff' : colors.text,
+                      fontWeight: '500',
+                      fontSize: 11,
+                    }}
+                  >
+                    {radius === 0.5 ? '<= 500 m' : `<= ${radius} km`}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: UNIFIED_BORDER_RADIUS,
+                  backgroundColor: colors.card,
+                  marginRight: 6,
+                  borderWidth: 1,
+                  borderColor: colors.primary + '66',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => setCustomRadiusVisible(true)}
+              >
+                <MaterialIcons name="add" size={16} color={colors.primary} />
+              </TouchableOpacity>
+            </ScrollView>
+          </ThemedView>
+        )}
 
         <ThemedView style={{ marginBottom: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1177,8 +1187,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         {filteredItems.map((item) => {
           const nowMs = Date.now();
-          const startMs = new Date(item.fechaInicio).getTime();
-          const endMs = new Date(item.fechaFin).getTime();
+          const startMs = item.fechaInicio ? new Date(item.fechaInicio).getTime() : NaN;
+          const endMs = item.fechaFin ? new Date(item.fechaFin).getTime() : NaN;
           const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
             ? nowMs >= startMs && nowMs <= endMs
             : false;
@@ -1265,8 +1275,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   >
                     <MaterialIcons name="event" size={16} color="#6c2eb7" />
                     <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {new Date(item.fechaInicio).toLocaleDateString()} -{' '}
-                      {new Date(item.fechaFin).toLocaleDateString()}
+                      {formatEventDateRange(item.fechaInicio, item.fechaFin)}
                     </ThemedTextSecondary>
                   </ThemedView>
                   <ThemedView
@@ -1383,7 +1392,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
               )}
             </View>
-            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Notif</ThemedText>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Notificaciones</ThemedText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -1538,7 +1547,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
             </View>
             <ThemedTextSecondary style={styles.privateModalHint}>
-              Introduce el enlace completo o solo el codigo final.
+              Introduce el enlace completo o solo el código final.
             </ThemedTextSecondary>
 
             <TextInput
@@ -1619,7 +1628,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Numero de rutas</ThemedTextSecondary>
+              <ThemedTextSecondary>Número de rutas</ThemedTextSecondary>
               <View style={styles.routeStepper}>
                 <TouchableOpacity onPress={() => setRouteCount((prev) => Math.max(1, prev - 1))}>
                   <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
@@ -1632,7 +1641,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Eventos maximos por ruta</ThemedTextSecondary>
+              <ThemedTextSecondary>Eventos máximos por ruta</ThemedTextSecondary>
               <View style={styles.routeStepper}>
                 <TouchableOpacity onPress={() => setRouteMaxEvents((prev) => Math.max(3, prev - 1))}>
                   <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
@@ -1645,7 +1654,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Hueco maximo entre eventos</ThemedTextSecondary>
+              <ThemedTextSecondary>Hueco máximo entre eventos</ThemedTextSecondary>
               <View style={styles.routeStepper}>
                 <TouchableOpacity
                   onPress={() => setRouteMaxGapMinutes((prev) => Math.max(30, prev - 30))}
@@ -1654,7 +1663,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </TouchableOpacity>
                 <ThemedText style={styles.routeStepperValue}>{formatDuration(routeMaxGapMinutes)}</ThemedText>
                 <TouchableOpacity
-                  onPress={() => setRouteMaxGapMinutes((prev) => Math.min(360, prev + 30))}
+                  onPress={() => setRouteMaxGapMinutes((prev) => Math.min(720, prev + 30))}
                 >
                   <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
                 </TouchableOpacity>
@@ -1662,7 +1671,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Solape maximo permitido</ThemedTextSecondary>
+              <ThemedTextSecondary>Solape máximo permitido</ThemedTextSecondary>
               <View style={styles.routeStepper}>
                 <TouchableOpacity
                   onPress={() => setRouteMaxOverlapMinutes((prev) => Math.max(0, prev - 5))}
@@ -1886,6 +1895,20 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableOpacity>
                   </ThemedView>
                 )}
+
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Información:</ThemedTextSecondary>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('LegalAttributions');
+                    }}
+                  >
+                    <MaterialIcons name="policy" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Licencias y atribuciones</ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
 
                 <ThemedButton
                   title="Cerrar sesión"

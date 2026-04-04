@@ -33,11 +33,11 @@ export class Event {
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
   location!: GeoJsonPoint;
 
-  @Column('timestamp', { nullable: false })
-  fechaInicio!: Date;
+  @Column('timestamp', { nullable: true })
+  fechaInicio!: Date | null;
 
-  @Column('timestamp', { nullable: false })
-  fechaFin!: Date;
+  @Column('timestamp', { nullable: true })
+  fechaFin!: Date | null;
 
   @Column('float', { nullable: true })
   precio?: number | null;

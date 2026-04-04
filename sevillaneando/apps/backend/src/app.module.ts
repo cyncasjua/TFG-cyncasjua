@@ -22,9 +22,11 @@ import { ScrapingModule } from './scraping/scraping.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEditRequest } from './events/event-edit-request.entity';
 import { RecomendacionesModule } from './recomendaciones/recomendaciones.module';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    CloudinaryModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -22,17 +23,18 @@ import { EstadoEnum } from '../enums/estado.enum';
 import { TipoEnum } from 'src/enums/tipo.enum';
 import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { extname } from 'path';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { UsersService } from 'src/users/users.service';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 
 @Controller('events')
 export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
     private readonly notificacionesService: NotificacionesService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly cloudinaryService: CloudinaryService
   ) { }
 
   @Post()
@@ -57,7 +59,7 @@ export class EventsController {
 
   @Get(':id/private-share-link')
   @UseGuards(FirebaseAuthGuard)
-  async getPrivateShareLink(@Param('id') id: string, @Req() req) {
+  async getPrivateShareLink(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
@@ -116,17 +118,26 @@ export class EventsController {
   @Post('upload-image')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/event-images',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, uniqueSuffix + extname(file.originalname));
-        },
-      }),
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowed.includes(file.mimetype)) {
+          return cb(new BadRequestException('Formato no permitido'), false);
+        }
+        return cb(null, true);
+      },
     })
   )
-  uploadEventImage(@UploadedFile() file: import('multer').File) {
-    return { url: `/uploads/event-images/${file.filename}` };
+  async uploadEventImage(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    const uploaded = await this.cloudinaryService.uploadImage(file.buffer, {
+      folder: 'sevillaneando/event-images',
+      publicIdPrefix: 'event',
+    });
+
+    return { url: uploaded.optimizedUrl };
   }
 
   @Get(':id/attendees')
@@ -141,7 +152,7 @@ export class EventsController {
 
   @Get(':id/attendees/me')
   @UseGuards(FirebaseAuthGuard)
-  async myAttendance(@Param('id') id: string, @Req() req) {
+  async myAttendance(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
     const attending = await this.eventsService.isAttending(id, user.id);
@@ -150,7 +161,7 @@ export class EventsController {
 
   @Post(':id/attendees')
   @UseGuards(FirebaseAuthGuard)
-  async attend(@Param('id') id: string, @Req() req) {
+  async attend(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
     const attendees = await this.eventsService.addAttendee(id, user.id);
@@ -163,7 +174,7 @@ export class EventsController {
 
   @Delete(':id/attendees')
   @UseGuards(FirebaseAuthGuard)
-  async unattend(@Param('id') id: string, @Req() req) {
+  async unattend(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
     const attendees = await this.eventsService.removeAttendee(id, user.id);

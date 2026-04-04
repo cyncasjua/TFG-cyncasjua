@@ -16,6 +16,7 @@ import {
   getSavedRecommendedEvents,
   RecommendedEvent,
 } from '../services/api';
+import { formatEventDateRange } from '../utils/sevillaTime';
 import type { Event } from '../types/event';
 import { ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 
@@ -123,8 +124,8 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       ) : (
         events.map((event) => {
           const nowMs = Date.now();
-          const startMs = new Date(event.fechaInicio).getTime();
-          const endMs = new Date(event.fechaFin).getTime();
+          const startMs = event.fechaInicio ? new Date(event.fechaInicio).getTime() : NaN;
+          const endMs = event.fechaFin ? new Date(event.fechaFin).getTime() : NaN;
           const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
             ? nowMs >= startMs && nowMs <= endMs
             : false;
@@ -213,8 +214,8 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       ) : (
         events.map((event) => {
           const nowMs = Date.now();
-          const startMs = new Date(event.fechaInicio).getTime();
-          const endMs = new Date(event.fechaFin).getTime();
+          const startMs = event.fechaInicio ? new Date(event.fechaInicio).getTime() : NaN;
+          const endMs = event.fechaFin ? new Date(event.fechaFin).getTime() : NaN;
           const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
             ? nowMs >= startMs && nowMs <= endMs
             : false;

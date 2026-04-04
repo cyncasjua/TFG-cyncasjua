@@ -123,7 +123,7 @@ const EventDetailLinkScreen = ({
 
 const Navigator = () => {
   const { user, loading, role } = useAuth();
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
 
   if (loading) {
     return (
@@ -180,10 +180,14 @@ const Navigator = () => {
               headerTitle: () => (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Image
-                    source={require('../assets/icon.png')}
-                    style={{ width: 28, height: 28, marginRight: 8 }}
+                    source={
+                      theme === 'dark'
+                        ? require('../assets/dark-icon.png')
+                        : require('../assets/icon.png')
+                    }
+                    style={{ width: 40, height: 40, marginRight: 8 }}
                   />
-                  <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>
+                  <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.text }}>
                     Sevillaneando
                   </Text>
                 </View>

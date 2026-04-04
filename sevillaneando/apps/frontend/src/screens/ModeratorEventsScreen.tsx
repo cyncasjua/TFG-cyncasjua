@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api, getErrorMessage } from '../services/api';
+import { formatEventDateRange } from '../utils/sevillaTime';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
@@ -112,7 +113,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
               <ThemedText style={styles.eventDesc}>{item.description}</ThemedText>
               <ThemedTextSecondary style={styles.eventInfo}>
-                Fecha: {item.fechaInicio ? dayjs(item.fechaInicio).format('YYYY/MM/DD HH:mm') : ''}
+                Fecha: {formatEventDateRange(item.fechaInicio, item.fechaFin)}
               </ThemedTextSecondary>
               <ThemedTextSecondary style={styles.eventInfo}>
                 Ubicación: {item.address}

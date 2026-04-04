@@ -45,7 +45,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
-import { formatSevillaTime } from '../utils/sevillaTime';
+import { formatEventDateRange, formatSevillaTime } from '../utils/sevillaTime';
 import {
   attendEvent,
   getErrorMessage,
@@ -363,7 +363,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         : '';
     const webLink = webPrivateLink || webEventLink;
     const eventLink = webLink || deepLink;
-    const startText = dayjs(event.fechaInicio).format('DD/MM/YYYY HH:mm');
+    const startText = formatEventDateRange(event.fechaInicio, event.fechaFin);
     const priceText = (() => {
       if (event.precio != null && event.precio !== 0) return `${event.precio} EUR`;
       if (event.precioMin != null && event.precioMax != null) return `${event.precioMin} - ${event.precioMax} EUR`;
@@ -804,8 +804,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                {dayjs(event.fechaInicio).format('DD/MM/YYYY HH:mm')} -{' '}
-                {dayjs(event.fechaFin).format('DD/MM/YYYY HH:mm')}
+                {formatEventDateRange(event.fechaInicio, event.fechaFin)}
               </ThemedTextSecondary>
             </ThemedView>
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
