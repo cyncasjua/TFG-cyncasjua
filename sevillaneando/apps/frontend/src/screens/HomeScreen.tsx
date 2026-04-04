@@ -61,6 +61,8 @@ const UNIFIED_BORDER_RADIUS = 18;
 const RECOMMENDATION_BORDER_RADIUS = 24;
 const BOTTOM_DOCK_ICON_SIZE = 36;
 const BOTTOM_DOCK_ICON_RADIUS = BOTTOM_DOCK_ICON_SIZE / 2;
+const INITIAL_RECOMMENDED_EVENTS_VISIBLE = 8;
+const RECOMMENDED_EVENTS_FETCH_LIMIT = 24;
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
@@ -77,6 +79,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [routeMaxEvents, setRouteMaxEvents] = useState(5);
   const [routeMaxGapMinutes, setRouteMaxGapMinutes] = useState(180);
   const [routeMaxOverlapMinutes, setRouteMaxOverlapMinutes] = useState(15);
+  const [showAllRecommendedEvents, setShowAllRecommendedEvents] = useState(false);
   const [showRecommendedEvents, setShowRecommendedEvents] = useState(false);
   const [showRecommendedRoutes, setShowRecommendedRoutes] = useState(false);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
@@ -435,17 +438,28 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       const lat = user?.ubicacion?.coordinates?.[1];
       const lng = user?.ubicacion?.coordinates?.[0];
-      const params =
+      const eventsParams =
+        Number.isFinite(lat) && Number.isFinite(lng)
+          ? {
+              lat: Number(lat),
+              lng: Number(lng),
+              radiusKm: searchRadius || 12,
+              limit: RECOMMENDED_EVENTS_FETCH_LIMIT,
+            }
+          : { limit: RECOMMENDED_EVENTS_FETCH_LIMIT };
+
+      const routesParams =
         Number.isFinite(lat) && Number.isFinite(lng)
           ? { lat: Number(lat), lng: Number(lng), radiusKm: searchRadius || 12, limit: 8 }
           : { limit: 8 };
 
       const [eventsResult, routesResult] = await Promise.all([
-        getRecommendedEvents(params),
-        getRecommendedRoutes({ ...params, routesLimit: 3, strategy: 'balanced' }),
+        getRecommendedEvents(eventsParams),
+        getRecommendedRoutes({ ...routesParams, routesLimit: 3, strategy: 'balanced' }),
       ]);
 
       setRecommendedEvents(eventsResult.eventos ?? []);
+      setShowAllRecommendedEvents(false);
       setRecommendedRoutes(routesResult.rutas ?? []);
     } catch (err) {
       setRecommendationsError(getErrorMessage(err));
@@ -632,6 +646,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     return 'Descubre algo nuevo';
   }, [filterNearby]);
 
+  const visibleRecommendedEvents = useMemo(
+    () =>
+      showAllRecommendedEvents
+        ? recommendedEvents
+        : recommendedEvents.slice(0, INITIAL_RECOMMENDED_EVENTS_VISIBLE),
+    [recommendedEvents, showAllRecommendedEvents],
+  );
+
+  const hasMoreRecommendedEvents =
+    recommendedEvents.length > INITIAL_RECOMMENDED_EVENTS_VISIBLE;
+
   const homeGreeting = useMemo(() => {
     const hour = dayjs().hour();
     const name = user?.nombre || 'sevillaneante';
@@ -808,44 +833,62 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           ) : recommendedEvents.length === 0 ? (
             <ThemedTextSecondary>Aun no hay suficientes señales para recomendarte eventos.</ThemedTextSecondary>
           ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.recommendedListContent}
-            >
-              {recommendedEvents.map((event) => (
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recommendedListContent}
+              >
+                {visibleRecommendedEvents.map((event) => (
+                  <TouchableOpacity
+                    key={event.id}
+                    onPress={() => openRecommendedEvent(event.id)}
+                    activeOpacity={0.88}
+                    style={[
+                      styles.recommendedCard,
+                      { backgroundColor: colors.background, borderColor: colors.border },
+                    ]}
+                  >
+                    <View style={styles.recommendedCardTop}>
+                      <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
+                        {event.title}
+                      </ThemedText>
+                      <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
+                    </View>
+                    <ThemedTextSecondary numberOfLines={1}>{event.categoria || 'General'}</ThemedTextSecondary>
+                    <ThemedTextSecondary numberOfLines={1}>
+                      {dayjs(event.fechaInicio).format('DD/MM HH:mm')}
+                    </ThemedTextSecondary>
+                    <ThemedView style={styles.recommendedMetaRow}>
+                      <MaterialIcons name="star" size={14} color="#f39c12" />
+                      <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
+                      {event.distanceKm != null && (
+                        <>
+                          <MaterialIcons name="near-me" size={14} color={colors.primary} style={{ marginLeft: 8 }} />
+                          <ThemedTextSecondary>{event.distanceKm.toFixed(1)} km</ThemedTextSecondary>
+                        </>
+                      )}
+                    </ThemedView>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              {hasMoreRecommendedEvents && (
                 <TouchableOpacity
-                  key={event.id}
-                  onPress={() => openRecommendedEvent(event.id)}
-                  activeOpacity={0.88}
-                  style={[
-                    styles.recommendedCard,
-                    { backgroundColor: colors.background, borderColor: colors.border },
-                  ]}
+                  onPress={() => setShowAllRecommendedEvents((prev) => !prev)}
+                  style={[styles.recommendedMoreButton, { borderColor: colors.primary + '66' }]}
+                  activeOpacity={0.85}
                 >
-                  <View style={styles.recommendedCardTop}>
-                    <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
-                      {event.title}
-                    </ThemedText>
-                    <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
-                  </View>
-                  <ThemedTextSecondary numberOfLines={1}>{event.categoria || 'General'}</ThemedTextSecondary>
-                  <ThemedTextSecondary numberOfLines={1}>
-                    {dayjs(event.fechaInicio).format('DD/MM HH:mm')}
-                  </ThemedTextSecondary>
-                  <ThemedView style={styles.recommendedMetaRow}>
-                    <MaterialIcons name="star" size={14} color="#f39c12" />
-                    <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
-                    {event.distanceKm != null && (
-                      <>
-                        <MaterialIcons name="near-me" size={14} color={colors.primary} style={{ marginLeft: 8 }} />
-                        <ThemedTextSecondary>{event.distanceKm.toFixed(1)} km</ThemedTextSecondary>
-                      </>
-                    )}
-                  </ThemedView>
+                  <ThemedText style={[styles.recommendedMoreButtonText, { color: colors.primary }]}>
+                    {showAllRecommendedEvents ? 'Ver menos' : `Ver mas (${recommendedEvents.length})`}
+                  </ThemedText>
+                  <MaterialIcons
+                    name={showAllRecommendedEvents ? 'expand-less' : 'expand-more'}
+                    size={16}
+                    color={colors.primary}
+                  />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              )}
+            </>
           ))}
         </ThemedView>
 
@@ -2239,6 +2282,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
+  },
+  recommendedMoreButton: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  recommendedMoreButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   routesList: {
     gap: 8,
