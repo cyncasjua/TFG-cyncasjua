@@ -52,6 +52,7 @@ import {
   getEventAttendees,
   getEventByAccessLink,
   getEventById,
+  getPrivateEventShareLink,
   getMyRecommendedEventRating,
   getMyAttendance,
   rateRecommendedEvent,
@@ -324,14 +325,41 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleShareEvent = async () => {
     const shareBaseUrl = (process.env.EXPO_PUBLIC_SHARE_BASE_URL || '').replace(/\/$/, '');
-    const isPrivate = Boolean(event.privado && event.linkAcceso);
+    const isPrivate = Boolean(event.privado);
+    const isPrivateCreator = Boolean(isPrivate && user?.id && event.creador?.id === user.id);
+
+    if (isPrivate && !isPrivateCreator) {
+      Alert.alert('Acceso restringido', 'Solo el creador puede compartir el enlace de este evento privado.');
+      return;
+    }
+
+    let privateLinkAcceso = event.linkAcceso;
+    if (isPrivate) {
+      try {
+        const response = await getPrivateEventShareLink(event.id);
+        privateLinkAcceso = response.linkAcceso;
+        if (privateLinkAcceso && privateLinkAcceso !== event.linkAcceso) {
+          setEvent((prev) => ({ ...prev, linkAcceso: privateLinkAcceso }));
+        }
+      } catch (err) {
+        Alert.alert('Error', getErrorMessage(err) || 'No se pudo obtener el enlace privado para compartir.');
+        return;
+      }
+    }
+
+    const canBuildPrivateLink = Boolean(isPrivate && privateLinkAcceso);
+    if (isPrivate && !canBuildPrivateLink) {
+      Alert.alert('Error', 'No se pudo generar el enlace de invitacion para el evento privado.');
+      return;
+    }
+
     const deepLink = isPrivate
-      ? `sevillaneando://acceso/${event.linkAcceso}`
+      ? `sevillaneando://acceso/${privateLinkAcceso}`
       : `sevillaneando://evento/${event.id}`;
     const webEventLink = shareBaseUrl ? `${shareBaseUrl}/evento/${event.id}` : '';
     const webPrivateLink =
-      shareBaseUrl && isPrivate
-        ? `${shareBaseUrl}/acceso/${event.linkAcceso}`
+      shareBaseUrl && canBuildPrivateLink
+        ? `${shareBaseUrl}/acceso/${privateLinkAcceso}`
         : '';
     const webLink = webPrivateLink || webEventLink;
     const eventLink = webLink || deepLink;
@@ -894,9 +922,14 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               })}
               {renderActionButton({
                 icon: 'share',
-                title: 'Compartir',
-                subtitle: 'Enviar a tus contactos',
+                title: event.privado ? 'Invitar' : 'Compartir',
+                subtitle: event.privado
+                  ? (event.creador?.id === user?.id
+                    ? 'Enviar enlace de acceso privado'
+                    : 'Solo el creador puede compartir')
+                  : 'Enviar a tus contactos',
                 onPress: handleShareEvent,
+                disabled: Boolean(event.privado && event.creador?.id !== user?.id),
               })}
             </View>
             {renderActionButton({

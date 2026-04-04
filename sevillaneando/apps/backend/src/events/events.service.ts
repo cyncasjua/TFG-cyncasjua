@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './event.entity';
@@ -55,6 +55,32 @@ export class EventsService {
     });
     if (!event) throw new NotFoundException('Evento no encontrado o no es privado');
     return this.attachRatingsSummary(event);
+  }
+
+  async getPrivateShareLink(eventId: string, requesterId: string): Promise<string> {
+    const event = await this.eventRepo.findOne({
+      where: { id: eventId },
+      relations: ['creador'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Evento no encontrado');
+    }
+
+    if (!event.privado) {
+      throw new ForbiddenException('Solo los eventos privados tienen enlace de acceso');
+    }
+
+    if (!event.creador || event.creador.id !== requesterId) {
+      throw new ForbiddenException('Solo el creador puede compartir el enlace de este evento');
+    }
+
+    if (!event.linkAcceso) {
+      event.linkAcceso = uuidv4();
+      await this.eventRepo.save(event);
+    }
+
+    return event.linkAcceso;
   }
 
 findAll(userId?: string): Promise<Event[]> {

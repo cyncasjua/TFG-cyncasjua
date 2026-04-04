@@ -121,6 +121,10 @@ export async function getEvents(userId?: string): Promise<Event[]> {
       longitude: coords?.longitude,
       imagen: event.imagen,
       imagenes: event.imagenes,
+      privado: event.privado,
+      linkAcceso: event.linkAcceso,
+      ratingAverage: event.ratingAverage,
+      ratingsCount: event.ratingsCount,
     } as Event;
   });
 }
@@ -206,6 +210,11 @@ export async function getEventByAccessLink(linkAcceso: string): Promise<Event> {
     ratingAverage: event.ratingAverage,
     ratingsCount: event.ratingsCount,
   } as Event;
+}
+
+export async function getPrivateEventShareLink(eventId: string): Promise<{ linkAcceso: string }> {
+  const res = await api.get(`/events/${eventId}/private-share-link`);
+  return res.data as { linkAcceso: string };
 }
 
 export async function saveRecommendedEvent(eventId: string): Promise<{ ok: boolean }> {

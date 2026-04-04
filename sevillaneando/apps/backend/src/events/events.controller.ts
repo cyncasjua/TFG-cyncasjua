@@ -55,6 +55,16 @@ export class EventsController {
     return this.eventsService.findOneByLinkAcceso(linkAcceso);
   }
 
+  @Get(':id/private-share-link')
+  @UseGuards(FirebaseAuthGuard)
+  async getPrivateShareLink(@Param('id') id: string, @Req() req) {
+    const user = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    const linkAcceso = await this.eventsService.getPrivateShareLink(id, user.id);
+    return { linkAcceso };
+  }
+
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
     return this.eventsService.update(id, dto);
