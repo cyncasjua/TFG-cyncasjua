@@ -50,9 +50,11 @@ export class EventsService {
 
   async findOneByLinkAcceso(linkAcceso: string): Promise<Event> {
     const event = await this.eventRepo.findOne({
-      where: { linkAcceso }});
+      where: { linkAcceso },
+      relations: ['categoria', 'creador'],
+    });
     if (!event) throw new NotFoundException('Evento no encontrado o no es privado');
-    return event;
+    return this.attachRatingsSummary(event);
   }
 
 findAll(userId?: string): Promise<Event[]> {
@@ -82,7 +84,28 @@ findAll(userId?: string): Promise<Event[]> {
       relations: ['categoria', 'creador'],
     });
     if (!found) throw new NotFoundException('Evento no encontrado');
-    return found;
+    return this.attachRatingsSummary(found);
+  }
+
+  private async attachRatingsSummary(event: Event): Promise<Event> {
+    const raw = await this.resenaRepo
+      .createQueryBuilder('resena')
+      .select('AVG(resena.puntuacion)', 'avgRating')
+      .addSelect('COUNT(resena.id)', 'ratingsCount')
+      .where('resena.eventoId = :eventId', { eventId: event.id })
+      .getRawOne<{ avgRating: string | null; ratingsCount: string }>();
+
+    const ratingsCount = Number(raw?.ratingsCount ?? 0);
+    const avgRating = raw?.avgRating !== null && raw?.avgRating !== undefined
+      ? Number(raw.avgRating)
+      : null;
+
+    (event as any).ratingAverage = Number.isFinite(avgRating as number)
+      ? Number((avgRating as number).toFixed(2))
+      : null;
+    (event as any).ratingsCount = Number.isFinite(ratingsCount) ? ratingsCount : 0;
+
+    return event;
   }
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {

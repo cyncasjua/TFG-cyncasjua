@@ -50,6 +50,9 @@ import {
   attendEvent,
   getErrorMessage,
   getEventAttendees,
+  getEventByAccessLink,
+  getEventById,
+  getMyRecommendedEventRating,
   getMyAttendance,
   rateRecommendedEvent,
   saveRecommendedEvent,
@@ -109,7 +112,8 @@ type ChatMessage = {
 
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
-  const { event } = route.params;
+  const { event: initialEvent } = route.params;
+  const [event, setEvent] = useState<Event>(initialEvent);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const defaultEventImage = require('../../assets/splash.png');
   const { evaluateImage } = useNsfwGuard();
@@ -154,12 +158,32 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [ratingValue, setRatingValue] = useState(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [hasExistingRating, setHasExistingRating] = useState(false);
   const visitTrackedRef = useRef(false);
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
   const lastScaleRef = useRef(1);
   const imageScale = Animated.multiply(baseScale, pinchScale);
   const { socket, sendMessage, isConnected } = useSocket();
+
+  const refreshEventDetails = useCallback(async () => {
+    const freshEvent = initialEvent.privado && initialEvent.linkAcceso
+      ? await getEventByAccessLink(initialEvent.linkAcceso)
+      : await getEventById(initialEvent.id);
+    setEvent(freshEvent);
+  }, [initialEvent.id, initialEvent.linkAcceso, initialEvent.privado]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    refreshEventDetails().catch(() => {
+      // Si falla, mantenemos el evento inicial para no bloquear la vista.
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [refreshEventDetails]);
 
   const onPinchEvent = Animated.event([{ nativeEvent: { scale: pinchScale } }], {
     useNativeDriver: true,
@@ -192,6 +216,33 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     visitRecommendedEvent(event.id).catch(() => {
       // Si falla no bloquea la experiencia del usuario.
     });
+  }, [event.id, token]);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!token) return;
+
+    getMyRecommendedEventRating(event.id)
+      .then((result) => {
+        if (!mounted) return;
+        if (result.hasRating && result.puntuacion != null) {
+          setRatingValue(result.puntuacion);
+          setRatingComment(result.comentario ?? '');
+          setHasExistingRating(true);
+        } else {
+          setRatingValue(5);
+          setRatingComment('');
+          setHasExistingRating(false);
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setHasExistingRating(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [event.id, token]);
 
   const handleToggleAttend = async () => {
@@ -333,12 +384,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     try {
       setRatingSubmitting(true);
-      await rateRecommendedEvent(event.id, {
-        puntuacion: ratingValue,
-        comentario,
-      });
+      await rateRecommendedEvent(
+        event.id,
+        comentario.length > 0
+          ? { puntuacion: ratingValue, comentario }
+          : { puntuacion: ratingValue },
+      );
+      await refreshEventDetails();
+      setHasExistingRating(true);
       setRatingModalVisible(false);
-      setRatingComment('');
       Alert.alert('Gracias', 'Tu valoración se ha guardado correctamente.');
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err) || 'No se pudo guardar la valoración.');
@@ -740,6 +794,14 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 {event.categoria?.nombre}
               </ThemedTextSecondary>
             </ThemedView>
+            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <MaterialIcons name="star" size={16} color="#f39c12" />
+              <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                {event.ratingAverage != null
+                  ? `${event.ratingAverage.toFixed(1)} (${event.ratingsCount ?? 0} valoraciones)`
+                  : 'Sin valoraciones'}
+              </ThemedTextSecondary>
+            </ThemedView>
             <ThemedView style={{ alignItems: 'flex-end', marginBottom: 8 }}>
               <ThemedText
                 style={{
@@ -839,8 +901,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
             {renderActionButton({
               icon: 'star-rate',
-              title: 'Valorar evento',
-              subtitle: 'Tu opinión mejora las rutas',
+              title: hasExistingRating ? 'Editar valoración' : 'Valorar evento',
+              subtitle: hasExistingRating ? 'Tu opinión guardada' : 'Tu opinión mejora las rutas',
               onPress: () => setRatingModalVisible(true),
             })}
           </ThemedView>
@@ -885,9 +947,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           >
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
               <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18 }}>
-                <ThemedTitle style={{ marginBottom: 12 }}>Valorar evento</ThemedTitle>
+                <ThemedTitle style={{ marginBottom: 12 }}>
+                  {hasExistingRating ? 'Tu valoración' : 'Valorar evento'}
+                </ThemedTitle>
                 <ThemedTextSecondary style={{ marginBottom: 10 }}>
-                  Tu puntuación ayuda a mejorar recomendaciones y rutas.
+                  {hasExistingRating
+                    ? 'Puedes editar tu puntuación y comentario cuando quieras.'
+                    : 'Tu puntuación ayuda a mejorar recomendaciones y rutas.'}
                 </ThemedTextSecondary>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
                   {[1, 2, 3, 4, 5].map((value) => (

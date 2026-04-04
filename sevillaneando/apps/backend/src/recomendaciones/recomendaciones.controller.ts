@@ -67,6 +67,15 @@ export class RecomendacionesController {
     return this.recomendacionesService.rateEvent(userId, eventId, body);
   }
 
+  @Get('events/:eventId/valorar/me')
+  async getMyEventRating(
+    @Req() req: AuthRequest,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+  ) {
+    const userId = await this.resolveUserId(req);
+    return this.recomendacionesService.getMyEventRating(userId, eventId);
+  }
+
   @Get('me/events')
   async recommendEvents(
     @Req() req: AuthRequest,

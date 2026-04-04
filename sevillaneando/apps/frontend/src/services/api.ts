@@ -149,6 +149,8 @@ export async function getEventById(eventId: string): Promise<Event> {
     imagenes: event.imagenes,
     privado: event.privado,
     linkAcceso: event.linkAcceso,
+    ratingAverage: event.ratingAverage,
+    ratingsCount: event.ratingsCount,
   } as Event;
 }
 
@@ -201,6 +203,8 @@ export async function getEventByAccessLink(linkAcceso: string): Promise<Event> {
     imagenes: event.imagenes,
     privado: event.privado,
     linkAcceso: event.linkAcceso,
+    ratingAverage: event.ratingAverage,
+    ratingsCount: event.ratingsCount,
   } as Event;
 }
 
@@ -231,10 +235,22 @@ export async function visitRecommendedEvent(eventId: string): Promise<{ ok: bool
 
 export async function rateRecommendedEvent(
   eventId: string,
-  payload: { puntuacion: number; comentario: string },
+  payload: { puntuacion: number; comentario?: string },
 ): Promise<{ ok: boolean; action: string; resenaId: string }> {
   const res = await api.post(`/recomendaciones/events/${eventId}/valorar`, payload);
   return res.data as { ok: boolean; action: string; resenaId: string };
+}
+
+export async function getMyRecommendedEventRating(
+  eventId: string,
+): Promise<{ hasRating: boolean; puntuacion: number | null; comentario: string; fecha: string | null }> {
+  const res = await api.get(`/recomendaciones/events/${eventId}/valorar/me`);
+  return res.data as {
+    hasRating: boolean;
+    puntuacion: number | null;
+    comentario: string;
+    fecha: string | null;
+  };
 }
 
 export type RecommendedEvent = {

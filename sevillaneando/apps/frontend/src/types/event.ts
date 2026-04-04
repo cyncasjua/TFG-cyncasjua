@@ -18,4 +18,6 @@ export interface Event {
   longitude?: number;
   imagen?: string;
   imagenes?: string[];
+  ratingAverage?: number | null;
+  ratingsCount?: number;
 }

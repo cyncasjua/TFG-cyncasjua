@@ -185,6 +185,32 @@ export class RecomendacionesService {
     return { ok: true, action: 'valorado', resenaId: saved.id };
   }
 
+  async getMyEventRating(userId: string, eventId: string) {
+    const resena = await this.resenaRepo.findOne({
+      where: {
+        autor: { id: userId },
+        evento: { id: eventId },
+      },
+      relations: ['evento'],
+    });
+
+    if (!resena) {
+      return {
+        hasRating: false,
+        puntuacion: null,
+        comentario: '',
+        fecha: null,
+      };
+    }
+
+    return {
+      hasRating: true,
+      puntuacion: resena.puntuacion,
+      comentario: resena.comentario ?? '',
+      fecha: resena.fecha,
+    };
+  }
+
   async recommendEvents(userId: string, options: RecommendOptions = {}) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
