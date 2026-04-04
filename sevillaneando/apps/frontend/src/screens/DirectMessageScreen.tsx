@@ -30,7 +30,7 @@ import { useNotificaciones } from '../context/NotificacionesContext';
 import { getFullImageUrl } from '../utils/imageUrl';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
-import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
+import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 import { api } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DirectMessage'>;
@@ -364,25 +364,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                       }}
                       style={{ marginTop: 2 }}
                     >
-                      {item.emisor?.fotoPerfil ? (
-                        <Image
-                          source={{
-                            uri:
-                              getFullImageUrl(item.emisor.fotoPerfil) ||
-                              item.emisor.fotoPerfil,
-                          }}
-                          style={{ width: 24, height: 24, borderRadius: 12 }}
-                        />
-                      ) : (
-                        <View
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 12,
-                            backgroundColor: '#d0d0d0',
-                          }}
-                        />
-                      )}
+                      <Avatar photoUrl={item.emisor?.fotoPerfil} size={24} />
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
@@ -390,7 +372,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                     activeOpacity={0.9}
                     style={{
                       padding: 8,
-                      borderRadius: 10,
+                      borderRadius: 16,
                       backgroundColor: isOwn ? '#6c2eb7' : colors.card,
                       flex: 1,
                     }}
@@ -489,7 +471,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
               flex: 1,
               borderWidth: 1,
               borderColor: colors.border,
-              borderRadius: 10,
+              borderRadius: 16,
               padding: 10,
               color: colors.text,
             }}
@@ -502,7 +484,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
               paddingHorizontal: 14,
               paddingVertical: 10,
               backgroundColor: '#6c2eb7',
-              borderRadius: 10,
+              borderRadius: 16,
             }}
           >
             <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
@@ -558,18 +540,18 @@ const styles = StyleSheet.create({
     marginTop: 6,
     width: 200,
     height: 120,
-    borderRadius: 10,
+    borderRadius: 16,
   },
   chatAttachment: {
     position: 'relative',
     marginBottom: 8,
-    borderRadius: 10,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   chatAttachmentImage: {
     width: '100%',
     height: 100,
-    borderRadius: 10,
+    borderRadius: 16,
   },
   chatAttachmentRemove: {
     position: 'absolute',
@@ -583,7 +565,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 6,
     marginRight: 4,
-    borderRadius: 8,
+    borderRadius: 16,
     backgroundColor: 'rgba(108, 46, 183, 0.1)',
   },
   chatComposer: {

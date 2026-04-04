@@ -501,7 +501,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <View
               style={{
                 height: 220,
-                borderRadius: 12,
+                borderRadius: 18,
                 overflow: 'hidden',
                 marginBottom: 10,
                 borderWidth: 1,
@@ -600,7 +600,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               setValue={setEstado}
               setItems={setEstadoItems}
               style={{
-                backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 8, marginBottom: 10,
+                backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10,
               }}
               dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
               textStyle={{ color: colors.text }}
@@ -624,7 +624,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 setItems={setDropdownItems}
                 placeholder="Selecciona una categoría..."
                 style={{
-                  backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 8, marginBottom: 10,
+                  backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10,
                 }}
                 dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
                 textStyle={{ color: colors.text }}
@@ -737,13 +737,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 8,
   },
   mapSearchInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 12,
     marginRight: 8,
   },
@@ -761,20 +761,20 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderRadius: 4,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   imagePreview: {
     height: 120,
-    borderRadius: 8,
+    borderRadius: 16,
   },
   deleteImageBtn: {
     position: 'absolute',
     top: 4,
     right: 4,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 12,
+    borderRadius: 18,
     padding: 2,
     zIndex: 2,
   },
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 4,
     left: 4,
-    borderRadius: 12,
+    borderRadius: 18,
     paddingHorizontal: 8,
     paddingVertical: 2,
     zIndex: 2,
@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: '#ccc',
-    borderRadius: 8,
+    borderRadius: 16,
     marginTop: 8,
   }
 });

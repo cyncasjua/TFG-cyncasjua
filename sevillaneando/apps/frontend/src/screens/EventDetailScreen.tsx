@@ -26,6 +26,7 @@ import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
 import { useTheme } from '../hooks/useTheme';
 import {
+  Avatar,
   ThemedButton,
   OsmAttribution,
   ThemedText,
@@ -329,10 +330,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!token || ratingSubmitting) return;
 
     const comentario = ratingComment.trim();
-    if (comentario.length < 10) {
-      Alert.alert('Comentario corto', 'Escribe al menos 10 caracteres para la valoración.');
-      return;
-    }
 
     try {
       setRatingSubmitting(true);
@@ -752,7 +749,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   backgroundColor: '#6c2eb7',
                   paddingHorizontal: 16,
                   paddingVertical: 6,
-                  borderRadius: 14,
+                  borderRadius: 18,
                   overflow: 'hidden',
                   alignSelf: 'flex-end',
                 }}
@@ -806,8 +803,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
             {renderActionButton({
               icon: isAttending ? 'event-busy' : 'event-available',
-              title: isAttending ? 'Ya no asistire' : 'Asistire',
-              subtitle: isAttending ? 'Eliminar de tu agenda' : 'Anadir a tu agenda',
+              title: isAttending ? 'Ya no asistiré' : 'Asistiré',
+              subtitle: isAttending ? 'Eliminar de tu agenda' : 'Añadir a tu agenda',
               onPress: handleToggleAttend,
               accent: true,
             })}
@@ -815,7 +812,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               {renderActionButton({
                 icon: 'groups',
                 title: `Asistentes (${attendees.length})`,
-                subtitle: 'Ver quienes van',
+                subtitle: 'Ver quiénes van',
                 onPress: () => setShowAttendeesModal(true),
               })}
               {renderActionButton({
@@ -843,7 +840,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             {renderActionButton({
               icon: 'star-rate',
               title: 'Valorar evento',
-              subtitle: 'Tu opinion mejora las rutas',
+              subtitle: 'Tu opinión mejora las rutas',
               onPress: () => setRatingModalVisible(true),
             })}
           </ThemedView>
@@ -869,13 +866,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         setShowAttendeesModal(false);
                         navigation.navigate('UserProfile', { userId: att.id });
                       }}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 8, marginBottom: 6 }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 16, marginBottom: 6 }}
                     >
-                      {att.fotoPerfil ? (
-                        <Image source={{ uri: getFullImageUrl(att.fotoPerfil) || att.fotoPerfil }} style={{ width: 32, height: 32, borderRadius: 16 }} />
-                      ) : (
-                        <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d0d0d0' }} />
-                      )}
+                      <Avatar photoUrl={att.fotoPerfil} size={32} />
                       <ThemedText>{att.nombre}</ThemedText>
                     </TouchableOpacity>
                   ))}
@@ -914,13 +907,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <TextInput
                   value={ratingComment}
                   onChangeText={setRatingComment}
-                  placeholder="Escribe tu opinión (mínimo 10 caracteres)"
+                  placeholder="Escribe tu opinión (opcional)"
                   multiline
                   style={{
                     minHeight: 90,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 10,
+                    borderRadius: 16,
                     padding: 10,
                     color: colors.text,
                     marginBottom: 12,
@@ -1009,21 +1002,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             }}
                             style={{ marginTop: 2 }}
                           >
-                            {item.usuario?.fotoPerfil ? (
-                              <Image
-                                source={{ uri: getFullImageUrl(item.usuario.fotoPerfil) || item.usuario.fotoPerfil }}
-                                style={{ width: 24, height: 24, borderRadius: 12 }}
-                              />
-                            ) : (
-                              <View
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: 12,
-                                  backgroundColor: '#d0d0d0',
-                                }}
-                              />
-                            )}
+                            <Avatar photoUrl={item.usuario?.fotoPerfil} size={24} />
                           </TouchableOpacity>
                         )}
                         <TouchableOpacity
@@ -1031,7 +1010,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                           activeOpacity={0.9}
                           style={{
                             padding: 8,
-                            borderRadius: 10,
+                            borderRadius: 16,
                             backgroundColor: isOwn ? '#6c2eb7' : colors.card,
                             flex: 1,
                           }}
@@ -1091,7 +1070,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             style={{
                               marginTop: 2,
                               padding: 4,
-                              borderRadius: 6,
+                              borderRadius: 12,
                               backgroundColor: colors.card,
                             }}
                           >
@@ -1145,7 +1124,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     flex: 1,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 10,
+                    borderRadius: 16,
                     padding: 10,
                     color: colors.text,
                   }}
@@ -1158,7 +1137,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     paddingHorizontal: 14,
                     paddingVertical: 10,
                     backgroundColor: '#6c2eb7',
-                    borderRadius: 10,
+                    borderRadius: 16,
                   }}
                 >
                   <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
@@ -1233,7 +1212,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -1289,7 +1268,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     width: 200,
     height: 120,
-    borderRadius: 10,
+    borderRadius: 16,
   },
   chatAttachment: {
     flexDirection: 'row',
@@ -1299,17 +1278,17 @@ const styles = StyleSheet.create({
   chatAttachmentImage: {
     width: 80,
     height: 60,
-    borderRadius: 8,
+    borderRadius: 16,
   },
   chatAttachmentRemove: {
     marginLeft: 8,
     padding: 6,
-    borderRadius: 10,
+    borderRadius: 16,
   },
   chatImageButton: {
     marginRight: 8,
     padding: 8,
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#6c2eb7',
   },
@@ -1346,6 +1325,6 @@ const styles = StyleSheet.create({
   },
   chatClose: {
     padding: 6,
-    borderRadius: 12,
+    borderRadius: 18,
   },
 });

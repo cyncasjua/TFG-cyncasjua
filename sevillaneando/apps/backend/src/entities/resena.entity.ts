@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Event } from '../events/event.entity';
-import { Length } from 'class-validator';
+import { MaxLength } from 'class-validator';
 
 @Entity()
 export class Resena {
@@ -21,7 +21,7 @@ export class Resena {
   @ManyToOne(() => Event)
   evento: Event;
 
-  @Length(10, 500)
+  @MaxLength(500)
   @Column({ nullable: false })
   comentario: string;
 
@@ -44,8 +44,8 @@ export class Resena {
     if (!this.evento) {
       throw new Error('El evento de la reseña es obligatorio.');
     }
-    if (!this.comentario || this.comentario.trim().length < 10 || this.comentario.length > 500) {
-      throw new Error('El comentario debe tener entre 10 y 500 caracteres.');
+    if (this.comentario && this.comentario.length > 500) {
+      throw new Error('El comentario no puede superar 500 caracteres.');
     }
     if (
       this.puntuacion === undefined ||

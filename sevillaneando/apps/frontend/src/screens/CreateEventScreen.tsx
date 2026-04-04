@@ -505,7 +505,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             <View
               style={{
                 height: 220,
-                borderRadius: 12,
+                borderRadius: 18,
                 overflow: 'hidden',
                 marginBottom: 10,
                 borderWidth: 1,
@@ -627,7 +627,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 backgroundColor: colors.card,
                 borderColor: colors.primary,
                 minHeight: 40,
-                borderRadius: 8,
+                borderRadius: 16,
                 marginBottom: 10,
               }}
               dropDownContainerStyle={{
@@ -657,7 +657,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                   backgroundColor: colors.card,
                   borderColor: colors.primary,
                   minHeight: 40,
-                  borderRadius: 8,
+                  borderRadius: 16,
                   marginBottom: 10,
                 }}
                 dropDownContainerStyle={{
@@ -733,7 +733,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                               top: 4,
                               right: 4,
                               backgroundColor: 'rgba(0,0,0,0.6)',
-                              borderRadius: 12,
+                              borderRadius: 18,
                               padding: 2,
                               zIndex: 2,
                             }}
@@ -747,7 +747,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                               bottom: 4,
                               left: 4,
                               backgroundColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)',
-                              borderRadius: 12,
+                              borderRadius: 18,
                               paddingHorizontal: 8,
                               paddingVertical: 2,
                               zIndex: 2,
@@ -849,7 +849,7 @@ const styles = StyleSheet.create({
   mapSearchInput: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
     fontSize: 15,
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
   },
   mapSearchButton: {
     padding: 6,
-    borderRadius: 8,
+    borderRadius: 16,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 10,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 16,
@@ -891,7 +891,7 @@ const styles = StyleSheet.create({
   imagePreview: {
     width: '100%',
     height: 120,
-    borderRadius: 10,
+    borderRadius: 16,
     marginBottom: 8,
   },
   checkboxContainer: {
@@ -902,7 +902,7 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 4,
+    borderRadius: 12,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',

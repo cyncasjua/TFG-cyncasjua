@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,64 +7,60 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { RootStackParamList } from '../App';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../hooks/useAuth';
 import {
+  api,
   getErrorMessage,
   getEventByAccessLink,
   getEventById,
   getSavedRecommendedEvents,
   RecommendedEvent,
 } from '../services/api';
+import type { Event } from '../types/event';
 import { ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
-
-const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SavedAndPrivateEvents'>;
 
+const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
+
 export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { colors, theme } = useTheme();
+  const { user } = useAuth();
   const mode = route.params?.mode ?? 'both';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savedEvents, setSavedEvents] = useState<RecommendedEvent[]>([]);
-  const [privateEvents, setPrivateEvents] = useState<RecommendedEvent[]>([]);
+  const [privateEvents, setPrivateEvents] = useState<Event[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [savedRes, rawPrivateLinks] = await Promise.all([
+      const [savedRes, createdRes, rawPrivateLinks] = await Promise.all([
         getSavedRecommendedEvents(),
+        user?.id ? api.get(`/events/user/${user.id}`) : Promise.resolve({ data: [] as Event[] }),
         AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY),
       ]);
 
       const links: string[] = rawPrivateLinks ? JSON.parse(rawPrivateLinks) : [];
       const privateResults = await Promise.allSettled(links.map((link) => getEventByAccessLink(link)));
 
-      const privateMapped: RecommendedEvent[] = privateResults
-        .filter((item): item is PromiseFulfilledResult<any> => item.status === 'fulfilled')
-        .map((item) => ({
-          id: item.value.id,
-          title: item.value.title,
-          description: item.value.description,
-          fechaInicio: item.value.fechaInicio,
-          fechaFin: item.value.fechaFin,
-          address: item.value.address,
-          categoria: item.value.categoria?.nombre ?? null,
-          imagen: item.value.imagen ?? null,
-          score: 0,
-          distanceKm: null,
-          reasons: [],
-        }));
+      const linkedPrivate = privateResults
+        .filter((item): item is PromiseFulfilledResult<Event> => item.status === 'fulfilled')
+        .map((item) => item.value);
+
+      const mergedPrivate = [...(createdRes.data as Event[]), ...linkedPrivate]
+        .filter((event, index, arr) => event?.privado && index === arr.findIndex((e) => e.id === event.id));
 
       setSavedEvents(savedRes.eventos ?? []);
-      setPrivateEvents(privateMapped);
+      setPrivateEvents(mergedPrivate);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -72,14 +68,142 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
     }, [loadData]),
   );
 
+  const mapSavedToEvent = (event: RecommendedEvent): Event => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    address: event.address,
+    location: null,
+    fechaInicio: event.fechaInicio,
+    fechaFin: event.fechaFin,
+    precio: null,
+    precioMin: null,
+    precioMax: null,
+    privado: false,
+    linkAcceso: undefined,
+    categoria: {
+      id: 'saved',
+      nombre: event.categoria || 'General',
+      descripcion: '',
+    },
+    estado: 'Aprobado',
+    creador: {
+      id: 'unknown',
+      nombre: 'Desconocido',
+      email: '',
+    },
+    imagen: event.imagen || undefined,
+    imagenes: [],
+  });
+
   const openEvent = async (event: RecommendedEvent) => {
+    const privateMatch = privateEvents.find((privateEvent) => privateEvent.id === event.id);
+    if (privateMatch) {
+      navigation.navigate('EventDetail', { event: privateMatch });
+      return;
+    }
+
     try {
       const fullEvent = await getEventById(event.id);
       navigation.navigate('EventDetail', { event: fullEvent });
-    } catch (err) {
-      Alert.alert('Error', getErrorMessage(err) || 'No se pudo abrir el detalle del evento.');
+    } catch (_err) {
+      navigation.navigate('EventDetail', { event: mapSavedToEvent(event) });
     }
   };
+
+  const openPrivateEvent = (event: Event) => {
+    navigation.navigate('EventDetail', { event });
+  };
+
+  const renderPrivateList = (title: string, events: Event[]) => (
+    <ThemedView style={{ marginBottom: 16 }}>
+      <ThemedTitle style={styles.sectionTitle}>{title}</ThemedTitle>
+      {events.length === 0 ? (
+        <ThemedTextSecondary>No hay eventos en esta lista.</ThemedTextSecondary>
+      ) : (
+        events.map((event) => {
+          const nowMs = Date.now();
+          const startMs = new Date(event.fechaInicio).getTime();
+          const endMs = new Date(event.fechaFin).getTime();
+          const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
+            ? nowMs >= startMs && nowMs <= endMs
+            : false;
+          const isWithinWeek = Number.isFinite(startMs)
+            ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
+            : false;
+
+          return (
+            <TouchableOpacity key={`${title}-${event.id}`} onPress={() => { openPrivateEvent(event); }} activeOpacity={0.86}>
+              <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+                {isOngoing && (
+                  <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
+                    En curso
+                  </ThemedText>
+                )}
+                {!isOngoing && isWithinWeek && (
+                  <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
+                    En &lt; 7 dias
+                  </ThemedText>
+                )}
+
+                <ImageBackground
+                  source={event.imagen ? { uri: event.imagen } : require('../../assets/splash.png')}
+                  style={{ height: 120, justifyContent: 'flex-end' }}
+                  imageStyle={{ opacity: 0.2 }}
+                  resizeMode="cover"
+                >
+                  <ThemedText
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      color: theme === 'dark' ? '#fff' : '#222',
+                      marginBottom: 7,
+                      marginLeft: 14,
+                      textShadowColor:
+                        theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
+                      textShadowOffset: { width: 0, height: 2 },
+                      textShadowRadius: 6,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {event.title}
+                  </ThemedText>
+                  <ThemedTextSecondary
+                    style={{
+                      fontSize: 13,
+                      color: theme === 'dark' ? '#eee' : '#444',
+                      marginLeft: 14,
+                      marginBottom: 6,
+                      textShadowColor:
+                        theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {event.address}
+                  </ThemedTextSecondary>
+                </ImageBackground>
+
+                <ThemedView style={styles.cardDetails}>
+                  <ThemedView style={styles.detailRow}>
+                    <ThemedTextSecondary>
+                      {dayjs(event.fechaInicio).locale('es').format('DD/MM/YYYY')} - {dayjs(event.fechaFin).locale('es').format('DD/MM/YYYY')}
+                    </ThemedTextSecondary>
+                  </ThemedView>
+                  <ThemedView style={styles.detailRow}>
+                    <ThemedTextSecondary>{event.categoria?.nombre || 'General'}</ThemedTextSecondary>
+                  </ThemedView>
+                </ThemedView>
+              </ThemedCard>
+            </TouchableOpacity>
+          );
+        })
+      )}
+    </ThemedView>
+  );
 
   const renderList = (title: string, events: RecommendedEvent[]) => (
     <ThemedView style={{ marginBottom: 16 }}>
@@ -183,7 +307,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.container}>
       {!!error && <ThemedText style={{ color: colors.error, marginBottom: 12 }}>{error}</ThemedText>}
       {(mode === 'both' || mode === 'saved') && renderList('Eventos guardados', savedEvents)}
-      {(mode === 'both' || mode === 'private') && renderList('Eventos privados accedidos', privateEvents)}
+      {(mode === 'both' || mode === 'private') && renderPrivateList('Eventos privados', privateEvents)}
     </ScrollView>
   );
 };
@@ -205,7 +329,7 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 8,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 18,
     padding: 10,
   },
   cardTitle: {
@@ -220,7 +344,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 16,
     fontSize: 12,
     fontWeight: 'bold',
     zIndex: 10,

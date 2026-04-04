@@ -1,4 +1,4 @@
-import { IsInt, Max, Min, IsString, Length } from 'class-validator';
+import { IsInt, Max, Min, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class RateEventDto {
   @IsInt({ message: 'La puntuacion debe ser un numero entero.' })
@@ -6,7 +6,8 @@ export class RateEventDto {
   @Max(5, { message: 'La puntuacion maxima es 5.' })
   puntuacion!: number;
 
+  @IsOptional()
   @IsString({ message: 'El comentario debe ser un texto.' })
-  @Length(10, 500, { message: 'El comentario debe tener entre 10 y 500 caracteres.' })
-  comentario!: string;
+  @MaxLength(500, { message: 'El comentario no puede superar 500 caracteres.' })
+  comentario?: string;
 }

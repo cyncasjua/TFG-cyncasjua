@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', marginBottom: 24, alignSelf: 'center' },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,

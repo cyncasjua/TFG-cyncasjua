@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from '../components/ThemedText';
+import { Avatar } from '../components';
 import { useAuth } from '../hooks/useAuth';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
@@ -15,14 +16,7 @@ export const ProfileHeader: React.FC<Props> = ({ onPress }) => {
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.container} activeOpacity={0.8}>
-      <Image
-        source={
-          user?.fotoPerfil
-            ? { uri: user.fotoPerfil }
-            : { uri: 'https://ui-avatars.com/api/?name=Perfil' }
-        }
-        style={styles.avatar}
-      />
+      <Avatar photoUrl={user?.fotoPerfil} size={80} style={styles.avatar} />
       <View style={styles.nameRow}>
         <ThemedText style={styles.name}>{user?.nombre || 'Mi perfil'}</ThemedText>
         <Feather name="edit-2" size={14} color="#888" style={{ marginLeft: 6 }} />
@@ -33,7 +27,7 @@ export const ProfileHeader: React.FC<Props> = ({ onPress }) => {
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', paddingVertical: 24 },
-  avatar: { width: 80, height: 80, borderRadius: 40, marginBottom: 8 },
+  avatar: { marginBottom: 8 },
   nameRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   name: { fontWeight: 'bold', fontSize: 16 },
   pencilIcon: { padding: 2 },

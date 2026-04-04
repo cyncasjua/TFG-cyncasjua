@@ -57,6 +57,10 @@ type RecommendedRouteWithSource = RecommendedRoute & { sourceStrategy?: RouteStr
 
 const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 const ROUTES_SETTINGS_KEY = 'routesSettingsV1';
+const UNIFIED_BORDER_RADIUS = 18;
+const RECOMMENDATION_BORDER_RADIUS = 24;
+const BOTTOM_DOCK_ICON_SIZE = 36;
+const BOTTOM_DOCK_ICON_RADIUS = BOTTOM_DOCK_ICON_SIZE / 2;
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
@@ -637,6 +641,21 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     return `Buenas noches, ${name}`;
   }, [user?.nombre]);
 
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => setMenuVisible(true)}
+          accessibilityLabel="Abrir menú"
+          style={{ paddingHorizontal: 4, paddingVertical: 2 }}
+        >
+          <MaterialIcons name="menu" size={26} color={colors.primary} />
+        </TouchableOpacity>
+      ),
+      headerRight: () => null,
+    });
+  }, [navigation, colors.primary]);
+
   const handleOpenLink = useCallback(async (url: string) => {
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
@@ -677,64 +696,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedView style={styles.container}>
         <ScrollView
           style={{ flex: 1, minHeight: 0 }}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 190 }}
           nestedScrollEnabled
           showsVerticalScrollIndicator
         >
         <ThemedView style={styles.header}>
           <View style={styles.headerTopRow}>
             <ThemedText style={styles.heroEyebrow}>{homeGreeting}</ThemedText>
-
-            <View style={styles.heroActionsRow}>
-              {user?.ubicacion && (
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: 7,
-                    paddingHorizontal: 14,
-                    borderRadius: 18,
-                    backgroundColor: filterNearby ? '#ffd700' : colors.card,
-                    borderWidth: 1.5,
-                    borderColor: '#ffd700',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                  onPress={() => setFilterNearby(!filterNearby)}
-                >
-                  <MaterialIcons
-                    name="near-me"
-                    size={15}
-                    color={filterNearby ? '#fff' : '#ffd700'}
-                    style={{ marginRight: 4 }}
-                  />
-                  <ThemedText
-                    style={{
-                      color: filterNearby ? '#fff' : colors.text + '99',
-                      fontWeight: '500',
-                      fontSize: 11,
-                    }}
-                  >
-                    Cerca
-                  </ThemedText>
-                </TouchableOpacity>
-              )}
-
-              <TouchableOpacity
-                style={{
-                  paddingVertical: 7,
-                  paddingHorizontal: 10,
-                  borderRadius: 18,
-                  backgroundColor: colors.card,
-                  borderWidth: 1.5,
-                  borderColor: colors.primary,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}
-                onPress={() => setSearchModalVisible(true)}
-                accessibilityLabel="Buscar y filtrar"
-              >
-                <MaterialIcons name="search" size={16} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
           </View>
 
           <ThemedTitle style={styles.heroTitle}>{discoveryTitle}</ThemedTitle>
@@ -764,7 +732,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   style={{
                     paddingVertical: 6,
                     paddingHorizontal: 12,
-                    borderRadius: 16,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
                     backgroundColor: searchRadius === radius ? '#ffd700' : colors.card,
                     marginRight: 6,
                     borderWidth: 1,
@@ -787,7 +755,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 style={{
                   paddingVertical: 6,
                   paddingHorizontal: 12,
-                  borderRadius: 16,
+                  borderRadius: UNIFIED_BORDER_RADIUS,
                   backgroundColor: colors.card,
                   marginRight: 6,
                   borderWidth: 1,
@@ -802,111 +770,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </ScrollView>
           </ThemedView>
         )}
-        {categories.length > 0 && (
-          <ThemedView style={{ marginBottom: 12 }}>
-            <ThemedText
-              style={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                marginLeft: 1,
-                marginBottom: 8,
-                color: colors.primary,
-              }}
-            >
-              Categoría:
-            </ThemedText>
-            <DraggableFlatList
-              horizontal
-              data={categories}
-              keyExtractor={(item) => item.id}
-              onDragEnd={({ data }) => {
-                const sortedData = sortWithOtrosLast(data);
-                setCategories(sortedData);
-                persistCategoryOrder(sortedData.map((item) => item.id));
-              }}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: 12 }}
-              ListHeaderComponent={
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: 7,
-                    paddingHorizontal: 16,
-                    borderRadius: 18,
-                    backgroundColor: selectedCategory === null ? colors.primary : colors.card,
-                    marginRight: 8,
-                    borderWidth: 1.5,
-                    borderColor: colors.primary,
-                  }}
-                  onPress={() => setSelectedCategory(null)}
-                >
-                  <ThemedText
-                    style={{
-                      color: selectedCategory === null ? '#fff' : colors.primary,
-                      fontWeight: 'bold',
-                      fontSize: 13,
-                    }}
-                  >
-                    Todas
-                  </ThemedText>
-                </TouchableOpacity>
-              }
-              renderItem={({ item, drag, isActive }) => (
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: 7,
-                    paddingHorizontal: 16,
-                    borderRadius: 18,
-                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.card,
-                    marginRight: 8,
-                    borderWidth: 1.5,
-                    borderColor: colors.primary,
-                    opacity: isActive ? 0.7 : 1,
-                  }}
-                  onPress={() => setSelectedCategory(item.id)}
-                  onLongPress={drag}
-                  delayLongPress={150}
-                >
-                  <ThemedText
-                    style={{
-                      color: selectedCategory === item.id ? '#fff' : colors.primary,
-                      fontWeight: 'bold',
-                      fontSize: 13,
-                    }}
-                  >
-                    {item.nombre}
-                  </ThemedText>
-                </TouchableOpacity>
-              )}
-            />
-          </ThemedView>
-        )}
-        {!user?.ubicacion && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('EditProfile')}
-            style={{
-              backgroundColor: colors.primary + '20',
-              borderLeftWidth: 3,
-              borderLeftColor: colors.primary,
-              padding: 12,
-              marginBottom: 12,
-              borderRadius: 8,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <MaterialIcons
-              name="location-on"
-              size={20}
-              color={colors.primary}
-              style={{ marginRight: 8 }}
-            />
-            <ThemedText style={{ flex: 1, fontSize: 13, color: colors.primary }}>
-              Configura tu ubicación para ver eventos ordenados por cercanía
-            </ThemedText>
-            <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
-          </TouchableOpacity>
-        )}
-
         <ThemedView
           style={[
             styles.recommendationSection,
@@ -1105,6 +968,168 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </ThemedView>
 
+        <ThemedView style={{ marginBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <ThemedText
+              style={{
+                fontWeight: 'bold',
+                fontSize: 14,
+                marginLeft: 1,
+                marginBottom: 8,
+                color: colors.primary,
+              }}
+            >
+              Categoría:
+            </ThemedText>
+            <View style={styles.heroActionsRow}>
+              {user?.ubicacion && (
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 7,
+                    paddingHorizontal: 14,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    backgroundColor: filterNearby ? '#ffd700' : colors.card,
+                    borderWidth: 1.5,
+                    borderColor: '#ffd700',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                  onPress={() => setFilterNearby(!filterNearby)}
+                >
+                  <MaterialIcons
+                    name="near-me"
+                    size={15}
+                    color={filterNearby ? '#fff' : '#ffd700'}
+                    style={{ marginRight: 4 }}
+                  />
+                  <ThemedText
+                    style={{
+                      color: filterNearby ? '#fff' : colors.text + '99',
+                      fontWeight: '500',
+                      fontSize: 11,
+                    }}
+                  >
+                    Cerca
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={{
+                  paddingVertical: 7,
+                  paddingHorizontal: 10,
+                  borderRadius: UNIFIED_BORDER_RADIUS,
+                  backgroundColor: colors.card,
+                  borderWidth: 1.5,
+                  borderColor: colors.primary,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 8,
+                }}
+                onPress={() => setSearchModalVisible(true)}
+                accessibilityLabel="Buscar y filtrar"
+              >
+                <MaterialIcons name="search" size={16} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ThemedView>
+
+        {categories.length > 0 && (
+          <ThemedView style={{ marginBottom: 12 }}>
+            <DraggableFlatList
+              horizontal
+              data={categories}
+              keyExtractor={(item) => item.id}
+              onDragEnd={({ data }) => {
+                const sortedData = sortWithOtrosLast(data);
+                setCategories(sortedData);
+                persistCategoryOrder(sortedData.map((item) => item.id));
+              }}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 12 }}
+              ListHeaderComponent={
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 7,
+                    paddingHorizontal: 16,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    backgroundColor: selectedCategory === null ? colors.primary : colors.card,
+                    marginRight: 8,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                  }}
+                  onPress={() => setSelectedCategory(null)}
+                >
+                  <ThemedText
+                    style={{
+                      color: selectedCategory === null ? '#fff' : colors.primary,
+                      fontWeight: 'bold',
+                      fontSize: 13,
+                    }}
+                  >
+                    Todas
+                  </ThemedText>
+                </TouchableOpacity>
+              }
+              renderItem={({ item, drag, isActive }) => (
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: 7,
+                    paddingHorizontal: 16,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.card,
+                    marginRight: 8,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                    opacity: isActive ? 0.7 : 1,
+                  }}
+                  onPress={() => setSelectedCategory(item.id)}
+                  onLongPress={drag}
+                  delayLongPress={150}
+                >
+                  <ThemedText
+                    style={{
+                      color: selectedCategory === item.id ? '#fff' : colors.primary,
+                      fontWeight: 'bold',
+                      fontSize: 13,
+                    }}
+                  >
+                    {item.nombre}
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+            />
+          </ThemedView>
+        )}
+        {!user?.ubicacion && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('EditProfile')}
+            style={{
+              backgroundColor: colors.primary + '20',
+              borderLeftWidth: 3,
+              borderLeftColor: colors.primary,
+              padding: 12,
+              marginBottom: 12,
+              borderRadius: UNIFIED_BORDER_RADIUS,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <MaterialIcons
+              name="location-on"
+              size={20}
+              color={colors.primary}
+              style={{ marginRight: 8 }}
+            />
+            <ThemedText style={{ flex: 1, fontSize: 13, color: colors.primary }}>
+              Configura tu ubicación para ver eventos ordenados por cercanía
+            </ThemedText>
+            <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
 
         {filteredItems.map((item) => {
@@ -1140,7 +1165,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       color: '#fff',
                       paddingHorizontal: 8,
                       paddingVertical: 4,
-                      borderRadius: 8,
+                      borderRadius: UNIFIED_BORDER_RADIUS,
                       fontSize: 12,
                       fontWeight: 'bold',
                       zIndex: 10,
@@ -1238,7 +1263,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         backgroundColor: '#6c2eb7',
                         paddingHorizontal: 12,
                         paddingVertical: 4,
-                        borderRadius: 12,
+                        borderRadius: UNIFIED_BORDER_RADIUS,
                         overflow: 'hidden',
                         alignSelf: 'flex-end',
                       }}
@@ -1300,75 +1325,71 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </ThemedView>
         </ScrollView>
 
-        <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(true)}>
-          <MaterialIcons name="menu" size={32} color="#6c2eb7" />
-        </TouchableOpacity>
-
-        <View style={styles.topShortcutsDock}>
-          <View style={styles.topShortcutsRow}>
-            <TouchableOpacity
-              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => navigation.navigate('Notifications')}
-            >
-              <MaterialIcons name="notifications" size={16} color={colors.primary} />
-              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Notifs</ThemedText>
+        <View style={[styles.bottomDock, { backgroundColor: colors.card + 'F2', borderColor: colors.border + 'AA' }]}>
+          <TouchableOpacity
+            style={styles.bottomDockItem}
+            onPress={() => navigation.navigate('Notifications')}
+            accessibilityLabel="Notificaciones"
+            activeOpacity={0.85}
+          >
+            <View style={[styles.bottomDockIconWrap, { backgroundColor: colors.background }]}>
+              <MaterialIcons name="notifications" size={18} color={colors.primary} />
               {unread > 0 && (
-                <View style={styles.topShortcutBadge}>
-                  <Text style={styles.topShortcutBadgeText}>{unread > 99 ? '99+' : unread}</Text>
+                <View style={styles.bottomDockBadge}>
+                  <Text style={styles.bottomDockBadgeText}>{unread > 99 ? '99+' : unread}</Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </View>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Notif</ThemedText>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => navigation.navigate('Messages')}
-            >
-              <MaterialIcons name="mail" size={16} color={colors.primary} />
-              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Mensajes</ThemedText>
+          <TouchableOpacity
+            style={styles.bottomDockItem}
+            onPress={() => navigation.navigate('Messages')}
+            accessibilityLabel="Mensajes privados"
+            activeOpacity={0.85}
+          >
+            <View style={[styles.bottomDockIconWrap, { backgroundColor: colors.background }]}>
+              <MaterialIcons name="mail" size={18} color={colors.primary} />
               {unreadMessages > 0 && (
-                <View style={styles.topShortcutBadge}>
-                  <Text style={styles.topShortcutBadgeText}>{unreadMessages > 99 ? '99+' : unreadMessages}</Text>
+                <View style={styles.bottomDockBadge}>
+                  <Text style={styles.bottomDockBadgeText}>
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </View>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Mensajes</ThemedText>
+          </TouchableOpacity>
 
+          {role === 'user' ? (
             <TouchableOpacity
-              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => navigation.navigate('CalendarEvents')}
+              style={styles.bottomDockItem}
+              onPress={() => navigation.navigate('CreateEvent')}
+              accessibilityLabel="Crear evento"
+              activeOpacity={0.85}
             >
-              <MaterialIcons name="calendar-today" size={16} color={colors.primary} />
-              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Calendario</ThemedText>
+              <View style={[styles.bottomDockIconWrap, styles.bottomDockPrimaryIconWrap]}>
+                <MaterialIcons name="add" size={20} color="#fff" />
+              </View>
+              <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Crear</ThemedText>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.topShortcutChip, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => navigation.navigate('EventsMap')}
-            >
-              <MaterialIcons name="map" size={16} color={colors.primary} />
-              <ThemedText style={styles.topShortcutLabel} numberOfLines={1}>Mapa</ThemedText>
-            </TouchableOpacity>
-          </View>
+          ) : (
+            role === 'moderator' && (
+              <TouchableOpacity
+                style={styles.bottomDockItem}
+                onPress={() => navigation.navigate('ModeratorEvents')}
+                accessibilityLabel="Aprobar eventos"
+                activeOpacity={0.85}
+              >
+                <View style={[styles.bottomDockIconWrap, styles.bottomDockSuccessIconWrap]}>
+                  <MaterialIcons name="check" size={20} color="#fff" />
+                </View>
+                <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Moderar</ThemedText>
+              </TouchableOpacity>
+            )
+          )}
         </View>
-
-        {role === 'user' && (
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => navigation.navigate('CreateEvent')}
-            accessibilityLabel="Crear evento"
-          >
-            <MaterialIcons name="add-circle" size={56} color="#6c2eb7" />
-          </TouchableOpacity>
-        )}
-
-        {role === 'moderator' && (
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => navigation.navigate('ModeratorEvents')}
-            accessibilityLabel="Aprobar eventos"
-          >
-            <MaterialIcons name="check-circle" size={56} color="#4caf50" />
-          </TouchableOpacity>
-        )}
 
       <Modal
         visible={searchModalVisible}
@@ -1377,19 +1398,18 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         onRequestClose={() => setSearchModalVisible(false)}
       >
         <View style={{ flex: 1, backgroundColor: '#0008', justifyContent: 'center', alignItems: 'center' }}>
-          <ThemedView style={{ width: '90%', backgroundColor: colors.card, borderRadius: 18, padding: 20 }}>
+          <ThemedView style={{ width: '90%', backgroundColor: colors.card, borderRadius: UNIFIED_BORDER_RADIUS, padding: 20 }}>
             <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
             <TextInput
-              style={{ backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 10, height: 38, borderWidth: 1, borderColor: colors.primary + '33', marginBottom: 12 }}
+              style={{ backgroundColor: colors.background, color: colors.text, borderRadius: UNIFIED_BORDER_RADIUS, paddingHorizontal: 10, height: 38, borderWidth: 1, borderColor: colors.primary + '33', marginBottom: 12 }}
               placeholder="Buscar por título o descripción"
               placeholderTextColor={colors.text + '66'}
               value={searchText}
               onChangeText={setSearchText}
-              autoFocus
             />
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
               <TextInput
-                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
+                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: UNIFIED_BORDER_RADIUS, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
                 placeholder="Min €"
                 placeholderTextColor={colors.text + '66'}
                 value={minPrice}
@@ -1397,7 +1417,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 keyboardType="numeric"
               />
               <TextInput
-                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: 8, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
+                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: UNIFIED_BORDER_RADIUS, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
                 placeholder="Max €"
                 placeholderTextColor={colors.text + '66'}
                 value={maxPrice}
@@ -1407,7 +1427,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
               <TouchableOpacity
-                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
+                style={{ flex: 1, backgroundColor: colors.background, borderRadius: UNIFIED_BORDER_RADIUS, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
                 onPress={() => setShowDateFromPicker(true)}
               >
                 <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
@@ -1415,7 +1435,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </ThemedText>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ flex: 1, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
+                style={{ flex: 1, backgroundColor: colors.background, borderRadius: UNIFIED_BORDER_RADIUS, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
                 onPress={() => setShowDateToPicker(true)}
               >
                 <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
@@ -1463,7 +1483,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={[
               styles.privateModalCard,
               {
-                backgroundColor: theme === 'dark' ? '#1f2430' : '#fff2de',
+                backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
                 borderColor: colors.primary + '55',
               },
             ]}
@@ -1490,7 +1510,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 {
                   borderColor: colors.border,
                   color: colors.text,
-                  backgroundColor: theme === 'dark' ? '#2b3344' : '#ffffff',
+                  backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
                 },
               ]}
             />
@@ -1901,7 +1921,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: 'flex-start' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
-    marginTop: 64,
+    marginTop: 12,
     marginBottom: 10,
     alignItems: 'flex-start',
   },
@@ -1930,15 +1950,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginTop: 0,
-  },
-  menuButton: {
-    position: 'absolute',
-    top: 18,
-    left: 18,
-    zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
-    padding: 8,
   },
   menuOverlay: {
     position: 'absolute',
@@ -1975,7 +1986,7 @@ const styles = StyleSheet.create({
     right: 10,
     zIndex: 3,
     backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 18,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     padding: 6,
   },
   menuTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 18 },
@@ -1995,7 +2006,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
@@ -2009,7 +2020,7 @@ const styles = StyleSheet.create({
   menuActionBadge: {
     minWidth: 22,
     height: 22,
-    borderRadius: 11,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     backgroundColor: '#d32f2f',
     alignItems: 'center',
     justifyContent: 'center',
@@ -2034,7 +2045,7 @@ const styles = StyleSheet.create({
   },
   topShortcutChip: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     width: '23.5%',
     minHeight: 52,
     paddingVertical: 6,
@@ -2055,7 +2066,7 @@ const styles = StyleSheet.create({
     right: -5,
     minWidth: 16,
     height: 16,
-    borderRadius: 8,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     backgroundColor: '#d32f2f',
     alignItems: 'center',
     justifyContent: 'center',
@@ -2064,6 +2075,72 @@ const styles = StyleSheet.create({
   topShortcutBadgeText: {
     color: '#fff',
     fontSize: 9,
+    fontWeight: '700',
+  },
+  bottomDock: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 16,
+    zIndex: 30,
+    elevation: 14,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: UNIFIED_BORDER_RADIUS,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  bottomDockItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    minHeight: 58,
+  },
+  bottomDockIconWrap: {
+    width: BOTTOM_DOCK_ICON_SIZE,
+    height: BOTTOM_DOCK_ICON_SIZE,
+    borderRadius: BOTTOM_DOCK_ICON_RADIUS,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(108, 46, 183, 0.14)',
+  },
+  bottomDockPrimaryIconWrap: {
+    backgroundColor: '#6c2eb7',
+    borderColor: '#6c2eb7',
+  },
+  bottomDockSuccessIconWrap: {
+    backgroundColor: '#4caf50',
+    borderColor: '#4caf50',
+  },
+  bottomDockLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  bottomDockBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -5,
+    minWidth: 15,
+    height: 15,
+    borderRadius: UNIFIED_BORDER_RADIUS,
+    backgroundColor: '#d32f2f',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  bottomDockBadgeText: {
+    color: '#fff',
+    fontSize: 8,
     fontWeight: '700',
   },
   headerButtons: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' },
@@ -2089,7 +2166,7 @@ const styles = StyleSheet.create({
   },
   recommendationSection: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RECOMMENDATION_BORDER_RADIUS,
     padding: 10,
     marginBottom: 12,
   },
@@ -2107,14 +2184,14 @@ const styles = StyleSheet.create({
   recommendationHeaderIcon: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
   },
   recommendationRefreshButton: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.05)',
@@ -2127,7 +2204,7 @@ const styles = StyleSheet.create({
   recommendationToggleButton: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.05)',
@@ -2142,7 +2219,7 @@ const styles = StyleSheet.create({
   },
   recommendedCard: {
     width: 200,
-    borderRadius: 12,
+    borderRadius: RECOMMENDATION_BORDER_RADIUS,
     borderWidth: 1,
     padding: 9,
   },
@@ -2168,7 +2245,7 @@ const styles = StyleSheet.create({
   },
   routeCard: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RECOMMENDATION_BORDER_RADIUS,
     padding: 9,
   },
   routeCardTop: {
@@ -2196,7 +2273,7 @@ const styles = StyleSheet.create({
   routeStrategyChip: {
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: 14,
+    borderRadius: 999,
     borderWidth: 1,
   },
   routeStepRow: {
@@ -2222,7 +2299,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '80%',
-    borderRadius: 16,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -2236,7 +2313,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 16,
@@ -2253,7 +2330,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     fontSize: 12,
     fontWeight: 'bold',
     zIndex: 10,
@@ -2271,7 +2348,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   privateModalCard: {
-    borderRadius: 14,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     padding: 18,
     borderWidth: 1,
   },
@@ -2284,7 +2361,7 @@ const styles = StyleSheet.create({
   privateModalIcon: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2298,7 +2375,7 @@ const styles = StyleSheet.create({
   },
   privateModalInput: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     paddingHorizontal: 12,
     paddingVertical: 11,
     marginBottom: 14,
@@ -2310,7 +2387,7 @@ const styles = StyleSheet.create({
   },
   creatorCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     padding: 14,
     marginTop: 8,
     marginBottom: 28,
@@ -2336,7 +2413,7 @@ const styles = StyleSheet.create({
   },
   creatorLinkRow: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: UNIFIED_BORDER_RADIUS,
     paddingVertical: 10,
     paddingHorizontal: 10,
     flexDirection: 'row',

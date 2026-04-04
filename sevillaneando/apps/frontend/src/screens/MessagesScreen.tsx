@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,8 +13,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { reportWarning } from '../utils/telemetry';
-import { getFullImageUrl } from '../utils/imageUrl';
-import { ThemedText, ThemedTextSecondary, ThemedView } from '../components';
+import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Messages'>;
 
@@ -131,14 +130,7 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
           ]}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-            {item.userPhoto ? (
-              <Image
-                source={{ uri: getFullImageUrl(item.userPhoto) || item.userPhoto }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={[styles.avatar, styles.avatarFallback]} />
-            )}
+            <Avatar photoUrl={item.userPhoto} size={48} style={styles.avatar} />
 
             <View style={{ flex: 1 }}>
               <ThemedText style={{ fontWeight: '600' }}>{item.userName}</ThemedText>
@@ -216,17 +208,16 @@ const styles = StyleSheet.create({
   conversationCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 18,
     padding: 12,
     borderWidth: 1,
     minHeight: 72,
   },
-  avatar: { width: 48, height: 48, borderRadius: 24 },
-  avatarFallback: { backgroundColor: '#d0d0d0' },
+  avatar: {},
   badge: {
     minWidth: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,

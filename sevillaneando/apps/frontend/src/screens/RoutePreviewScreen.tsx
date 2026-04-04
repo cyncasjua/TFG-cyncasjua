@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     marginHorizontal: 14,
     marginTop: 12,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 12,
     gap: 4,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     height: 250,
     marginHorizontal: 14,
     marginTop: 10,
-    borderRadius: 14,
+    borderRadius: 18,
   },
   markerBubble: {
     width: 24,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   timelineDot: {
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: 12,
     borderWidth: 2,
     backgroundColor: '#fff',
     marginTop: 10,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   eventCard: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 10,
     marginLeft: 6,
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: -2,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 16,
     paddingHorizontal: 10,
     paddingVertical: 7,
     flexDirection: 'row',

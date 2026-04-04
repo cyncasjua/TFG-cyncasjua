@@ -157,6 +157,7 @@ export class RecomendacionesService {
   async rateEvent(userId: string, eventId: string, dto: RateEventDto) {
     const event = await this.eventRepo.findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Evento no encontrado');
+    const comentario = dto.comentario?.trim() ?? '';
 
     let resena = await this.resenaRepo.findOne({
       where: {
@@ -171,12 +172,12 @@ export class RecomendacionesService {
         autor: { id: userId } as User,
         evento: { id: eventId } as Event,
         puntuacion: dto.puntuacion,
-        comentario: dto.comentario,
+        comentario,
         fecha: new Date(),
       });
     } else {
       resena.puntuacion = dto.puntuacion;
-      resena.comentario = dto.comentario;
+      resena.comentario = comentario;
       resena.fecha = new Date();
     }
 

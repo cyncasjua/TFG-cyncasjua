@@ -126,7 +126,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 <View
                   style={{
                     backgroundColor: '#ffd700',
-                    borderRadius: 8,
+                    borderRadius: 16,
                     padding: 6,
                     minWidth: 100,
                     alignItems: 'center',
@@ -162,7 +162,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 <View
                   style={{
                     backgroundColor: '#fff',
-                    borderRadius: 8,
+                    borderRadius: 16,
                     padding: 8,
                     minWidth: 180,
                     shadowColor: '#000',
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -262,6 +262,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 16,
   },
 });

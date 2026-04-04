@@ -552,7 +552,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                   backgroundColor: colors.card,
                   borderColor: colors.primary,
                   minHeight: 40,
-                  borderRadius: 8,
+                  borderRadius: 16,
                 }}
                 dropDownContainerStyle={{
                   backgroundColor: colors.card,
@@ -579,7 +579,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 backgroundColor: colors.card,
                 borderColor: colors.primary,
                 minHeight: 40,
-                borderRadius: 8,
+                borderRadius: 16,
               }}
               dropDownContainerStyle={{
                 backgroundColor: colors.card,
@@ -642,7 +642,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                               top: 4,
                               right: 4,
                               backgroundColor: 'rgba(0,0,0,0.6)',
-                              borderRadius: 12,
+                              borderRadius: 18,
                               padding: 2,
                               zIndex: 2,
                             }}
@@ -656,7 +656,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                               bottom: 4,
                               left: 4,
                               backgroundColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)',
-                              borderRadius: 12,
+                              borderRadius: 18,
                               paddingHorizontal: 8,
                               paddingVertical: 2,
                               zIndex: 2,
@@ -747,11 +747,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   scrollContainer: { flexGrow: 1 },
   label: { fontWeight: 'bold', marginTop: 12, marginBottom: 4 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8, borderColor: '#ccc' },
+  input: { borderWidth: 1, borderRadius: 16, padding: 8, marginBottom: 8, borderColor: '#ccc' },
   map: { width: '100%', height: 180, borderRadius: 10, marginBottom: 12 },
   mapSearchInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 8,
     marginRight: 8,
     borderColor: '#ccc',
@@ -765,14 +765,14 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 4,
+    borderRadius: 12,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   imagePreview: { width: 180, height: 120, borderRadius: 10, marginBottom: 8 },
-  removeImageBtn: { backgroundColor: '#f44336', padding: 6, borderRadius: 6 },
+  removeImageBtn: { backgroundColor: '#f44336', padding: 6, borderRadius: 12 },
   imagePicker: {
     alignSelf: 'center',
     marginBottom: 16,

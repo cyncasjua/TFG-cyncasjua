@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   card: {
-    borderRadius: 12,
+    borderRadius: 18,
     padding: 16,
     marginBottom: 18,
     borderWidth: 1,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 160,
-    borderRadius: 10,
+    borderRadius: 16,
     marginBottom: 10,
     backgroundColor: '#ccc',
   },
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   actions: { marginTop: 14 },
   button: {
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 16,
     alignItems: 'center',
   },
   buttonText: {

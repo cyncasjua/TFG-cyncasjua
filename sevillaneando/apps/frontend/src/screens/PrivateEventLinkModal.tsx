@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modal: {
-    borderRadius: 12,
+    borderRadius: 18,
     padding: 20,
     width: '85%',
     maxWidth: 400,
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   linkContainer: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 16,
   },

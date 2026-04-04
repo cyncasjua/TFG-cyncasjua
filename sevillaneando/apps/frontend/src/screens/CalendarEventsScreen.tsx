@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   eventCard: {
     backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 16,
     marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

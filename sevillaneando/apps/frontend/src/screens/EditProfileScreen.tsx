@@ -8,6 +8,7 @@ import {
   Image,
   View,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -211,6 +212,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <ThemedTitle style={styles.title}>Editar perfil</ThemedTitle>
       <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
         {fotoPerfil ? (
@@ -326,7 +333,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         <View
           style={{
             height: 180,
-            borderRadius: 12,
+            borderRadius: 18,
             overflow: 'hidden',
             marginBottom: 10,
             borderWidth: 1,
@@ -456,16 +463,18 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         style={[styles.cancelButton, { backgroundColor: colors.error }]}
         textStyle={{ color: '#fff' }}
       />
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center' },
+  container: { flex: 1, paddingHorizontal: 24 },
+  scrollContent: { paddingTop: 24, paddingBottom: 32 },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 24, alignSelf: 'center' },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
@@ -482,7 +491,7 @@ const styles = StyleSheet.create({
   },
   mapSearchInput: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 12,
     fontSize: 16,
   },

@@ -135,14 +135,14 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
   card: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 16,
     marginBottom: 12,
   },
   mensaje: { fontSize: 16 },
   fecha: { fontSize: 12, marginTop: 4 },
   badge: {
     color: '#fff',
-    borderRadius: 8,
+    borderRadius: 16,
     paddingHorizontal: 8,
     alignSelf: 'flex-start',
     marginTop: 6,
