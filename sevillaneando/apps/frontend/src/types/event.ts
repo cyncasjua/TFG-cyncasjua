@@ -4,8 +4,9 @@ export interface Event {
   description: string;
   address: string;
   location: { type: string; coordinates: [number, number] } | null;
-  fechaInicio: string;
-  fechaFin: string;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  hasMultipleDatesAvailable?: boolean;
   precio?: number | null;
   precioMin?: number | null;
   precioMax?: number | null;

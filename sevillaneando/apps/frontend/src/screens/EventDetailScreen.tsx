@@ -804,7 +804,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                {formatEventDateRange(event.fechaInicio, event.fechaFin)}
+                {event.hasMultipleDatesAvailable
+                  ? 'Varias fechas disponibles'
+                  : formatEventDateRange(event.fechaInicio, event.fechaFin)}
               </ThemedTextSecondary>
             </ThemedView>
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>

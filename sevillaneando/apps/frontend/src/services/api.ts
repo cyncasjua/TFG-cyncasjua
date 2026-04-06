@@ -109,8 +109,9 @@ export async function getEvents(userId?: string): Promise<Event[]> {
       description: event.description,
       address: event.address,
       location: event.location,
-      fechaInicio: event.fechaInicio,
-      fechaFin: event.fechaFin,
+      fechaInicio: event.fechaInicio ?? null,
+      fechaFin: event.fechaFin ?? null,
+      hasMultipleDatesAvailable: event.hasMultipleDatesAvailable ?? false,
       precio: event.precio,
       precioMin: event.precioMin,
       precioMax: event.precioMax,
@@ -141,6 +142,7 @@ export async function getEventById(eventId: string): Promise<Event> {
     location: event.location,
     fechaInicio: event.fechaInicio,
     fechaFin: event.fechaFin,
+    hasMultipleDatesAvailable: event.hasMultipleDatesAvailable ?? false,
     precio: event.precio,
     precioMin: event.precioMin,
     precioMax: event.precioMax,
@@ -195,6 +197,7 @@ export async function getEventByAccessLink(linkAcceso: string): Promise<Event> {
     location: event.location,
     fechaInicio: event.fechaInicio,
     fechaFin: event.fechaFin,
+    hasMultipleDatesAvailable: event.hasMultipleDatesAvailable ?? false,
     precio: event.precio,
     precioMin: event.precioMin,
     precioMax: event.precioMax,
@@ -266,8 +269,9 @@ export type RecommendedEvent = {
   id: string;
   title: string;
   description: string;
-  fechaInicio: string;
-  fechaFin: string;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  hasMultipleDatesAvailable?: boolean;
   address: string;
   categoria: string | null;
   imagen: string | null;

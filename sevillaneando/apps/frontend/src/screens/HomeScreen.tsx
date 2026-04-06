@@ -803,9 +803,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
                     </View>
                     <ThemedTextSecondary numberOfLines={1}>{event.categoria || 'General'}</ThemedTextSecondary>
-                    <ThemedTextSecondary numberOfLines={1}>
-                      {formatSevillaTime(event.fechaInicio)}
-                    </ThemedTextSecondary>
+                    {!event.hasMultipleDatesAvailable && (
+                      <ThemedTextSecondary numberOfLines={1}>
+                        {formatSevillaTime(event.fechaInicio)}
+                      </ThemedTextSecondary>
+                    )}
+                    {event.hasMultipleDatesAvailable && (
+                      <ThemedTextSecondary numberOfLines={1}>
+                        Varias fechas disponibles
+                      </ThemedTextSecondary>
+                    )}
                     <ThemedView style={styles.recommendedMetaRow}>
                       <MaterialIcons name="star" size={14} color="#f39c12" />
                       <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
@@ -877,16 +884,18 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <ThemedTextSecondary>Todavia no hay rutas optimizadas para tus gustos.</ThemedTextSecondary>
           ) : (
             <ThemedView style={styles.routesList}>
-              {recommendedRoutes.map((route) => (
+              {recommendedRoutes.map((route, index) => (
                 <TouchableOpacity
-                  key={route.day}
+                  key={`route-${route.day}-${route.eventos[0]?.id ?? 'x'}-${index}`}
                   activeOpacity={0.88}
                   style={[styles.routeCard, { backgroundColor: colors.background, borderColor: colors.border }]}
                   onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
                 >
                   <View style={styles.routeCardTop}>
                     <ThemedText style={styles.routeCardTitle}>
-                      {dayjs(route.day).locale('es').format('dddd DD/MM')}
+                      {route.day === 'Sin fecha'
+                        ? '📅 Varias fechas disponibles'
+                        : dayjs(route.day).locale('es').format('dddd DD/MM')}
                     </ThemedText>
                     <ThemedTextSecondary>Score {route.scoreMedio.toFixed(1)}</ThemedTextSecondary>
                   </View>
@@ -919,16 +928,18 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </ThemedTextSecondary>
               ) : (
                 <ThemedView style={styles.routesList}>
-                  {adjustedRoutes.map((route) => (
+                  {adjustedRoutes.map((route, index) => (
                     <TouchableOpacity
-                      key={`adjusted-${route.day}-${route.eventos[0]?.id ?? 'x'}`}
+                      key={`adjusted-${route.day}-${route.eventos[0]?.id ?? 'x'}-${index}`}
                       activeOpacity={0.88}
                       style={[styles.routeCard, { backgroundColor: colors.background, borderColor: colors.border }]}
                       onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
                     >
                       <View style={styles.routeCardTop}>
                         <ThemedText style={styles.routeCardTitle}>
-                          {dayjs(route.day).locale('es').format('dddd DD/MM')}
+                          {route.day === 'Sin fecha'
+                            ? '📅 Varias fechas disponibles'
+                            : dayjs(route.day).locale('es').format('dddd DD/MM')}
                         </ThemedText>
                         <ThemedTextSecondary>Score {route.scoreMedio.toFixed(1)}</ThemedTextSecondary>
                       </View>
@@ -1275,7 +1286,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   >
                     <MaterialIcons name="event" size={16} color="#6c2eb7" />
                     <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {formatEventDateRange(item.fechaInicio, item.fechaFin)}
+                      {item.hasMultipleDatesAvailable
+                        ? 'Varias fechas disponibles'
+                        : formatEventDateRange(item.fechaInicio, item.fechaFin)}
                     </ThemedTextSecondary>
                   </ThemedView>
                   <ThemedView
@@ -1778,6 +1791,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 >
                   <MaterialIcons name="lock" size={20} color={colors.primary} />
                   <ThemedText style={styles.menuActionLabel}>Eventos privados</ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('SavedAndPrivateEvents', { mode: 'joined' });
+                  }}
+                >
+                  <MaterialIcons name="how-to-reg" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Eventos apuntados</ThemedText>
                 </TouchableOpacity>
 
                 <TouchableOpacity

@@ -40,7 +40,7 @@ export class GeminiScraperService implements IScraper {
         await new Promise(resolve => setTimeout(resolve, 3000));
 
       } catch (error) {
-        this.logger.error(`Falló la extracción en ${url}:`, error.message);
+        this.logger.error(`Falló la extracción en ${url}:`, error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -49,21 +49,21 @@ export class GeminiScraperService implements IScraper {
   }
 
   private async extraerEventosDeUrl(url: string): Promise<ScrapedEvent[]> {
-          const lugaresFamosos: Record<string, string> = {
-            'plaza de españa': 'Av. María Luisa, s/n, 41013 Sevilla, España',
-            'teatro de la maestranza': 'Paseo de Cristóbal Colón, 22, 41001 Sevilla, España',
-            'teatro lope de vega': 'Av. María Luisa, s/n, 41013 Sevilla, España',
-            'auditorio rocio jurado': 'Camino de los Descubrimientos, s/n, 41092 Sevilla, España',
-            'cartuja center': 'C. Leonardo da Vinci, 7, 41092 Sevilla, España',
-            'fibes': 'Av. Alcalde Luis Uruñuela, 1, 41020 Sevilla, España',
-            'real alcázar': 'Patio de Banderas, s/n, 41004 Sevilla, España',
-            'catedral de sevilla': 'Av. de la Constitución, s/n, 41004 Sevilla, España',
-            'recinto ferial': 'Calle Antonio Bienvenida, 41011 Sevilla, España',
-            'barrio de triana': 'Calle San Jacinto, 41010 Sevilla, España',
-            'isla mágica': 'Pabellón de España, Isla de la Cartuja, 41092 Sevilla, España',
-            'estadio ramón sánchez pizjuán': 'C. Sevilla Fútbol Club, s/n, 41005 Sevilla, España',
-            'estadio benito villamarín': 'Av. de la Palmera, s/n, 41012 Sevilla, España',
-          };
+    const lugaresFamosos: Record<string, string> = {
+      'plaza de españa': 'Av. María Luisa, s/n, 41013 Sevilla, España',
+      'teatro de la maestranza': 'Paseo de Cristóbal Colón, 22, 41001 Sevilla, España',
+      'teatro lope de vega': 'Av. María Luisa, s/n, 41013 Sevilla, España',
+      'auditorio rocio jurado': 'Camino de los Descubrimientos, s/n, 41092 Sevilla, España',
+      'cartuja center': 'C. Leonardo da Vinci, 7, 41092 Sevilla, España',
+      'fibes': 'Av. Alcalde Luis Uruñuela, 1, 41020 Sevilla, España',
+      'real alcázar': 'Patio de Banderas, s/n, 41004 Sevilla, España',
+      'catedral de sevilla': 'Av. de la Constitución, s/n, 41004 Sevilla, España',
+      'recinto ferial': 'Calle Antonio Bienvenida, 41011 Sevilla, España',
+      'barrio de triana': 'Calle San Jacinto, 41010 Sevilla, España',
+      'isla mágica': 'Pabellón de España, Isla de la Cartuja, 41092 Sevilla, España',
+      'estadio ramón sánchez pizjuán': 'C. Sevilla Fútbol Club, s/n, 41005 Sevilla, España',
+      'estadio benito villamarín': 'Av. de la Palmera, s/n, 41012 Sevilla, España',
+    };
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -78,7 +78,7 @@ export class GeminiScraperService implements IScraper {
     const htmlRaw = await response.text();
 
     const $ = cheerio.load(htmlRaw);
-    const imagenesPrincipales = [];
+    const imagenesPrincipales: string[] = [];
     $('img').each((_, img) => {
       const src = $(img).attr('src') || '';
       const alt = ($(img).attr('alt') || '').toLowerCase();
@@ -159,12 +159,8 @@ ${htmlLimpio}
       const eventos: ScrapedEvent[] = [];
       for (const evento of datosParseados.eventos || []) {
 
-        const fechaInicio = evento.fechaInicio ? new Date(evento.fechaInicio) : new Date();
-        let fechaFin = evento.fechaFin ? new Date(evento.fechaFin) : fechaInicio;
-
-        if (fechaFin <= fechaInicio) {
-          fechaFin = new Date(fechaInicio.getTime() + 60 * 60 * 1000);
-        }
+        const fechaInicio = evento.fechaInicio ? new Date(evento.fechaInicio) : null;
+        const fechaFin = evento.fechaFin ? new Date(evento.fechaFin) : null;
 
         let imagenFinal = evento.imagen || null;
         if (!imagenFinal && Array.isArray(imagenesPrincipales) && imagenesPrincipales.length > 0) {
@@ -244,17 +240,40 @@ ${htmlLimpio}
           }
         }
 
-        // Normalizar precios para cumplir la validación de la entidad Event
-        const precio = evento.precio !== undefined ? evento.precio : null;
-        let precioMin = evento.precioMin !== undefined ? evento.precioMin : null;
-        let precioMax = evento.precioMax !== undefined ? evento.precioMax : null;
+        // Normalizar precios para cumplir la validación de la entidad Event.
+        // Regla: usar rango solo si existe min y max con min < max. En cualquier
+        // otro caso, degradar a precio fijo para evitar rechazos al persistir.
+        const parsedPrecio = Number(evento.precio);
+        const parsedPrecioMin = Number(evento.precioMin);
+        const parsedPrecioMax = Number(evento.precioMax);
 
-        // Si solo hay precioMin o precioMax, igualar ambos
-        if (precioMin !== null && precioMax === null) {
-          precioMax = precioMin;
+        let precio = Number.isFinite(parsedPrecio) ? parsedPrecio : null;
+        let precioMin = Number.isFinite(parsedPrecioMin) ? parsedPrecioMin : null;
+        let precioMax = Number.isFinite(parsedPrecioMax) ? parsedPrecioMax : null;
+
+        if (precioMin != null && precioMax != null) {
+          if (precioMin > precioMax) {
+            [precioMin, precioMax] = [precioMax, precioMin];
+          }
+          if (precioMin === precioMax) {
+            precio = precioMin;
+            precioMin = null;
+            precioMax = null;
+          }
+        } else if (precioMin != null || precioMax != null) {
+          precio = precioMin ?? precioMax;
+          precioMin = null;
+          precioMax = null;
         }
-        if (precioMax !== null && precioMin === null) {
-          precioMin = precioMax;
+
+        if (precio != null && precio < 0) {
+          precio = null;
+        }
+        if (precioMin != null && precioMin < 0) {
+          precioMin = null;
+        }
+        if (precioMax != null && precioMax < 0) {
+          precioMax = null;
         }
 
         if (locationFinal) {
@@ -262,8 +281,8 @@ ${htmlLimpio}
             title: evento.title || 'Evento sin título',
             description: evento.description || '',
             address: addressFinal,
-            fechaInicio: isNaN(fechaInicio.getTime()) ? new Date() : fechaInicio,
-            fechaFin: isNaN(fechaFin.getTime()) ? new Date() : fechaFin,
+            fechaInicio: fechaInicio && !isNaN(fechaInicio.getTime()) ? fechaInicio : null,
+            fechaFin: fechaFin && !isNaN(fechaFin.getTime()) ? fechaFin : null,
             precio,
             precioMin,
             precioMax,
@@ -277,7 +296,8 @@ ${htmlLimpio}
 
       return eventos;
     } catch (parseError) {
-      throw new Error(`Gemini devolvió un formato no válido: ${parseError.message}. Respuesta original: ${textoRespuesta.substring(0, 100)}...`);
+      const mensajeError = parseError instanceof Error ? parseError.message : String(parseError);
+      throw new Error(`Gemini devolvió un formato no válido: ${mensajeError}. Respuesta original: ${textoRespuesta.substring(0, 100)}...`);
     }
   }
 }

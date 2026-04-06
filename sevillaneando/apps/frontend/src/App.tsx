@@ -66,7 +66,7 @@ export type RootStackParamList = {
   UserEvents: undefined;
   CalendarEvents: undefined;
   RoutePreview: { routePlan: RecommendedRoute };
-  SavedAndPrivateEvents: { mode?: 'saved' | 'private' | 'both' };
+  SavedAndPrivateEvents: { mode?: 'saved' | 'private' | 'both' | 'joined' };
   LegalAttributions: undefined;
 };
 

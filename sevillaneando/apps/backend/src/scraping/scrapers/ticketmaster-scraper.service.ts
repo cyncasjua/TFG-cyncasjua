@@ -127,19 +127,38 @@ export class TicketmasterScraperService implements IScraper {
         description = 'Más información y venta de entradas en Ticketmaster';
       }
 
-      const fechaInicio = new Date(tmEvent.dates.start.dateTime || tmEvent.dates.start.localDate);
-      let fechaFin = new Date(fechaInicio);
+      const fechaInicio = this.parseTicketmasterDateTime(
+        tmEvent.dates.start?.dateTime,
+        tmEvent.dates.start?.localDate,
+        tmEvent.dates.start?.localTime,
+      );
+      let fechaFin: Date | null = null;
 
-      if (tmEvent.dates.end?.dateTime) {
-        fechaFin = new Date(tmEvent.dates.end.dateTime);
-      } else {
-        fechaFin.setHours(fechaFin.getHours() + 2);
+      fechaFin = this.parseTicketmasterDateTime(
+        tmEvent.dates.end?.dateTime,
+        tmEvent.dates.end?.localDate,
+        tmEvent.dates.end?.localTime,
+      );
+
+      // No inventar fechaFin si no existe - dejar como null
+      if (fechaInicio && fechaFin && fechaFin.getTime() <= fechaInicio.getTime()) {
+        fechaFin = null;
       }
 
       const venue = tmEvent._embedded?.venues?.[0];
       const address = venue?.address?.line1 || 'Sevilla, España';
-      const lat = parseFloat(venue?.location?.latitude || '37.3891');
-      const lng = parseFloat(venue?.location?.longitude || '-5.9845');
+      const lat = venue?.location?.latitude ? parseFloat(venue.location.latitude) : null;
+      const lng = venue?.location?.longitude ? parseFloat(venue.location.longitude) : null;
+
+      // Si no hay coordenadas exactas, descartar evento
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        this.logger.debug(`Evento descartado por falta de coordenadas exactas: ${title}`);
+        return null;
+      }
+
+      const safeLat = lat as number;
+      const safeLng = lng as number;
+      const coordinates: [number, number] = [safeLng, safeLat];
 
       let precio: number | null = null;
       let precioMin: number | null = null;
@@ -159,7 +178,7 @@ export class TicketmasterScraperService implements IScraper {
         address,
         location: {
           type: 'Point',
-          coordinates: [lng, lat],
+          coordinates,
         },
         fechaInicio,
         fechaFin,
@@ -174,5 +193,69 @@ export class TicketmasterScraperService implements IScraper {
       this.logger.error('Error parseando evento de Ticketmaster:', error);
       return null;
     }
+  }
+
+  private parseTicketmasterDateTime(
+    dateTime?: string,
+    localDate?: string,
+    localTime?: string,
+  ): Date | null {
+    if (dateTime) {
+      const parsedDateTime = new Date(dateTime);
+      if (!Number.isNaN(parsedDateTime.getTime())) {
+        return parsedDateTime;
+      }
+    }
+
+    if (!localDate) {
+      return null;
+    }
+
+    const dateMatch = localDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateMatch) {
+      return null;
+    }
+
+    const year = Number(dateMatch[1]);
+    const month = Number(dateMatch[2]);
+    const day = Number(dateMatch[3]);
+
+    const timeMatch = (localTime || '00:00:00').match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    const hour = timeMatch ? Number(timeMatch[1]) : 0;
+    const minute = timeMatch ? Number(timeMatch[2]) : 0;
+    const second = timeMatch?.[3] ? Number(timeMatch[3]) : 0;
+
+    const offsetMinutes = this.getSevillaOffsetMinutesForLocalDate(year, month - 1, day);
+    const utcMillis = Date.UTC(year, month - 1, day, hour, minute, second, 0) - offsetMinutes * 60 * 1000;
+    const parsedLocalDate = new Date(utcMillis);
+
+    if (Number.isNaN(parsedLocalDate.getTime())) {
+      return null;
+    }
+
+    return parsedLocalDate;
+  }
+
+  private getSevillaOffsetMinutesForLocalDate(year: number, monthIndex: number, day: number): number {
+    const middayUtc = new Date(Date.UTC(year, monthIndex, day, 12, 0, 0, 0));
+    return this.isSevillaDst(middayUtc) ? 120 : 60;
+  }
+
+  private getLastSundayOfMonth(year: number, monthIndex: number): number {
+    const lastDayUtc = new Date(Date.UTC(year, monthIndex + 1, 0));
+    const dayOfWeek = lastDayUtc.getUTCDay();
+    return lastDayUtc.getUTCDate() - dayOfWeek;
+  }
+
+  private isSevillaDst(utcDate: Date): boolean {
+    const year = utcDate.getUTCFullYear();
+    const marchLastSunday = this.getLastSundayOfMonth(year, 2);
+    const octoberLastSunday = this.getLastSundayOfMonth(year, 9);
+
+    const dstStartUtc = Date.UTC(year, 2, marchLastSunday, 1, 0, 0, 0);
+    const dstEndUtc = Date.UTC(year, 9, octoberLastSunday, 1, 0, 0, 0);
+    const currentUtc = utcDate.getTime();
+
+    return currentUtc >= dstStartUtc && currentUtc < dstEndUtc;
   }
 }

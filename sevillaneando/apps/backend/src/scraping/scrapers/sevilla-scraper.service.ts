@@ -5,6 +5,12 @@ import { IScraper, ScrapedEvent } from '../interfaces/scraper.interface';
 
 type JsonRecord = Record<string, unknown>;
 type ParsedDateInfo = { date: Date; hasTime: boolean };
+type EventbriteListingCard = {
+  href: string;
+  title: string;
+  timeText?: string;
+  locationText?: string;
+};
 
 
 @Injectable()
@@ -12,9 +18,6 @@ export class SevillaScraperService implements IScraper {
   readonly name = 'sevilla-events';
   private readonly logger = new Logger(SevillaScraperService.name);
   private readonly EVENTBRITE_SEVILLA_URL = 'https://www.eventbrite.es/d/spain--sevilla/events/';
-  private readonly AGENDA_SEVILLA_URL = 'https://www.sevilla.org/eventos';
-  private readonly AGENDA_SEVILLA_RSS_URL = 'https://www.sevilla.org/eventos/eventos/RSS';
-
   constructor() {
     this.logger.log('SevillaScraperService inicializado');
   }
@@ -27,14 +30,6 @@ export class SevillaScraperService implements IScraper {
       this.logger.log(`Después de Eventbrite: ${events.length} eventos totales`);
     } catch (error) {
       this.logger.error('Error en scrapeEventbriteSevilla:', error);
-    }
-
-    try {
-      const agendaCountBefore = events.length;
-      await this.scrapeAgendaSevilla(events);
-      this.logger.log(`Agenda Sevilla añadió ${events.length - agendaCountBefore} eventos`);
-    } catch (error) {
-      this.logger.error('Error en scrapeAgendaSevilla:', error);
     }
 
     return events;
@@ -52,6 +47,7 @@ export class SevillaScraperService implements IScraper {
       });
 
       const $ = cheerio.load(response.data);
+      const listingCards = this.extractEventbriteListingCards($);
       const jsonLdScripts = $('script[type="application/ld+json"]');
 
       if (!jsonLdScripts.length) {
@@ -60,6 +56,7 @@ export class SevillaScraperService implements IScraper {
       }
 
       const rawEvents: JsonRecord[] = [];
+      const detailCache = new Map<string, JsonRecord | null>();
 
       jsonLdScripts.each((_, element) => {
         const raw = $(element).html() || '';
@@ -75,27 +72,77 @@ export class SevillaScraperService implements IScraper {
 
       for (const rawEvent of rawEvents) {
         try {
-          const title = String(rawEvent?.name || '').trim();
-          const startDateInfo = this.parseDateInfo(rawEvent?.startDate);
-          const endDateInfo = this.extractEndDateInfo(rawEvent);
-          const startDate = startDateInfo?.date ?? null;
-          const endDate = this.resolveEndDate(startDate, endDateInfo?.date ?? null, endDateInfo?.hasTime ?? true);
-
-          if (!title || !startDate || !endDate) continue;
-
-          const address = this.extractAddress(rawEvent);
-          const coordinates = this.extractCoordinates(rawEvent);
-          if (!coordinates) continue;
-          if (!this.isSevillaEvent(rawEvent, address)) continue;
-          const { precio, precioMin, precioMax } = this.extractPrice(rawEvent);
-          const image = Array.isArray(rawEvent?.image)
-            ? rawEvent.image.find((img: unknown) => typeof img === 'string')
-            : rawEvent?.image;
-
-          const description = String(rawEvent?.description || '').trim();
-          const categoriaHint = this.extractCategoryHint(rawEvent);
           const sourceUrl = this.asString(rawEvent?.url) ?? this.EVENTBRITE_SEVILLA_URL;
-          const externalId = this.asString(rawEvent?.identifier) ?? this.asString(rawEvent?.url);
+          let eventData = rawEvent;
+
+          const listingStartDateInfo = this.parseDateInfo(eventData?.startDate);
+          let startDateInfo = listingStartDateInfo;
+          let endDateInfo = this.extractEndDateInfo(eventData);
+          const listingCard = listingCards.get(this.normalizeUrlForComparison(sourceUrl));
+          const listingCardDateInfo = this.parseEventbriteListingDateInfo(listingCard?.timeText);
+          startDateInfo = this.pickBestDateInfo([listingCardDateInfo, startDateInfo]);
+          const detailedEvent = sourceUrl.includes('/e/')
+            ? await this.loadEventbriteEventDetailCached(sourceUrl, detailCache)
+            : null;
+
+          if (detailedEvent) {
+            eventData = detailedEvent;
+            const detailStartDateInfo = this.parseDateInfo(eventData?.startDate);
+            startDateInfo = this.pickBestDateInfo([listingCardDateInfo, startDateInfo, detailStartDateInfo]) ?? startDateInfo;
+            if (!endDateInfo?.date) {
+              endDateInfo = this.extractEndDateInfo(eventData) ?? endDateInfo;
+            }
+          }
+
+          let hasMultipleDatesAvailable =
+            this.hasMultipleEventbriteDates(rawEvent, listingCard?.timeText) ||
+            Boolean((eventData as JsonRecord | undefined)?.hasMultipleDatesAvailable);
+
+          const title = String(eventData?.name || rawEvent?.name || '').trim();
+          const parsedStartDate = this.resolveEventbriteStartDate(startDateInfo, listingCard?.timeText);
+          const hasExplicitStartTime = Boolean(startDateInfo?.hasTime);
+          const hasParsedEndDate = Boolean(endDateInfo?.date);
+
+          if (!hasMultipleDatesAvailable && !hasExplicitStartTime && !hasParsedEndDate) {
+            hasMultipleDatesAvailable = true;
+          }
+
+          let startDate = hasMultipleDatesAvailable ? null : parsedStartDate;
+          let endDate = hasMultipleDatesAvailable
+            ? null
+            : this.resolveEndDate(startDate, endDateInfo?.date ?? null, endDateInfo?.hasTime ?? true);
+
+          if (
+            !hasMultipleDatesAvailable &&
+            startDate &&
+            !endDate &&
+            startDate.getHours() === 0 &&
+            startDate.getMinutes() === 0 &&
+            startDate.getSeconds() === 0
+          ) {
+            hasMultipleDatesAvailable = true;
+            startDate = null;
+            endDate = null;
+          }
+
+          if (!title) continue;
+
+          const address = this.extractAddress(eventData);
+          const coordinates = this.extractCoordinates(eventData) ?? this.extractCoordinates(rawEvent);
+          if (!coordinates) continue;
+          if (!this.isSevillaEvent(eventData, address)) continue;
+          const { precio, precioMin, precioMax } = this.extractPrice(eventData);
+          const image = Array.isArray(eventData?.image)
+            ? eventData.image.find((img: unknown) => typeof img === 'string')
+            : eventData?.image;
+
+          const description = String(eventData?.description || rawEvent?.description || '').trim();
+          const categoriaHint = this.extractCategoryHint(eventData) ?? this.extractCategoryHint(rawEvent);
+          const externalId =
+            this.asString(eventData?.identifier) ??
+            this.asString(rawEvent?.identifier) ??
+            this.asString(eventData?.url) ??
+            this.asString(rawEvent?.url);
 
           events.push({
             title,
@@ -107,6 +154,7 @@ export class SevillaScraperService implements IScraper {
             },
             fechaInicio: startDate,
             fechaFin: endDate,
+            hasMultipleDatesAvailable,
             precio,
             precioMin,
             precioMax,
@@ -158,6 +206,180 @@ export class SevillaScraperService implements IScraper {
     }
 
     return found;
+  }
+
+  private extractEventbriteListingCards($: cheerio.CheerioAPI): Map<string, EventbriteListingCard> {
+    const cards = new Map<string, EventbriteListingCard>();
+
+    $('a.event-card-link').each((_, element) => {
+      const link = $(element);
+      const href = link.attr('href');
+      if (!href) return;
+
+      const container = link.parent();
+      const title =
+        link.find('h3').first().text().trim() ||
+        this.asString(link.attr('aria-label'))?.replace(/^Ver\s+/i, '') ||
+        '';
+
+      const detailsSection = container.children('section.event-card-details').first();
+      const detailParagraphs = detailsSection.find('p');
+      const timeText = detailParagraphs.eq(0).text().trim();
+      const locationText = detailParagraphs.eq(1).text().trim();
+
+      cards.set(this.normalizeUrlForComparison(href), {
+        href,
+        title,
+        timeText: timeText || undefined,
+        locationText: locationText || undefined,
+      });
+    });
+
+    return cards;
+  }
+
+  private resolveEventbriteStartDate(
+    startDateInfo: ParsedDateInfo | null,
+    listingTimeText?: string,
+  ): Date | null {
+    if (!startDateInfo?.date) return null;
+
+    if (startDateInfo.hasTime) {
+      return startDateInfo.date;
+    }
+
+    const parsedTime = this.parseEventbriteCardTime(listingTimeText);
+    if (!parsedTime) {
+      return startDateInfo.date;
+    }
+
+    const resolved = new Date(startDateInfo.date);
+    resolved.setHours(parsedTime.hour, parsedTime.minute, 0, 0);
+    return resolved;
+  }
+
+  private parseEventbriteListingDateInfo(listingTimeText?: string): ParsedDateInfo | null {
+    if (!listingTimeText) return null;
+
+    const text = listingTimeText
+      .replace(/\+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!text) return null;
+
+    const parsed = this.parseEventbriteListingDatePattern(text, 'month-day') ??
+      this.parseEventbriteListingDatePattern(text, 'day-month');
+
+    if (!parsed) return null;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    let resolvedDate = new Date(currentYear, parsed.monthIndex, parsed.day, parsed.hour, parsed.minute, 0, 0);
+
+    if (resolvedDate.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 7) {
+      resolvedDate = new Date(currentYear + 1, parsed.monthIndex, parsed.day, parsed.hour, parsed.minute, 0, 0);
+    }
+
+    if (!Number.isFinite(resolvedDate.getTime())) return null;
+
+    return { date: resolvedDate, hasTime: true };
+  }
+
+  private parseEventbriteListingDatePattern(
+    text: string,
+    mode: 'month-day' | 'day-month',
+  ): { monthIndex: number; day: number; hour: number; minute: number } | null {
+    const normalized = text
+      .replace(/\u2022/g, ',')
+      .replace(/\bto\b.*$/i, '')
+      .trim();
+
+    const pattern =
+      mode === 'month-day'
+        ? /(?:^[^,]+,\s*)?([a-záéíóúñ.]+)\s+(\d{1,2})(?:,\s*|\s+)(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?/i
+        : /(?:^[^,]+,\s*)?(\d{1,2})\s+([a-záéíóúñ.]+)(?:,\s*|\s+)(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?/i;
+
+    const match = normalized.match(pattern);
+    if (!match) return null;
+
+    const monthText = mode === 'month-day' ? match[1] : match[2];
+    const day = Number(mode === 'month-day' ? match[2] : match[1]);
+    const hour = Number(match[3]);
+    const minute = Number(match[4] ?? '0');
+    const meridiem = this.normalizeMeridiem(match[5]);
+
+    const monthIndex = this.resolveEventbriteMonthIndex(monthText);
+    if (monthIndex === null || !Number.isFinite(day) || !Number.isFinite(hour) || !Number.isFinite(minute)) {
+      return null;
+    }
+
+    let resolvedHour = hour;
+    if (meridiem === 'pm' && resolvedHour < 12) resolvedHour += 12;
+    if (meridiem === 'am' && resolvedHour === 12) resolvedHour = 0;
+
+    if (resolvedHour > 23 || minute > 59) return null;
+
+    return { monthIndex, day, hour: resolvedHour, minute };
+  }
+
+  private resolveEventbriteMonthIndex(value: string): number | null {
+    const normalized = value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\./g, '')
+      .toLowerCase();
+
+    const months: Record<string, number> = {
+      jan: 0,
+      january: 0,
+      ene: 0,
+      enero: 0,
+      feb: 1,
+      february: 1,
+      febrero: 1,
+      mar: 2,
+      march: 2,
+      marzo: 2,
+      apr: 3,
+      april: 3,
+      abr: 3,
+      abril: 3,
+      may: 4,
+      mayo: 4,
+      jun: 5,
+      june: 5,
+      junio: 5,
+      jul: 6,
+      july: 6,
+      julio: 6,
+      aug: 7,
+      august: 7,
+      ago: 7,
+      agosto: 7,
+      sep: 8,
+      sept: 8,
+      september: 8,
+      septiembre: 8,
+      setiembre: 8,
+      oct: 9,
+      october: 9,
+      octubre: 9,
+      nov: 10,
+      november: 10,
+      noviembre: 10,
+      dec: 11,
+      december: 11,
+      diciembre: 11,
+    };
+
+    for (const [monthName, monthIndex] of Object.entries(months)) {
+      if (normalized.startsWith(monthName)) {
+        return monthIndex;
+      }
+    }
+
+    return null;
   }
 
   private extractAddress(rawEvent: JsonRecord): string {
@@ -323,232 +545,6 @@ export class SevillaScraperService implements IScraper {
     return undefined;
   }
 
-  //Scraper de agenda municipal de Sevilla
-  private async scrapeAgendaSevilla(events: ScrapedEvent[]): Promise<void> {
-    try {
-      const url = this.AGENDA_SEVILLA_URL;
-      const countBefore = events.length;
-
-      await this.scrapeAgendaSevillaRss(events);
-      if (events.length > countBefore) {
-        this.logger.log(`Agenda Sevilla (RSS): ${events.length - countBefore} eventos añadidos`);
-        return;
-      }
-
-      const response = await axios.get(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-      });
-
-      const $ = cheerio.load(response.data);
-
-      const jsonLdScripts = $('script[type="application/ld+json"]');
-      let jsonLdEvents = 0;
-
-      jsonLdScripts.each((_, element) => {
-        const raw = $(element).html() || '';
-        if (!raw) return;
-
-        try {
-          const parsed = JSON.parse(raw);
-          const eventRecords = this.extractEventsFromJsonLd(parsed);
-
-          for (const rawEvent of eventRecords) {
-            const title = this.asString(rawEvent?.name);
-            const start = this.parseDateInfo(rawEvent?.startDate)?.date ?? null;
-            const endInfo = this.extractEndDateInfo(rawEvent);
-            const end = this.resolveEndDate(start, endInfo?.date ?? null, endInfo?.hasTime ?? false);
-
-            if (!title || !start || !end) continue;
-
-            const address = this.extractAddress(rawEvent) || 'Sevilla';
-            const coordinates = this.extractCoordinates(rawEvent) ?? [-5.9845, 37.3891];
-            const description = this.asString(rawEvent?.description) ?? 'Sin descripción';
-
-            const location = rawEvent?.location as JsonRecord | undefined;
-            const image = Array.isArray(rawEvent?.image)
-              ? rawEvent.image.find((img: unknown) => typeof img === 'string')
-              : rawEvent?.image;
-            const sourceUrl = this.asString(rawEvent?.url) ?? url;
-            const externalId =
-              this.asString(rawEvent?.identifier) ??
-              this.asString((location as JsonRecord | undefined)?.url) ??
-              sourceUrl;
-
-            events.push({
-              title,
-              description,
-              address,
-              location: {
-                type: 'Point',
-                coordinates,
-              },
-              fechaInicio: start,
-              fechaFin: end,
-              precio: null,
-              imagen: typeof image === 'string' ? this.normalizeUrl(image, url) : undefined,
-              sourceUrl,
-              externalId,
-              categoriaHint: 'Cultura',
-            });
-
-            jsonLdEvents++;
-          }
-        } catch (err) {
-          this.logger.warn(`Agenda Sevilla: bloque JSON-LD no parseable (${String(err)})`);
-        }
-      });
-
-      if (jsonLdEvents === 0) {
-        const selectors = [
-          '.evento-item',
-          '[itemtype*="Event"]',
-          '.view-content .views-row',
-          '.node--type-event',
-          'article',
-          '[class*="event"]',
-          '[class*="evento"]',
-        ];
-
-        const seen = new Set<string>();
-
-        for (const selector of selectors) {
-          const candidates = $(selector);
-          this.logger.log(`Agenda Sevilla: selector "${selector}" -> ${candidates.length} nodos`);
-
-          if (!candidates.length) continue;
-
-          candidates.each((_, element) => {
-            try {
-              const node = $(element);
-              const title =
-                node.find('h1, h2, h3, .titulo, .title, .field--name-title').first().text().trim() ||
-                node.find('a[title]').first().attr('title')?.trim() ||
-                node.find('a').first().text().trim();
-
-              const dateFromAttr =
-                node.find('time').first().attr('datetime') || node.find('[datetime]').first().attr('datetime');
-
-              const dateText =
-                dateFromAttr ||
-                node.find('.fecha, .date, .field--name-field-fecha, .event-date').first().text().trim() ||
-                node.find('time').first().text().trim();
-
-              const parsedDate = this.parseDate(dateText);
-              if (!title || !parsedDate) return;
-
-              const dedupeKey = `${title.toLowerCase()}|${parsedDate.toISOString().slice(0, 10)}`;
-              if (seen.has(dedupeKey)) return;
-              seen.add(dedupeKey);
-
-              const description =
-                node.find('.descripcion, .summary, .field--name-body, .event-description, p').first().text().trim() ||
-                'Sin descripción';
-
-              const address =
-                node.find('.lugar, .location, .field--name-field-lugar, .event-location').first().text().trim() ||
-                'Sevilla';
-
-              const img = node.find('img').first().attr('src');
-              const href = node.find('a[href]').first().attr('href');
-              const sourceUrl = href ? this.normalizeUrl(href, url) : url;
-
-              const endDate = new Date(parsedDate);
-              endDate.setHours(endDate.getHours() + 2);
-
-              events.push({
-                title,
-                description,
-                address,
-                location: {
-                  type: 'Point',
-                  coordinates: [-5.9845, 37.3891],
-                },
-                fechaInicio: parsedDate,
-                fechaFin: endDate,
-                precio: null,
-                imagen: img ? this.normalizeUrl(img, url) : undefined,
-                sourceUrl,
-                externalId: sourceUrl,
-                categoriaHint: 'Cultura',
-              });
-            } catch (err) {
-              this.logger.warn(`Agenda Sevilla: error parseando tarjeta de evento (${String(err)})`);
-            }
-          });
-
-          if (events.length > countBefore) {
-            break;
-          }
-        }
-      }
-
-      const added = events.length - countBefore;
-      this.logger.log(`Agenda Sevilla: ${added} eventos añadidos`);
-    } catch (error) {
-      this.logger.error('Error scrapeando agenda de Sevilla:', error);
-    }
-  }
-
-  private async scrapeAgendaSevillaRss(events: ScrapedEvent[]): Promise<void> {
-    try {
-      const response = await axios.get(this.AGENDA_SEVILLA_RSS_URL, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          Accept: 'application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8',
-        },
-        timeout: 15000,
-      });
-
-      const $ = cheerio.load(response.data, { xmlMode: true });
-      const items = $('item');
-      this.logger.log(`Agenda Sevilla RSS: ${items.length} items`);
-      const seen = new Set<string>();
-
-      items.each((_, element) => {
-        const node = $(element);
-        const title = node.find('title').first().text().trim();
-        const description = node.find('description').first().text().trim();
-        const link = node.find('link').first().text().trim();
-        const pubDate = node.find('pubDate').first().text().trim();
-
-        if (!title) return;
-
-        const dedupeKey = `${title.toLowerCase()}|${(link || '').toLowerCase()}`;
-        if (seen.has(dedupeKey)) return;
-        seen.add(dedupeKey);
-
-        const parsedDate = this.parseDate(pubDate) ?? new Date();
-        const endDate = new Date(parsedDate);
-        endDate.setHours(endDate.getHours() + 2);
-
-        events.push({
-          title,
-          description: description || 'Sin descripción',
-          address: 'Sevilla',
-          location: {
-            type: 'Point',
-            coordinates: [-5.9845, 37.3891],
-          },
-          fechaInicio: parsedDate,
-          fechaFin: endDate,
-          precio: null,
-          sourceUrl: link || this.AGENDA_SEVILLA_URL,
-          externalId: link || `${this.AGENDA_SEVILLA_RSS_URL}#${title}`,
-          categoriaHint: 'Cultura',
-        });
-      });
-    } catch (error) {
-      this.logger.warn('Agenda Sevilla RSS no disponible, usando fallback HTML');
-    }
-  }
-
-  //Scraper de salas de conciertos en Sevilla: TODO: implementacion extra
-  private async scrapeSalasConciertos(_events: ScrapedEvent[]): Promise<void> {
-    // Ejemplo: Sala Fanatic, Teatro Lope de Vega, etc.
-    this.logger.warn('scraper de salas de conciertos no implementado aún');
-  }
 
   private parseDate(dateValue?: unknown): Date | null {
     return this.parseDateInfo(dateValue)?.date ?? null;
@@ -571,6 +567,18 @@ export class SevillaScraperService implements IScraper {
     if (typeof dateValue === 'string') {
       const dateString = dateValue.trim();
       if (!dateString) return null;
+
+      const isoDateOnlyMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (isoDateOnlyMatch) {
+        const year = Number(isoDateOnlyMatch[1]);
+        const month = Number(isoDateOnlyMatch[2]);
+        const day = Number(isoDateOnlyMatch[3]);
+        const date = new Date(year, month - 1, day, 0, 0, 0, 0);
+        if (Number.isFinite(date.getTime())) {
+          return { date, hasTime: false };
+        }
+      }
+
       const date = new Date(dateString);
       if (!Number.isFinite(date.getTime())) {
         const parsedSpanishDate = this.parseSpanishDateString(dateString);
@@ -583,15 +591,21 @@ export class SevillaScraperService implements IScraper {
     }
 
     if (Array.isArray(dateValue)) {
-      for (const value of dateValue) {
-        const parsed = this.parseDateInfo(value);
-        if (parsed) return parsed;
-      }
-      return null;
+      return this.pickBestDateInfo(dateValue);
     }
 
     if (typeof dateValue === 'object') {
       const record = dateValue as JsonRecord;
+
+      if (Array.isArray(record.subEvent)) {
+        const subEventStartDates = record.subEvent
+          .map((subEvent) => this.parseDateInfo((subEvent as JsonRecord)?.startDate))
+          .filter((value): value is ParsedDateInfo => value !== null);
+
+        const bestSubEventDate = this.pickBestDateInfo(subEventStartDates);
+        if (bestSubEventDate) return bestSubEventDate;
+      }
+
       const candidates = [
         record.endDate,
         record.startDate,
@@ -609,6 +623,71 @@ export class SevillaScraperService implements IScraper {
     return null;
   }
 
+  private pickBestDateInfo(values: Array<ParsedDateInfo | unknown>): ParsedDateInfo | null {
+    const parsedDates = values
+      .map((value) => (value && typeof value === 'object' && 'date' in value ? (value as ParsedDateInfo) : this.parseDateInfo(value)))
+      .filter((value): value is ParsedDateInfo => value !== null && Number.isFinite(value.date.getTime()));
+
+    if (!parsedDates.length) return null;
+
+    const now = Date.now();
+    const futureDates = parsedDates
+      .filter((value) => value.date.getTime() >= now)
+      .sort((left, right) => left.date.getTime() - right.date.getTime());
+
+    if (futureDates.length > 0) {
+      return futureDates[0];
+    }
+
+    return parsedDates.sort((left, right) => right.date.getTime() - left.date.getTime())[0] ?? null;
+  }
+
+  private hasMultipleEventbriteDates(rawEvent: JsonRecord, listingTimeText?: string): boolean {
+    if (Array.isArray(rawEvent?.startDate) && rawEvent.startDate.length > 1) {
+      return true;
+    }
+
+    if (Array.isArray(rawEvent?.subEvent) && rawEvent.subEvent.length > 1) {
+      return true;
+    }
+
+    if (typeof listingTimeText === 'string' && /\+\s*\d+\s*(m[aá]s|more)/i.test(listingTimeText)) {
+      return true;
+    }
+
+    const eventSchedule = rawEvent?.eventSchedule;
+    if (eventSchedule && typeof eventSchedule === 'object') {
+      const scheduleRecord = eventSchedule as JsonRecord;
+      if (Array.isArray(scheduleRecord?.subEvent) && scheduleRecord.subEvent.length > 1) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private parseEventbriteCardTime(value?: string): { hour: number; minute: number } | null {
+    if (!value) return null;
+
+    const normalized = value.toLowerCase().replace(/\s+/g, ' ').trim();
+    const timeMatch = normalized.match(/(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?/i);
+
+    if (!timeMatch) return null;
+
+    let hour = Number(timeMatch[1]);
+    const minute = Number(timeMatch[2] ?? '0');
+    const meridiem = this.normalizeMeridiem(timeMatch[3]);
+
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+
+    if (meridiem === 'pm' && hour < 12) hour += 12;
+    if (meridiem === 'am' && hour === 12) hour = 0;
+
+    if (hour > 23 || minute > 59) return null;
+
+    return { hour, minute };
+  }
+
   private parseSpanishDateString(input: string): ParsedDateInfo | null {
     const value = input
       .toLowerCase()
@@ -618,7 +697,7 @@ export class SevillaScraperService implements IScraper {
 
     const withTimeMatch = value.match(/(\d{1,2})[:.](\d{2})/);
     const hasTime = !!withTimeMatch;
-    const hour = withTimeMatch ? Number(withTimeMatch[1]) : 12;
+    const hour = withTimeMatch ? Number(withTimeMatch[1]) : 0;
     const minute = withTimeMatch ? Number(withTimeMatch[2]) : 0;
 
     const dmyMatch = value.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
@@ -665,6 +744,14 @@ export class SevillaScraperService implements IScraper {
     return null;
   }
 
+  private normalizeMeridiem(value?: string): 'am' | 'pm' | undefined {
+    if (!value) return undefined;
+    const normalized = value.toLowerCase().replace(/\./g, '');
+    if (normalized === 'am') return 'am';
+    if (normalized === 'pm') return 'pm';
+    return undefined;
+  }
+
   private asString(value: unknown): string | undefined {
     if (typeof value !== 'string') return undefined;
     const normalized = value.trim();
@@ -700,9 +787,24 @@ export class SevillaScraperService implements IScraper {
   }
 
   private resolveEndDate(startDate: Date | null, endDate: Date | null, endHasTime = true): Date | null {
+    // Si no hay fecha de inicio, no hay fecha de fin
     if (!startDate) return null;
 
+    // Si no hay fecha de fin especificada, devolver null (evento sin fecha definida)
+    if (!endDate) return null;
+
     if (endDate && !endHasTime) {
+      const sameCalendarDay =
+        startDate.getFullYear() === endDate.getFullYear() &&
+        startDate.getMonth() === endDate.getMonth() &&
+        startDate.getDate() === endDate.getDate();
+
+      if (sameCalendarDay) {
+        // Para eventos sin hora específica en el mismo día, no agregar duración
+        // Dejar como null para que sea tratado como evento sin fechas precisas
+        return null;
+      }
+
       const normalizedDateOnlyEnd = new Date(endDate);
       normalizedDateOnlyEnd.setHours(23, 59, 59, 999);
       if (normalizedDateOnlyEnd.getTime() > startDate.getTime()) {
@@ -710,10 +812,9 @@ export class SevillaScraperService implements IScraper {
       }
     }
 
-    if (!endDate || endDate.getTime() <= startDate.getTime()) {
-      const fallbackEndDate = new Date(startDate);
-      fallbackEndDate.setHours(fallbackEndDate.getHours() + 2);
-      return fallbackEndDate;
+    // Si la fecha de fin es igual o anterior a la de inicio, devolver null
+    if (endDate.getTime() <= startDate.getTime()) {
+      return null;
     }
 
     return endDate;
@@ -726,6 +827,195 @@ export class SevillaScraperService implements IScraper {
     }
     const base = new URL(baseUrl);
     return new URL(url, base.origin).toString();
+  }
+
+  private async loadEventbriteEventDetailCached(
+    url: string,
+    cache: Map<string, JsonRecord | null>,
+  ): Promise<JsonRecord | null> {
+    const normalizedUrl = this.normalizeUrlForComparison(url);
+    if (cache.has(normalizedUrl)) {
+      return cache.get(normalizedUrl) ?? null;
+    }
+
+    const detail = await this.loadEventbriteEventDetail(url);
+    cache.set(normalizedUrl, detail);
+    return detail;
+  }
+
+  private async loadEventbriteEventDetail(url: string): Promise<JsonRecord | null> {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        timeout: 15000,
+      });
+
+      const $ = cheerio.load(response.data);
+      const scripts = $('script[type="application/ld+json"]');
+      const pageText = $('body').text();
+
+      for (const element of scripts.toArray()) {
+        const raw = $(element).html() || '';
+        if (!raw) continue;
+
+        try {
+          const parsed = JSON.parse(raw);
+          const eventRecords = this.extractEventsFromJsonLd(parsed);
+
+          for (const eventRecord of eventRecords) {
+            const eventUrl = this.asString(eventRecord?.url);
+            if (eventUrl && this.areUrlsEquivalent(eventUrl, url)) {
+              return this.enrichEventbriteEventRecord(eventRecord, pageText);
+            }
+          }
+
+          if (eventRecords.length > 0) {
+            return this.enrichEventbriteEventRecord(eventRecords[0], pageText);
+          }
+        } catch (error) {
+          this.logger.warn('No se pudo parsear un bloque JSON-LD de detalle de Eventbrite');
+        }
+      }
+    } catch (error) {
+      this.logger.warn(`No se pudo cargar el detalle de Eventbrite: ${String(error)}`);
+    }
+
+    return null;
+  }
+
+  private areUrlsEquivalent(left: string, right: string): boolean {
+    return this.normalizeUrlForComparison(left) === this.normalizeUrlForComparison(right);
+  }
+
+  private normalizeUrlForComparison(url: string): string {
+    return url.split('#')[0].split('?')[0].replace(/\/+$/, '');
+  }
+
+  private enrichEventbriteEventRecord(eventRecord: JsonRecord, pageText: string): JsonRecord {
+    const startInfo = this.parseDateInfo(eventRecord?.startDate);
+    const hasEndDate = this.extractEndDateInfo(eventRecord)?.date;
+    const hasMultipleDatesAvailable = this.hasMultipleDatesInDetailPage(pageText, eventRecord);
+
+    if (hasEndDate || !startInfo?.date) {
+      return {
+        ...eventRecord,
+        hasMultipleDatesAvailable,
+      };
+    }
+
+    if (startInfo.hasTime) {
+      const inferredDurationEnd = this.inferEventbriteEndDateFromDurationText(pageText, startInfo.date);
+      if (inferredDurationEnd) {
+        return {
+          ...eventRecord,
+          endDate: inferredDurationEnd.date.toISOString(),
+          hasMultipleDatesAvailable,
+        };
+      }
+    }
+
+    const inferredEndDate = this.inferEventbriteEndDateFromText(pageText, startInfo.date);
+    if (!inferredEndDate) {
+      return {
+        ...eventRecord,
+        hasMultipleDatesAvailable,
+      };
+    }
+
+    return {
+      ...eventRecord,
+      endDate: inferredEndDate.date.toISOString(),
+      hasMultipleDatesAvailable,
+    };
+  }
+
+  private hasMultipleDatesInDetailPage(pageText: string, eventRecord: JsonRecord): boolean {
+    if (/multiple dates|varias fechas/i.test(pageText)) {
+      return true;
+    }
+
+    if (Array.isArray(eventRecord?.subEvent) && eventRecord.subEvent.length > 1) {
+      return true;
+    }
+
+    const eventSchedule = eventRecord?.eventSchedule;
+    if (eventSchedule && typeof eventSchedule === 'object') {
+      const scheduleRecord = eventSchedule as JsonRecord;
+      if (Array.isArray(scheduleRecord?.subEvent) && scheduleRecord.subEvent.length > 1) {
+        return true;
+      }
+    }
+
+    if (Array.isArray(eventRecord?.startDate) && eventRecord.startDate.length > 1) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private inferEventbriteEndDateFromDurationText(pageText: string, startDate: Date): ParsedDateInfo | null {
+    const normalizedText = pageText.replace(/\s+/g, ' ').toLowerCase();
+    const compactText = normalizedText
+      .replace(/\babout\b|\baprox(?:\.|imadamente)?\b|\baround\b/g, ' ')
+      .trim();
+
+    const hourMatch = compactText.match(/(\d{1,2})\s*(?:h|hr|hrs|hour|hours|hora|horas)\b/);
+    const minuteMatch = compactText.match(/(\d{1,3})\s*(?:min|mins|minute|minutes|minuto|minutos)\b/);
+
+    if (!hourMatch && !minuteMatch) return null;
+
+    const durationHours = hourMatch ? Number(hourMatch[1]) : 0;
+    const durationMinutes = minuteMatch ? Number(minuteMatch[1]) : 0;
+
+    if (!Number.isFinite(durationHours) || !Number.isFinite(durationMinutes)) return null;
+    if (durationHours === 0 && durationMinutes === 0) return null;
+
+    const endDate = new Date(startDate);
+    endDate.setMinutes(endDate.getMinutes() + durationHours * 60 + durationMinutes);
+
+    if (!Number.isFinite(endDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+      return null;
+    }
+
+    return { date: endDate, hasTime: true };
+  }
+
+  private inferEventbriteEndDateFromText(pageText: string, startDate: Date): ParsedDateInfo | null {
+    const normalizedText = pageText.replace(/\s+/g, ' ').toLowerCase();
+    const match = normalizedText.match(
+      /(?:from|de)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?\s*(?:to|hasta|a|[-–—])\s*(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?/i,
+    );
+
+    if (!match) return null;
+
+    const endHourRaw = Number(match[4]);
+    const endMinute = Number(match[5] ?? '0');
+    const endMeridiem = this.normalizeMeridiem(match[6]) ?? this.normalizeMeridiem(match[3]);
+    const endHour = this.to24Hour(endHourRaw, endMeridiem);
+
+    if (!Number.isFinite(endHour) || !Number.isFinite(endMinute)) return null;
+
+    const endDate = new Date(startDate);
+    endDate.setHours(endHour, endMinute, 0, 0);
+
+    if (!Number.isFinite(endDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+      return null;
+    }
+
+    return { date: endDate, hasTime: true };
+  }
+
+  private to24Hour(hour: number, meridiem?: 'am' | 'pm'): number {
+    if (!Number.isFinite(hour)) return NaN;
+
+    const normalizedHour = hour % 12;
+    if (meridiem === 'pm') return normalizedHour + 12;
+    if (meridiem === 'am') return normalizedHour;
+    return hour;
   }
 
 

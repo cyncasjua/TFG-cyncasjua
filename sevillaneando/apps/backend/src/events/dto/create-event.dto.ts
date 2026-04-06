@@ -37,10 +37,6 @@ export class CreateEventDto {
   @IsNotEmpty({ message: 'La ubicación es obligatoria.' })
   location!: GeoJsonPoint;
 
-  @IsNotEmpty({ message: 'La fecha de inicio es obligatoria.' })
-  fechaInicio!: string;
-
-  @IsNotEmpty({ message: 'La fecha de fin es obligatoria.' })
   @IsEndDateAfterStartDate('fechaInicio', {
     message: 'La fecha de fin debe ser posterior a la fecha de inicio.',
   })

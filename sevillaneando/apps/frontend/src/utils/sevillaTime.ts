@@ -45,39 +45,62 @@ function getSevillaOffsetMinutes(utcDate: Date): number {
   return isSevillaDst(utcDate) ? 120 : 60;
 }
 
-function toSevillaClockDate(value: Date | string | number): Date {
+function toSevillaClockDate(value: Date | string | number | null | undefined): Date | null {
   const utcDate = toDate(value);
+  if (!utcDate) return null;
   const offsetMinutes = getSevillaOffsetMinutes(utcDate);
   return new Date(utcDate.getTime() + offsetMinutes * 60 * 1000);
 }
 
-function toDate(value: Date | string | number): Date {
+function toDate(value: Date | string | number | null | undefined): Date | null {
+  if (value === null || value === undefined || value === '') return null;
   const date = typeof value === 'string' ? parseBackendDateString(value) : new Date(value);
   if (isNaN(date.getTime())) {
-    return new Date(0);
+    return null;
   }
   return date;
 }
 
-export function getSevillaDayKey(value: Date | string | number): string {
+export function getSevillaDayKey(value: Date | string | number | null | undefined): string {
   const date = toSevillaClockDate(value);
+  if (!date) return '';
   const year = date.getUTCFullYear();
   const month = pad2(date.getUTCMonth() + 1);
   const day = pad2(date.getUTCDate());
   return `${year}-${month}-${day}`;
 }
 
-export function formatSevillaTime(value: Date | string | number): string {
+export function formatSevillaTime(value: Date | string | number | null | undefined): string {
   const date = toSevillaClockDate(value);
+  if (!date) return 'Indefinido';
   return `${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}`;
 }
 
-export function formatSevillaDateTime(value: Date | string | number): string {
+export function formatSevillaDateTime(value: Date | string | number | null | undefined): string {
   const date = toSevillaClockDate(value);
+  if (!date) return 'Indefinido';
   const day = pad2(date.getUTCDate());
   const month = pad2(date.getUTCMonth() + 1);
   const year = date.getUTCFullYear();
   const hour = pad2(date.getUTCHours());
   const minute = pad2(date.getUTCMinutes());
   return `${day}/${month}/${year}, ${hour}:${minute}`;
+}
+
+export function formatEventDateRange(
+  start: Date | string | number | null | undefined,
+  end: Date | string | number | null | undefined,
+): string {
+  const hasStart = start !== null && start !== undefined && start !== '';
+  const hasEnd = end !== null && end !== undefined && end !== '';
+
+  if (!hasStart && !hasEnd) return 'Indefinido';
+
+  const startText = formatSevillaDateTime(start);
+  const endText = formatSevillaDateTime(end);
+
+  if (startText === 'Indefinido') return 'Indefinido';
+  if (endText === 'Indefinido') return `${startText} - Indefinido`;
+
+  return `${startText} - ${endText}`;
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -19,35 +20,50 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { RolEnum, User } from './user.entity';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import type { Multer } from 'multer';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 
 @Controller('users')
 @UseGuards(FirebaseAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly cloudinaryService: CloudinaryService
+  ) { }
 
   @Post('upload-profile-image/firebase')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/profile-images',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, uniqueSuffix + extname(file.originalname));
-        },
-      }),
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowed.includes(file.mimetype)) {
+          return cb(new BadRequestException('Formato no permitido'), false);
+        }
+        return cb(null, true);
+      },
     })
   )
-  uploadProfileImageFirebase(@UploadedFile() file: Multer.File) {
-    return { url: `/uploads/profile-images/${file.filename}` };
+  async uploadProfileImageFirebase(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Archivo requerido');
+
+    const uploaded = await this.cloudinaryService.uploadImage(file.buffer, {
+      folder: 'sevillaneando/profile-images',
+      publicIdPrefix: 'profile',
+    });
+
+    return { url: uploaded.optimizedUrl };
+  }
+
+  private getFirebaseUser(req: { user: { uid: string; email?: string; name?: string } }) {
+    return req.user;
   }
 
   @Get('me')
-  async me(@Req() req): Promise<User> {
-    const decoded = req.user as { uid: string; email?: string; name?: string };
+  async me(@Req() req: { user: { uid: string; email?: string; name?: string } }): Promise<User> {
+    const decoded = this.getFirebaseUser(req);
     return this.usersService.ensureFromFirebase({
       uid: decoded.uid,
       email: decoded.email,
@@ -70,14 +86,14 @@ export class UsersController {
   }
 
   @Patch('me/firebase')
-  async updateMeFirebase(@Req() req, @Body() body: UpdateProfileDto): Promise<User> {
-    const decoded = req.user as { uid: string };
+  async updateMeFirebase(@Req() req: { user: { uid: string } }, @Body() body: UpdateProfileDto): Promise<User> {
+    const decoded = req.user;
     return this.usersService.updateProfile(decoded.uid, body);
   }
 
   @Delete('me/firebase')
   @UseGuards(FirebaseAuthGuard)
-  async deleteMeFirebase(@Request() req) {
+  async deleteMeFirebase(@Request() req: { user: { uid: string } }) {
     await this.usersService.deleteByFirebaseUid(req.user.uid);
     return { message: 'Cuenta eliminada correctamente' };
   }

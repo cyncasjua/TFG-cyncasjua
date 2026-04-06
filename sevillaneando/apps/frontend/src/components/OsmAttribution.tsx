@@ -1,6 +1,7 @@
 import React from 'react';
 import { Linking, StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedText, ThemedView } from './index';
+import { ThemedView } from './ThemedView';
+import { ThemedText } from './ThemedText';
 import { useTheme } from '../hooks/useTheme';
 
 type Props = {

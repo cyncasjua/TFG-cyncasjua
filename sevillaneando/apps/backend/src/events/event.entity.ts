@@ -39,6 +39,9 @@ export class Event {
   @Column('timestamp', { nullable: true })
   fechaFin!: Date | null;
 
+  @Column({ type: 'boolean', default: false })
+  hasMultipleDatesAvailable!: boolean;
+
   @Column('float', { nullable: true })
   precio?: number | null;
 

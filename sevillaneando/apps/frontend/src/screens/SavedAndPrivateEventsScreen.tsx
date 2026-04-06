@@ -3,8 +3,6 @@ import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, TouchableOp
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import dayjs from 'dayjs';
-import 'dayjs/locale/es';
 import { RootStackParamList } from '../App';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
@@ -32,16 +30,18 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
   const [error, setError] = useState<string | null>(null);
   const [savedEvents, setSavedEvents] = useState<RecommendedEvent[]>([]);
   const [privateEvents, setPrivateEvents] = useState<Event[]>([]);
+  const [joinedEvents, setJoinedEvents] = useState<Event[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [savedRes, createdRes, rawPrivateLinks] = await Promise.all([
+      const [savedRes, createdRes, rawPrivateLinks, joinedRes] = await Promise.all([
         getSavedRecommendedEvents(),
         user?.id ? api.get(`/events/user/${user.id}`) : Promise.resolve({ data: [] as Event[] }),
         AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY),
+        user?.id ? api.get(`/events/attending/${user.id}`) : Promise.resolve({ data: [] as Event[] }),
       ]);
 
       const links: string[] = rawPrivateLinks ? JSON.parse(rawPrivateLinks) : [];
@@ -54,8 +54,12 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       const mergedPrivate = [...(createdRes.data as Event[]), ...linkedPrivate]
         .filter((event, index, arr) => event?.privado && index === arr.findIndex((e) => e.id === event.id));
 
+      const mergedJoined = (joinedRes.data as Event[])
+        .filter((event, index, arr) => event && index === arr.findIndex((e) => e.id === event.id));
+
       setSavedEvents(savedRes.eventos ?? []);
       setPrivateEvents(mergedPrivate);
+      setJoinedEvents(mergedJoined);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -191,7 +195,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                 <ThemedView style={styles.cardDetails}>
                   <ThemedView style={styles.detailRow}>
                     <ThemedTextSecondary>
-                      {dayjs(event.fechaInicio).locale('es').format('DD/MM/YYYY')} - {dayjs(event.fechaFin).locale('es').format('DD/MM/YYYY')}
+                      {formatEventDateRange(event.fechaInicio, event.fechaFin)}
                     </ThemedTextSecondary>
                   </ThemedView>
                   <ThemedView style={styles.detailRow}>
@@ -281,7 +285,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                 <ThemedView style={styles.cardDetails}>
                   <ThemedView style={styles.detailRow}>
                     <ThemedTextSecondary>
-                      {dayjs(event.fechaInicio).locale('es').format('DD/MM/YYYY')} - {dayjs(event.fechaFin).locale('es').format('DD/MM/YYYY')}
+                      {formatEventDateRange(event.fechaInicio, event.fechaFin)}
                     </ThemedTextSecondary>
                   </ThemedView>
                   <ThemedView style={styles.detailRow}>
@@ -309,6 +313,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       {!!error && <ThemedText style={{ color: colors.error, marginBottom: 12 }}>{error}</ThemedText>}
       {(mode === 'both' || mode === 'saved') && renderList('Eventos guardados', savedEvents)}
       {(mode === 'both' || mode === 'private') && renderPrivateList('Eventos privados', privateEvents)}
+      {mode === 'joined' && renderPrivateList('Eventos a los que estas apuntado', joinedEvents)}
     </ScrollView>
   );
 };

@@ -22,7 +22,6 @@ export class EventEditRequestService {
     if (!event) throw new NotFoundException('Evento no encontrado');
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
-    // Opcional: comprobar que no hay otra solicitud pendiente para este evento
     const editRequest = this.editRequestRepo.create({
       ...dto,
       event,
@@ -39,7 +38,6 @@ export class EventEditRequestService {
     });
     if (!editRequest) throw new NotFoundException('Solicitud no encontrada');
     if (editRequest.status !== 'pendiente') throw new ForbiddenException('La solicitud ya fue gestionada');
-    // Aplicar cambios al evento
     const event = editRequest.event;
     Object.assign(event, editRequest);
     await this.eventRepo.save(event);

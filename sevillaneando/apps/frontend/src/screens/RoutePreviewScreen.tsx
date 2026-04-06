@@ -9,6 +9,7 @@ import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../com
 import { useTheme } from '../hooks/useTheme';
 import { getEventById, getErrorMessage, type RecommendedRoute } from '../services/api';
 import type { Event } from '../types/event';
+import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 
 type RoutePreviewStackParamList = {
@@ -104,7 +105,11 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedView style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <ThemedTitle style={styles.summaryTitle}>Ruta de {dayjs(routePlan.day).locale('es').format('dddd DD/MM')}</ThemedTitle>
+        <ThemedTitle style={styles.summaryTitle}>
+          {routePlan.day === 'Sin fecha'
+            ? '📅 Ruta con varias fechas disponibles'
+            : `Ruta de ${dayjs(routePlan.day).locale('es').format('dddd DD/MM')}`}
+        </ThemedTitle>
         <ThemedTextSecondary>
           {routePlan.eventos.length} paradas · {routePlan.distanceTotalKm.toFixed(1)} km · {formatDuration(routePlan.temporizacionMinutos)}
         </ThemedTextSecondary>
@@ -141,6 +146,14 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={styles.timelineContent}
       >
+        {routePlan.day === 'Sin fecha' && (
+          <ThemedView style={{ padding: 12, marginBottom: 12, backgroundColor: colors.card, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+            <ThemedText style={{ fontWeight: '600', marginBottom: 4 }}>ℹ️ Eventos con múltiples fechas</ThemedText>
+            <ThemedTextSecondary>
+              Estos eventos tienen varias fechas y horas disponibles. Abre cada uno para ver todas las opciones de horarios.
+            </ThemedTextSecondary>
+          </ThemedView>
+        )}
         {routePlan.eventos.map((event, index) => {
           const isLast = index === routePlan.eventos.length - 1;
           const currentPoint = coordinates[index];
@@ -149,10 +162,10 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             currentPoint && nextPoint ? haversineKm(currentPoint, nextPoint) : null;
 
           const nextEvent = !isLast ? routePlan.eventos[index + 1] : null;
-          const currentEnd = new Date(event.fechaFin).getTime();
-          const nextStart = nextEvent ? new Date(nextEvent.fechaInicio).getTime() : null;
+          const currentEnd = event.fechaFin ? new Date(event.fechaFin).getTime() : null;
+          const nextStart = nextEvent?.fechaInicio ? new Date(nextEvent.fechaInicio).getTime() : null;
           const transitionGapMin =
-            nextStart && Number.isFinite(currentEnd)
+            nextStart !== null && currentEnd !== null && Number.isFinite(currentEnd)
               ? Math.max(0, Math.round((nextStart - currentEnd) / (1000 * 60)))
               : null;
 
@@ -174,7 +187,9 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     <MaterialIcons name="open-in-new" size={18} color={colors.primary} />
                   </View>
                   <ThemedTextSecondary numberOfLines={1}>
-                    {dayjs(event.fechaInicio).format('HH:mm')} · {event.categoria || 'General'}
+                    {event.hasMultipleDatesAvailable
+                      ? `Varias fechas disponibles · ${event.categoria || 'General'}`
+                      : `${formatSevillaTime(event.fechaInicio)} · ${event.categoria || 'General'}`}
                   </ThemedTextSecondary>
                   <ThemedTextSecondary numberOfLines={1}>{event.address}</ThemedTextSecondary>
                   <View style={styles.scoreRow}>

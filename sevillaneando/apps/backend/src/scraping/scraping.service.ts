@@ -9,7 +9,7 @@ import { IScraper, ScrapedEvent } from './interfaces/scraper.interface';
 import { EstadoEnum } from '../enums/estado.enum';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
-//import { GeminiScraperService } from './scrapers/gemini-scraper.service';
+import { GeminiScraperService } from './scrapers/gemini-scraper.service';
 
 @Injectable()
 export class ScrapingService {
@@ -94,10 +94,15 @@ export class ScrapingService {
         this.logger.debug(`Evento descartado por location null: ${scrapedEvent.title}`);
         continue;
       }
+
+      // Normalizar fechas: si cubre casi todo el día, ponerlas como indefinidas
+      const normalizedDateEvent = this.normalizeLongEventDates(scrapedEvent);
+      const normalizedEvent = this.normalizePriceFields(normalizedDateEvent);
+
       try {
-        const batchKey = this.getDuplicateKey(scrapedEvent.title);
+        const batchKey = this.getDuplicateKey(normalizedEvent.title);
         if (seenInBatch.has(batchKey)) {
-          this.logger.debug(`Evento duplicado en lote, omitido: ${scrapedEvent.title}`);
+          this.logger.debug(`Evento duplicado en lote, omitido: ${normalizedEvent.title}`);
           continue;
         }
 
@@ -105,22 +110,23 @@ export class ScrapingService {
           .createQueryBuilder('event')
           .leftJoinAndSelect('event.creador', 'creador')
           .where('LOWER(TRIM(event.title)) = LOWER(TRIM(:title))', {
-            title: scrapedEvent.title,
+            title: normalizedEvent.title,
           })
           .getOne();
 
         if (existingEvent) {
-          const categoria = await this.resolveCategory(scrapedEvent);
-          existingEvent.description = scrapedEvent.description;
-          existingEvent.address = scrapedEvent.address;
-          existingEvent.location = scrapedEvent.location;
-          existingEvent.fechaInicio = scrapedEvent.fechaInicio;
-          existingEvent.fechaFin = scrapedEvent.fechaFin;
-          existingEvent.precio = scrapedEvent.precio;
-          existingEvent.precioMin = scrapedEvent.precioMin;
-          existingEvent.precioMax = scrapedEvent.precioMax;
-          existingEvent.imagen = scrapedEvent.imagen;
-          existingEvent.imagenes = scrapedEvent.imagenes;
+          const categoria = await this.resolveCategory(normalizedEvent);
+          existingEvent.description = normalizedEvent.description;
+          existingEvent.address = normalizedEvent.address;
+          existingEvent.location = normalizedEvent.location;
+          existingEvent.fechaInicio = normalizedEvent.fechaInicio;
+          existingEvent.fechaFin = normalizedEvent.fechaFin;
+          existingEvent.hasMultipleDatesAvailable = normalizedEvent.hasMultipleDatesAvailable ?? false;
+          existingEvent.precio = normalizedEvent.precio;
+          existingEvent.precioMin = normalizedEvent.precioMin;
+          existingEvent.precioMax = normalizedEvent.precioMax;
+          existingEvent.imagen = normalizedEvent.imagen;
+          existingEvent.imagenes = normalizedEvent.imagenes;
           existingEvent.estado = EstadoEnum.Aprobado;
           existingEvent.creador = systemUser;
           existingEvent.privado = false;
@@ -128,25 +134,26 @@ export class ScrapingService {
 
           await this.eventRepo.save(existingEvent);
           savedCount++;
-          this.logger.debug(`Evento existente actualizado: ${scrapedEvent.title}`);
+          this.logger.debug(`Evento existente actualizado: ${normalizedEvent.title}`);
 
           seenInBatch.add(batchKey);
           continue;
         }
 
-        const categoria = await this.resolveCategory(scrapedEvent);
+        const categoria = await this.resolveCategory(normalizedEvent);
         const event = this.eventRepo.create({
-          title: scrapedEvent.title,
-          description: scrapedEvent.description,
-          address: scrapedEvent.address,
-          location: scrapedEvent.location,
-          fechaInicio: scrapedEvent.fechaInicio,
-          fechaFin: scrapedEvent.fechaFin,
-          precio: scrapedEvent.precio,
-          precioMin: scrapedEvent.precioMin,
-          precioMax: scrapedEvent.precioMax,
-          imagen: scrapedEvent.imagen,
-          imagenes: scrapedEvent.imagenes,
+          title: normalizedEvent.title,
+          description: normalizedEvent.description,
+          address: normalizedEvent.address,
+          location: normalizedEvent.location,
+          fechaInicio: normalizedEvent.fechaInicio,
+          fechaFin: normalizedEvent.fechaFin,
+          hasMultipleDatesAvailable: normalizedEvent.hasMultipleDatesAvailable ?? false,
+          precio: normalizedEvent.precio,
+          precioMin: normalizedEvent.precioMin,
+          precioMax: normalizedEvent.precioMax,
+          imagen: normalizedEvent.imagen,
+          imagenes: normalizedEvent.imagenes,
           estado: EstadoEnum.Aprobado,
           creador: systemUser,
           privado: false,
@@ -156,9 +163,9 @@ export class ScrapingService {
         await this.eventRepo.save(event);
         seenInBatch.add(batchKey);
         savedCount++;
-        this.logger.debug(`Evento guardado: ${scrapedEvent.title}`);
+        this.logger.debug(`Evento guardado: ${normalizedEvent.title}`);
       } catch (error) {
-        this.logger.error(`Error guardando evento "${scrapedEvent.title}":`, error);
+        this.logger.error(`Error guardando evento "${normalizedEvent.title}":`, error);
       }
     }
     if (nullLocationCount > 0) {
@@ -177,7 +184,7 @@ export class ScrapingService {
 
     const sevillaScraperService = this.moduleRef.get(SevillaScraperService, { strict: false });
     const ticketmasterScraperService = this.moduleRef.get(TicketmasterScraperService, { strict: false });
-    //const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
+    const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
 
     if (sevillaScraperService) {
       scrapers.push(sevillaScraperService);
@@ -191,11 +198,11 @@ export class ScrapingService {
       this.logger.warn('TicketmasterScraperService no está disponible');
     }
 
-    //if (geminiScraperService) {
-      //scrapers.push(geminiScraperService);
-    //} else {
-      //this.logger.warn('GeminiScraperService no está disponible');
-    //}
+    if (geminiScraperService) {
+      scrapers.push(geminiScraperService);
+    } else {
+      this.logger.warn('GeminiScraperService no está disponible');
+    }
 
     this.logger.log(`Scrapers activos: ${scrapers.map((s) => s.name).join(', ') || 'ninguno'}`);
     return scrapers;
@@ -204,6 +211,126 @@ export class ScrapingService {
   private getDuplicateKey(title: string): string {
     const normalizedTitle = title.trim().toLowerCase().replace(/\s+/g, ' ');
     return normalizedTitle;
+  }
+
+  private normalizeLongEventDates(event: ScrapedEvent): ScrapedEvent {
+    const isEventbriteSource = typeof event.sourceUrl === 'string' && /eventbrite\./i.test(event.sourceUrl);
+
+    if (isEventbriteSource && event.fechaInicio && !event.fechaFin) {
+      const start = new Date(event.fechaInicio);
+      if (
+        Number.isFinite(start.getTime()) &&
+        start.getHours() === 0 &&
+        start.getMinutes() === 0 &&
+        start.getSeconds() === 0
+      ) {
+        return {
+          ...event,
+          fechaInicio: null,
+          fechaFin: null,
+          hasMultipleDatesAvailable: true,
+        };
+      }
+    }
+
+    if (!event.fechaInicio || !event.fechaFin) {
+      return event;
+    }
+
+    const start = new Date(event.fechaInicio);
+    const end = new Date(event.fechaFin);
+
+    // Validar que las fechas son válidas
+    if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+      return event;
+    }
+
+    // CRÍTICO: Si fechaFin <= fechaInicio, es un evento con múltiples fechas (data ambigua)
+    if (end.getTime() <= start.getTime()) {
+      this.logger.debug(
+        `Evento con fechas inválidas (fin <= inicio) detectado: ${event.title} ` +
+        `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
+      );
+      return {
+        ...event,
+        fechaInicio: null,
+        fechaFin: null,
+        hasMultipleDatesAvailable: true,
+      };
+    }
+
+    // Obtener la fecha sin hora para ambas
+    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    // Si son del mismo día
+    if (startDate.getTime() === endDate.getTime()) {
+      const startHour = start.getHours();
+      const startMinutes = start.getMinutes();
+      const endHour = end.getHours();
+      const endMinutes = end.getMinutes();
+
+      // Si empieza a las 2:00 o antes y termina a las 23:00 o después
+      // (considera como evento que cubre casi todo el día)
+      const startsEarly = startHour <= 2 || (startHour === 2 && startMinutes === 0);
+      const endsLate = endHour >= 23 || (endHour === 23 && endMinutes >= 0);
+
+      if (startsEarly && endsLate) {
+        this.logger.debug(
+          `Evento detectado como de duración indefinida (cubre casi todo el día): ${event.title} ` +
+          `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
+        );
+        return {
+          ...event,
+          fechaInicio: null,
+          fechaFin: null,
+        };
+      }
+    }
+
+    return event;
+  }
+
+  private normalizePriceFields(event: ScrapedEvent): ScrapedEvent {
+    let precio = this.toNonNegativeNumberOrNull(event.precio);
+    let precioMin = this.toNonNegativeNumberOrNull(event.precioMin);
+    let precioMax = this.toNonNegativeNumberOrNull(event.precioMax);
+
+    if (precioMin != null && precioMax != null) {
+      if (precioMin > precioMax) {
+        [precioMin, precioMax] = [precioMax, precioMin];
+      }
+
+      // Si hay rango válido, se prioriza sobre precio fijo para cumplir la entidad.
+      if (precioMin < precioMax) {
+        precio = null;
+      } else {
+        // min == max, se degrada a precio fijo
+        precio = precioMin;
+        precioMin = null;
+        precioMax = null;
+      }
+    } else if (precioMin != null || precioMax != null) {
+      // Rango incompleto: se degrada a precio fijo
+      precio = precioMin ?? precioMax;
+      precioMin = null;
+      precioMax = null;
+    }
+
+    return {
+      ...event,
+      precio,
+      precioMin,
+      precioMax,
+    };
+  }
+
+  private toNonNegativeNumberOrNull(value: unknown): number | null {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return null;
+    }
+    return parsed;
   }
 
   private async resolveCategory(scrapedEvent: ScrapedEvent): Promise<Categoria> {

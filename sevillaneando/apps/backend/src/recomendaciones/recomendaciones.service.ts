@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
@@ -29,6 +29,33 @@ type ScoredEvent = {
   score: number;
   distanceKm: number | null;
   reasons: string[];
+};
+
+type RecommendedEventItem = {
+  id: string;
+  title: string;
+  description: string;
+  fechaInicio: Date | null;
+  fechaFin: Date | null;
+  hasMultipleDatesAvailable: boolean;
+  address: string;
+  categoria: string | null;
+  imagen: string | null;
+  location: any;
+  score: number;
+  distanceKm: number;
+  reasons: string[];
+};
+
+type RouteCandidate = {
+  day: string;
+  scoreMedio: number;
+  temporizacionMinutos: number;
+  distanceTotalKm: number;
+  eventos: RecommendedEventItem[];
+  trayecto: Array<{ type: 'Point'; coordinates: [number, number] }>;
+  ranking: number;
+  quality: number;
 };
 
 type UserPoint = [number, number] | null;
@@ -128,6 +155,7 @@ export class RecomendacionesService {
         description: event.description,
         fechaInicio: event.fechaInicio,
         fechaFin: event.fechaFin,
+        hasMultipleDatesAvailable: event.hasMultipleDatesAvailable ?? false,
         address: event.address,
         categoria: event.categoria?.nombre ?? null,
         imagen: event.imagen ?? null,
@@ -239,7 +267,16 @@ export class RecomendacionesService {
       .leftJoinAndSelect('event.asistentes', 'asistentes')
       .where('event.privado = false')
       .andWhere('event.estado = :estado', { estado: EstadoEnum.Aprobado })
-      .andWhere('event.fechaFin >= :fromDate', { fromDate });
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('event.fechaFin >= :fromDate', { fromDate })
+            .orWhere('event.hasMultipleDatesAvailable = true')
+            .orWhere(
+              '(event.fechaFin IS NULL AND event.fechaInicio IS NOT NULL AND event.fechaInicio >= :fromDate)',
+              { fromDate },
+            );
+        }),
+      );
 
     if (toDate) {
       query.andWhere('event.fechaInicio <= :toDate', { toDate });
@@ -325,22 +362,31 @@ export class RecomendacionesService {
       );
       score += asistentesScore;
 
-      const now = Date.now();
-      const daysUntil = (new Date(event.fechaInicio).getTime() - now) / (1000 * 60 * 60 * 24);
-      if (daysUntil >= 0) {
-        const dateBoost = Math.max(
-          0,
-          this.weights.maxDateBoost - daysUntil / this.weights.daysDecayFactor,
-        );
-        score += dateBoost;
-        if (dateBoost > 0) reasons.push('Fecha cercana');
+      const hasFlexibleDates = this.hasFlexibleDates(event);
+
+      const startDate = event.fechaInicio ? new Date(event.fechaInicio) : null;
+      if (startDate && Number.isFinite(startDate.getTime())) {
+        const now = Date.now();
+        const daysUntil = (startDate.getTime() - now) / (1000 * 60 * 60 * 24);
+        if (daysUntil >= 0) {
+          const dateBoostBase = Math.max(
+            0,
+            this.weights.maxDateBoost - daysUntil / this.weights.daysDecayFactor,
+          );
+          const dateBoost = hasFlexibleDates ? dateBoostBase * 0.2 : dateBoostBase;
+          score += dateBoost;
+          if (dateBoost > 0) {
+            reasons.push(hasFlexibleDates ? 'Fecha flexible' : 'Fecha cercana');
+          }
+        }
       }
 
       if (distanceKm !== null) {
-        const distanceBoost = Math.max(
+        const distanceBoostBase = Math.max(
           0,
           this.weights.maxDistanceBoost - distanceKm / this.weights.distanceDecayFactor,
         );
+        const distanceBoost = hasFlexibleDates ? distanceBoostBase * 1.35 : distanceBoostBase;
         score += distanceBoost;
         if (distanceBoost > 0) reasons.push('Cerca de tu ubicacion');
       }
@@ -374,8 +420,9 @@ export class RecomendacionesService {
         id: item.event.id,
         title: item.event.title,
         description: item.event.description,
-        fechaInicio: item.event.fechaInicio,
-        fechaFin: item.event.fechaFin,
+        fechaInicio: item.event.fechaInicio ?? null,
+        fechaFin: item.event.fechaFin ?? null,
+        hasMultipleDatesAvailable: item.event.hasMultipleDatesAvailable ?? false,
         address: item.event.address,
         categoria: item.event.categoria?.nombre ?? null,
         imagen: item.event.imagen ?? null,
@@ -395,7 +442,7 @@ export class RecomendacionesService {
       minEventsPerRoute,
       this.clampNumber(options.maxEventsPerRoute, 5, minEventsPerRoute, 8),
     );
-    const maxGapMinutes = this.clampNumber(options.maxGapMinutes, 6 * 60, 30, 24 * 60);
+    const maxGapMinutes = this.clampNumber(options.maxGapMinutes, 4 * 60, 30, 4 * 60);
     const maxOverlapMinutes = this.clampNumber(options.maxOverlapMinutes, 20, 0, 120);
 
     const eventResult = await this.recommendEvents(userId, {
@@ -405,12 +452,21 @@ export class RecomendacionesService {
 
     const fromDate = options.from ? new Date(options.from) : new Date();
     const toDate = options.to ? new Date(options.to) : null;
+    const userPoint = Number.isFinite(options.lat) && Number.isFinite(options.lng)
+      ? [Number(options.lng), Number(options.lat)] as [number, number]
+      : null;
 
-    const grouped = new Map<string, typeof eventResult.eventos>();
+    const grouped = new Map<string, RecommendedEventItem[]>();
+    const undatedEvents: RecommendedEventItem[] = [];
 
     for (const event of eventResult.eventos) {
-      const fecha = new Date(event.fechaInicio);
-      if (isNaN(fecha.getTime())) continue;
+      const hasValidDate = this.hasValidEventDates(event);
+      if (!hasValidDate) {
+        undatedEvents.push(event);
+        continue;
+      }
+
+      const fecha = new Date(event.fechaInicio as Date | string);
       if (fecha < fromDate) continue;
       if (toDate && fecha > toDate) continue;
 
@@ -418,7 +474,7 @@ export class RecomendacionesService {
       grouped.set(dayKey, [...(grouped.get(dayKey) ?? []), event]);
     }
 
-    const routes = Array.from(grouped.entries())
+    const rankedRoutes = Array.from(grouped.entries())
       .map(([day, events]) => {
         const orderedByDay = [...events]
           .sort((a, b) => new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime())
@@ -432,13 +488,27 @@ export class RecomendacionesService {
           day,
         );
 
-        const sequenced = this.optimizeRouteSequence(
+        let sequenced = this.optimizeRouteSequence(
           ordered,
           eventResult.eventos,
           strategy,
           maxGapMinutes,
           maxOverlapMinutes,
         );
+
+        // Si la secuencia estricta queda muy corta, intentamos una variante más flexible.
+        if (sequenced.length < minEventsPerRoute && ordered.length >= minEventsPerRoute) {
+          const relaxedSequenced = this.optimizeRouteSequence(
+            ordered,
+            eventResult.eventos,
+            strategy,
+            4 * 60,
+            120,
+          );
+          if (relaxedSequenced.length > sequenced.length) {
+            sequenced = relaxedSequenced;
+          }
+        }
 
         if (sequenced.length < 2) return null;
 
@@ -480,14 +550,157 @@ export class RecomendacionesService {
         };
       })
       .filter((route): route is NonNullable<typeof route> => route !== null)
-      .sort((a, b) => b.ranking - a.ranking)
-      .slice(0, routesLimit)
-      .map(({ ranking: _ranking, ...route }) => route);
+      .sort((a, b) => {
+        const rankingDiff = b.ranking - a.ranking;
+        if (rankingDiff !== 0) return rankingDiff;
+        return b.eventos.length - a.eventos.length;
+      });
+
+    const distanceRoutes = this.buildDistanceRoutes(
+      undatedEvents,
+      userPoint,
+      strategy,
+      routesLimit,
+      maxEventsPerRoute,
+    );
+
+    let selectedRoutes = [...rankedRoutes, ...distanceRoutes]
+      .sort((a, b) => {
+        const rankingDiff = b.ranking - a.ranking;
+        if (rankingDiff !== 0) return rankingDiff;
+        return b.eventos.length - a.eventos.length;
+      })
+      .slice(0, routesLimit);
+
+    const allAreTwoEvents =
+      selectedRoutes.length > 0 && selectedRoutes.every((route) => route.eventos.length === 2);
+
+    if (allAreTwoEvents) {
+      const longerAlternative = rankedRoutes.find((route) => route.eventos.length > 2);
+      if (longerAlternative) {
+        const withoutSameDay = selectedRoutes.filter((route) => route.day !== longerAlternative.day);
+        if (withoutSameDay.length >= routesLimit) {
+          withoutSameDay[withoutSameDay.length - 1] = longerAlternative;
+          selectedRoutes = withoutSameDay;
+        } else {
+          selectedRoutes = [...withoutSameDay, longerAlternative]
+            .sort((a, b) => b.ranking - a.ranking)
+            .slice(0, routesLimit);
+        }
+      }
+    }
+
+    const routes = selectedRoutes.map(({ ranking: _ranking, ...route }) => route);
 
     return {
       total: routes.length,
       rutas: routes,
     };
+  }
+
+  private hasValidEventDates(event: {
+    fechaInicio?: Date | string | null;
+    fechaFin?: Date | string | null;
+    hasMultipleDatesAvailable?: boolean | null;
+  }): boolean {
+    if (event.hasMultipleDatesAvailable) return false;
+    if (!event.fechaInicio || !event.fechaFin) return false;
+    const start = new Date(event.fechaInicio);
+    const end = new Date(event.fechaFin);
+    return Number.isFinite(start.getTime()) && Number.isFinite(end.getTime());
+  }
+
+  private hasFlexibleDates(event: {
+    fechaInicio?: Date | string | null;
+    fechaFin?: Date | string | null;
+    hasMultipleDatesAvailable?: boolean | null;
+  }): boolean {
+    if (event.hasMultipleDatesAvailable) return true;
+    return !event.fechaInicio || !event.fechaFin;
+  }
+
+  private buildDistanceRoutes(
+    events: RecommendedEventItem[],
+    userPoint: UserPoint,
+    strategy: 'balanced' | 'walkable' | 'score',
+    routesLimit: number,
+    maxEventsPerRoute: number,
+  ): RouteCandidate[] {
+    const remaining = [...events];
+    const routes: RouteCandidate[] = [];
+
+    while (remaining.length > 0 && routes.length < routesLimit) {
+      const routeEvents: RecommendedEventItem[] = [];
+
+      const firstIndex = remaining
+        .map((event, index) => ({ index, score: Number(event.score ?? 0), point: this.eventPointFromResult(remaining, event.id) }))
+        .sort((a, b) => {
+          if (userPoint && a.point && b.point) {
+            const aDistance = this.haversineKm(userPoint, a.point);
+            const bDistance = this.haversineKm(userPoint, b.point);
+            if (aDistance !== bDistance) return aDistance - bDistance;
+          }
+          return b.score - a.score;
+        })[0]?.index ?? 0;
+
+      const [seed] = remaining.splice(firstIndex, 1);
+      if (!seed) break;
+      routeEvents.push(seed);
+
+      while (remaining.length > 0 && routeEvents.length < maxEventsPerRoute) {
+        const current = routeEvents[routeEvents.length - 1];
+        const currentPoint = this.eventPointFromResult(remaining, current.id) ?? this.eventPointFromResult(routeEvents, current.id);
+
+        let bestIndex = 0;
+        let bestValue = Number.NEGATIVE_INFINITY;
+
+        for (let index = 0; index < remaining.length; index++) {
+          const candidate = remaining[index];
+          const candidatePoint = this.eventPointFromResult(remaining, candidate.id) ?? this.eventPointFromResult(routeEvents, candidate.id);
+          const distanceKm = currentPoint && candidatePoint ? this.haversineKm(currentPoint, candidatePoint) : 2.5;
+          const value = Number(candidate.score ?? 0) * (strategy === 'score' ? 1.4 : 1.1) - distanceKm * (strategy === 'walkable' ? 0.35 : 0.25);
+
+          if (value > bestValue) {
+            bestValue = value;
+            bestIndex = index;
+          }
+        }
+
+        const [next] = remaining.splice(bestIndex, 1);
+        if (!next) break;
+        routeEvents.push(next);
+      }
+
+      if (routeEvents.length < 2) break;
+
+      const points = routeEvents
+        .map((event) => {
+          const original = this.eventPointFromResult(events, event.id);
+          return original ? { type: 'Point' as const, coordinates: original } : null;
+        })
+        .filter((point): point is { type: 'Point'; coordinates: [number, number] } => point !== null);
+
+      if (points.length < 2) continue;
+
+      const scoreMedio = Number(
+        (routeEvents.reduce((acc, current) => acc + Number(current.score ?? 0), 0) / routeEvents.length).toFixed(3),
+      );
+      const distanceTotalKm = Number(this.totalDistance(points).toFixed(2));
+      const temporizacionMinutos = Math.max(30, Math.round(distanceTotalKm * 12));
+
+      routes.push({
+        day: 'Sin fecha',
+        scoreMedio,
+        temporizacionMinutos,
+        distanceTotalKm,
+        eventos: routeEvents,
+        trayecto: points,
+        ranking: this.computeRouteRanking(scoreMedio, distanceTotalKm, temporizacionMinutos, strategy),
+        quality: Math.max(0, 100 - distanceTotalKm * 4),
+      });
+    }
+
+    return routes;
   }
 
   private async getUserAndEvent(userId: string, eventId: string) {
@@ -710,6 +923,33 @@ export class RecomendacionesService {
       selectedIds.add(candidate.event.id);
     }
 
+    if (selected.length < minEvents && dayKey) {
+      const crossDayNearby = poolEvents
+        .filter((event) => !selectedIds.has(event.id))
+        .map((event) => {
+          const start = new Date(event.fechaInicio).getTime();
+          const distanceToAnchor =
+            fallbackAnchor !== null && Number.isFinite(start)
+              ? Math.abs(start - fallbackAnchor)
+              : Number.MAX_SAFE_INTEGER;
+
+          return { event, start, distanceToAnchor };
+        })
+        .filter((candidate) => Number.isFinite(candidate.start))
+        .sort((a, b) => {
+          if (a.distanceToAnchor !== b.distanceToAnchor) {
+            return a.distanceToAnchor - b.distanceToAnchor;
+          }
+          return b.event.score - a.event.score;
+        });
+
+      for (const candidate of crossDayNearby) {
+        if (selected.length >= Math.min(minEvents, maxEvents)) break;
+        selected.push(candidate.event);
+        selectedIds.add(candidate.event.id);
+      }
+    }
+
     if (selected.length < minEvents) {
       const topScored = poolEvents
         .filter((event) => !selectedIds.has(event.id))
@@ -721,7 +961,17 @@ export class RecomendacionesService {
         })
         .sort((a, b) => b.score - a.score);
 
+      const topScoredCrossDay = poolEvents
+        .filter((event) => !selectedIds.has(event.id))
+        .sort((a, b) => b.score - a.score);
+
       for (const event of topScored) {
+        if (selected.length >= Math.min(minEvents, maxEvents)) break;
+        selected.push(event);
+        selectedIds.add(event.id);
+      }
+
+      for (const event of topScoredCrossDay) {
         if (selected.length >= Math.min(minEvents, maxEvents)) break;
         selected.push(event);
         selectedIds.add(event.id);
@@ -766,6 +1016,7 @@ export class RecomendacionesService {
       const current = sequenced[sequenced.length - 1];
       const currentStart = new Date(current.fechaInicio).getTime();
       const currentEnd = new Date(current.fechaFin).getTime();
+      const effectiveCurrentEnd = this.getEffectiveEventEndTime(currentStart, currentEnd);
       const currentPoint = this.eventPointFromResult(fullPool, current.id);
 
       const candidateIndexes = remaining
@@ -773,12 +1024,15 @@ export class RecomendacionesService {
         .filter((item) => Number.isFinite(item.start) && item.start >= currentStart)
         .map((item) => item.index);
 
-      const indexesToRank = candidateIndexes.length > 0
-        ? candidateIndexes
-        : remaining.map((_, index) => index);
+      if (candidateIndexes.length === 0) {
+        break;
+      }
+
+      const indexesToRank = candidateIndexes;
 
       let bestIndex = indexesToRank[0];
       let bestValue = Number.NEGATIVE_INFINITY;
+      let foundStrictCandidate = false;
 
       for (const index of indexesToRank) {
         const candidate = remaining[index];
@@ -791,11 +1045,12 @@ export class RecomendacionesService {
             ? this.haversineKm(currentPoint, candidatePoint)
             : 2.5;
 
-        const gapMin = (candidateStart - currentEnd) / (1000 * 60);
+        const gapMin = (candidateStart - effectiveCurrentEnd) / (1000 * 60);
         if (gapMin > maxAllowedGapMin) {
           continue;
         }
-        if (gapMin < -maxAllowedOverlapMin) {
+        // Rechazar completamente cualquier solapamiento
+        if (gapMin < 0) {
           continue;
         }
 
@@ -803,6 +1058,8 @@ export class RecomendacionesService {
         if (gapMin >= 0 && gapMin < minTravelMinutes) {
           continue;
         }
+
+        foundStrictCandidate = true;
 
         const overlapPenalty = gapMin < 0 ? Math.min(6, Math.abs(gapMin) * 0.06) : 0;
         const waitPenalty = gapMin > 240 ? (gapMin - 240) * 0.008 : 0;
@@ -820,6 +1077,59 @@ export class RecomendacionesService {
         if (value > bestValue) {
           bestValue = value;
           bestIndex = index;
+        }
+      }
+
+      if (!foundStrictCandidate) {
+        bestIndex = indexesToRank[0];
+        bestValue = Number.NEGATIVE_INFINITY;
+
+        for (const index of indexesToRank) {
+          const candidate = remaining[index];
+          const candidateStart = new Date(candidate.fechaInicio).getTime();
+          const candidateEnd = new Date(candidate.fechaFin).getTime();
+
+          const candidatePoint = this.eventPointFromResult(fullPool, candidate.id);
+          const distanceKm =
+            currentPoint && candidatePoint
+              ? this.haversineKm(currentPoint, candidatePoint)
+              : 2.5;
+
+          const gapMin = (candidateStart - currentEnd) / (1000 * 60);
+            // Rechazar en pasada flexible si gap excede máximo permitido O hay solapamiento
+            if (gapMin > maxAllowedGapMin || gapMin < 0) {
+            continue;
+          }
+
+          const minTravelMinutes = this.estimateMinTravelMinutes(distanceKm, strategy);
+
+          const overlapPenalty = gapMin < 0 ? Math.min(10, Math.abs(gapMin) * 0.08) : 0;
+          const waitPenalty = gapMin > 240 ? (gapMin - 240) * 0.008 : 0;
+          const reverseTimePenalty = candidateStart < currentStart ? 4 : 0;
+          const invalidDatePenalty = Number.isFinite(candidateStart) && Number.isFinite(candidateEnd) ? 0 : 5;
+          const travelFeasibilityPenalty =
+            gapMin >= 0 ? Math.max(0, minTravelMinutes - gapMin) * 0.06 : minTravelMinutes * 0.02;
+          const maxGapExcessPenalty = gapMin > maxAllowedGapMin ? (gapMin - maxAllowedGapMin) * 0.012 : 0;
+          const maxOverlapExcessPenalty =
+            gapMin < -maxAllowedOverlapMin ? (Math.abs(gapMin) - maxAllowedOverlapMin) * 0.09 : 0;
+
+          const value =
+            Number(candidate.score) * scoreWeight -
+            distanceKm * distanceWeight -
+            (
+              overlapPenalty +
+              waitPenalty +
+              reverseTimePenalty +
+              travelFeasibilityPenalty +
+              maxGapExcessPenalty +
+              maxOverlapExcessPenalty
+            ) * timeWeight -
+            invalidDatePenalty;
+
+          if (value > bestValue) {
+            bestValue = value;
+            bestIndex = index;
+          }
         }
       }
 
@@ -866,6 +1176,34 @@ export class RecomendacionesService {
     }
 
     await this.recomendacionRepo.save(snapshot);
+  }
+
+  private getEffectiveEventEndTime(startTimeMs: number, endTimeMs: number): number {
+    const eventDurationMs = endTimeMs - startTimeMs;
+    const eventDurationHours = eventDurationMs / (60 * 60 * 1000);
+
+    // Estrategia progresiva para eventos largos:
+    // - Evento 0-6 horas: usar duración real (son eventos normales)
+    // - Evento 6-12 horas: limitar a 6 horas (media jornada)
+    // - Evento > 12 horas: limitar a 2 horas (exposición/feria/evento permanente)
+    //   Esto permite que otros eventos se encajen DURANTE el evento largo
+
+    let maxEventDurationMs: number;
+
+    if (eventDurationHours <= 6) {
+      // Eventos cortos: usar duración real
+      maxEventDurationMs = eventDurationMs;
+    } else if (eventDurationHours <= 12) {
+      // Eventos medios (6-12h): limitar a 6 horas
+      maxEventDurationMs = 6 * 60 * 60 * 1000;
+    } else {
+      // Eventos largos (> 12h): limitar a 2 horas para permitir la superposición
+      // Esto reconoce que son eventos "siempre abiertos" (exposiciones, ferias, etc.)
+      maxEventDurationMs = 2 * 60 * 60 * 1000;
+    }
+
+    const effectiveEnd = Math.min(startTimeMs + maxEventDurationMs, endTimeMs);
+    return effectiveEnd;
   }
 
   private getWeight(envName: string, fallback: number): number {

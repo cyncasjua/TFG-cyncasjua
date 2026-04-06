@@ -5,8 +5,9 @@ export interface ScrapedEvent {
   description: string;
   address: string;
   location: GeoJsonPoint;
-  fechaInicio: Date;
-  fechaFin: Date;
+  fechaInicio: Date | null;
+  fechaFin: Date | null;
+  hasMultipleDatesAvailable?: boolean;
   precio?: number | null;
   precioMin?: number | null;
   precioMax?: number | null;
