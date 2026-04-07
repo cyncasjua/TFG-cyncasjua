@@ -121,7 +121,7 @@ export class EventsController {
       storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
         if (!allowed.includes(file.mimetype)) {
           return cb(new BadRequestException('Formato no permitido'), false);
         }

@@ -210,6 +210,15 @@ async function bootstrap() {
           take: 50,
         });
 
+        logger.debug(`[dm_history] Enviando ${history.length} mensajes. Primer mensaje:`, JSON.stringify({
+          id: history[0]?.id,
+          emisor_id: history[0]?.emisor?.id,
+          emisor_nombre: history[0]?.emisor?.nombre,
+          emisor_fotoPerfil: history[0]?.emisor?.fotoPerfil,
+          receptor_id: history[0]?.receptor?.id,
+          receptor_fotoPerfil: history[0]?.receptor?.fotoPerfil,
+        }));
+
         socket.emit('dm_history', history);
       } catch (err) {
         emitSocketError(socket, 'dm_history_failed', 'Error al cargar historial de mensajes privados');
@@ -272,6 +281,14 @@ async function bootstrap() {
             relations: ['emisor', 'receptor'],
           });
 
+          logger.debug(`[dm_message] Enviando mensaje. Datos:`, JSON.stringify({
+            id: hydrated?.id,
+            emisor_id: hydrated?.emisor?.id,
+            emisor_nombre: hydrated?.emisor?.nombre,
+            emisor_fotoPerfil: hydrated?.emisor?.fotoPerfil,
+            receptor_id: hydrated?.receptor?.id,
+            receptor_fotoPerfil: hydrated?.receptor?.fotoPerfil,
+          }));
 
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');

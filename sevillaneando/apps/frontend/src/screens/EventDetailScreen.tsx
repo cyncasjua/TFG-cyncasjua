@@ -22,6 +22,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { RootStackParamList } from '../App';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
 import { useTheme } from '../hooks/useTheme';
@@ -126,7 +127,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     if (Array.isArray(event.imagenes) && event.imagenes.length > 0) {
       return event.imagenes
         .filter((image): image is string => typeof image === 'string' && image.trim().length > 0)
-        .map((image) => getFullImageUrl(image))
+        .map((image: string) => getFullImageUrl(image))
         .filter((image): image is string => typeof image === 'string' && image.length > 0)
         .map((image) => ({ uri: image, cache: 'force-cache' }));
     }
@@ -544,16 +545,27 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     try {
       setChatError('');
-      setPendingImageLocalUri(asset.uri);
       setIsUploadingImage(true);
 
-      const uriParts = asset.uri.split('.');
-      const ext = uriParts.length > 1 ? uriParts[uriParts.length - 1] : 'jpg';
-      const mimeType = asset.mimeType ?? `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-      const name = asset.fileName ?? `chat-${Date.now()}.${ext}`;
+      const processed = await manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 1280 } }],
+        { compress: 0.75, format: SaveFormat.JPEG }
+      ).catch(() => null);
+
+      const uploadUri = processed?.uri;
+      if (!uploadUri) {
+        setChatError('No se pudo preparar la imagen');
+        setPendingImageLocalUri(null);
+        setPendingImageUrl(null);
+        return;
+      }
+
+      const name = `chat-${Date.now()}.jpg`;
+      const mimeType = 'image/jpeg';
 
       const formData = new FormData();
-      formData.append('file', { uri: asset.uri, name, type: mimeType } as any);
+      formData.append('file', { uri: uploadUri, name, type: mimeType } as any);
 
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/chat/upload`, {
         method: 'POST',
@@ -601,7 +613,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.8,
       });
 
@@ -1148,12 +1160,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                               {item.contenido}
                             </ThemedText>
                           )}
-                          {!!item.imageUrl && (
+                          {!!getFullImageUrl(item.imageUrl) && (
                             <TouchableOpacity
-                              onPress={() => setPreviewImageUrl(item.imageUrl ?? null)}
+                              onPress={() => setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)}
                             >
                               <Image
-                                source={{ uri: item.imageUrl }}
+                                source={{ uri: getFullImageUrl(item.imageUrl)! }}
                                 style={styles.chatMessageImage}
                                 resizeMode="cover"
                               />
@@ -1194,9 +1206,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   );
                 })}
               </ScrollView>
-              {!!pendingImageLocalUri && (
+              {!!pendingImageUrl && (
                 <ThemedView style={styles.chatAttachment}>
-                  <Image source={{ uri: pendingImageLocalUri }} style={styles.chatAttachmentImage} />
+                  <MaterialIcons name="image" size={18} color={colors.text} />
+                  <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
+                    Imagen lista para enviar
+                  </ThemedTextSecondary>
                   <TouchableOpacity
                     onPress={() => {
                       setPendingImageLocalUri(null);
@@ -1274,13 +1289,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <TouchableOpacity style={styles.imagePreviewClose} onPress={closePreview}>
               <MaterialIcons name="close" size={22} color="#fff" />
             </TouchableOpacity>
-            {!!previewImageUrl && (
+            {!!getFullImageUrl(previewImageUrl) && (
               <PinchGestureHandler
                 onGestureEvent={onPinchEvent}
                 onHandlerStateChange={handlePinchStateChange}
               >
                 <Animated.Image
-                  source={{ uri: previewImageUrl }}
+                  source={{ uri: getFullImageUrl(previewImageUrl)! }}
                   style={[styles.imagePreviewImage, { transform: [{ scale: imageScale }] }]}
                   resizeMode="contain"
                 />

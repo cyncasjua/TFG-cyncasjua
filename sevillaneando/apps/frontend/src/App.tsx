@@ -2,7 +2,7 @@ import React from 'react';
 import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, LogBox, Text, View, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ExpoLinking from 'expo-linking';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -41,7 +41,6 @@ import type { RecommendedRoute } from './services/api';
 
 LogBox.ignoreLogs([
   'You are initializing Firebase Auth',
-  'SafeAreaView has been deprecated',
   'Non-serializable values were found in the navigation state',
 ]);
 
@@ -83,6 +82,7 @@ const EventDetailLinkScreen = ({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'EventDetailLink'>) => {
   const [error, setError] = React.useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
     let isMounted = true;
@@ -102,11 +102,13 @@ const EventDetailLinkScreen = ({
   }, [navigation, route.params.eventId]);
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
       }}
     >
       {!error ? (
@@ -117,27 +119,30 @@ const EventDetailLinkScreen = ({
       ) : (
         <Text>{error}</Text>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 const Navigator = () => {
   const { user, loading, role } = useAuth();
   const { colors, theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   if (loading) {
     return (
-      <SafeAreaView
+      <View
         style={{
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: colors.background,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
         }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={{ marginTop: 8, color: colors.text }}>Comprobando sesión...</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -320,15 +325,17 @@ const Navigator = () => {
 
 const App = () => (
   <GestureHandlerRootView style={{ flex: 1 }}>
-    <ThemeProvider>
-      <AuthProvider>
-        <SocketProvider>
-          <NotificacionesProvider>
-            <Navigator />
-          </NotificacionesProvider>
-        </SocketProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <NotificacionesProvider>
+              <Navigator />
+            </NotificacionesProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   </GestureHandlerRootView>
 );
 

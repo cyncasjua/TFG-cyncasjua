@@ -36,6 +36,7 @@ import { useAuth } from '../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { formatEventDateRange, formatSevillaTime, isEventFinished } from '../utils/sevillaTime';
+import { getFullImageUrl } from '../utils/imageUrl';
 
 type EventWithDistance = Event & { distance?: number };
 import {
@@ -1303,7 +1304,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   </ThemedText>
                 )}
                 <ImageBackground
-                  source={item.imagen ? { uri: item.imagen } : require('../../assets/splash.png')}
+                  source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
                   style={{ height: 120, justifyContent: 'flex-end' }}
                   imageStyle={{ opacity: 0.2 }}
                   resizeMode="cover"

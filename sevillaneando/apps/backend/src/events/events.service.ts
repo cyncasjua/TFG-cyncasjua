@@ -48,9 +48,69 @@ export class EventsService {
     return parsed;
   }
 
+  /**
+   * Convierte imagenes a array si es string JSON o CSV
+   */
+  private parseImagenes(imagenes: any): string[] {
+    if (!imagenes) return [];
+
+    if (Array.isArray(imagenes)) {
+      return imagenes.filter(url => typeof url === 'string' && url.trim());
+    }
+
+    if (typeof imagenes === 'string') {
+      // Intentar parsear como JSON primero
+      if (imagenes.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(imagenes);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(url => typeof url === 'string' && url.trim());
+          }
+        } catch (e) {
+          console.warn('[parseImagenes] JSON parse failed:', e);
+        }
+      }
+      // Si no es JSON, intentar como CSV
+      return imagenes.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    return [];
+  }
+
+  /**
+   * Asegura que el array de imagenes en la entidad es array (deserializa si es necessary)
+   */
+  private ensureImagenesCorrectFormat(event: Event): void {
+    if (event.imagenes) {
+      (event as any).imagenes = this.parseImagenes(event.imagenes);
+    }
+  }
+
+  /**
+   * Prepara el evento para ser guardado en BD, convirtiendo imagenes a JSON string
+   */
+  private prepareEventForSave(event: Event): Event {
+    if (event.imagenes !== undefined && event.imagenes !== null) {
+      const imgArray = this.parseImagenes(event.imagenes);
+      (event as any).imagenes = JSON.stringify(imgArray);
+    }
+    return event;
+  }
+
+  /**
+   * Procesa un array de eventos para asegurar formato correcto de imagenes
+   */
+  private processEventArray(events: Event[]): Event[] {
+    events.forEach(event => this.ensureImagenesCorrectFormat(event));
+    return events;
+  }
+
   async create(dto: CreateEventDto): Promise<Event> {
-    const event = this.eventRepo.create(this.buildEventData(dto));
-    return this.eventRepo.save(event);
+    let event = this.eventRepo.create(this.buildEventData(dto));
+    event = this.prepareEventForSave(event);
+    const saved = await this.eventRepo.save(event);
+    this.ensureImagenesCorrectFormat(saved);
+    return saved;
   }
 
   async findOneByLinkAcceso(linkAcceso: string): Promise<Event> {
@@ -59,6 +119,7 @@ export class EventsService {
       relations: ['categoria', 'creador'],
     });
     if (!event) throw new NotFoundException('Evento no encontrado o no es privado');
+    this.ensureImagenesCorrectFormat(event);
     return this.attachRatingsSummary(event);
   }
 
@@ -100,7 +161,7 @@ export class EventsService {
       query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
     }
 
-    return query.getMany();
+    return query.getMany().then(events => this.processEventArray(events));
   }
 
   async findOne(id: string): Promise<Event> {
@@ -109,6 +170,7 @@ export class EventsService {
       relations: ['categoria', 'creador'],
     });
     if (!found) throw new NotFoundException('Evento no encontrado');
+    this.ensureImagenesCorrectFormat(found);
     return found;
   }
 
@@ -118,6 +180,7 @@ export class EventsService {
       relations: ['categoria', 'creador'],
     });
     if (!found) throw new NotFoundException('Evento no encontrado');
+    this.ensureImagenesCorrectFormat(found);
     return this.attachRatingsSummary(found);
   }
 
@@ -162,7 +225,7 @@ export class EventsService {
       estado: isPrivado ? EstadoEnum.Aprobado : EstadoEnum.Pendiente,
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
-      imagenes: dto.imagenes ?? undefined,
+      imagenes: dto.imagenes ? JSON.stringify(dto.imagenes) : undefined,
     };
   }
 
@@ -179,7 +242,10 @@ export class EventsService {
     event.estado = visibilityState.estado;
     event.linkAcceso = visibilityState.linkAcceso;
 
-    return this.eventRepo.save(event);
+    const toSave = this.prepareEventForSave(event);
+    const saved = await this.eventRepo.save(toSave);
+    this.ensureImagenesCorrectFormat(saved);
+    return saved;
   }
 
   private applyEventUpdates(event: Event, dto: UpdateEventDto): void {
@@ -198,7 +264,13 @@ export class EventsService {
     event.precioMax = dto.precioMax !== undefined ? dto.precioMax : event.precioMax;
     event.categoria = dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : event.categoria;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
-    event.imagenes = dto.imagenes !== undefined ? dto.imagenes : event.imagenes;
+
+    // Normalizar imagenes - convertir a array común format
+    if (dto.imagenes !== undefined) {
+      const normalized = this.parseImagenes(dto.imagenes);
+      (event as any).imagenes = normalized.length > 0 ? normalized : undefined;
+    }
+
     event.fechaInicio = dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;
     event.fechaFin = dto.fechaFin !== undefined ? this.parseOptionalDate(dto.fechaFin) : event.fechaFin;
   }
@@ -307,36 +379,40 @@ export class EventsService {
     if (!event) throw new NotFoundException('Evento no encontrado');
 
     event.asistentes = (event.asistentes ?? []).filter((att) => att.id !== userId);
-    await this.eventRepo.save(event);
+    const toSave = this.prepareEventForSave(event);
+    await this.eventRepo.save(toSave);
     return event.asistentes;
   }
 
     async findEventsAttending(userId: string): Promise<Event[]> {
-      return this.eventRepo
+      const events = await this.eventRepo
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.categoria', 'categoria')
         .leftJoinAndSelect('event.creador', 'creador')
         .leftJoinAndSelect('event.asistentes', 'asistentes')
         .innerJoin('event.asistentes', 'user', 'user.id = :userId', { userId })
         .getMany();
+      return this.processEventArray(events);
     }
 
     async findEventsByUser(userId: string): Promise<Event[]> {
-      return this.eventRepo.createQueryBuilder('event')
+      const events = await this.eventRepo.createQueryBuilder('event')
         .leftJoinAndSelect('event.categoria', 'categoria')
         .leftJoinAndSelect('event.creador', 'creador')
         .where('event.creador = :userId', { userId })
         .andWhere('event.estado != :pendiente', { pendiente: EstadoEnum.Pendiente })
         .orderBy('event.fechaInicio', 'DESC')
         .getMany();
+      return this.processEventArray(events);
     }
 
     async findEventsToModerate(): Promise<Event[]> {
-      return this.eventRepo.createQueryBuilder('event')
+      const events = await this.eventRepo.createQueryBuilder('event')
         .leftJoinAndSelect('event.categoria', 'categoria')
         .leftJoinAndSelect('event.creador', 'creador')
         .where('event.privado = false AND event.estado = :pendiente', { pendiente: EstadoEnum.Pendiente })
         .orderBy('event.fechaInicio', 'DESC')
         .getMany();
+      return this.processEventArray(events);
     }
 }

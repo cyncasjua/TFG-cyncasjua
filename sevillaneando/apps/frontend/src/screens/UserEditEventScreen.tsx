@@ -29,6 +29,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { reportWarning } from '../utils/telemetry';
+import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -41,6 +42,34 @@ type Categoria = {
 
 const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const { event, onEventEdited } = route.params as { event: any; onEventEdited?: () => void };
+
+  // Parsear imagenes si vienen como JSON string
+  let rawImagenes = event.imagenes || [];
+  if (typeof rawImagenes === 'string') {
+    try {
+      rawImagenes = JSON.parse(rawImagenes);
+    } catch {
+      rawImagenes = [];
+    }
+  }
+  if (!Array.isArray(rawImagenes)) {
+    rawImagenes = [];
+  }
+
+  const initialEventImages: string[] = rawImagenes
+    .map((image: string) => {
+      console.log('[UserEditEventScreen] Imagen bruta:', image);
+      const normalized = getFullImageUrl(image);
+      console.log('[UserEditEventScreen] Imagen normalizada:', normalized);
+      return normalized;
+    })
+    .filter((image: string | undefined): image is string => Boolean(image));
+
+  console.log('[UserEditEventScreen] initialEventImages final:', {
+    total_raw_images: rawImagenes.length,
+    total_normalized: initialEventImages.length,
+    images: initialEventImages
+  });
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
   const [showPrivateLinkModal, setShowPrivateLinkModal] = useState(false);
@@ -97,13 +126,25 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const precioMinRef = useRef<TextInput>(null);
   const precioMaxRef = useRef<TextInput>(null);
 
-  const [localImageUris, setLocalImageUris] = useState<string[]>(event.imagenes || []);
-  const [imageUrls, setImageUrls] = useState<string[]>(event.imagenes || []);
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(event.imagen || event.imagenes?.[0] || null);
+  const [localImageUris, setLocalImageUris] = useState<string[]>(initialEventImages);
+  const [imageUrls, setImageUrls] = useState<string[]>(initialEventImages);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
+    getFullImageUrl(event.imagen) || initialEventImages[0] || null
+  );
+  const [failedImageAttempts, setFailedImageAttempts] = useState<Record<number, number>>({});
 
   const scrollRef = useRef<ScrollView>(null);
   const [maxScroll, setMaxScroll] = useState(0);
   const [scrollX, setScrollX] = useState(0);
+
+  useEffect(() => {
+    initialEventImages.forEach((uri: string) => {
+      void Image.prefetch(uri);
+    });
+    if (coverImageUrl) {
+      void Image.prefetch(coverImageUrl);
+    }
+  }, [coverImageUrl, initialEventImages]);
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -128,7 +169,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       selectionLimit: remainingSlots,
       aspect: [4, 3],
@@ -231,8 +272,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
       !title ||
       !description ||
       !address ||
-      !fechaInicio ||
-      !fechaFin ||
       latitude === null ||
       longitude === null ||
       !categoriaId
@@ -251,8 +290,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         title,
         description,
         address,
-        fechaInicio,
-        fechaFin,
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
         location: {
           type: 'Point',
           coordinates: [longitude, latitude],
@@ -320,7 +359,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
 
-            <ThemedText style={styles.label}>Título</ThemedText>
+            <ThemedText style={styles.label}>Título *</ThemedText>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -335,7 +374,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Descripción</ThemedText>
+            <ThemedText style={styles.label}>Descripción *</ThemedText>
             <TextInput
               ref={descriptionRef}
               value={description}
@@ -352,48 +391,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               blurOnSubmit={false}
             />
 
-            <View style={{ marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                <TextInput
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Buscar dirección o lugar..."
-                  placeholderTextColor={colors.text + '99'}
-                  style={[
-                    styles.mapSearchInput,
-                    { flex: 1, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-                  ]}
-                  returnKeyType="search"
-                  onSubmitEditing={handleSearch}
-                  editable={!searchLoading}
-                />
-                <TouchableOpacity
-                  onPress={handleSearch}
-                  style={styles.mapSearchButton}
-                  disabled={searchLoading}
-                >
-                  {searchLoading ? (
-                    <ActivityIndicator color={colors.primary} size={20} />
-                  ) : (
-                    <Icon name="magnify" size={24} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                ref={addressRef}
-                value={address}
-                onChangeText={() => { }}
-                placeholder="Dirección"
-                placeholderTextColor={colors.text + '99'}
-                style={[
-                  styles.input,
-                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-                ]}
-                editable={false}
-              />
-            </View>
 
-            <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
+            <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
                 ref={fechaInicioRef}
@@ -437,7 +436,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               locale="es"
             />
 
-            <ThemedText style={styles.label}>Fecha de fin</ThemedText>
+            <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
                 ref={fechaFinRef}
@@ -496,6 +495,47 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 {privado && <Icon name="check" size={16} color="#fff" />}
               </View>
             </TouchableOpacity>
+
+            <View style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                <TextInput
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Buscar dirección o lugar..."
+                  placeholderTextColor={colors.text + '99'}
+                  style={[
+                    styles.mapSearchInput,
+                    { flex: 1, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                  ]}
+                  returnKeyType="search"
+                  onSubmitEditing={handleSearch}
+                  editable={!searchLoading}
+                />
+                <TouchableOpacity
+                  onPress={handleSearch}
+                  style={styles.mapSearchButton}
+                  disabled={searchLoading}
+                >
+                  {searchLoading ? (
+                    <ActivityIndicator color={colors.primary} size={20} />
+                  ) : (
+                    <Icon name="magnify" size={24} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                ref={addressRef}
+                value={address}
+                onChangeText={() => { }}
+                placeholder="Dirección"
+                placeholderTextColor={colors.text + '99'}
+                style={[
+                  styles.input,
+                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                ]}
+                editable={false}
+              />
+            </View>
 
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
             <View
@@ -604,6 +644,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               }}
               dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
               textStyle={{ color: colors.text }}
+              placeholder="Pendiente"
               placeholderStyle={{ color: colors.text + '99' }}
               zIndex={900}
               listMode="SCROLLVIEW"
@@ -650,10 +691,32 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   onScroll={e => setScrollX(e.nativeEvent.contentOffset.x)}
                   scrollEventThrottle={16}
                 >
-                  {localImageUris.map((uri, idx) => (
+                  {localImageUris.map((uri, idx) => {
+                    const candidates = getImageUrlCandidates(uri);
+                    if (candidates.length === 0) {
+                      console.log(`[UserEditEventScreen] No candidates para imagen ${idx}:`, uri);
+                      return null;
+                    }
+                    const attempts = failedImageAttempts[idx] ?? 0;
+                    const hasExhaustedCandidates = attempts >= candidates.length;
+                    const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
+                    console.log(`[UserEditEventScreen] Imagen ${idx} - Intento ${attempts}/${candidates.length}:`, {
+                      original: uri,
+                      currentUri,
+                      hasExhausted: hasExhaustedCandidates,
+                      candidates: candidates.slice(0, 2)
+                    });
+                    return (
                     <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
                       <Image
-                        source={{ uri }}
+                        source={
+                          hasExhaustedCandidates
+                            ? require('../../assets/splash.png')
+                            : { uri: currentUri }
+                        }
+                        onError={() => {
+                          setFailedImageAttempts((prev) => ({ ...prev, [idx]: (prev[idx] ?? 0) + 1 }));
+                        }}
                         style={[
                           styles.imagePreview,
                           {
@@ -671,6 +734,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                           newUrls.splice(idx, 1);
                           setLocalImageUris(newUris);
                           setImageUrls(newUrls);
+                          setFailedImageAttempts({});
                           if (newUrls.length === 0) {
                             setCoverImageUrl(null);
                           } else if (coverImageUrl === imageUrls[idx]) {
@@ -693,7 +757,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                         </ThemedText>
                       </TouchableOpacity>
                     </View>
-                  ))}
+                    );
+                  })}
                 </ScrollView>
               </View>
             )}

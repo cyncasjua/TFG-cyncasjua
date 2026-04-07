@@ -7,6 +7,7 @@ import {
   BeforeUpdate,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { Categoria } from '../entities/categoria.entity';
@@ -74,8 +75,8 @@ export class Event {
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;
 
-  @Column('simple-array', { nullable: true })
-  imagenes?: string[];
+  @Column({ type: 'text', nullable: true })
+  imagenes?: string; // JSON string, nunca simple-array
 
   @ManyToMany(() => User, (user) => user.eventosAsistidos)
   @JoinTable({
@@ -100,6 +101,22 @@ export class Event {
   @BeforeInsert()
   @BeforeUpdate()
   validateDates() {
+    // Asegurar que imagenes SIEMPRE sea guardado como JSON string válido
+    if (this.imagenes) {
+      if (Array.isArray(this.imagenes)) {
+        // Si es array, convertir a JSON string
+        (this as any).imagenes = JSON.stringify(this.imagenes);
+      } else if (typeof this.imagenes === 'string' && !this.imagenes.startsWith('[')) {
+        // Si es string pero no empieza con '[', intentar parsear como CSV
+        try {
+          const arr = this.imagenes.split(',').map(s => s.trim()).filter(s => s);
+          (this as any).imagenes = JSON.stringify(arr);
+        } catch {
+          // Mantener como está si hay error
+        }
+      }
+    }
+
     if (this.fechaFin && this.fechaInicio && this.fechaFin <= this.fechaInicio) {
       throw new BadRequestException('La fecha de fin debe ser posterior a la fecha de inicio.');
     }
@@ -136,8 +153,25 @@ export class Event {
     if (this.imagen && this.imagen.length > 512) {
       throw new BadRequestException('La URL de la imagen no puede superar los 512 caracteres.');
     }
-    if (this.imagenes && this.imagenes.length > 5) {
-      throw new BadRequestException('No puedes subir más de 5 imágenes para un evento.');
+    if (this.imagenes) {
+      try {
+        let imagenCount = 0;
+        if (typeof this.imagenes === 'string') {
+          if (this.imagenes.startsWith('[')) {
+            const parsed = JSON.parse(this.imagenes);
+            imagenCount = Array.isArray(parsed) ? parsed.length : 0;
+          } else {
+            imagenCount = this.imagenes.split(',').filter(s => s.trim()).length;
+          }
+        }
+
+        if (imagenCount > 5) {
+          throw new BadRequestException('No puedes subir más de 5 imágenes para un evento.');
+        }
+      } catch (e) {
+        if (e instanceof BadRequestException) throw e;
+        throw new BadRequestException('Error validando imágenes.');
+      }
     }
   }
 }

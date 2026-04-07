@@ -26,6 +26,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StyleProp, ViewStyle } from 'react-native';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { ComponentType } from 'react';
+import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -34,6 +35,34 @@ type Categoria = { id: string; nombre: string };
 
 export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const { event } = route.params;
+
+  // Parsear imagenes si vienen como JSON string
+  let rawImagenes = event.imagenes ?? [];
+  if (typeof rawImagenes === 'string') {
+    try {
+      rawImagenes = JSON.parse(rawImagenes);
+    } catch {
+      rawImagenes = [];
+    }
+  }
+  if (!Array.isArray(rawImagenes)) {
+    rawImagenes = [];
+  }
+
+  const initialEventImages = rawImagenes
+    .map((image: string) => {
+      console.log('[ModeratorEditEventScreen] Imagen bruta:', image);
+      const normalized = getFullImageUrl(image);
+      console.log('[ModeratorEditEventScreen] Imagen normalizada:', normalized);
+      return normalized;
+    })
+    .filter((image: string | undefined): image is string => Boolean(image));
+
+  console.log('[ModeratorEditEventScreen] initialEventImages final:', {
+    total_raw_images: rawImagenes.length,
+    total_normalized: initialEventImages.length,
+    images: initialEventImages
+  });
   const isPrivateEvent = Boolean(event.privado);
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
@@ -62,9 +91,12 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const [categoriaId, setCategoriaId] = useState(event.categoria?.id ?? '');
   const [openCategoria, setOpenCategoria] = useState(false);
   const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>(event.imagenes ?? []);
-  const [localImageUris, setLocalImageUris] = useState<string[]>(event.imagenes ?? []);
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(event.imagen ?? (event.imagenes?.[0] ?? null));
+  const [imageUrls, setImageUrls] = useState<string[]>(initialEventImages);
+  const [localImageUris, setLocalImageUris] = useState<string[]>(initialEventImages);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
+    getFullImageUrl(event.imagen) ?? initialEventImages[0] ?? null
+  );
+  const [failedImageAttempts, setFailedImageAttempts] = useState<Record<number, number>>({});
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
   const [estado, setEstado] = useState(event.estado ?? 'Pendiente');
@@ -85,6 +117,15 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const scrollRef = useRef<ScrollView>(null);
   const [scrollX, setScrollX] = useState(0);
   const [maxScroll, setMaxScroll] = useState(0);
+
+  useEffect(() => {
+    initialEventImages.forEach((uri) => {
+      void Image.prefetch(uri);
+    });
+    if (coverImageUrl) {
+      void Image.prefetch(coverImageUrl);
+    }
+  }, [coverImageUrl, initialEventImages]);
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -109,7 +150,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       selectionLimit: remainingSlots,
       aspect: [4, 3],
@@ -227,8 +268,6 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       !title ||
       !description ||
       !address ||
-      !fechaInicio ||
-      !fechaFin ||
       latitude === null ||
       longitude === null ||
       !categoriaId
@@ -243,8 +282,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         title,
         description,
         address,
-        fechaInicio,
-        fechaFin,
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
         location: { type: 'Point', coordinates: [longitude, latitude] },
         precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
         precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
@@ -283,7 +322,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
-            <ThemedText style={styles.label}>Título</ThemedText>
+            <ThemedText style={styles.label}>Título *</ThemedText>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -297,7 +336,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onSubmitEditing={() => descriptionRef.current?.focus()}
               blurOnSubmit={false}
             />
-            <ThemedText style={styles.label}>Descripción</ThemedText>
+            <ThemedText style={styles.label}>Descripción *</ThemedText>
             <TextInput
               ref={descriptionRef}
               value={description}
@@ -377,7 +416,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <View style={{ marginBottom: 8 }}>
               <OsmAttribution compact />
             </View>
-            <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
+            <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
                 ref={fechaInicioRef}
@@ -421,7 +460,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onCancel={() => setShowHoraInicio(false)}
               locale="es"
             />
-            <ThemedText style={styles.label}>Fecha de fin</ThemedText>
+            <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
                 ref={fechaFinRef}
@@ -611,10 +650,32 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                   onScroll={e => setScrollX(e.nativeEvent.contentOffset.x)}
                   scrollEventThrottle={16}
                 >
-                  {localImageUris.map((uri, idx) => (
+                  {localImageUris.map((uri, idx) => {
+                    const candidates = getImageUrlCandidates(uri);
+                    if (candidates.length === 0) {
+                      console.log(`[ModeratorEditEventScreen] No candidates para imagen ${idx}:`, uri);
+                      return null;
+                    }
+                    const attempts = failedImageAttempts[idx] ?? 0;
+                    const hasExhaustedCandidates = attempts >= candidates.length;
+                    const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
+                    console.log(`[ModeratorEditEventScreen] Imagen ${idx} - Intento ${attempts}/${candidates.length}:`, {
+                      original: uri,
+                      currentUri,
+                      hasExhausted: hasExhaustedCandidates,
+                      candidates: candidates.slice(0, 2)
+                    });
+                    return (
                     <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
                       <Image
-                        source={{ uri }}
+                        source={
+                          hasExhaustedCandidates
+                            ? require('../../assets/splash.png')
+                            : { uri: currentUri }
+                        }
+                        onError={() => {
+                          setFailedImageAttempts((prev) => ({ ...prev, [idx]: (prev[idx] ?? 0) + 1 }));
+                        }}
                         style={[
                           styles.imagePreview,
                           {
@@ -632,6 +693,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                           newUrls.splice(idx, 1);
                           setLocalImageUris(newUris);
                           setImageUrls(newUrls);
+                          setFailedImageAttempts({});
                           if (newUrls.length === 0) {
                             setCoverImageUrl(null);
                           } else if (coverImageUrl === imageUrls[idx]) {
@@ -654,7 +716,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                         </ThemedText>
                       </TouchableOpacity>
                     </View>
-                  ))}
+                    );
+                  })}
                 </ScrollView>
               </View>
             )}

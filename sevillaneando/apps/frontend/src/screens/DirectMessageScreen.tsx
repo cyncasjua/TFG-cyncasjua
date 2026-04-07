@@ -22,6 +22,7 @@ dayjs.extend(timezone);
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { RootStackParamList } from '../App';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
@@ -51,6 +52,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const { refresh: refreshNotificaciones } = useNotificaciones();
   const { socket, isConnected, sendMessage } = useSocket();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
+  const [userPhotoById, setUserPhotoById] = useState<Record<string, string | null>>({});
   const [input, setInput] = useState('');
   const [chatError, setChatError] = useState('');
   const [pendingImageLocalUri, setPendingImageLocalUri] = useState<string | null>(null);
@@ -135,6 +137,38 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
     scrollChatToBottom();
   }, [messages, scrollChatToBottom]);
 
+  useEffect(() => {
+    const userIdsToFetch = new Set<string>();
+
+    messages.forEach((m) => {
+      // SIEMPRE intenta traer fotos, aunque vengan incompletas o null
+      if (m.emisor?.id) {
+        userIdsToFetch.add(m.emisor.id);
+      }
+      if (m.receptor?.id) {
+        userIdsToFetch.add(m.receptor.id);
+      }
+    });
+
+    if (userIdsToFetch.size === 0) return;
+
+    console.log('[DirectMessageScreen fallback] Intentando cargar fotos de usuarios:', Array.from(userIdsToFetch));
+
+    userIdsToFetch.forEach((uid) => {
+      void api
+        .get(`/users/${uid}`)
+        .then((res) => {
+          const fotoPerfil = res?.data?.fotoPerfil ?? null;
+          console.log(`[DirectMessageScreen fallback] Foto cargada para ${uid}:`, fotoPerfil);
+          setUserPhotoById((prev) => ({ ...prev, [uid]: fotoPerfil }));
+        })
+        .catch((err) => {
+          console.error(`[DirectMessageScreen fallback] Error cargando foto de ${uid}:`, err);
+          setUserPhotoById((prev) => ({ ...prev, [uid]: null }));
+        });
+    });
+  }, [messages]);
+
   const handleSend = () => {
     const trimmedText = input.trim();
     if (!trimmedText && !pendingImageUrl) return;
@@ -160,16 +194,27 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
     try {
       setChatError('');
-      setPendingImageLocalUri(asset.uri);
       setIsUploadingImage(true);
 
-      const uriParts = asset.uri.split('.');
-      const ext = uriParts.length > 1 ? uriParts[uriParts.length - 1] : 'jpg';
-      const mimeType = asset.mimeType ?? `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-      const name = asset.fileName ?? `dm-${Date.now()}.${ext}`;
+      const processed = await manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 1280 } }],
+        { compress: 0.75, format: SaveFormat.JPEG }
+      ).catch(() => null);
+
+      const uploadUri = processed?.uri;
+      if (!uploadUri) {
+        setChatError('No se pudo preparar la imagen');
+        setPendingImageLocalUri(null);
+        setPendingImageUrl(null);
+        return;
+      }
+
+      const name = `dm-${Date.now()}.jpg`;
+      const mimeType = 'image/jpeg';
 
       const formData = new FormData();
-      formData.append('file', { uri: asset.uri, name, type: mimeType } as any);
+      formData.append('file', { uri: uploadUri, name, type: mimeType } as any);
 
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/chat/upload`, {
         method: 'POST',
@@ -217,7 +262,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.8,
       });
 
@@ -285,10 +330,25 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
     marcarNotificacionesPrivadasLeidas();
 
     const handleDmHistory = (history: DirectMessage[]) => {
+      console.log('[DirectMessageScreen] dm_history recibido:', {
+        cantidad: history.length,
+        primer_mensaje: history[0] ? {
+          id: history[0].id,
+          emisor_id: history[0].emisor?.id,
+          emisor_nombre: history[0].emisor?.nombre,
+          emisor_fotoPerfil: history[0].emisor?.fotoPerfil,
+        } : null
+      });
       setMessages(history);
     };
 
     const handleDmMessage = (message: DirectMessage) => {
+      console.log('[DirectMessageScreen] dm_message recibido:', {
+        id: message.id,
+        emisor_id: message.emisor?.id,
+        emisor_nombre: message.emisor?.nombre,
+        emisor_fotoPerfil: message.emisor?.fotoPerfil,
+      });
       setMessages((prev) => [...prev, message]);
 
       if (message.emisor?.id === userId) {
@@ -364,7 +424,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                       }}
                       style={{ marginTop: 2 }}
                     >
-                      <Avatar photoUrl={item.emisor?.fotoPerfil} size={24} />
+                      <Avatar photoUrl={item.emisor?.fotoPerfil ?? userPhotoById[item.emisor?.id ?? '']} size={24} />
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
@@ -400,13 +460,19 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                     )}
                     {!!item.imageUrl && (
                       <TouchableOpacity
-                        onPress={() => setPreviewImageUrl(item.imageUrl ?? null)}
+                        onPress={() => setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)}
                       >
+                        {(() => {
+                          const imageUri = getFullImageUrl(item.imageUrl);
+                          if (!imageUri) return null;
+                          return (
                         <Image
-                          source={{ uri: getFullImageUrl(item.imageUrl) || item.imageUrl }}
+                          source={{ uri: imageUri }}
                           style={styles.chatMessageImage}
                           resizeMode="cover"
                         />
+                          );
+                        })()}
                       </TouchableOpacity>
                     )}
                     <ThemedTextSecondary
@@ -425,12 +491,12 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           })}
         </ScrollView>
 
-        {!!pendingImageLocalUri && (
+        {!!pendingImageUrl && (
           <ThemedView style={styles.chatAttachment}>
-            <Image
-              source={{ uri: pendingImageLocalUri }}
-              style={styles.chatAttachmentImage}
-            />
+            <MaterialIcons name="image" size={18} color={colors.text} />
+            <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
+              Imagen lista para enviar
+            </ThemedTextSecondary>
             <TouchableOpacity
               onPress={() => {
                 setPendingImageLocalUri(null);
@@ -507,14 +573,14 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           <TouchableOpacity style={styles.imagePreviewClose} onPress={closePreview}>
             <MaterialIcons name="close" size={22} color="#fff" />
           </TouchableOpacity>
-          {!!previewImageUrl && (
+          {!!getFullImageUrl(previewImageUrl) && (
             <PinchGestureHandler
               onGestureEvent={onPinchEvent}
               onHandlerStateChange={handlePinchStateChange}
             >
               <Animated.Image
                 source={{
-                  uri: getFullImageUrl(previewImageUrl) || previewImageUrl,
+                  uri: getFullImageUrl(previewImageUrl)!,
                 }}
                 style={[styles.imagePreviewImage, { transform: [{ scale: imageScale }] }]}
                 resizeMode="contain"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,6 +14,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { reportWarning } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
+import { api } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Messages'>;
 
@@ -31,7 +32,32 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const { socket, isConnected } = useSocket();
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [userPhotoById, setUserPhotoById] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const userIdsToFetch = new Set<string>(
+      conversations.filter((c) => c.userId).map((c) => c.userId)
+    );
+
+    if (userIdsToFetch.size === 0) return;
+
+    console.log('[MessagesScreen fallback] Intentando cargar fotos de usuarios:', Array.from(userIdsToFetch));
+
+    userIdsToFetch.forEach((userId) => {
+      void api
+        .get(`/users/${userId}`)
+        .then((res) => {
+          const fotoPerfil = res?.data?.fotoPerfil ?? null;
+          console.log(`[MessagesScreen fallback] Foto cargada para ${userId}:`, fotoPerfil);
+          setUserPhotoById((prev) => ({ ...prev, [userId]: fotoPerfil }));
+        })
+        .catch((err) => {
+          console.error(`[MessagesScreen fallback] Error cargando foto de ${userId}:`, err);
+          setUserPhotoById((prev) => ({ ...prev, [userId]: null }));
+        });
+    });
+  }, [conversations]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -130,7 +156,7 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
           ]}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-            <Avatar photoUrl={item.userPhoto} size={48} style={styles.avatar} />
+            <Avatar photoUrl={item.userPhoto ?? userPhotoById[item.userId]} size={48} style={styles.avatar} />
 
             <View style={{ flex: 1 }}>
               <ThemedText style={{ fontWeight: '600' }}>{item.userName}</ThemedText>

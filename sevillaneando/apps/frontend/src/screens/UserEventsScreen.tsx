@@ -15,6 +15,7 @@ import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
+import { getFullImageUrl } from '../utils/imageUrl';
 import type { RootStackParamList } from '../App';
 import type { Event } from '../types/event';
 
@@ -87,7 +88,7 @@ export const UserEventsScreen: React.FC = () => {
               ]}
             >
               <Image
-                source={item.imagen ? { uri: item.imagen } : require('../../assets/splash.png')}
+                source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
                 style={styles.image}
                 resizeMode="cover"
               />

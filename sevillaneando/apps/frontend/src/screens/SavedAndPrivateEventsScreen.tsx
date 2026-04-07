@@ -15,6 +15,7 @@ import {
   RecommendedEvent,
 } from '../services/api';
 import { formatEventDateRange } from '../utils/sevillaTime';
+import { getFullImageUrl } from '../utils/imageUrl';
 import type { Event } from '../types/event';
 import { ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 
@@ -152,7 +153,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                 )}
 
                 <ImageBackground
-                  source={event.imagen ? { uri: event.imagen } : require('../../assets/splash.png')}
+                  source={getFullImageUrl(event.imagen) ? { uri: getFullImageUrl(event.imagen)! } : require('../../assets/splash.png')}
                   style={{ height: 120, justifyContent: 'flex-end' }}
                   imageStyle={{ opacity: 0.2 }}
                   resizeMode="cover"
@@ -242,7 +243,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                 )}
 
                 <ImageBackground
-                  source={event.imagen ? { uri: event.imagen } : require('../../assets/splash.png')}
+                  source={getFullImageUrl(event.imagen) ? { uri: getFullImageUrl(event.imagen)! } : require('../../assets/splash.png')}
                   style={{ height: 120, justifyContent: 'flex-end' }}
                   imageStyle={{ opacity: 0.2 }}
                   resizeMode="cover"

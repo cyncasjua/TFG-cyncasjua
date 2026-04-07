@@ -17,6 +17,7 @@ import { ThemedTitle, ThemedButton, ThemedText, OsmAttribution } from '../compon
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { reportWarning } from '../utils/telemetry';
+import { getFullImageUrl } from '../utils/imageUrl';
 import { Button } from 'react-native';
 import { Alert } from 'react-native';
 import { getAuth, deleteUser } from 'firebase/auth';
@@ -46,6 +47,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
     ? '/users/upload-profile-image/firebase'
     : '/users/upload-profile-image';
   const endpointPerfil = esFirebase ? '/users/me/firebase' : '/users/me';
+  const resolvedFotoPerfil = getFullImageUrl(fotoPerfil);
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -74,7 +76,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -220,9 +222,9 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
       >
       <ThemedTitle style={styles.title}>Editar perfil</ThemedTitle>
       <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-        {fotoPerfil ? (
+        {resolvedFotoPerfil ? (
           <>
-            <Image source={{ uri: fotoPerfil }} style={styles.profileImage} />
+            <Image source={{ uri: resolvedFotoPerfil }} style={styles.profileImage} />
             <Button title="Quitar foto" onPress={quitarFotoPerfil} color="red" />
           </>
         ) : (
