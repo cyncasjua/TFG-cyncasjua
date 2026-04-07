@@ -41,7 +41,7 @@ export class CloudinaryService {
   async uploadImage(fileBuffer: Buffer, options: UploadImageOptions) {
     if (!this.isConfigured) {
       throw new InternalServerErrorException(
-        'Cloudinary no esta configurado en el backend.'
+        'Cloudinary no está configurado en el backend.'
       );
     }
 
@@ -62,7 +62,7 @@ export class CloudinaryService {
           result: UploadApiResponse | undefined
         ) => {
           if (error || !result) {
-            reject(error ?? new Error('Cloudinary no devolvio resultado'));
+            reject(error ?? new Error('Cloudinary no devolvió resultado'));
             return;
           }
 

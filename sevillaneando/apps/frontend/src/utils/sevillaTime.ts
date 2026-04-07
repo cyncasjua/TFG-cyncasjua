@@ -104,3 +104,17 @@ export function formatEventDateRange(
 
   return `${startText} - ${endText}`;
 }
+
+export function isEventFinished(
+  start: Date | string | number | null | undefined,
+  end: Date | string | number | null | undefined,
+  referenceDate: Date = new Date(),
+): boolean {
+  const startDate = toDate(start);
+  const endDate = toDate(end);
+
+  if (!startDate && !endDate) return false;
+  if (endDate) return referenceDate.getTime() > endDate.getTime();
+  if (startDate) return referenceDate.getTime() > startDate.getTime();
+  return false;
+}

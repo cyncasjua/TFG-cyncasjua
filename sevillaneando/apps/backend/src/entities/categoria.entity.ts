@@ -12,18 +12,18 @@ import { Length } from 'class-validator';
 @Entity()
 export class Categoria {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Length(3, 50)
   @Column({ unique: true, nullable: false })
-  nombre: string;
+  nombre!: string;
 
   @Length(5, 200)
   @Column({ nullable: true })
-  descripcion: string;
+  descripcion!: string;
 
   @OneToMany(() => Event, (event) => event.categoria)
-  eventos: Event[];
+  eventos!: Event[];
 
   listarEventosPorCategoria(): Event[] {
     return this.eventos;

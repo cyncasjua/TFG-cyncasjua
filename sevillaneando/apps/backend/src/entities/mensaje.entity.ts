@@ -6,20 +6,20 @@ import { Event } from '../events/event.entity';
 export class Mensaje {
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  contenido: string;
+  contenido!: string;
 
   @Column({ nullable: true })
   imageUrl?: string | null;
 
   @ManyToOne(() => User)
-  usuario: User;
+  usuario!: User;
 
   @ManyToOne(() => Event)
-  evento: Event;
+  evento!: Event;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  fechaCreacion: Date;
+  fechaCreacion!: Date;
 }

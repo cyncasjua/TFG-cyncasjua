@@ -1,27 +1,27 @@
-import { User } from 'src/users/user.entity';
+import { User } from '../users/user.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('mensajes_privados')
 export class MensajePrivado {
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'text' })
-  contenido: string;
+  contenido!: string;
 
   @Column({ type: 'text', nullable: true })
   imageUrl?: string | null;
 
   @ManyToOne(() => User)
-  emisor: User;
+  emisor!: User;
 
   @ManyToOne(() => User)
-  receptor: User;
+  receptor!: User;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  fechaCreacion: Date;
+  fechaCreacion!: Date;
 
   @Column({ default: false })
-  leido: boolean;
+  leido!: boolean;
 }

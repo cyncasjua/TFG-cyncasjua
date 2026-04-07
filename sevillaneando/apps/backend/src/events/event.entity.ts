@@ -11,7 +11,6 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { Categoria } from '../entities/categoria.entity';
 
-
 import { EstadoEnum } from '../enums/estado.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { User } from '../users/user.entity';

@@ -8,22 +8,22 @@ import {
   BeforeUpdate,
 } from 'typeorm';
 import { Event } from '../events/event.entity';
-import { GeoJsonPoint } from 'src/common/geojson-point';
+import { GeoJsonPoint } from '../common/geojson-point';
 
 @Entity()
 export class Ruta {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column('simple-json')
-  trayecto: GeoJsonPoint[];
+  trayecto!: GeoJsonPoint[];
 
   @ManyToMany(() => Event)
   @JoinTable()
-  secuenciaEventos: Event[];
+  secuenciaEventos!: Event[];
 
   @Column('int')
-  temporizacion: number;
+  temporizacion!: number;
 
   @BeforeInsert()
   @BeforeUpdate()

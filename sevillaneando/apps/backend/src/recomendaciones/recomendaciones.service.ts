@@ -31,6 +31,11 @@ type ScoredEvent = {
   reasons: string[];
 };
 
+type EventLocation = {
+  type?: string;
+  coordinates?: [number, number] | number[];
+} | null;
+
 type RecommendedEventItem = {
   id: string;
   title: string;
@@ -41,10 +46,15 @@ type RecommendedEventItem = {
   address: string;
   categoria: string | null;
   imagen: string | null;
-  location: any;
+  location: EventLocation;
   score: number;
   distanceKm: number;
   reasons: string[];
+};
+
+type RecommendedEventWithDates = RecommendedEventItem & {
+  fechaInicio: Date | string;
+  fechaFin: Date | string;
 };
 
 type RouteCandidate = {
@@ -148,7 +158,11 @@ export class RecomendacionesService {
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     const events = (user.eventosGuardados ?? [])
-      .sort((a, b) => new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime())
+      .sort((a, b) => {
+        const aTime = a.fechaInicio ? new Date(a.fechaInicio).getTime() : Number.MAX_SAFE_INTEGER;
+        const bTime = b.fechaInicio ? new Date(b.fechaInicio).getTime() : Number.MAX_SAFE_INTEGER;
+        return aTime - bTime;
+      })
       .map((event) => ({
         id: event.id,
         title: event.title,
@@ -337,7 +351,7 @@ export class RecomendacionesService {
       }
       if (attendedIds.has(event.id)) {
         score += this.weights.attendingEvent;
-        reasons.push('Estas apuntado');
+        reasons.push('Estás apuntado');
       }
       if (visitedIds.has(event.id)) {
         score += this.weights.visitedEvent;
@@ -347,7 +361,7 @@ export class RecomendacionesService {
       const myRating = ratedMap.get(event.id);
       if (myRating !== undefined) {
         score += (myRating - 3) * this.weights.myRatingFactor;
-        reasons.push('Tu valoracion previa influye');
+        reasons.push('Tu valoración previa influye');
       }
 
       const avgRating = ratingsByEvent.get(event.id);
@@ -388,7 +402,7 @@ export class RecomendacionesService {
         );
         const distanceBoost = hasFlexibleDates ? distanceBoostBase * 1.35 : distanceBoostBase;
         score += distanceBoost;
-        if (distanceBoost > 0) reasons.push('Cerca de tu ubicacion');
+        if (distanceBoost > 0) reasons.push('Cerca de tu ubicación');
       }
 
       scored.push({
@@ -418,17 +432,17 @@ export class RecomendacionesService {
       ],
       eventos: top.map((item) => ({
         id: item.event.id,
-        title: item.event.title,
-        description: item.event.description,
+        title: item.event.title ?? 'Evento sin título',
+        description: item.event.description ?? '',
         fechaInicio: item.event.fechaInicio ?? null,
         fechaFin: item.event.fechaFin ?? null,
         hasMultipleDatesAvailable: item.event.hasMultipleDatesAvailable ?? false,
-        address: item.event.address,
+        address: item.event.address ?? '',
         categoria: item.event.categoria?.nombre ?? null,
         imagen: item.event.imagen ?? null,
         location: item.event.location ?? null,
         score: item.score,
-        distanceKm: item.distanceKm,
+        distanceKm: item.distanceKm ?? 0,
         reasons: item.reasons,
       })),
     };
@@ -456,140 +470,30 @@ export class RecomendacionesService {
       ? [Number(options.lng), Number(options.lat)] as [number, number]
       : null;
 
-    const grouped = new Map<string, RecommendedEventItem[]>();
-    const undatedEvents: RecommendedEventItem[] = [];
-
-    for (const event of eventResult.eventos) {
-      const hasValidDate = this.hasValidEventDates(event);
-      if (!hasValidDate) {
-        undatedEvents.push(event);
-        continue;
-      }
-
-      const fecha = new Date(event.fechaInicio as Date | string);
-      if (fecha < fromDate) continue;
-      if (toDate && fecha > toDate) continue;
-
-      const dayKey = getSevillaDayKey(fecha);
-      grouped.set(dayKey, [...(grouped.get(dayKey) ?? []), event]);
-    }
-
-    const rankedRoutes = Array.from(grouped.entries())
-      .map(([day, events]) => {
-        const orderedByDay = [...events]
-          .sort((a, b) => new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime())
-          .slice(0, maxEventsPerRoute);
-
-        const ordered = this.extendRouteWithNearbyEvents(
-          orderedByDay,
-          eventResult.eventos,
-          maxEventsPerRoute,
-          minEventsPerRoute,
-          day,
-        );
-
-        let sequenced = this.optimizeRouteSequence(
-          ordered,
-          eventResult.eventos,
-          strategy,
-          maxGapMinutes,
-          maxOverlapMinutes,
-        );
-
-        // Si la secuencia estricta queda muy corta, intentamos una variante más flexible.
-        if (sequenced.length < minEventsPerRoute && ordered.length >= minEventsPerRoute) {
-          const relaxedSequenced = this.optimizeRouteSequence(
-            ordered,
-            eventResult.eventos,
-            strategy,
-            4 * 60,
-            120,
-          );
-          if (relaxedSequenced.length > sequenced.length) {
-            sequenced = relaxedSequenced;
-          }
-        }
-
-        if (sequenced.length < 2) return null;
-
-        const points = sequenced
-          .map((event) => {
-            const original = this.eventPointFromResult(eventResult.eventos, event.id);
-            return original ? { type: 'Point' as const, coordinates: original } : null;
-          })
-          .filter((point): point is { type: 'Point'; coordinates: [number, number] } => point !== null);
-
-        if (points.length < 2) return null;
-
-        const firstStart = new Date(sequenced[0].fechaInicio).getTime();
-        const lastEnd = new Date(sequenced[sequenced.length - 1].fechaFin).getTime();
-        const temporizacion = Math.max(30, Math.round((lastEnd - firstStart) / (1000 * 60)));
-
-        const scoreMedio = Number(
-          (
-            sequenced.reduce((acc, current) => acc + Number(current.score), 0) /
-            sequenced.length
-          ).toFixed(3),
-        );
-        const distanceTotalKm = Number(this.totalDistance(points).toFixed(2));
-
-        return {
-          day,
-          scoreMedio,
-          temporizacionMinutos: temporizacion,
-          distanceTotalKm,
-          eventos: sequenced,
-          trayecto: points,
-          ranking: this.computeRouteRanking(
-            scoreMedio,
-            distanceTotalKm,
-            temporizacion,
-            strategy,
-          ),
-          quality: this.computeRouteQuality(sequenced, eventResult.eventos, strategy),
-        };
-      })
-      .filter((route): route is NonNullable<typeof route> => route !== null)
-      .sort((a, b) => {
-        const rankingDiff = b.ranking - a.ranking;
-        if (rankingDiff !== 0) return rankingDiff;
-        return b.eventos.length - a.eventos.length;
-      });
+    const datedEvents: RecommendedEventWithDates[] = eventResult.eventos.filter((event) =>
+      this.hasValidEventDates(event),
+    );
+    const routeBuckets = this.bucketRecommendedEventsByDay(eventResult.eventos, fromDate, toDate);
+    const rankedRoutes = this.buildRankedRoutes({
+      grouped: routeBuckets.grouped,
+      allEvents: eventResult.eventos,
+      datedEvents,
+      strategy,
+      maxGapMinutes,
+      maxOverlapMinutes,
+      minEventsPerRoute,
+      maxEventsPerRoute,
+    });
 
     const distanceRoutes = this.buildDistanceRoutes(
-      undatedEvents,
+      routeBuckets.undatedEvents,
       userPoint,
       strategy,
       routesLimit,
       maxEventsPerRoute,
     );
 
-    let selectedRoutes = [...rankedRoutes, ...distanceRoutes]
-      .sort((a, b) => {
-        const rankingDiff = b.ranking - a.ranking;
-        if (rankingDiff !== 0) return rankingDiff;
-        return b.eventos.length - a.eventos.length;
-      })
-      .slice(0, routesLimit);
-
-    const allAreTwoEvents =
-      selectedRoutes.length > 0 && selectedRoutes.every((route) => route.eventos.length === 2);
-
-    if (allAreTwoEvents) {
-      const longerAlternative = rankedRoutes.find((route) => route.eventos.length > 2);
-      if (longerAlternative) {
-        const withoutSameDay = selectedRoutes.filter((route) => route.day !== longerAlternative.day);
-        if (withoutSameDay.length >= routesLimit) {
-          withoutSameDay[withoutSameDay.length - 1] = longerAlternative;
-          selectedRoutes = withoutSameDay;
-        } else {
-          selectedRoutes = [...withoutSameDay, longerAlternative]
-            .sort((a, b) => b.ranking - a.ranking)
-            .slice(0, routesLimit);
-        }
-      }
-    }
-
+    const selectedRoutes = this.selectBestRoutes(rankedRoutes, distanceRoutes, routesLimit);
     const routes = selectedRoutes.map(({ ranking: _ranking, ...route }) => route);
 
     return {
@@ -598,11 +502,13 @@ export class RecomendacionesService {
     };
   }
 
-  private hasValidEventDates(event: {
+  private hasValidEventDates<T extends {
     fechaInicio?: Date | string | null;
     fechaFin?: Date | string | null;
     hasMultipleDatesAvailable?: boolean | null;
-  }): boolean {
+  }>(
+    event: T,
+  ): event is T & { fechaInicio: Date | string; fechaFin: Date | string } {
     if (event.hasMultipleDatesAvailable) return false;
     if (!event.fechaInicio || !event.fechaFin) return false;
     const start = new Date(event.fechaInicio);
@@ -703,6 +609,186 @@ export class RecomendacionesService {
     return routes;
   }
 
+  private bucketRecommendedEventsByDay(
+    events: RecommendedEventItem[],
+    fromDate: Date,
+    toDate: Date | null,
+  ): {
+    grouped: Map<string, RecommendedEventWithDates[]>;
+    undatedEvents: RecommendedEventItem[];
+  } {
+    const grouped = new Map<string, RecommendedEventWithDates[]>();
+    const undatedEvents: RecommendedEventItem[] = [];
+
+    for (const event of events) {
+      if (!this.hasValidEventDates(event)) {
+        undatedEvents.push(event);
+        continue;
+      }
+
+      const startDate = new Date(event.fechaInicio);
+      if (startDate < fromDate) continue;
+      if (toDate && startDate > toDate) continue;
+
+      const dayKey = getSevillaDayKey(startDate);
+      grouped.set(dayKey, [...(grouped.get(dayKey) ?? []), event]);
+    }
+
+    return { grouped, undatedEvents };
+  }
+
+  private buildRankedRoutes(options: {
+    grouped: Map<string, RecommendedEventWithDates[]>;
+    allEvents: RecommendedEventItem[];
+    datedEvents: RecommendedEventWithDates[];
+    strategy: 'balanced' | 'walkable' | 'score';
+    maxGapMinutes: number;
+    maxOverlapMinutes: number;
+    minEventsPerRoute: number;
+    maxEventsPerRoute: number;
+  }): RouteCandidate[] {
+    return Array.from(options.grouped.entries())
+      .map(([day, events]) => this.buildRouteForDay(day, events, options))
+      .filter((route): route is RouteCandidate => route !== null)
+      .sort((a, b) => {
+        const rankingDiff = b.ranking - a.ranking;
+        if (rankingDiff !== 0) return rankingDiff;
+        return b.eventos.length - a.eventos.length;
+      });
+  }
+
+  private buildRouteForDay(
+    day: string,
+    events: RecommendedEventWithDates[],
+    options: {
+      allEvents: RecommendedEventItem[];
+      datedEvents: RecommendedEventWithDates[];
+      strategy: 'balanced' | 'walkable' | 'score';
+      maxGapMinutes: number;
+      maxOverlapMinutes: number;
+      minEventsPerRoute: number;
+      maxEventsPerRoute: number;
+    },
+  ): RouteCandidate | null {
+    const orderedByDay = [...events]
+      .sort((left, right) => this.compareOptionalDates(left.fechaInicio, right.fechaInicio))
+      .slice(0, options.maxEventsPerRoute);
+
+    const ordered = this.extendRouteWithNearbyEvents(
+      orderedByDay,
+      options.datedEvents,
+      options.maxEventsPerRoute,
+      options.minEventsPerRoute,
+      day,
+    );
+
+    let sequenced = this.optimizeRouteSequence(
+      ordered,
+      options.allEvents,
+      options.strategy,
+      options.maxGapMinutes,
+      options.maxOverlapMinutes,
+    );
+
+    if (sequenced.length < options.minEventsPerRoute && ordered.length >= options.minEventsPerRoute) {
+      const relaxedSequenced = this.optimizeRouteSequence(
+        ordered,
+        options.allEvents,
+        options.strategy,
+        4 * 60,
+        120,
+      );
+      if (relaxedSequenced.length > sequenced.length) {
+        sequenced = relaxedSequenced;
+      }
+    }
+
+    return this.buildRouteCandidate(day, sequenced, options.allEvents, options.strategy);
+  }
+
+  private buildRouteCandidate(
+    day: string,
+    sequenced: RecommendedEventWithDates[],
+    allEvents: RecommendedEventItem[],
+    strategy: 'balanced' | 'walkable' | 'score',
+  ): RouteCandidate | null {
+    if (sequenced.length < 2) return null;
+
+    const points = sequenced
+      .map((event) => {
+        const original = this.eventPointFromResult(allEvents, event.id);
+        return original ? { type: 'Point' as const, coordinates: original } : null;
+      })
+      .filter((point): point is { type: 'Point'; coordinates: [number, number] } => point !== null);
+
+    if (points.length < 2) return null;
+
+    const firstStart = this.toDateTime(sequenced[0].fechaInicio);
+    const lastEnd = this.toDateTime(sequenced[sequenced.length - 1].fechaFin);
+    if (firstStart === null || lastEnd === null) return null;
+
+    const temporizacion = Math.max(30, Math.round((lastEnd - firstStart) / (1000 * 60)));
+    const scoreMedio = Number(
+      (
+        sequenced.reduce((acc, current) => acc + Number(current.score), 0) /
+        sequenced.length
+      ).toFixed(3),
+    );
+    const distanceTotalKm = Number(this.totalDistance(points).toFixed(2));
+
+    return {
+      day,
+      scoreMedio,
+      temporizacionMinutos: temporizacion,
+      distanceTotalKm,
+      eventos: sequenced,
+      trayecto: points,
+      ranking: this.computeRouteRanking(
+        scoreMedio,
+        distanceTotalKm,
+        temporizacion,
+        strategy,
+      ),
+      quality: this.computeRouteQuality(sequenced, allEvents, strategy),
+    };
+  }
+
+  private selectBestRoutes(
+    rankedRoutes: RouteCandidate[],
+    distanceRoutes: RouteCandidate[],
+    routesLimit: number,
+  ): RouteCandidate[] {
+    const combined = [...rankedRoutes, ...distanceRoutes]
+      .sort((left, right) => {
+        const rankingDiff = right.ranking - left.ranking;
+        if (rankingDiff !== 0) return rankingDiff;
+        return right.eventos.length - left.eventos.length;
+      })
+      .slice(0, routesLimit);
+
+    if (combined.length === 0) return combined;
+
+    const allAreTwoEvents = combined.every((route) => route.eventos.length === 2);
+    if (!allAreTwoEvents) {
+      return combined;
+    }
+
+    const longerAlternative = rankedRoutes.find((route) => route.eventos.length > 2);
+    if (!longerAlternative) {
+      return combined;
+    }
+
+    const withoutSameDay = combined.filter((route) => route.day !== longerAlternative.day);
+    if (withoutSameDay.length >= routesLimit) {
+      withoutSameDay[withoutSameDay.length - 1] = longerAlternative;
+      return withoutSameDay;
+    }
+
+    return [...withoutSameDay, longerAlternative]
+      .sort((left, right) => right.ranking - left.ranking)
+      .slice(0, routesLimit);
+  }
+
   private async getUserAndEvent(userId: string, eventId: string) {
     const [user, event] = await Promise.all([
       this.userRepo.findOne({
@@ -778,7 +864,7 @@ export class RecomendacionesService {
   }
 
   private eventPointFromResult(
-    events: Array<{ id: string; location?: { coordinates?: [number, number] } | null }>,
+    events: Array<{ id: string; location?: EventLocation }>,
     eventId: string,
   ): [number, number] | null {
     const target = events.find((event) => event.id === eventId);
@@ -841,7 +927,7 @@ export class RecomendacionesService {
     T extends { id: string; fechaInicio: Date | string; fechaFin: Date | string }
   >(
     sequenced: T[],
-    fullPool: Array<{ id: string; location?: { coordinates?: [number, number] } | null }>,
+    fullPool: Array<{ id: string; location?: EventLocation }>,
     strategy: 'balanced' | 'walkable' | 'score',
   ): number {
     if (sequenced.length < 2) return 0;
@@ -978,16 +1064,14 @@ export class RecomendacionesService {
       }
     }
 
-    return selected
-      .sort((a, b) => new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime())
-      .slice(0, maxEvents);
+    return selected.slice(0, maxEvents);
   }
 
   private optimizeRouteSequence<
     T extends { id: string; fechaInicio: Date | string; fechaFin: Date | string; score: number }
   >(
     events: T[],
-    fullPool: Array<{ id: string; location?: { coordinates?: [number, number] } | null }>,
+    fullPool: Array<{ id: string; location?: EventLocation }>,
     strategy: 'balanced' | 'walkable' | 'score',
     maxAllowedGapMin: number,
     maxAllowedOverlapMin: number,
@@ -1049,7 +1133,7 @@ export class RecomendacionesService {
         if (gapMin > maxAllowedGapMin) {
           continue;
         }
-        // Rechazar completamente cualquier solapamiento
+        // Rechazar solapamientos
         if (gapMin < 0) {
           continue;
         }
@@ -1096,8 +1180,7 @@ export class RecomendacionesService {
               : 2.5;
 
           const gapMin = (candidateStart - currentEnd) / (1000 * 60);
-            // Rechazar en pasada flexible si gap excede máximo permitido O hay solapamiento
-            if (gapMin > maxAllowedGapMin || gapMin < 0) {
+          if (gapMin > maxAllowedGapMin || gapMin < 0) {
             continue;
           }
 
@@ -1191,14 +1274,10 @@ export class RecomendacionesService {
     let maxEventDurationMs: number;
 
     if (eventDurationHours <= 6) {
-      // Eventos cortos: usar duración real
       maxEventDurationMs = eventDurationMs;
     } else if (eventDurationHours <= 12) {
-      // Eventos medios (6-12h): limitar a 6 horas
       maxEventDurationMs = 6 * 60 * 60 * 1000;
     } else {
-      // Eventos largos (> 12h): limitar a 2 horas para permitir la superposición
-      // Esto reconoce que son eventos "siempre abiertos" (exposiciones, ferias, etc.)
       maxEventDurationMs = 2 * 60 * 60 * 1000;
     }
 
@@ -1218,5 +1297,25 @@ export class RecomendacionesService {
     const parsed = Number(value);
     const candidate = Number.isFinite(parsed) ? parsed : fallback;
     return Math.max(min, Math.min(max, candidate));
+  }
+
+  private compareOptionalDates(left: Date | string | null | undefined, right: Date | string | null | undefined): number {
+    const leftTime = this.toDateTime(left);
+    const rightTime = this.toDateTime(right);
+
+    if (leftTime === null && rightTime === null) return 0;
+    if (leftTime === null) return 1;
+    if (rightTime === null) return -1;
+    return leftTime - rightTime;
+  }
+
+  private toDateTime(value: Date | string | number | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const date = new Date(value);
+    const time = date.getTime();
+    return Number.isFinite(time) ? time : null;
   }
 }

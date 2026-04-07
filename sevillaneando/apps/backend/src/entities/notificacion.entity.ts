@@ -12,19 +12,19 @@ import { TipoEnum } from '../enums/tipo.enum';
 @Entity()
 export class Notificacion {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => User)
-  usuario: User;
+  usuario!: User;
 
   @Column({ nullable: false })
-  mensaje: string;
+  mensaje!: string;
 
   @Column({ type: 'enum', enum: TipoEnum, nullable: false })
-  tipo: TipoEnum;
+  tipo!: TipoEnum;
 
   @Column('timestamp', { nullable: false })
-  fecha: Date;
+  fecha!: Date;
 
   @Column({ default: false })
   leida: boolean;

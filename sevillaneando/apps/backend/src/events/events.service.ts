@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './event.entity';
@@ -10,6 +10,16 @@ import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Mensaje } from '../entities/mensaje.entity';
 import { Resena } from '../entities/resena.entity';
+
+type EventWithRatingsSummary = Event & {
+  ratingAverage?: number | null;
+  ratingsCount?: number;
+};
+
+type EventVisibilityState = {
+  estado: EstadoEnum;
+  linkAcceso: string | null;
+};
 
 @Injectable()
 export class EventsService {
@@ -25,26 +35,21 @@ export class EventsService {
 
   ) { }
 
+  private parseOptionalDate(value?: string | null): Date | null {
+    if (value === undefined || value === null || value === '') {
+      return null;
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException('La fecha proporcionada no es válida.');
+    }
+
+    return parsed;
+  }
+
   async create(dto: CreateEventDto): Promise<Event> {
-    const isPrivado = dto.privado === true;
-    const event = this.eventRepo.create({
-      title: dto.title,
-      description: dto.description,
-      address: dto.address,
-      location: dto.location,
-      fechaInicio: dto.fechaInicio ? new Date(dto.fechaInicio) : null,
-      fechaFin: dto.fechaFin ? new Date(dto.fechaFin) : null,
-      precio: dto.precio !== undefined ? dto.precio : null,
-      precioMin: dto.precioMin !== undefined ? dto.precioMin : null,
-      precioMax: dto.precioMax !== undefined ? dto.precioMax : null,
-      privado: isPrivado,
-      linkAcceso: isPrivado ? uuidv4() : null,
-      categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
-      estado: isPrivado ? EstadoEnum.Aprobado : EstadoEnum.Pendiente,
-      creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
-      imagen: dto.imagen ?? undefined,
-      imagenes: dto.imagenes ?? undefined,
-    });
+    const event = this.eventRepo.create(this.buildEventData(dto));
     return this.eventRepo.save(event);
   }
 
@@ -83,17 +88,20 @@ export class EventsService {
     return event.linkAcceso;
   }
 
-findAll(userId?: string): Promise<Event[]> {
-  const query = this.eventRepo.createQueryBuilder('event')
-    .leftJoinAndSelect('event.categoria', 'categoria')
-    .leftJoinAndSelect('event.creador', 'creador')
-    .leftJoinAndSelect('event.asistentes', 'asistentes')
-    .where('(event.privado = false AND event.estado = :aprobado)', { aprobado: EstadoEnum.Aprobado });
-  if (userId) {
-    query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
+  findAll(userId?: string): Promise<Event[]> {
+    const query = this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoinAndSelect('event.creador', 'creador')
+      .leftJoinAndSelect('event.asistentes', 'asistentes')
+      .where('(event.privado = false AND event.estado = :aprobado)', { aprobado: EstadoEnum.Aprobado });
+
+    if (userId) {
+      query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
+    }
+
+    return query.getMany();
   }
-  return query.getMany();
-}
 
   async findOne(id: string): Promise<Event> {
     const found = await this.eventRepo.findOne({
@@ -125,29 +133,62 @@ findAll(userId?: string): Promise<Event[]> {
     const avgRating = raw?.avgRating !== null && raw?.avgRating !== undefined
       ? Number(raw.avgRating)
       : null;
+    const eventWithSummary = event as EventWithRatingsSummary;
 
-    (event as any).ratingAverage = Number.isFinite(avgRating as number)
+    eventWithSummary.ratingAverage = Number.isFinite(avgRating as number)
       ? Number((avgRating as number).toFixed(2))
       : null;
-    (event as any).ratingsCount = Number.isFinite(ratingsCount) ? ratingsCount : 0;
+    eventWithSummary.ratingsCount = Number.isFinite(ratingsCount) ? ratingsCount : 0;
 
     return event;
   }
 
+  private buildEventData(dto: CreateEventDto): Partial<Event> {
+    const isPrivado = dto.privado === true;
+
+    return {
+      title: dto.title,
+      description: dto.description,
+      address: dto.address,
+      location: dto.location,
+      fechaInicio: this.parseOptionalDate(dto.fechaInicio),
+      fechaFin: this.parseOptionalDate(dto.fechaFin),
+      precio: dto.precio !== undefined ? dto.precio : null,
+      precioMin: dto.precioMin !== undefined ? dto.precioMin : null,
+      precioMax: dto.precioMax !== undefined ? dto.precioMax : null,
+      privado: isPrivado,
+      linkAcceso: isPrivado ? uuidv4() : null,
+      categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
+      estado: isPrivado ? EstadoEnum.Aprobado : EstadoEnum.Pendiente,
+      creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
+      imagen: dto.imagen ?? undefined,
+      imagenes: dto.imagenes ?? undefined,
+    };
+  }
+
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
     const event = await this.findOne(id);
-    let location = event.location;
+    const wasPrivado = event.privado;
+    const willBePrivado = dto.privado !== undefined ? dto.privado : event.privado;
+
+    this.applyEventUpdates(event, dto);
+    event.privado = willBePrivado;
+    event.asistentes = event.asistentes ?? [];
+
+    const visibilityState = this.resolveVisibilityState(wasPrivado, willBePrivado, event.linkAcceso ?? null);
+    event.estado = visibilityState.estado;
+    event.linkAcceso = visibilityState.linkAcceso;
+
+    return this.eventRepo.save(event);
+  }
+
+  private applyEventUpdates(event: Event, dto: UpdateEventDto): void {
     if (dto.location && dto.location.type === 'Point' && Array.isArray(dto.location.coordinates)) {
-      location = {
+      event.location = {
         type: 'Point',
         coordinates: [Number(dto.location.coordinates[0]), Number(dto.location.coordinates[1])],
       };
     }
-    const fechaInicio = dto.fechaInicio ? new Date(dto.fechaInicio) : event.fechaInicio;
-    const fechaFin = dto.fechaFin ? new Date(dto.fechaFin) : event.fechaFin;
-
-    const wasPrivado = event.privado;
-    const willBePrivado = dto.privado !== undefined ? dto.privado : event.privado;
 
     event.title = dto.title !== undefined ? dto.title : event.title;
     event.description = dto.description !== undefined ? dto.description : event.description;
@@ -155,34 +196,34 @@ findAll(userId?: string): Promise<Event[]> {
     event.precio = dto.precio !== undefined ? dto.precio : event.precio;
     event.precioMin = dto.precioMin !== undefined ? dto.precioMin : event.precioMin;
     event.precioMax = dto.precioMax !== undefined ? dto.precioMax : event.precioMax;
-    event.privado = willBePrivado;
-    event.categoria = dto.categoriaId ? { id: dto.categoriaId } as Categoria : event.categoria;
+    event.categoria = dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : event.categoria;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
     event.imagenes = dto.imagenes !== undefined ? dto.imagenes : event.imagenes;
-    event.location = location;
-    event.fechaInicio = fechaInicio;
-    event.fechaFin = fechaFin;
-    event.asistentes = event.asistentes ?? [];
+    event.fechaInicio = dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;
+    event.fechaFin = dto.fechaFin !== undefined ? this.parseOptionalDate(dto.fechaFin) : event.fechaFin;
+  }
 
+  private resolveVisibilityState(
+    wasPrivado: boolean | null | undefined,
+    willBePrivado: boolean | null | undefined,
+    currentLinkAcceso: string | null,
+  ): EventVisibilityState {
     if (wasPrivado && !willBePrivado) {
-      // Privado -> Público: va a moderación
-      event.estado = EstadoEnum.Pendiente;
-      event.linkAcceso = null;
-    } else if (!wasPrivado && willBePrivado) {
-      // Público -> Privado: se aprueba y genera enlace
-      event.estado = EstadoEnum.Aprobado;
-      event.linkAcceso = uuidv4();
-    } else if (!willBePrivado) {
-      // Sigue siendo público: va a moderación
-      event.estado = EstadoEnum.Pendiente;
-      event.linkAcceso = null;
-    } else {
-      // Sigue siendo privado: se aprueba
-      event.estado = EstadoEnum.Aprobado;
-      if (!event.linkAcceso) event.linkAcceso = uuidv4();
+      return { estado: EstadoEnum.Pendiente, linkAcceso: null };
     }
 
-    return this.eventRepo.save(event);
+    if (!wasPrivado && willBePrivado) {
+      return { estado: EstadoEnum.Aprobado, linkAcceso: uuidv4() };
+    }
+
+    if (!willBePrivado) {
+      return { estado: EstadoEnum.Pendiente, linkAcceso: null };
+    }
+
+    return {
+      estado: EstadoEnum.Aprobado,
+      linkAcceso: currentLinkAcceso ?? uuidv4(),
+    };
   }
 
   async saveDirectly(event: Event): Promise<Event> {
@@ -281,7 +322,6 @@ findAll(userId?: string): Promise<Event[]> {
     }
 
     async findEventsByUser(userId: string): Promise<Event[]> {
-      // Listado de edición: eventos del usuario que no están en moderación
       return this.eventRepo.createQueryBuilder('event')
         .leftJoinAndSelect('event.categoria', 'categoria')
         .leftJoinAndSelect('event.creador', 'creador')
@@ -292,7 +332,6 @@ findAll(userId?: string): Promise<Event[]> {
     }
 
     async findEventsToModerate(): Promise<Event[]> {
-      // Listado de moderación: públicos pendientes
       return this.eventRepo.createQueryBuilder('event')
         .leftJoinAndSelect('event.categoria', 'categoria')
         .leftJoinAndSelect('event.creador', 'creador')

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Categoria } from 'src/entities/categoria.entity';
+import { Categoria } from '../entities/categoria.entity';
 import { Repository } from 'typeorm';
 import { CreateCategoriaDTO } from './dto/create-categoria.dto';
 
@@ -27,12 +27,15 @@ export class CategoriasService {
       .getMany();
   }
 
-  async findById(id: string): Promise<Categoria> {
+  async findById(id: string): Promise<Categoria | null> {
     return await this.categoriaRepo.findOneBy({ id: id.toString() });
   }
 
   async update(id: string, dto: CreateCategoriaDTO): Promise<Categoria> {
     const categoria = await this.categoriaRepo.findOneBy({ id: id.toString() });
+    if (!categoria) {
+      throw new Error(`Categoría con ID ${id} no encontrada.`);
+    }
     categoria.nombre = dto.nombre;
     categoria.descripcion = dto.descripcion;
     return await this.categoriaRepo.save(categoria);

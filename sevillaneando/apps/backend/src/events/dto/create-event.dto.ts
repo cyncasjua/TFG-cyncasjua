@@ -1,5 +1,6 @@
 import {
   IsNotEmpty,
+  IsDateString,
   IsNumber,
   IsString,
   IsOptional,
@@ -37,10 +38,16 @@ export class CreateEventDto {
   @IsNotEmpty({ message: 'La ubicación es obligatoria.' })
   location!: GeoJsonPoint;
 
+  @IsDateString({}, { message: 'La fecha de inicio debe tener un formato válido.' })
+  @IsOptional()
+  fechaInicio?: string;
+
+  @IsDateString({}, { message: 'La fecha de fin debe tener un formato válido.' })
+  @IsOptional()
   @IsEndDateAfterStartDate('fechaInicio', {
     message: 'La fecha de fin debe ser posterior a la fecha de inicio.',
   })
-  fechaFin!: string;
+  fechaFin?: string;
 
   @IsNumber({}, { message: 'El precio debe ser un número.' })
   @Min(0, { message: 'El precio no puede ser negativo.' })

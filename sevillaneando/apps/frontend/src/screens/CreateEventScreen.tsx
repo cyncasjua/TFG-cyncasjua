@@ -18,7 +18,7 @@ import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
+import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
@@ -254,8 +254,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       !title ||
       !description ||
       !address ||
-      !fechaInicio ||
-      !fechaFin ||
       latitude === null ||
       longitude === null ||
       !categoriaId
@@ -273,8 +271,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         title,
         description,
         address,
-        fechaInicio,
-        fechaFin,
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
         location: {
           type: 'Point',
           coordinates: [longitude, latitude],
@@ -405,7 +403,10 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 editable={false}
               />
             </View>
-            <ThemedText style={styles.label}>Fecha de inicio</ThemedText>
+            <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
+            <ThemedTextSecondary style={{ marginBottom: 8 }}>
+              Si no la indicas, el evento se publicará sin fecha y podrás añadirla más tarde.
+            </ThemedTextSecondary>
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
                 ref={fechaInicioRef}
@@ -449,7 +450,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onCancel={() => setShowHoraInicio(false)}
               locale="es"
             />
-            <ThemedText style={styles.label}>Fecha de fin</ThemedText>
+            <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
                 ref={fechaFinRef}

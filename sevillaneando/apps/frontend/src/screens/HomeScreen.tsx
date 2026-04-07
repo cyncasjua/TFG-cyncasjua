@@ -35,7 +35,7 @@ import type { Event } from '../types/event';
 import { useAuth } from '../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNotificaciones } from '../context/NotificacionesContext';
-import { formatEventDateRange, formatSevillaTime } from '../utils/sevillaTime';
+import { formatEventDateRange, formatSevillaTime, isEventFinished } from '../utils/sevillaTime';
 
 type EventWithDistance = Event & { distance?: number };
 import {
@@ -55,6 +55,7 @@ import { reportError, reportWarning } from '../utils/telemetry';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type RouteStrategy = 'balanced' | 'walkable' | 'score';
 type RecommendedRouteWithSource = RecommendedRoute & { sourceStrategy?: RouteStrategy };
+type EventTab = 'active' | 'past';
 
 const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 const ROUTES_SETTINGS_KEY = 'routesSettingsV1';
@@ -90,6 +91,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [categories, setCategories] = useState<{ id: string; nombre: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedEventTab, setSelectedEventTab] = useState<EventTab>('active');
   const [filterNearby, setFilterNearby] = useState(false);
   const [searchRadius, setSearchRadius] = useState(1);
   const [customRadiusVisible, setCustomRadiusVisible] = useState(false);
@@ -650,6 +652,21 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     maxPrice,
   ]);
 
+  const activeFilteredItems = useMemo(
+    () => filteredItems.filter((item) => !isEventFinished(item.fechaInicio, item.fechaFin)),
+    [filteredItems],
+  );
+
+  const pastFilteredItems = useMemo(
+    () => filteredItems.filter((item) => isEventFinished(item.fechaInicio, item.fechaFin)),
+    [filteredItems],
+  );
+
+  const visibleItems = useMemo(
+    () => (selectedEventTab === 'past' ? pastFilteredItems : activeFilteredItems),
+    [activeFilteredItems, pastFilteredItems, selectedEventTab],
+  );
+
   const discoveryTitle = useMemo(() => {
     if (filterNearby) return 'Descubre cerca de ti';
     return 'Descubre algo nuevo';
@@ -1100,6 +1117,53 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </ThemedView>
 
+        <ThemedView style={{ marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+            <TouchableOpacity
+              style={{
+                paddingVertical: 7,
+                paddingHorizontal: 14,
+                borderRadius: UNIFIED_BORDER_RADIUS,
+                backgroundColor: selectedEventTab === 'active' ? colors.primary : colors.card,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+              }}
+              onPress={() => setSelectedEventTab('active')}
+            >
+              <ThemedText
+                style={{
+                  color: selectedEventTab === 'active' ? '#fff' : colors.primary,
+                  fontWeight: 'bold',
+                  fontSize: 13,
+                }}
+              >
+                Activos
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                paddingVertical: 7,
+                paddingHorizontal: 14,
+                borderRadius: UNIFIED_BORDER_RADIUS,
+                backgroundColor: selectedEventTab === 'past' ? colors.primary : colors.card,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+              }}
+              onPress={() => setSelectedEventTab('past')}
+            >
+              <ThemedText
+                style={{
+                  color: selectedEventTab === 'past' ? '#fff' : colors.primary,
+                  fontWeight: 'bold',
+                  fontSize: 13,
+                }}
+              >
+                Finalizados
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </ThemedView>
+
         {categories.length > 0 && (
           <ThemedView style={{ marginBottom: 12 }}>
             <DraggableFlatList
@@ -1196,7 +1260,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
 
-        {filteredItems.map((item) => {
+        {visibleItems.map((item) => {
           const nowMs = Date.now();
           const startMs = item.fechaInicio ? new Date(item.fechaInicio).getTime() : NaN;
           const endMs = item.fechaFin ? new Date(item.fechaFin).getTime() : NaN;

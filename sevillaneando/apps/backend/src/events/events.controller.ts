@@ -20,11 +20,11 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './event.entity';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { EstadoEnum } from '../enums/estado.enum';
-import { TipoEnum } from 'src/enums/tipo.enum';
+import { TipoEnum } from '../enums/tipo.enum';
 import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 

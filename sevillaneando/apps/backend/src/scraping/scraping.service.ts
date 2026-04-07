@@ -9,7 +9,7 @@ import { IScraper, ScrapedEvent } from './interfaces/scraper.interface';
 import { EstadoEnum } from '../enums/estado.enum';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
-import { GeminiScraperService } from './scrapers/gemini-scraper.service';
+//import { GeminiScraperService } from './scrapers/gemini-scraper.service';
 
 @Injectable()
 export class ScrapingService {
@@ -95,7 +95,6 @@ export class ScrapingService {
         continue;
       }
 
-      // Normalizar fechas: si cubre casi todo el día, ponerlas como indefinidas
       const normalizedDateEvent = this.normalizeLongEventDates(scrapedEvent);
       const normalizedEvent = this.normalizePriceFields(normalizedDateEvent);
 
@@ -184,7 +183,7 @@ export class ScrapingService {
 
     const sevillaScraperService = this.moduleRef.get(SevillaScraperService, { strict: false });
     const ticketmasterScraperService = this.moduleRef.get(TicketmasterScraperService, { strict: false });
-    const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
+    //const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
 
     if (sevillaScraperService) {
       scrapers.push(sevillaScraperService);
@@ -198,11 +197,11 @@ export class ScrapingService {
       this.logger.warn('TicketmasterScraperService no está disponible');
     }
 
-    if (geminiScraperService) {
-      scrapers.push(geminiScraperService);
-    } else {
-      this.logger.warn('GeminiScraperService no está disponible');
-    }
+    //if (geminiScraperService) {
+    //  scrapers.push(geminiScraperService);
+    //} else {
+    //  this.logger.warn('GeminiScraperService no está disponible');
+    //}
 
     this.logger.log(`Scrapers activos: ${scrapers.map((s) => s.name).join(', ') || 'ninguno'}`);
     return scrapers;
@@ -240,12 +239,10 @@ export class ScrapingService {
     const start = new Date(event.fechaInicio);
     const end = new Date(event.fechaFin);
 
-    // Validar que las fechas son válidas
     if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
       return event;
     }
 
-    // CRÍTICO: Si fechaFin <= fechaInicio, es un evento con múltiples fechas (data ambigua)
     if (end.getTime() <= start.getTime()) {
       this.logger.debug(
         `Evento con fechas inválidas (fin <= inicio) detectado: ${event.title} ` +

@@ -14,17 +14,17 @@ import { Event } from '../events/event.entity';
 @Entity()
 export class Recomendacion {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => User)
-  usuario: User;
+  usuario!: User;
 
   @ManyToMany(() => Event)
   @JoinTable()
-  eventosRecomendados: Event[];
+  eventosRecomendados!: Event[];
 
   @Column('simple-array', { nullable: true })
-  criterios: string[];
+  criterios!: string[];
 
   @Column('boolean', { default: false })
   vista: boolean;

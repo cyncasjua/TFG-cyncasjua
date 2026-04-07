@@ -13,23 +13,23 @@ import { MaxLength } from 'class-validator';
 @Entity()
 export class Resena {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => User, (user) => user.resenas)
-  autor: User;
+  autor!: User;
 
   @ManyToOne(() => Event)
-  evento: Event;
+  evento!: Event;
 
   @MaxLength(500)
   @Column({ nullable: false })
-  comentario: string;
+  comentario!: string;
 
   @Column('int', { nullable: false })
-  puntuacion: number;
+  puntuacion!: number;
 
   @Column('timestamp', { nullable: false })
-  fecha: Date;
+  fecha!: Date;
 
   crearResena() {}
   editarResena() {}

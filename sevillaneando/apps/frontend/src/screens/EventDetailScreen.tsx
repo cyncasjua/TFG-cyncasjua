@@ -45,7 +45,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { PublicUser } from '../types/user';
 import { getFullImageUrl } from '../utils/imageUrl';
-import { formatEventDateRange, formatSevillaTime } from '../utils/sevillaTime';
+import { formatEventDateRange, formatSevillaTime, isEventFinished } from '../utils/sevillaTime';
 import {
   attendEvent,
   getErrorMessage,
@@ -248,6 +248,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleToggleAttend = async () => {
     if (!token) return;
+    if (isPastEvent) {
+      setAttendeesError('No puedes apuntarte a un evento finalizado.');
+      return;
+    }
     setAttendeesError('');
     try {
       if (isAttending) {
@@ -498,6 +502,11 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const totalMinutes = end.diff(start, 'minute');
     return formatDuration(totalMinutes, 'Duración');
   }, [event.fechaInicio, event.fechaFin]);
+
+  const isPastEvent = useMemo(
+    () => isEventFinished(event.fechaInicio, event.fechaFin),
+    [event.fechaInicio, event.fechaFin],
+  );
 
   const remainingText = useMemo(() => {
     const start = dayjs(event.fechaInicio);
@@ -894,10 +903,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
             {renderActionButton({
               icon: isAttending ? 'event-busy' : 'event-available',
-              title: isAttending ? 'Ya no asistiré' : 'Asistiré',
-              subtitle: isAttending ? 'Eliminar de tu agenda' : 'Añadir a tu agenda',
+              title: isPastEvent ? 'Evento finalizado' : (isAttending ? 'Ya no asistiré' : 'Asistiré'),
+              subtitle: isPastEvent
+                ? 'No se puede apuntar a eventos pasados'
+                : (isAttending ? 'Eliminar de tu agenda' : 'Añadir a tu agenda'),
               onPress: handleToggleAttend,
               accent: true,
+              disabled: isPastEvent,
             })}
             <View style={styles.actionsRow}>
               {renderActionButton({
