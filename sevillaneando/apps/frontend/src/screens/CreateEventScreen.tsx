@@ -108,11 +108,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    console.log('[CreateEventScreen] imageUrls updated:', imageUrls.length, imageUrls);
   }, [imageUrls]);
 
   useEffect(() => {
-    console.log('[CreateEventScreen] Component mounted - imageUrls.length:', imageUrls.length);
     const fetchCategorias = async () => {
       try {
         const res = await api.get('/categorias');
@@ -126,24 +124,16 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     };
     fetchCategorias();
     return () => {
-      console.log('[CreateEventScreen] Component unmounting - imageUrls.length:', imageUrls.length);
     };
   }, []);
 
   const pickImages = async () => {
-    console.log('[CreateEventScreen] pickImages called');
-    console.log('[CreateEventScreen] imageUrls.length:', imageUrls.length);
-    console.log('[CreateEventScreen] imageUrls:', imageUrls);
-    console.log('[CreateEventScreen] localImageUris.length:', localImageUris.length);
-    console.log('[CreateEventScreen] localImageUris:', localImageUris);
+
     const remainingSlots = 5 - imageUrls.length;
-    console.log('[CreateEventScreen] pickImages - remainingSlots calculated:', remainingSlots);
     if (remainingSlots <= 0) {
-      console.log('[CreateEventScreen] Showing error because remainingSlots <= 0');
       Alert.alert('Límite alcanzado', 'No puedes añadir más de 5 imágenes.');
       return;
     }
-    console.log('[CreateEventScreen] Proceeding with image picker, remainingSlots:', remainingSlots);
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -154,16 +144,13 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      console.log('[CreateEventScreen] Image picker result - assets.length:', result.assets.length);
       const newUris = result.assets.map(asset => asset.uri).slice(0, remainingSlots);
-      console.log('[CreateEventScreen] Selected URIs to upload:', newUris.length);
 
       setLocalImageUris(prev => [...prev, ...newUris]);
 
       const newUrls: string[] = [];
       for (let i = 0; i < newUris.length; i++) {
         const uri = newUris[i];
-        console.log(`[CreateEventScreen] Uploading image ${i + 1}/${newUris.length}`);
         const formData = new FormData();
         formData.append('file', {
           uri,
@@ -181,22 +168,17 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             }
           );
           const data = await res.json();
-          console.log(`[CreateEventScreen] Image ${i + 1} upload response:`, data);
           const url = data.url.startsWith('http')
             ? data.url
             : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
           newUrls.push(url);
-          console.log(`[CreateEventScreen] Image ${i + 1} added to newUrls array. newUrls.length:`, newUrls.length);
         } catch (e) {
-          console.log(`[CreateEventScreen] Image ${i + 1} upload failed:`, e);
           Alert.alert('Error', 'No se pudo subir una imagen.');
         }
       }
 
-      console.log('[CreateEventScreen] All uploads complete. newUrls.length:', newUrls.length, 'newUrls:', newUrls);
       setImageUrls(prev => {
         const combined = [...prev, ...newUrls];
-        console.log('[CreateEventScreen] setImageUrls callback - prev.length:', prev.length, 'newUrls.length:', newUrls.length, 'combined.length:', combined.length);
         if (!coverImageUrl && combined.length > 0) setCoverImageUrl(combined[0]);
         return combined;
       });

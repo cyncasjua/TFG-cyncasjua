@@ -152,18 +152,15 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
     if (userIdsToFetch.size === 0) return;
 
-    console.log('[DirectMessageScreen fallback] Intentando cargar fotos de usuarios:', Array.from(userIdsToFetch));
 
     userIdsToFetch.forEach((uid) => {
       void api
         .get(`/users/${uid}`)
         .then((res) => {
           const fotoPerfil = res?.data?.fotoPerfil ?? null;
-          console.log(`[DirectMessageScreen fallback] Foto cargada para ${uid}:`, fotoPerfil);
           setUserPhotoById((prev) => ({ ...prev, [uid]: fotoPerfil }));
         })
         .catch((err) => {
-          console.error(`[DirectMessageScreen fallback] Error cargando foto de ${uid}:`, err);
           setUserPhotoById((prev) => ({ ...prev, [uid]: null }));
         });
     });
@@ -330,25 +327,10 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
     marcarNotificacionesPrivadasLeidas();
 
     const handleDmHistory = (history: DirectMessage[]) => {
-      console.log('[DirectMessageScreen] dm_history recibido:', {
-        cantidad: history.length,
-        primer_mensaje: history[0] ? {
-          id: history[0].id,
-          emisor_id: history[0].emisor?.id,
-          emisor_nombre: history[0].emisor?.nombre,
-          emisor_fotoPerfil: history[0].emisor?.fotoPerfil,
-        } : null
-      });
       setMessages(history);
     };
 
     const handleDmMessage = (message: DirectMessage) => {
-      console.log('[DirectMessageScreen] dm_message recibido:', {
-        id: message.id,
-        emisor_id: message.emisor?.id,
-        emisor_nombre: message.emisor?.nombre,
-        emisor_fotoPerfil: message.emisor?.fotoPerfil,
-      });
       setMessages((prev) => [...prev, message]);
 
       if (message.emisor?.id === userId) {

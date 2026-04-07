@@ -10,18 +10,15 @@ function maybeEncodeUrl(rawUrl: string): string {
 function sanitizeRawUrl(raw: string): string {
     let value = raw.trim();
 
-    // Elimina comillas envolventes que a veces llegan serializadas.
     if (
         (value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))
+        (value.startsWith('\'') && value.endsWith('\''))
     ) {
         value = value.slice(1, -1).trim();
     }
 
-    // Normaliza barras escapadas en strings JSON persistidos.
     value = value.replace(/\\\//g, '/').replace(/\//g, '/');
 
-    // Corrige esquemas incompletos tipo https:/dominio.com.
     if (/^https?:\/[^/]/i.test(value)) {
         value = value.replace(/^https?:\//i, (m) => `${m}/`);
     }
@@ -42,12 +39,10 @@ function getApiOrigin(): string | undefined {
 function normalizeAbsoluteUrl(rawUrl: string): string {
     let normalized = rawUrl;
 
-    // Soporta URLs sin esquema como "res.cloudinary.com/...".
     if (/^res\.cloudinary\.com\//i.test(normalized)) {
         normalized = `https://${normalized}`;
     }
 
-    // Soporta URLs protocol-relative: //res.cloudinary.com/...
     if (normalized.startsWith('//')) {
         normalized = `https:${normalized}`;
     }
@@ -78,7 +73,6 @@ function normalizeAbsoluteUrl(rawUrl: string): string {
 function optimizeCloudinaryUrl(rawUrl: string): string {
     if (!/^https?:\/\//i.test(rawUrl)) return rawUrl;
     if (!rawUrl.includes('res.cloudinary.com') || !rawUrl.includes('/image/upload/')) return rawUrl;
-    // Si es una URL firmada, no debemos modificar transformaciones o se invalida la firma.
     if (rawUrl.includes('/s--')) return rawUrl;
 
     const marker = '/image/upload/';
@@ -93,12 +87,10 @@ function optimizeCloudinaryUrl(rawUrl: string): string {
     const hasFormatTransform = /(^|,)f_/.test(firstSegment);
     const hasQualityTransform = /(^|,)q_/.test(firstSegment);
 
-    // Si ya hay transformaciones de formato/calidad, respetarlas.
     if (hasFormatTransform || hasQualityTransform) {
         return rawUrl;
     }
 
-    // Solo optimizamos URLs crudas sin transformaciones explícitas.
     return `${prefix}f_auto,q_auto/${suffix}`;
 }
 
@@ -108,14 +100,11 @@ export function getFullImageUrl(url?: string | null): string | undefined {
     let trimmed = sanitizeRawUrl(url);
     if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return undefined;
 
-    console.log('[getFullImageUrl] INPUT:', { raw: url, sanitized: trimmed });
 
-    // Soporta URLs absolutas sin esquema para Cloudinary.
     if (/^res\.cloudinary\.com\//i.test(trimmed)) {
         trimmed = `https://${trimmed}`;
     }
 
-    // Soporta hosts sin esquema como 192.168.1.10:3000/uploads/... o dominio.com/...
     if (/^[a-z0-9.-]+(?::\d+)?\//i.test(trimmed) && !trimmed.startsWith('/')) {
         if (/^localhost(?::\d+)?\//i.test(trimmed)) {
             trimmed = `http://${trimmed}`;
@@ -127,41 +116,32 @@ export function getFullImageUrl(url?: string | null): string | undefined {
     const supportedScheme = /^(https?:|file:|content:|ph:|asset-library:|data:)/i;
 
     if (!supportedScheme.test(trimmed) && !trimmed.startsWith('/')) {
-        // Si contiene cloudinary en mitad de cadena, intenta recuperar el tramo válido.
         const cloudinaryIndex = trimmed.toLowerCase().indexOf('res.cloudinary.com/');
         if (cloudinaryIndex >= 0) {
             trimmed = `https://${trimmed.slice(cloudinaryIndex)}`;
             const normalizedCloudinary = normalizeAbsoluteUrl(trimmed);
             const result = maybeEncodeUrl(optimizeCloudinaryUrl(normalizedCloudinary));
-            console.log('[getFullImageUrl] OUTPUT (cloudinary mid-string):', result);
             return result;
         }
 
-        // Soporta rutas relativas antiguas tipo "uploads/..." o "profile-images/...".
         const normalizedRelative = `/${trimmed.replace(/^\/+/, '')}`;
         const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
         const result = maybeEncodeUrl(`${apiUrl}${normalizedRelative}`);
-        console.log('[getFullImageUrl] OUTPUT (relative path):', result);
         return result;
     }
 
-    // Si ya es una URL absoluta, devolverla tal cual
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
         const normalizedAbsolute = normalizeAbsoluteUrl(trimmed);
         const result = maybeEncodeUrl(optimizeCloudinaryUrl(normalizedAbsolute));
-        console.log('[getFullImageUrl] OUTPUT (absolute):', result);
         return result;
     }
 
-    // Si es una URL relativa, construir la URL completa
     if (trimmed.startsWith('/')) {
         const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
         const result = maybeEncodeUrl(`${apiUrl}${trimmed}`);
-        console.log('[getFullImageUrl] OUTPUT (relative slash):', result);
         return result;
     }
 
-    console.log('[getFullImageUrl] OUTPUT (fallback):', trimmed);
     return maybeEncodeUrl(trimmed);
 }
 
@@ -216,7 +196,6 @@ export function getImageUrlCandidates(url?: string | null): string[] {
         add(`${apiUrl}/${raw.replace(/^\/+/, '')}`);
     }
 
-    console.log('[getImageUrlCandidates]', { input: url, sanitized: raw, candidates: candidates.slice(0, 3) });
 
     return candidates;
 }

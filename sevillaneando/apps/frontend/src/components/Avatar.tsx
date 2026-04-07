@@ -15,13 +15,6 @@ export const Avatar: React.FC<Props> = ({ photoUrl, size, style }) => {
   const [candidateIndex, setCandidateIndex] = useState(0);
 
   useEffect(() => {
-    console.log('[Avatar] photoUrl prop:', {
-      photoUrl,
-      isNull: photoUrl === null,
-      isUndefined: photoUrl === undefined,
-      candidatesCount: candidates.length,
-      firstCandidate: candidates[0]
-    });
     setCandidateIndex(0);
   }, [photoUrl]);
 

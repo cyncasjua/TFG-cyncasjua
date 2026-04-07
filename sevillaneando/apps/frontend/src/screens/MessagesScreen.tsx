@@ -42,14 +42,12 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
 
     if (userIdsToFetch.size === 0) return;
 
-    console.log('[MessagesScreen fallback] Intentando cargar fotos de usuarios:', Array.from(userIdsToFetch));
 
     userIdsToFetch.forEach((userId) => {
       void api
         .get(`/users/${userId}`)
         .then((res) => {
           const fotoPerfil = res?.data?.fotoPerfil ?? null;
-          console.log(`[MessagesScreen fallback] Foto cargada para ${userId}:`, fotoPerfil);
           setUserPhotoById((prev) => ({ ...prev, [userId]: fotoPerfil }));
         })
         .catch((err) => {

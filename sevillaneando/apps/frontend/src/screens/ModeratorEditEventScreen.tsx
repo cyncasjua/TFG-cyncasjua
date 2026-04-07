@@ -51,18 +51,11 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
 
   const initialEventImages = rawImagenes
     .map((image: string) => {
-      console.log('[ModeratorEditEventScreen] Imagen bruta:', image);
       const normalized = getFullImageUrl(image);
-      console.log('[ModeratorEditEventScreen] Imagen normalizada:', normalized);
       return normalized;
     })
     .filter((image: string | undefined): image is string => Boolean(image));
 
-  console.log('[ModeratorEditEventScreen] initialEventImages final:', {
-    total_raw_images: rawImagenes.length,
-    total_normalized: initialEventImages.length,
-    images: initialEventImages
-  });
   const isPrivateEvent = Boolean(event.privado);
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
@@ -653,18 +646,11 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                   {localImageUris.map((uri, idx) => {
                     const candidates = getImageUrlCandidates(uri);
                     if (candidates.length === 0) {
-                      console.log(`[ModeratorEditEventScreen] No candidates para imagen ${idx}:`, uri);
                       return null;
                     }
                     const attempts = failedImageAttempts[idx] ?? 0;
                     const hasExhaustedCandidates = attempts >= candidates.length;
                     const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
-                    console.log(`[ModeratorEditEventScreen] Imagen ${idx} - Intento ${attempts}/${candidates.length}:`, {
-                      original: uri,
-                      currentUri,
-                      hasExhausted: hasExhaustedCandidates,
-                      candidates: candidates.slice(0, 2)
-                    });
                     return (
                     <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
                       <Image
