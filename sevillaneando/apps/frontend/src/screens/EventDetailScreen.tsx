@@ -1152,7 +1152,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             <ThemedTextSecondary
                               style={{ fontSize: 12, color: nameColor }}
                             >
-                              {isOwn ? 'Tu' : item.usuario?.nombre ?? 'Anonimo'}
+                              {isOwn ? 'Tú' : item.usuario?.nombre ?? 'Anónimo'}
                             </ThemedTextSecondary>
                           </TouchableOpacity>
                           {!!item.contenido?.trim() && (

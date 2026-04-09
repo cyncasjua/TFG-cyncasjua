@@ -1,11 +1,13 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps, TextStyle, View } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 
 interface ThemedButtonProps extends TouchableOpacityProps {
-  title: string;
+  title?: string;
   variant?: 'primary' | 'secondary' | 'danger';
   textStyle?: TextStyle;
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const ThemedButton = ({
@@ -13,6 +15,8 @@ export const ThemedButton = ({
   variant = 'primary',
   style,
   textStyle,
+  icon,
+  children,
   ...props
 }: ThemedButtonProps) => {
   const { colors } = useTheme();
@@ -33,6 +37,10 @@ export const ThemedButton = ({
     return variant === 'secondary' ? colors.text : '#FFFFFF';
   };
 
+  // Display children (text content) or title
+  const displayText = children || title;
+  const hasIcon = !!icon;
+
   return (
     <TouchableOpacity
       style={[
@@ -46,9 +54,14 @@ export const ThemedButton = ({
       ]}
       {...props}
     >
-      <Text style={[styles.text, { color: getTextColor() }, textStyle]} numberOfLines={1}>
-        {title}
-      </Text>
+      <View style={styles.content}>
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        {displayText && (
+          <Text style={[styles.text, { color: getTextColor() }, textStyle]} numberOfLines={1}>
+            {displayText}
+          </Text>
+        )}
+      </View>
     </TouchableOpacity>
   );
 };
@@ -61,6 +74,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 0,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text: {
     fontSize: 16,

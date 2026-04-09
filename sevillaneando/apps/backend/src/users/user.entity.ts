@@ -11,6 +11,7 @@ import {
 import { Notificacion } from '../entities/notificacion.entity';
 import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
+import { Ruta } from '../entities/ruta.entity';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { InteresCategoriaEnum } from './enums/interes-categoria.enum';
 import { Logger } from '@nestjs/common';
@@ -60,6 +61,9 @@ export class User {
 
   @OneToMany(() => Event, (event) => event.creador)
   eventos!: Event[];
+
+  @OneToMany(() => Ruta, (ruta) => ruta.creador)
+  rutas!: Ruta[];
 
   @OneToMany(() => Notificacion, (noti) => noti.usuario)
   notificaciones!: Notificacion[];

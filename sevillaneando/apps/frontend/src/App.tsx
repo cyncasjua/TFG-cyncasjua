@@ -34,6 +34,9 @@ import UserEventsScreen from './screens/UserEventsScreen';
 import CalendarEventsScreen from './screens/CalendarEventsScreen';
 import UserEditEventScreen from './screens/UserEditEventScreen';
 import { RoutePreviewScreen } from './screens/RoutePreview';
+import { CreateRouteScreen } from './screens/CreateRouteScreen';
+import { RoutesListScreen } from './screens/RoutesListScreen';
+import { RouteDetailScreen } from './screens/RouteDetailScreen';
 import { SavedAndPrivateEventsScreen } from './screens/SavedAndPrivateEventsScreen';
 import { LegalAttributionsScreen } from './screens/LegalAttributionsScreen';
 import { getErrorMessage, getEventById } from './services/api';
@@ -65,6 +68,9 @@ export type RootStackParamList = {
   UserEvents: undefined;
   CalendarEvents: undefined;
   RoutePreview: { routePlan: RecommendedRoute };
+  Routes: undefined;
+  CreateRoute: undefined;
+  RouteDetail: { routeId: string };
   SavedAndPrivateEvents: { mode?: 'saved' | 'private' | 'both' | 'joined' };
   LegalAttributions: undefined;
 };
@@ -303,9 +309,24 @@ const Navigator = () => {
             options={{ title: 'Ruta recomendada' }}
           />
           <AppStack.Screen
+            name="Routes"
+            component={RoutesListScreen}
+            options={{ title: 'Rutas' }}
+          />
+          <AppStack.Screen
+            name="CreateRoute"
+            component={CreateRouteScreen}
+            options={{ title: 'Crear ruta' }}
+          />
+          <AppStack.Screen
+            name="RouteDetail"
+            component={RouteDetailScreen}
+            options={{ title: 'Detalle de ruta' }}
+          />
+          <AppStack.Screen
             name="SavedAndPrivateEvents"
             component={SavedAndPrivateEventsScreen}
-            options={{ title: 'Guardados y privados' }}
+            options={{ title: '' }}
           />
           <AppStack.Screen
             name="LegalAttributions"

@@ -1917,9 +1917,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </TouchableOpacity>
                 </ThemedView>
 
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Tu actividad:</ThemedTextSecondary>
                 {role === 'user' && (
-                  <ThemedView style={styles.menuSection}>
-                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Tu actividad:</ThemedTextSecondary>
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {
@@ -1930,6 +1930,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     <MaterialIcons name="edit" size={20} color={colors.primary} />
                     <ThemedText style={styles.menuActionLabel}>Mis eventos</ThemedText>
                   </TouchableOpacity>
+                )}
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {
@@ -1940,8 +1941,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     <MaterialIcons name="calendar-today" size={20} color={colors.primary} />
                     <ThemedText style={styles.menuActionLabel}>Calendario</ThemedText>
                   </TouchableOpacity>
-                  </ThemedView>
-                )}
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('Routes');
+                    }}
+                  >
+                    <MaterialIcons name="route" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Rutas</ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
 
                 {role === 'moderator' && (
                   <ThemedView style={styles.menuSection}>

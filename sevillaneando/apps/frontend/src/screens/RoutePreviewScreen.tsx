@@ -150,7 +150,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
           <ThemedView style={{ padding: 12, marginBottom: 12, backgroundColor: colors.card, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
             <ThemedText style={{ fontWeight: '600', marginBottom: 4 }}>ℹ️ Eventos con múltiples fechas</ThemedText>
             <ThemedTextSecondary>
-              Estos eventos tienen varias fechas y horas disponibles. Abre cada uno para ver todas las opciones de horarios.
+              Estos eventos tienen varias fechas y horas disponibles. Mire la disponibilidad de horarios en la web.
             </ThemedTextSecondary>
           </ThemedView>
         )}

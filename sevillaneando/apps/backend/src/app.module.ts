@@ -11,6 +11,7 @@ import { SeedService } from './database/seed.service';
 import { Categoria } from './entities/categoria.entity';
 import { Resena } from './entities/resena.entity';
 import { Ruta } from './entities/ruta.entity';
+import { CalificacionRuta } from './entities/calificacion-ruta.entity';
 import { Notificacion } from './entities/notificacion.entity';
 import { Recomendacion } from './entities/recomendacion.entity';
 import { CategoriasModule } from './categorias/categorias.module';
@@ -22,6 +23,7 @@ import { ScrapingModule } from './scraping/scraping.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEditRequest } from './events/event-edit-request.entity';
 import { RecomendacionesModule } from './recomendaciones/recomendaciones.module';
+import { RutasModule } from './rutas/rutas.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 @Module({
   imports: [
@@ -42,6 +44,7 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
           Categoria,
           Resena,
           Ruta,
+          CalificacionRuta,
           Notificacion,
           Recomendacion,
           Mensaje,
@@ -61,6 +64,7 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
     ScrapingModule,
     SchedulerModule,
     RecomendacionesModule,
+    RutasModule,
   ],
 })
 export class AppModule {
