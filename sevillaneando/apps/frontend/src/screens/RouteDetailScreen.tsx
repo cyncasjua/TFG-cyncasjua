@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
@@ -234,7 +234,8 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             },
           ]}
         >
-          <MapView style={styles.map} initialRegion={initialRegion} scrollEnabled={false} zoomEnabled={false}>
+          <MapView style={styles.map} initialRegion={initialRegion} scrollEnabled={true} zoomEnabled={true}>
+            <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
             {coordinates.length >= 2 && (
               <Polyline
                 coordinates={coordinates}

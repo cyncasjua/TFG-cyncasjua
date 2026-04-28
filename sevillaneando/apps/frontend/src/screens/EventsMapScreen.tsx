@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
-import MapView, { Marker, Circle, Callout } from 'react-native-maps';
+import { StyleSheet, TouchableOpacity, View, Text, Platform } from 'react-native';
+import MapView, { Marker, Circle, Callout, UrlTile } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,10 +18,11 @@ type EventWithDistance = Event & { distance?: number };
 
 export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
   const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [radius, setRadius] = useState(1000);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371;
@@ -118,6 +119,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           longitudeDelta: 0.05,
         }}
       >
+        <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
         {hasUserLocation && (
           <>
             <Marker coordinate={{ latitude: userLat, longitude: userLon }} title="Tu ubicación">
@@ -147,48 +149,190 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
 
         {events
           .filter((ev) => ev.location && ev.location.coordinates && ev.location.coordinates.length === 2)
-          .map((event) => (
-            <Marker
-              key={event.id}
-              coordinate={{
-                latitude: event.location!.coordinates[1],
-                longitude: event.location!.coordinates[0],
-              }}
-              title={event.title}
-              pinColor={getMarkerColor(event.distance)}
-              onCalloutPress={() => navigation.navigate('EventDetail', { event })}
-            >
-              <Callout tooltip>
-                <View
-                  style={{
-                    backgroundColor: '#fff',
-                    borderRadius: 16,
-                    padding: 8,
-                    minWidth: 180,
-                    shadowColor: '#000',
-                    shadowOpacity: 0.2,
-                    shadowRadius: 4,
-                    elevation: 5,
-                  }}
-                >
-                  <Text
-                    style={{ fontWeight: 'bold', fontSize: 13, marginBottom: 4, color: '#333' }}
-                  >
-                    {event.title}
-                  </Text>
-                  <Text style={{ fontSize: 11, color: '#666', marginBottom: 3 }}>
-                    📍 {event.address}
-                  </Text>
-                  {event.distance !== undefined && event.distance !== Infinity && (
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#6c2eb7' }}>
-                      📏 {event.distance.toFixed(1)} km
-                    </Text>
-                  )}
-                </View>
-              </Callout>
-            </Marker>
-          ))}
+          .map((event) => {
+            const descriptionPreview = event.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
+            const isAndroid = Platform.OS === 'android';
+
+            return (
+              <Marker
+                key={event.id}
+                coordinate={{
+                  latitude: event.location!.coordinates[1],
+                  longitude: event.location!.coordinates[0],
+                }}
+                title={isAndroid ? undefined : event.title}
+                description={isAndroid ? undefined : descriptionPreview}
+                pinColor={getMarkerColor(event.distance)}
+                onPress={() => {
+                  if (isAndroid) {
+                    setSelectedEventId(event.id);
+                  }
+                }}
+                onCalloutPress={() => !isAndroid && navigation.navigate('EventDetail', { event })}
+              >
+                {!isAndroid && (
+                  <Callout tooltip>
+                      <View
+                        style={{
+                          backgroundColor: theme === 'dark' ? '#000' : '#fff',
+                          borderRadius: 12,
+                          padding: 10,
+                          width: 350,
+                          maxWidth: 350,
+                          shadowColor: '#000',
+                          shadowOpacity: 0.25,
+                          shadowRadius: 6,
+                          shadowOffset: { width: 0, height: 2 },
+                          elevation: 6,
+                        }}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => navigation.navigate('EventDetail', { event })}
+                        >
+                          <Text
+                            style={{
+                              fontWeight: 'bold',
+                              fontSize: 13,
+                              marginBottom: 4,
+                              color: theme === 'dark' ? '#fff' : '#222',
+                              flexShrink: 1,
+                            }}
+                            numberOfLines={3}
+                            ellipsizeMode="tail"
+                          >
+                            {event.title}
+                          </Text>
+
+                          {event.description && (
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                color: theme === 'dark' ? '#ddd' : '#555',
+                                marginBottom: 4,
+                                lineHeight: 15,
+                              }}
+                              numberOfLines={2}
+                              ellipsizeMode="tail"
+                            >
+                              {descriptionPreview}
+                            </Text>
+                          )}
+
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: theme === 'dark' ? '#bbb' : '#777',
+                              marginBottom: 3,
+                            }}
+                            numberOfLines={2}
+                          >
+                            📍 {event.address}
+                          </Text>
+
+                          {event.distance !== undefined && event.distance !== Infinity && (
+                            <Text style={{ fontSize: 10, fontWeight: '600', color: '#6c2eb7', marginBottom: 2 }}>
+                              📏 {event.distance.toFixed(1)} km
+                            </Text>
+                          )}
+
+                          <Text style={{ fontSize: 9, color: theme === 'dark' ? '#aaa' : '#999', fontStyle: 'italic' }}>
+                            Toca para ver detalles
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </Callout>
+                )}
+              </Marker>
+            );
+          })}
       </MapView>
+
+      {Platform.OS === 'android' && selectedEventId && (
+        (() => {
+          const selectedEvent = events.find(e => e.id === selectedEventId);
+          if (!selectedEvent) return null;
+          const descriptionPreview = selectedEvent.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
+
+          return (
+            <View
+              style={{
+                position: 'absolute',
+                top: 130,
+                left: 12,
+                right: 12,
+                backgroundColor: theme === 'dark' ? '#000000' : '#fff',
+                borderRadius: 16,
+                padding: 8,
+                shadowColor: '#000',
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+                maxHeight: 250,
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: 6,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: theme === 'dark' ? '#333' : '#f0f0f0',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
+                }}
+                onPress={() => setSelectedEventId(null)}
+              >
+                <MaterialIcons name="close" size={14} color={theme === 'dark' ? '#fff' : '#333'} />
+              </TouchableOpacity>
+
+              <Text
+                style={{ fontWeight: 'bold', fontSize: 12, marginBottom: 3, color: theme === 'dark' ? '#fff' : '#333', paddingRight: 20 }}
+                numberOfLines={2}
+              >
+                {selectedEvent.title}
+              </Text>
+
+              {selectedEvent.description && (
+                <Text
+                  style={{ fontSize: 10, color: theme === 'dark' ? '#ddd' : '#555', marginBottom: 3, lineHeight: 14 }}
+                  numberOfLines={2}
+                >
+                  {descriptionPreview}
+                </Text>
+              )}
+
+              <Text style={{ fontSize: 9, color: theme === 'dark' ? '#bbb' : '#888', marginBottom: 3 }}>
+                📍 {selectedEvent.address}
+              </Text>
+
+              {selectedEvent.distance !== undefined && selectedEvent.distance !== Infinity && (
+                <Text style={{ fontSize: 10, fontWeight: '600', color: '#6c2eb7', marginBottom: 6 }}>
+                  📏 {selectedEvent.distance.toFixed(1)} km
+                </Text>
+              )}
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('EventDetail', { event: selectedEvent })}
+                style={{
+                  backgroundColor: '#6c2eb7',
+                  borderRadius: 6,
+                  paddingVertical: 6,
+                  paddingHorizontal: 10,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>
+                  Ver detalles
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })()
+      )}
 
       {hasUserLocation && (
         <ThemedView style={[styles.radiusBox, { backgroundColor: colors.card }]}>

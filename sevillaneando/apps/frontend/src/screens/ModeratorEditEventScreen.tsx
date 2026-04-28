@@ -208,11 +208,16 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       );
       const data = await response.json();
       if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
+        const result = data[0];
+
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+
         setLatitude(lat);
         setLongitude(lon);
+        setAddress(result.display_name || address);
         setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+
         setTimeout(() => {
           mapRef.current?.animateToRegion(
             {
@@ -235,22 +240,27 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const reverseGeocode = async (lat: number, lon: number) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'TuApp/1.0',
+            'Accept-Language': 'es',
+          },
+        }
       );
+
       const data = await response.json();
-      if (data && data.display_name) {
+
+      if (data?.display_name) {
         setAddress(data.display_name);
+        return;
       }
+
+      setAddress('Dirección no encontrada');
     } catch (e) {
-      // Comentario para la guia de estilo
+      setAddress('Dirección no encontrada');
     }
   };
-
-  useEffect(() => {
-    if (latitude !== null && longitude !== null) {
-      reverseGeocode(latitude, longitude);
-    }
-  }, [latitude, longitude]);
 
   const handleAddressBlur = () => {
     geocodeAddress(address);
@@ -396,8 +406,24 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               initialRegion={{ latitude, longitude, ...mapDelta }}
               region={{ latitude, longitude, ...mapDelta }}
               onPress={(e: MapPressEvent) => {
-                setLatitude(e.nativeEvent.coordinate.latitude);
-                setLongitude(e.nativeEvent.coordinate.longitude);
+                const newLat = e.nativeEvent.coordinate.latitude;
+                const newLon = e.nativeEvent.coordinate.longitude;
+
+                setLatitude(newLat);
+                setLongitude(newLon);
+                setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+
+                reverseGeocode(newLat, newLon);
+
+                mapRef.current?.animateToRegion(
+                  {
+                    latitude: newLat,
+                    longitude: newLon,
+                    latitudeDelta: 0.0015,
+                    longitudeDelta: 0.0015,
+                  },
+                  500
+                );
               }}
             >
               <UrlTile

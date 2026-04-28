@@ -226,25 +226,33 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const reverseGeocode = async (lat: number, lon: number) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-      );
-      const data = await response.json();
-      if (data && data.display_name) {
-        setAddress(data.display_name);
+const reverseGeocode = async (lat: number, lon: number) => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'TuApp/1.0',
+          'Accept-Language': 'es',
+        },
       }
-    } catch (e) {
-      reportWarning('create-event.reverse-geocode', 'Error en geocodificación inversa', e);
-    }
-  };
+    );
 
-  useEffect(() => {
-    if (latitude !== null && longitude !== null) {
-      reverseGeocode(latitude, longitude);
+    const data = await response.json();
+
+    if (data?.display_name) {
+      setAddress(data.display_name);
+      return;
     }
-  }, [latitude, longitude]);
+
+    setAddress('Dirección no encontrada');
+  } catch (e) {
+    setAddress('Dirección no encontrada');
+    reportWarning('create-event.reverse-geocode', 'Error en geocodificación inversa', e);
+  }
+};
+
+
 
   const handleAddressBlur = () => {
     geocodeAddress(address);
@@ -508,18 +516,24 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                   )}
                 </TouchableOpacity>
               </View>
-              <TextInput
-                ref={addressRef}
-                value={address}
-                onChangeText={() => { }}
-                placeholder="Dirección"
-                placeholderTextColor={colors.text + '99'}
+              <View
                 style={[
                   styles.input,
-                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                    minHeight: 44,
+                    justifyContent: 'center',
+                  },
                 ]}
-                editable={false}
-              />
+              >
+                <ThemedText
+                  style={{ color: address ? colors.text : colors.text + '99', fontSize: 16 }}
+                  numberOfLines={3}
+                >
+                  {address || 'Dirección'}
+                </ThemedText>
+              </View>
             </View>
 
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
@@ -546,9 +560,13 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={(e) => {
                   const lat = e.nativeEvent.coordinate.latitude;
                   const lon = e.nativeEvent.coordinate.longitude;
+
                   setLatitude(lat);
                   setLongitude(lon);
                   setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+
+                  reverseGeocode(lat, lon);
+
                   mapRef.current?.animateToRegion(
                     {
                       latitude: lat,
@@ -558,14 +576,13 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                     },
                     500
                   );
-                  reverseGeocode(lat, lon);
                 }}
               >
                 {latitude !== null && longitude !== null && (
                   <Marker coordinate={{ latitude, longitude }} />
                 )}
                 <UrlTile
-                  urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   maximumZ={19}
                 />
               </MapView>

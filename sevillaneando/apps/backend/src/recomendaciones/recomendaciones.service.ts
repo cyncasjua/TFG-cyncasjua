@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, Repository, DataSource } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Event } from '../events/event.entity';
 import { Resena } from '../entities/resena.entity';
@@ -129,6 +129,7 @@ export class RecomendacionesService {
     private readonly resenaRepo: Repository<Resena>,
     @InjectRepository(Recomendacion)
     private readonly recomendacionRepo: Repository<Recomendacion>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async saveEvent(userId: string, eventId: string) {
@@ -1245,20 +1246,40 @@ export class RecomendacionesService {
       relations: ['usuario'],
     });
 
-    if (!snapshot) {
-      snapshot = this.recomendacionRepo.create({
-        usuario: user,
-        eventosRecomendados: top.map((item) => item.event),
-        criterios: ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'],
-        vista: false,
-      });
-    } else {
-      snapshot.eventosRecomendados = top.map((item) => item.event);
-      snapshot.criterios = ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'];
-      snapshot.vista = false;
-    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    await this.recomendacionRepo.save(snapshot);
+    try {
+      if (!snapshot) {
+        snapshot = this.recomendacionRepo.create({
+          usuario: user,
+          eventosRecomendados: top.map((item) => item.event),
+          criterios: ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'],
+          vista: false,
+        });
+        await queryRunner.manager.save(snapshot);
+      } else {
+        // Limpiar las relaciones existentes en la misma transacción
+        await queryRunner.query(
+          'DELETE FROM "recomendacion_eventos_recomendados_events" WHERE "recomendacionId" = $1',
+          [snapshot.id]
+        );
+
+        // Actualizar el snapshot en la misma transacción
+        snapshot.eventosRecomendados = top.map((item) => item.event);
+        snapshot.criterios = ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'];
+        snapshot.vista = false;
+        await queryRunner.manager.save(snapshot);
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private getEffectiveEventEndTime(startTimeMs: number, endTimeMs: number): number {

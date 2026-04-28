@@ -1593,10 +1593,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               onCancel={() => setShowDateToPicker(false)}
               minimumDate={dateFrom ? new Date(dateFrom) : undefined}
             />
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
-              <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo(''); }} />
-              <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} />
-              <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} />
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo(''); }} style={{ flex: 1 }} />
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} style={{ flex: 1 }} />
+                <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} style={{ flex: 1 }} />
+              </View>
             </View>
           </ThemedView>
         </View>

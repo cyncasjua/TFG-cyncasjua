@@ -11,6 +11,7 @@ import {
   Alert,
   Keyboard,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -28,7 +29,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { useNotificaciones } from '../context/NotificacionesContext';
-import { getFullImageUrl } from '../utils/imageUrl';
+import { getFullImageUrl, getOptimizedChatImageUrl } from '../utils/imageUrl';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
@@ -61,6 +62,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set());
   const chatScrollRef = useRef<ScrollView>(null);
 
   const baseScale = useRef(new Animated.Value(1)).current;
@@ -195,17 +197,12 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
       const processed = await manipulateAsync(
         asset.uri,
-        [{ resize: { width: 1280 } }],
-        { compress: 0.75, format: SaveFormat.JPEG }
+        [{ resize: { width: 800 } }],
+        { compress: 0.6, format: SaveFormat.JPEG }
       ).catch(() => null);
 
-      const uploadUri = processed?.uri;
-      if (!uploadUri) {
-        setChatError('No se pudo preparar la imagen');
-        setPendingImageLocalUri(null);
-        setPendingImageUrl(null);
-        return;
-      }
+      // Si la manipulación falla, usar la imagen original
+      const uploadUri = processed?.uri || asset.uri;
 
       const name = `dm-${Date.now()}.jpg`;
       const mimeType = 'image/jpeg';
@@ -293,6 +290,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       if (result.canceled) return;
       const asset = result.assets?.[0];
       if (!asset?.uri) return;
+
       await uploadChatImage(asset);
     } catch (error) {
       reportError('dm.take-photo', 'Error al tomar foto en chat directo', error);
@@ -444,17 +442,41 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                       <TouchableOpacity
                         onPress={() => setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)}
                       >
-                        {(() => {
-                          const imageUri = getFullImageUrl(item.imageUrl);
-                          if (!imageUri) return null;
-                          return (
-                        <Image
-                          source={{ uri: imageUri }}
-                          style={styles.chatMessageImage}
-                          resizeMode="cover"
-                        />
-                          );
-                        })()}
+                        <View style={{ position: 'relative' }}>
+                          {loadingImages.has(item.id) && (
+                            <View
+                              style={[
+                                styles.chatMessageImage,
+                                {
+                                  position: 'absolute',
+                                  zIndex: 10,
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  backgroundColor: colors.card + '99',
+                                },
+                              ]}
+                            >
+                              <ActivityIndicator size="small" color="#6c2eb7" />
+                            </View>
+                          )}
+                          {(() => {
+                            const imageUri = getOptimizedChatImageUrl(item.imageUrl);
+                            if (!imageUri) return null;
+                            return (
+                          <Image
+                            source={{ uri: imageUri }}
+                            style={styles.chatMessageImage}
+                            resizeMode="cover"
+                            onLoadStart={() => setLoadingImages(prev => new Set(prev).add(item.id))}
+                            onLoadEnd={() => setLoadingImages(prev => {
+                              const next = new Set(prev);
+                              next.delete(item.id);
+                              return next;
+                            })}
+                          />
+                            );
+                          })()}
+                        </View>
                       </TouchableOpacity>
                     )}
                     <ThemedTextSecondary
@@ -473,7 +495,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           })}
         </ScrollView>
 
-        {!!pendingImageUrl && (
+        {!!pendingImageUrl && !isUploadingImage && (
           <ThemedView style={styles.chatAttachment}>
             <MaterialIcons name="image" size={18} color={colors.text} />
             <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
@@ -488,6 +510,15 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
             >
               <MaterialIcons name="close" size={16} color={colors.text} />
             </TouchableOpacity>
+          </ThemedView>
+        )}
+
+        {isUploadingImage && (
+          <ThemedView style={[styles.chatAttachment, { opacity: 0.7 }]}>
+            <MaterialIcons name="cloud-upload" size={18} color={colors.text} />
+            <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
+              Cargando imagen...
+            </ThemedTextSecondary>
           </ThemedView>
         )}
 

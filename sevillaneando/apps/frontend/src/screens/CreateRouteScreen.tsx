@@ -11,7 +11,7 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
@@ -234,7 +234,10 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                 latitudeDelta: 0.08,
                 longitudeDelta: 0.08,
               }}
+              scrollEnabled={true}
+              zoomEnabled={true}
             >
+              <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
               {routeCoordinates.map((coord, index) => (
                 <Marker key={index} coordinate={coord} title={`Evento ${index + 1}`}>
                   <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>

@@ -145,6 +145,30 @@ export function getFullImageUrl(url?: string | null): string | undefined {
     return maybeEncodeUrl(trimmed);
 }
 
+/**
+ * Obtiene una URL de imagen optimizada para chat (thumbnail comprimido)
+ * Reduce el tamaño y compresión para cargar más rápido en listados
+ */
+export function getOptimizedChatImageUrl(url?: string | null): string | undefined {
+    const fullUrl = getFullImageUrl(url);
+    if (!fullUrl) return undefined;
+
+    // Si es una URL de Cloudinary, agregar parámetros de optimización
+    if (fullUrl.includes('res.cloudinary.com')) {
+        // Insertar transformaciones después del identificador de upload
+        const uploadIndex = fullUrl.indexOf('/upload/');
+        if (uploadIndex !== -1) {
+            const before = fullUrl.substring(0, uploadIndex + 8); // /upload/ = 8 caracteres
+            const after = fullUrl.substring(uploadIndex + 8);
+
+            // w_500: ancho máximo 500px, q_60: compresión más agresiva, f_auto: formato automático
+            return `${before}w_500,q_60,f_auto/${after}`;
+        }
+    }
+
+    return fullUrl;
+}
+
 export function getImageUrlCandidates(url?: string | null): string[] {
     if (!url) return [];
 

@@ -220,11 +220,16 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
       );
       const data = await response.json();
       if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
+        const result = data[0];
+
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+
         setLatitude(lat);
         setLongitude(lon);
+        setAddress(result.display_name || address);
         setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+
         setTimeout(() => {
           mapRef.current?.animateToRegion(
             { latitude: lat, longitude: lon, latitudeDelta: 0.0015, longitudeDelta: 0.0015 },
@@ -244,13 +249,25 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const reverseGeocode = async (lat: number, lon: number) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'TuApp/1.0',
+            'Accept-Language': 'es',
+          },
+        }
       );
+
       const data = await response.json();
-      if (data && data.display_name) {
+
+      if (data?.display_name) {
         setAddress(data.display_name);
+        return;
       }
+
+      setAddress('Dirección no encontrada');
     } catch (e) {
+      setAddress('Dirección no encontrada');
       reportWarning('user-edit-event.reverse-geocode', 'Error en geocodificación inversa', e);
     }
   };
@@ -517,18 +534,27 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   )}
                 </TouchableOpacity>
               </View>
-              <TextInput
-                ref={addressRef}
-                value={address}
-                onChangeText={() => { }}
-                placeholder="Dirección"
-                placeholderTextColor={colors.text + '99'}
-                style={[
-                  styles.input,
-                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-                ]}
-                editable={false}
-              />
+                <View
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      minHeight: 44,
+                      justifyContent: 'center',
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    style={{
+                      color: address ? colors.text : colors.text + '99',
+                      fontSize: 16,
+                    }}
+                    numberOfLines={3}
+                  >
+                    {address || 'Dirección'}
+                  </ThemedText>
+                </View>
             </View>
 
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
@@ -569,7 +595,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   <Marker coordinate={{ latitude, longitude }} />
                 )}
                 <UrlTile
-                  urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   maximumZ={19}
                 />
               </MapView>

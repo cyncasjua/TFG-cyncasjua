@@ -159,6 +159,22 @@ export class EventsController {
     return { attending };
   }
 
+  @Get(':id/reviews')
+  async getEventReviews(@Param('id') id: string) {
+    const reviews = await this.eventsService.getEventReviews(id);
+    return reviews.map((review) => ({
+      id: review.id,
+      puntuacion: review.puntuacion,
+      comentario: review.comentario,
+      fecha: review.fecha,
+      autor: {
+        id: review.autor?.id,
+        nombre: review.autor?.nombre,
+        fotoPerfil: review.autor?.fotoPerfil,
+      },
+    }));
+  }
+
   @Post(':id/attendees')
   @UseGuards(FirebaseAuthGuard)
   async attend(@Param('id') id: string, @Req() req: { user: { uid: string } }) {

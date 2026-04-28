@@ -170,6 +170,23 @@ export async function getMyAttendance(eventId: string): Promise<{ attending: boo
   return res.data as { attending: boolean };
 }
 
+export interface EventReview {
+  id: string;
+  puntuacion: number;
+  comentario: string;
+  fecha: string;
+  autor?: {
+    id: string;
+    nombre: string;
+    fotoPerfil?: string;
+  };
+}
+
+export async function getEventReviews(eventId: string): Promise<EventReview[]> {
+  const res = await api.get(`/events/${eventId}/reviews`);
+  return res.data as EventReview[];
+}
+
 export async function attendEvent(eventId: string): Promise<PublicUser[]> {
   const res = await api.post(`/events/${eventId}/attendees`);
   return res.data as PublicUser[];

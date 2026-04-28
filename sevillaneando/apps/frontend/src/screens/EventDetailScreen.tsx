@@ -14,6 +14,7 @@ import {
   Animated,
   Alert,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import dayjs from 'dayjs';
@@ -36,8 +37,6 @@ import {
   ThemedView,
 } from '../components';
 import type { Event } from '../types/event';
-import { storage } from '../firebase/config';
-import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { useIsFocused } from '@react-navigation/native';
 import { TextInput, TouchableOpacity } from 'react-native';
 import { io, Socket } from 'socket.io-client';
@@ -45,7 +44,7 @@ import { useAuth } from '../hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { PublicUser } from '../types/user';
-import { getFullImageUrl } from '../utils/imageUrl';
+import { getFullImageUrl, getOptimizedChatImageUrl } from '../utils/imageUrl';
 import { formatEventDateRange, formatSevillaTime, isEventFinished } from '../utils/sevillaTime';
 import {
   attendEvent,
@@ -53,6 +52,7 @@ import {
   getEventAttendees,
   getEventByAccessLink,
   getEventById,
+  getEventReviews,
   getPrivateEventShareLink,
   getMyRecommendedEventRating,
   getMyAttendance,
@@ -62,23 +62,13 @@ import {
   unattendEvent,
   unsaveRecommendedEvent,
   visitRecommendedEvent,
+  type EventReview,
 } from '../services/api';
 import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
 import { reportError } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
-
-const uploadProbe = async () => {
-  try {
-    const storageRef = ref(storage, 'demo.txt');
-    await uploadString(storageRef, 'Contenido de prueba', 'raw');
-    const url = await getDownloadURL(storageRef);
-    void url;
-  } catch (error) {
-    reportError('event-detail.upload-probe', 'Error al subir archivo de prueba', error);
-  }
-};
 
 function parsePoint(event: Event) {
   if (event.latitude !== undefined && event.longitude !== undefined) {
@@ -150,6 +140,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set());
   const eventChatScrollRef = useRef<ScrollView>(null);
   const [attendees, setAttendees] = useState<PublicUser[]>([]);
   const [isAttending, setIsAttending] = useState(false);
@@ -161,6 +152,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [ratingComment, setRatingComment] = useState('');
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [hasExistingRating, setHasExistingRating] = useState(false);
+  const [reviews, setReviews] = useState<EventReview[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
   const visitTrackedRef = useRef(false);
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
@@ -210,6 +203,29 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       mounted = false;
     };
   }, [event.id, token]);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadReviews = async () => {
+      try {
+        setReviewsLoading(true);
+        const eventReviews = await getEventReviews(event.id);
+        if (!mounted) return;
+        setReviews(eventReviews);
+      } catch (err) {
+        if (!mounted) return;
+        console.warn('Error cargando reseñas:', err);
+        setReviews([]);
+      } finally {
+        if (mounted) setReviewsLoading(false);
+      }
+    };
+
+    loadReviews();
+    return () => {
+      mounted = false;
+    };
+  }, [event.id]);
 
   useEffect(() => {
     if (!token || visitTrackedRef.current) return;
@@ -549,17 +565,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
       const processed = await manipulateAsync(
         asset.uri,
-        [{ resize: { width: 1280 } }],
-        { compress: 0.75, format: SaveFormat.JPEG }
+        [{ resize: { width: 800 } }],
+        { compress: 0.6, format: SaveFormat.JPEG }
       ).catch(() => null);
 
-      const uploadUri = processed?.uri;
-      if (!uploadUri) {
-        setChatError('No se pudo preparar la imagen');
-        setPendingImageLocalUri(null);
-        setPendingImageUrl(null);
-        return;
-      }
+      // Si la manipulación falla, usar la imagen original
+      const uploadUri = processed?.uri || asset.uri;
 
       const name = `chat-${Date.now()}.jpg`;
       const mimeType = 'image/jpeg';
@@ -647,6 +658,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       if (result.canceled) return;
       const asset = result.assets?.[0];
       if (!asset?.uri) return;
+
       await uploadChatImage(asset);
     } catch (error) {
       reportError('event-detail.take-photo', 'Error al abrir cámara en chat de evento', error);
@@ -893,7 +905,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 longitudeDelta: 0.01,
               }}
             >
-              <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+              <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
               <Marker coordinate={coords} title={event.title} />
             </MapView>
           </ThemedView>
@@ -969,6 +981,74 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               {attendeesError}
             </ThemedTextSecondary>
           )}
+          <ThemedView style={{ marginTop: 16, marginBottom: 12 }}>
+            <ThemedTitle style={{ fontSize: 18, marginBottom: 12 }}>Opiniones</ThemedTitle>
+            {reviewsLoading ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 8 }} />
+            ) : reviews.length === 0 ? (
+              <ThemedTextSecondary style={{ fontSize: 14, fontStyle: 'italic' }}>
+                No hay opiniones aún. ¡Sé el primero en valorar este evento!
+              </ThemedTextSecondary>
+            ) : (
+              <ScrollView
+                scrollEnabled={false}
+                nestedScrollEnabled={false}
+              >
+                {reviews.map((review) => {
+                  const autor = review.autor;
+                  return (
+                  <ThemedView
+                    key={review.id}
+                    style={[
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                        borderRadius: 12,
+                        padding: 12,
+                        marginBottom: 10,
+                        borderWidth: 1,
+                      },
+                    ]}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                      {autor?.id && (
+                        <TouchableOpacity
+                          onPress={() => navigation.navigate('UserProfile', { userId: autor.id })}
+                          style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                        >
+                          <Avatar photoUrl={autor.fotoPerfil} size={32} />
+                          <View style={{ marginLeft: 10, flex: 1 }}>
+                            <ThemedText style={{ fontWeight: '600', fontSize: 13 }}>
+                              {autor.nombre}
+                            </ThemedText>
+                            <ThemedTextSecondary style={{ fontSize: 11 }}>
+                              {formatSevillaTime(review.fecha)}
+                            </ThemedTextSecondary>
+                          </View>
+                        </TouchableOpacity>
+                      )}
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {[...Array(5)].map((_, i) => (
+                          <MaterialIcons
+                            key={i}
+                            name={i < review.puntuacion ? 'star' : 'star-border'}
+                            size={14}
+                            color={i < review.puntuacion ? '#f39c12' : colors.text + '44'}
+                          />
+                        ))}
+                      </View>
+                    </View>
+                    {review.comentario && (
+                      <ThemedText style={{ fontSize: 13, lineHeight: 18 }}>
+                        {review.comentario}
+                      </ThemedText>
+                    )}
+                  </ThemedView>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </ThemedView>
           <Modal
             visible={showAttendeesModal}
             transparent
@@ -1061,18 +1141,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               </View>
             </View>
           </Modal>
-          {__DEV__ && (
-            <>
-              <ThemedButton
-                title="Probar moderación NSFW (demo)"
-                variant="secondary"
-                onPress={async () => {
-                  const safe = await evaluateImage();
-                }}
-              />
-              <ThemedButton title="Probar subida a Storage" variant="secondary" onPress={uploadProbe} />
-            </>
-          )}
         </ScrollView>
         {isChatOpen && (
           <View style={styles.chatOverlay}>
@@ -1164,11 +1232,35 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             <TouchableOpacity
                               onPress={() => setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)}
                             >
-                              <Image
-                                source={{ uri: getFullImageUrl(item.imageUrl)! }}
-                                style={styles.chatMessageImage}
-                                resizeMode="cover"
-                              />
+                              <View style={{ position: 'relative' }}>
+                                {loadingImages.has(item.id) && (
+                                  <View
+                                    style={[
+                                      styles.chatMessageImage,
+                                      {
+                                        position: 'absolute',
+                                        zIndex: 10,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        backgroundColor: colors.card + '99',
+                                      },
+                                    ]}
+                                  >
+                                    <ActivityIndicator size="small" color="#6c2eb7" />
+                                  </View>
+                                )}
+                                <Image
+                                  source={{ uri: getOptimizedChatImageUrl(item.imageUrl)! }}
+                                  style={styles.chatMessageImage}
+                                  resizeMode="cover"
+                                  onLoadStart={() => setLoadingImages(prev => new Set(prev).add(item.id))}
+                                  onLoadEnd={() => setLoadingImages(prev => {
+                                    const next = new Set(prev);
+                                    next.delete(item.id);
+                                    return next;
+                                  })}
+                                />
+                              </View>
                             </TouchableOpacity>
                           )}
                           <ThemedTextSecondary
@@ -1206,7 +1298,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   );
                 })}
               </ScrollView>
-              {!!pendingImageUrl && (
+              {!!pendingImageUrl && !isUploadingImage && (
                 <ThemedView style={styles.chatAttachment}>
                   <MaterialIcons name="image" size={18} color={colors.text} />
                   <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
@@ -1221,6 +1313,14 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   >
                     <MaterialIcons name="close" size={16} color={colors.text} />
                   </TouchableOpacity>
+                </ThemedView>
+              )}
+              {isUploadingImage && (
+                <ThemedView style={[styles.chatAttachment, { opacity: 0.7 }]}>
+                  <MaterialIcons name="cloud-upload" size={18} color={colors.text} />
+                  <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
+                    Cargando imagen...
+                  </ThemedTextSecondary>
                 </ThemedView>
               )}
               <ThemedView

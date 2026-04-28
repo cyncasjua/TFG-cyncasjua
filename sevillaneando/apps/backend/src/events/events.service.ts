@@ -415,4 +415,13 @@ export class EventsService {
         .getMany();
       return this.processEventArray(events);
     }
+
+    async getEventReviews(eventId: string): Promise<Resena[]> {
+      const reviews = await this.resenaRepo.find({
+        where: { evento: { id: eventId } },
+        relations: ['autor'],
+        order: { fecha: 'DESC' },
+      });
+      return reviews;
+    }
 }

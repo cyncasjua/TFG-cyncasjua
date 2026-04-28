@@ -362,7 +362,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             {latitud && longitud && (
               <Marker coordinate={{ latitude: latitud, longitude: longitud }} />
             )}
-            <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+            <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
           </MapView>
         </View>
         <View style={{ marginBottom: 8 }}>

@@ -28,6 +28,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const { refresh } = useNotificaciones();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marcandoTodas, setMarcandoTodas] = useState(false);
 
   const fetchNotificaciones = useCallback(async () => {
     if (!user) return;
@@ -55,6 +56,24 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const marcarLeida = async (id: string) => {
     await api.patch(`/notificaciones/${id}/leida`);
     await Promise.all([fetchNotificaciones(), refresh()]);
+  };
+
+  const marcarTodasLeidas = async () => {
+    setMarcandoTodas(true);
+    try {
+      const noLeidas = notificaciones.filter((n) => !n.leida);
+      await Promise.all(noLeidas.map((n) => api.patch(`/notificaciones/${n.id}/leida`)));
+      await Promise.all([fetchNotificaciones(), refresh()]);
+    } catch (err) {
+      reportError(
+        'notifications.mark-all',
+        `Error marcando todas como leídas: ${getErrorMessage(err)}`,
+        err,
+      );
+      Alert.alert('Error', 'No se pudieron marcar todas las notificaciones como leídas');
+    } finally {
+      setMarcandoTodas(false);
+    }
   };
 
   const borrarNotificacion = async (id: string) => {
@@ -91,7 +110,27 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Notificaciones</ThemedTitle>
+      <ThemedView style={styles.header}>
+        <ThemedTitle style={styles.title}>Notificaciones</ThemedTitle>
+        <TouchableOpacity
+          onPress={marcarTodasLeidas}
+          disabled={marcandoTodas}
+          style={[
+            styles.markAllButton,
+            {
+              opacity: marcandoTodas ? 0.6 : 1,
+              backgroundColor: notificaciones.some((n) => !n.leida) ? '#6c2eb7' : '#999',
+            },
+          ]}
+          accessibilityLabel="Marcar todas las notificaciones como leídas"
+        >
+          {marcandoTodas ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Icon name="check-all" size={16} color="#fff" />
+          )}
+        </TouchableOpacity>
+      </ThemedView>
       <FlatList
         data={notificaciones}
         keyExtractor={(item) => item.id}
@@ -132,7 +171,15 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  title: { fontSize: 20, fontWeight: 'bold', flex: 1 },
+  markAllButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   card: {
     padding: 16,
     borderRadius: 16,

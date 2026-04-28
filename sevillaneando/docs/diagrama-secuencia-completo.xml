@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel>
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <mxCell id="u" value="Usuario" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="20" y="40" width="80" height="1350" as="geometry" />
+    </mxCell>
+    <mxCell id="s" value="Servidor API (NestJS)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="140" y="40" width="120" height="1350" as="geometry" />
+    </mxCell>
+    <mxCell id="db" value="Base de Datos" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="300" y="40" width="100" height="1350" as="geometry" />
+    </mxCell>
+    <mxCell id="m" value="Moderador" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="450" y="40" width="100" height="1350" as="geometry" />
+    </mxCell>
+    <mxCell id="a" value="Administrador" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="600" y="40" width="100" height="1350" as="geometry" />
+    </mxCell>
+    <mxCell id="ext" value="Servicio ExtFuente (Eventbrite, etc)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="750" y="40" width="120" height="1350" as="geometry" />
+    </mxCell>
+    <mxCell id="sch" value="Scheduler/Cron" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outline=0;" vertex="1" parent="1">
+      <mxGeometry x="920" y="40" width="100" height="1350" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl1" value="1. CREAR EVENTO" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="80" width="200" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg1" value="proponerEvento()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.06;entryX=0.5;entryY=0.06;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg2" value="save(status: PENDIENTE)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.08;entryX=0.5;entryY=0.08;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg3" value="notificarNuevoEvento()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.10;entryX=0.5;entryY=0.10;" edge="1" parent="1" source="s" target="m">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl2" value="2. MODERACIÓN Y EDICIÓN" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="190" width="200" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg4a" value="solicitarEdicion(cambios)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.16;entryX=0.5;entryY=0.16;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg4b" value="save(EventEditRequest)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.18;entryX=0.5;entryY=0.18;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg5" value="notificar(solicitud pendiente)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.20;entryX=0.5;entryY=0.20;" edge="1" parent="1" source="s" target="m">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg6" value="revisarYAprobar()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.23;entryX=0.5;entryY=0.23;" edge="1" parent="1" source="m" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg7" value="update(evento) + delete(request)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.25;entryX=0.5;entryY=0.25;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg8" value="notificar(evento editado)" style="endArrow=open;html=1;dashed=1;exitX=0.5;exitY=0.27;entryX=0.5;entryY=0.27;" edge="1" parent="1" source="s" target="u">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl3" value="3. VALIDACIÓN DE EVENTO (por Moderador)" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="420" width="280" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg9" value="revisarYValidar()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.34;entryX=0.5;entryY=0.34;" edge="1" parent="1" source="m" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg10" value="update(status: APROBADO)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.36;entryX=0.5;entryY=0.36;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg11" value="crearNotificaciones(evento)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.38;entryX=0.5;entryY=0.38;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg12" value="Evento Visible + Notificado" style="endArrow=open;html=1;dashed=1;exitX=0.5;exitY=0.40;entryX=0.5;entryY=0.40;" edge="1" parent="1" source="s" target="u">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl4" value="4. RECOMENDACIONES" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="580" width="200" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg13" value="getRecomendaciones()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.46;entryX=0.5;entryY=0.46;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg14" value="calcularSegunCategoriasYActividad()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.48;entryX=0.5;entryY=0.48;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg15" value="save(recomendacion)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.50;entryX=0.5;entryY=0.50;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg16" value="listaRecomendaciones" style="endArrow=open;html=1;dashed=1;exitX=0.5;exitY=0.52;entryX=0.5;entryY=0.52;" edge="1" parent="1" source="s" target="u">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl5" value="5. CHAT DE EVENTO Y RESEÑAS" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="730" width="280" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg17" value="enviarMensajeChat()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.58;entryX=0.5;entryY=0.58;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg18" value="save(mensaje)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.60;entryX=0.5;entryY=0.60;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg19" value="broadcast(WebSocket)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.62;entryX=0.5;entryY=0.62;" edge="1" parent="1" source="s" target="u">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg20" value="crearResena()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.65;entryX=0.5;entryY=0.65;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg21" value="save(resena)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.67;entryX=0.5;entryY=0.67;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl6" value="6. MENSAJES PRIVADOS" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="920" width="200" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg22" value="enviarMensajePrivado()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.72;entryX=0.5;entryY=0.72;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg23" value="save(mensajePrivado)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.74;entryX=0.5;entryY=0.74;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg24" value="notificar(nuevoMensaje)" style="endArrow=open;html=1;dashed=1;exitX=0.5;exitY=0.76;entryX=0.5;entryY=0.76;" edge="1" parent="1" source="s" target="u">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl7" value="7. RUTAS Y CALIFICACIONES" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="1030" width="200" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg24a" value="getRutasRecomendadas()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.80;entryX=0.5;entryY=0.80;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg24b" value="calcularRutas()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.82;entryX=0.5;entryY=0.82;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg24c" value="calificarRuta(rating)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.84;entryX=0.5;entryY=0.84;" edge="1" parent="1" source="u" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg24d" value="save(CalificacionRuta)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.86;entryX=0.5;entryY=0.86;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl8" value="8. SCRAPING AUTOMÁTICO" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="20" y="1150" width="200" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg25" value="trigger()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.90;entryX=0.5;entryY=0.90;" edge="1" parent="1" source="sch" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg26" value="fetchEventos()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.92;entryX=0.5;entryY=0.92;" edge="1" parent="1" source="s" target="ext">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg27" value="eventosJSON" style="endArrow=open;html=1;dashed=1;exitX=0.5;exitY=0.94;entryX=0.5;entryY=0.94;" edge="1" parent="1" source="ext" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg28" value="parseYSave(eventos)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.96;entryX=0.5;entryY=0.96;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="lbl9" value="9. ADMINISTRACIÓN" style="text=1;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=bold;" vertex="1" parent="1">
+      <mxGeometry x="600" y="1250" width="280" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="msg29" value="gestionarUsuarios() / borrarEventos()" style="endArrow=classic;html=1;exitX=0.5;exitY=0.97;entryX=0.5;entryY=0.97;" edge="1" parent="1" source="a" target="s">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="msg30" value="sync(delete/update/cascade)" style="endArrow=classic;html=1;exitX=0.5;exitY=0.99;entryX=0.5;entryY=0.99;" edge="1" parent="1" source="s" target="db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>
