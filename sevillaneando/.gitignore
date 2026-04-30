@@ -1,6 +1,8 @@
+dist/
+# Ignore Expo local state
+.expo/
 node_modules/
 dist/
-.expo/
 .expo-shared/
 .env
 .env.local

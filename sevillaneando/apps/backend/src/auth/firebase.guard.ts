@@ -8,7 +8,8 @@ export class FirebaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const header = request.headers['authorization'] as string | undefined;
-    if (!header || !header.startsWith('Bearer ')) throw new UnauthorizedException('Token requerido');
+    if (!header || !header.startsWith('Bearer '))
+      throw new UnauthorizedException('Token requerido');
     const token = header.replace('Bearer ', '');
     const decoded = await this.firebaseService.verifyToken(token);
     if (!decoded) throw new UnauthorizedException('Token inválido');

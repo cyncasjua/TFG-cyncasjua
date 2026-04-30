@@ -12,9 +12,14 @@ export class FirebaseService {
     const privateKey = this.config.get<string>('FIREBASE_PRIVATE_KEY')?.replace(/\\n/g, '\n');
 
     if (!admin.apps.length && projectId && clientEmail && privateKey) {
-      admin.initializeApp({
-        credential: admin.credential.cert({ projectId, clientEmail, privateKey })
-      });
+      try {
+        this.logger.log('Intentando inicializar Firebase...');
+        admin.initializeApp({
+          credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+        });
+      } catch (error) {
+        this.logger.error('Error al inicializar Firebase:', error);
+      }
     } else {
       this.logger.warn('Firebase admin no inicializado: revisa variables de entorno.');
     }
