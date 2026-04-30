@@ -29,7 +29,7 @@
     "@nestjs/websockets": "^11.1.13",
     "@tensorflow/tfjs": "^4.22.0",
     "@types/bcryptjs": "^2.4.6",
-    "axios": "^1.13.6",
+    "axios": "^1.15.1",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
     "class-transformer": "^0.5.1",
