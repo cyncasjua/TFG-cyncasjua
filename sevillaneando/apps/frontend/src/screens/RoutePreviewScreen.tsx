@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { getEventById, getErrorMessage, type RecommendedRoute } from '../services/api';
+import { getEventById, getErrorMessage, type RecommendedRoute } from '../services';
 import type { Event } from '../types/event';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';

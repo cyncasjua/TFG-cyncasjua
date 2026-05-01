@@ -12,7 +12,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { getRoutes, getErrorMessage, type UserRoute } from '../services/api';
+import { getRoutes, getErrorMessage, type UserRoute } from '../services';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';

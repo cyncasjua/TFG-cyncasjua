@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import { formatEventDateRange } from '../utils/sevillaTime';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';

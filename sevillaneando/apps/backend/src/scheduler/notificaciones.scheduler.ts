@@ -4,7 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../events/events.service';
 import { UsersService } from '../users/users.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
-import { TipoEnum } from '../enums/tipo.enum';
+import { TipoEnum } from '../notificaciones/enums/tipo.enum';
 import { haversineDistanceKm } from '../common/distance.util';
 
 const RADIO_KM = 1;

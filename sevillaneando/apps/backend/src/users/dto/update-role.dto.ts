@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { RolEnum } from '../user.entity';
+import { RolEnum } from '../enums/rol.enum';
 
 export class UpdateRoleDto {
   @IsNotEmpty({ message: 'El rol es obligatorio.' })

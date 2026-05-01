@@ -9,7 +9,7 @@ import { useTheme } from '../hooks/useTheme';
 
 import { linking } from './linking';
 import type { AuthStackParamList, RootStackParamList } from './types';
-import { EventDetailLinkScreen } from '../providers/EventDetailLinkScreen';
+import { EventDetailLinkScreen } from '../screens/EventDetailLinkScreen';
 
 import { HomeScreen } from '../screens/HomeScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
@@ -31,7 +31,7 @@ import { AccessPrivateEventScreen } from '../screens/AccessPrivateEventScreen';
 import UserEventsScreen from '../screens/UserEventsScreen';
 import CalendarEventsScreen from '../screens/CalendarEventsScreen';
 import UserEditEventScreen from '../screens/UserEditEventScreen';
-import { RoutePreviewScreen } from '../screens/RoutePreview';
+import { RoutePreviewScreen } from '../screens/RoutePreviewScreen';
 import { CreateRouteScreen } from '../screens/CreateRouteScreen';
 import { RoutesListScreen } from '../screens/RoutesListScreen';
 import { RouteDetailScreen } from '../screens/RouteDetailScreen';

@@ -1,4 +1,4 @@
-import { PrivateEventLinkModal } from './PrivateEventLinkModal';
+import { PrivateEventLinkModal } from '../components';
 import React, { useState, useRef, useEffect, ComponentType } from 'react';
 import {
   Alert,
@@ -22,7 +22,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api, API_BASE_URL } from '../services/api';
+import { api, API_BASE_URL } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';

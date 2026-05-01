@@ -7,7 +7,7 @@ import {
   BeforeUpdate,
 } from 'typeorm';
 import { User } from '../users/user.entity';
-import { Event } from '../events/event.entity';
+import { Event } from './event.entity';
 import { MaxLength } from 'class-validator';
 
 @Entity()

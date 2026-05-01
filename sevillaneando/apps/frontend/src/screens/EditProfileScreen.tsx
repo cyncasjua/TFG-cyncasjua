@@ -19,7 +19,7 @@ import { useAuth } from '../hooks/useAuth';
 import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl } from '../utils/imageUrl';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
-import { API_BASE_URL } from '../services/api';
+import { API_BASE_URL } from '../services';
 import { Button } from 'react-native';
 import { Alert } from 'react-native';
 import { getAuth, deleteUser } from 'firebase/auth';

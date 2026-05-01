@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api, getErrorMessage, getEvents, createRoute, type UserRoute } from '../services/api';
+import { api, getErrorMessage, getEvents, createRoute, type UserRoute } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { reportError } from '../utils/telemetry';

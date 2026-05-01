@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';

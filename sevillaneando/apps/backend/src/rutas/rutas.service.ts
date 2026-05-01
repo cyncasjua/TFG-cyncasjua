@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Ruta } from '../entities/ruta.entity';
+import { Ruta } from './ruta.entity';
 import { Event } from '../events/event.entity';
 import { User } from '../users/user.entity';
-import { CalificacionRuta } from '../entities/calificacion-ruta.entity';
+import { CalificacionRuta } from './calificacion-ruta.entity';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { UpdateRutaDto } from './dto/update-ruta.dto';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { ThemedText } from '../components/ThemedText';
-import { Avatar } from '../components';
+import { ThemedText } from './ThemedText';
+import { Avatar } from './Avatar';
 import { useAuth } from '../hooks/useAuth';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';

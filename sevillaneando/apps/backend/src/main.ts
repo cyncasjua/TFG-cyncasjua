@@ -7,10 +7,10 @@ import { seedEvents } from './database/seed';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Server, Socket } from 'socket.io';
-import { Mensaje } from './entities/mensaje.entity';
+import { Mensaje } from './chat/mensaje.entity';
 import { FirebaseService } from './auth/firebase.service';
 import { User } from './users/user.entity';
-import { MensajePrivado } from './entities/mensaje-privado.entity';
+import { MensajePrivado } from './chat/mensaje-privado.entity';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');

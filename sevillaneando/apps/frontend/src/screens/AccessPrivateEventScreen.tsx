@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { getErrorMessage, getEventByAccessLink } from '../services/api';
+import { getErrorMessage, getEventByAccessLink } from '../services';
 import { Event } from '../types/event';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AccessPrivateEvent'>;

@@ -62,7 +62,7 @@ import {
   unsaveRecommendedEvent,
   visitRecommendedEvent,
   type EventReview,
-} from '../services/api';
+} from '../services';
 import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
 import { reportError } from '../utils/telemetry';

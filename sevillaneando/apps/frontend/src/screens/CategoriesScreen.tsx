@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useAuthContext } from '../context/AuthContext';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import {
   ThemedView,
   ThemedCard,

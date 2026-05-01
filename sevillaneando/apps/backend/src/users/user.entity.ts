@@ -8,19 +8,14 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { Notificacion } from '../entities/notificacion.entity';
+import { Notificacion } from '../notificaciones/notificacion.entity';
 import { Event } from '../events/event.entity';
-import { Resena } from '../entities/resena.entity';
-import { Ruta } from '../entities/ruta.entity';
+import { Resena } from '../events/resena.entity';
+import { Ruta } from '../rutas/ruta.entity';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { InteresCategoriaEnum } from './enums/interes-categoria.enum';
+import { RolEnum } from './enums/rol.enum';
 import { Logger } from '@nestjs/common';
-
-export enum RolEnum {
-  ADMIN = 'admin',
-  MODERATOR = 'moderator',
-  USER = 'user',
-}
 
 @Entity({ name: 'users' })
 export class User {

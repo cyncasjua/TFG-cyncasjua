@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useNotificaciones } from '../context/NotificacionesContext';

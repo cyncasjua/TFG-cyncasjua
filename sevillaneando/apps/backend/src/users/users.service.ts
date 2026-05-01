@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RolEnum, User } from './user.entity';
+import { User } from './user.entity';
+import { RolEnum } from './enums/rol.enum';
 import * as admin from 'firebase-admin';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import {

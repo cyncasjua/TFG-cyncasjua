@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, FlatList, View, StyleSheet } from 'react-nati
 import { Calendar, DateData } from 'react-native-calendars';
 import { useAuth } from '../hooks/useAuth';
 import { ThemedView, ThemedText } from '../components';
-import { api } from '../services/api';
+import { api } from '../services';
 import { Event } from '../types/event';
 import { useTheme } from '../hooks/useTheme';
 import { TouchableOpacity } from 'react-native';

@@ -29,7 +29,7 @@ import {
   getRecommendedRoutes,
   RecommendedEvent,
   RecommendedRoute,
-} from '../services/api';
+} from '../services';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
 import { useEvents } from '../hooks/useEvents';
@@ -49,7 +49,7 @@ import {
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
-import { ProfileHeader } from './ProfileHeader';
+import { ProfileHeader } from '../components';
 import { useSocket } from '../context/SocketContext';
 import { reportError, reportWarning } from '../utils/telemetry';
 

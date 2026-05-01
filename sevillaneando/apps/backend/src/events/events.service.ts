@@ -5,12 +5,12 @@ import { Event } from './event.entity';
 import { FindEventsQueryDto } from './dto/find-events-query.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { EstadoEnum } from '../enums/estado.enum';
-import { Categoria } from '../entities/categoria.entity';
+import { EstadoEnum } from './enums/estado.enum';
+import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Mensaje } from '../entities/mensaje.entity';
-import { Resena } from '../entities/resena.entity';
+import { Mensaje } from '../chat/mensaje.entity';
+import { Resena } from './resena.entity';
 import { parseEventImages, stringifyEventImages } from './event-images.util';
 
 type EventWithRatingsSummary = Event & {
@@ -117,9 +117,8 @@ export class EventsService {
   }
 
   async findAll(query: FindEventsQueryDto = {}): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
-    const { userId, lat, lng, radiusKm, limit = 50, offset = 0 } = query;
+    const { userId, lat, lng, radiusKm, limit, offset = 0 } = query;
     const hasLocation = lat != null && lng != null;
-    const effectiveLimit = Math.min(limit, 100);
 
     const qb = this.eventRepo
       .createQueryBuilder('event')
@@ -153,24 +152,23 @@ export class EventsService {
       qb.orderBy('event.fechaInicio', 'ASC');
     }
 
-    qb.limit(effectiveLimit + 1).offset(offset);
+    if (limit != null) {
+      qb.limit(limit);
+    }
+    qb.offset(offset);
 
     const { raw, entities } = await qb.getRawAndEntities();
 
-    const hasMore = entities.length > effectiveLimit;
-    const sliced = hasMore ? entities.slice(0, effectiveLimit) : entities;
-    const slicedRaw = hasMore ? raw.slice(0, effectiveLimit) : raw;
+    this.processEventArray(entities);
 
-    this.processEventArray(sliced);
-
-    const events = sliced.map((event, i) => {
+    const events = entities.map((event, i) => {
       if (!hasLocation) return event;
-      const rawDistKm = slicedRaw[i]?.distanceKm;
+      const rawDistKm = raw[i]?.distanceKm;
       const distanceKm = rawDistKm != null ? Number(rawDistKm) : undefined;
       return distanceKm !== undefined ? Object.assign(event, { distanceKm }) : event;
     });
 
-    return { events, hasMore };
+    return { events, hasMore: false };
   }
 
   findAllForScheduler(): Promise<Event[]> {

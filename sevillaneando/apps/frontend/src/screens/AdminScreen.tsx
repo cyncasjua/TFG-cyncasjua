@@ -13,9 +13,9 @@ import {
   ThemedView,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import { User } from '../types/user';
-import { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import { reportError } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;

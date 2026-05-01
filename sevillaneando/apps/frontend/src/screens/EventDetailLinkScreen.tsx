@@ -3,7 +3,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { getErrorMessage, getEventById } from '../services/api';
+import { getErrorMessage, getEventById } from '../services';
 import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetailLink'>;

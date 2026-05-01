@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getEvents, getEventByAccessLink } from '../services/api';
+import { getEvents, getEventByAccessLink } from '../services';
 import type { Event } from '../types/event';
 import { reportError } from '../utils/telemetry';
-import { getErrorMessage } from '../services/api';
+import { getErrorMessage } from '../services';
 
 type EventWithDistance = Event & { distance?: number };
 

@@ -9,9 +9,9 @@ import {
   JoinTable,
 } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { Categoria } from '../entities/categoria.entity';
+import { Categoria } from '../categorias/categoria.entity';
 
-import { EstadoEnum } from '../enums/estado.enum';
+import { EstadoEnum } from './enums/estado.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { User } from '../users/user.entity';
 import { countEventImages, stringifyEventImages } from './event-images.util';

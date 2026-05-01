@@ -1,5 +1,5 @@
 import type { Event } from '../types/event';
-import type { RecommendedRoute } from '../services/api';
+import type { RecommendedRoute } from '../services';
 
 export type RootStackParamList = {
   Home: undefined;

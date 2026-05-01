@@ -16,7 +16,7 @@ import 'dayjs/locale/es';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
-import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRoute } from '../services/api';
+import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRoute } from '../services';
 import type { RootStackParamList } from '../navigation/types';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';

@@ -13,7 +13,7 @@ import {
   getEventById,
   getSavedRecommendedEvents,
   RecommendedEvent,
-} from '../services/api';
+} from '../services';
 import { formatEventDateRange } from '../utils/sevillaTime';
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { Event } from '../types/event';

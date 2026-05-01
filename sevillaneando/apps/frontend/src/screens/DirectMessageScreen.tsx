@@ -33,7 +33,7 @@ import { getFullImageUrl, getOptimizedChatImageUrl } from '../utils/imageUrl';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
-import { api } from '../services/api';
+import { api } from '../services';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DirectMessage'>;
 

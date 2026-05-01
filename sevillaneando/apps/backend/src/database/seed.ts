@@ -1,8 +1,8 @@
 import { Repository, DataSource } from 'typeorm';
 import { Event } from '../events/event.entity';
-import { Categoria } from '../entities/categoria.entity';
+import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
-import { EstadoEnum } from '../enums/estado.enum';
+import { EstadoEnum } from '../events/enums/estado.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { Logger } from '@nestjs/common';
 

@@ -5,7 +5,7 @@ import Slider from '@react-native-community/slider';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { getEvents, getErrorMessage } from '../services/api';
+import { getEvents, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText } from '../components';
