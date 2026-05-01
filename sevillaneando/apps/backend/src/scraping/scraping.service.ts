@@ -125,9 +125,7 @@ export class ScrapingService {
           existingEvent.precioMin = normalizedEvent.precioMin;
           existingEvent.precioMax = normalizedEvent.precioMax;
           existingEvent.imagen = normalizedEvent.imagen;
-          (existingEvent as any).imagenes = Array.isArray(normalizedEvent.imagenes)
-            ? JSON.stringify(normalizedEvent.imagenes)
-            : normalizedEvent.imagenes;
+          existingEvent.imagenes = normalizedEvent.imagenes;
           existingEvent.estado = EstadoEnum.Aprobado;
           existingEvent.creador = systemUser;
           existingEvent.privado = false;
@@ -154,9 +152,7 @@ export class ScrapingService {
           precioMin: normalizedEvent.precioMin,
           precioMax: normalizedEvent.precioMax,
           imagen: normalizedEvent.imagen,
-          imagenes: Array.isArray(normalizedEvent.imagenes)
-            ? JSON.stringify(normalizedEvent.imagenes)
-            : (normalizedEvent.imagenes as any),
+          imagenes: normalizedEvent.imagenes,
           estado: EstadoEnum.Aprobado,
           creador: systemUser,
           privado: false,

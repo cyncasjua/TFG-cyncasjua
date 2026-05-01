@@ -1,11 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import type { Event } from '../types/event';
 import { PublicUser } from '../types/user';
+import { parseLocationPoint } from '../utils/map';
 
-const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const api = axios.create({
-  baseURL,
+  baseURL: API_BASE_URL,
   timeout: 10000,
 });
 
@@ -77,32 +78,10 @@ export function setAuthToken(token: string) {
   }
 }
 
-function parsePoint(location?: string | any) {
-  if (!location) return null;
-
-  if (typeof location === 'object' && location.coordinates) {
-    const [lon, lat] = location.coordinates;
-    if (Number.isFinite(lat) && Number.isFinite(lon)) {
-      return { latitude: lat, longitude: lon };
-    }
-  }
-
-  if (typeof location === 'string') {
-    // Accepts "SRID=4326;POINT(lon lat)" or "POINT(lon lat)"
-    const match = location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
-    if (!match) return null;
-    const lon = parseFloat(match[1]);
-    const lat = parseFloat(match[2]);
-    if (Number.isFinite(lat) && Number.isFinite(lon)) return { latitude: lat, longitude: lon };
-  }
-
-  return null;
-}
-
 export async function getEvents(userId?: string): Promise<Event[]> {
   const res = await api.get('/events', userId ? { params: { userId } } : undefined);
   return (res.data as any[]).map((event) => {
-    const coords = parsePoint(event.location);
+    const coords = parseLocationPoint(event.location);
     return {
       id: event.id,
       title: event.title,
@@ -133,7 +112,7 @@ export async function getEvents(userId?: string): Promise<Event[]> {
 export async function getEventById(eventId: string): Promise<Event> {
   const res = await api.get(`/events/${eventId}`);
   const event = res.data as any;
-  const coords = parsePoint(event.location);
+  const coords = parseLocationPoint(event.location);
   return {
     id: event.id,
     title: event.title,
@@ -205,7 +184,7 @@ export async function getUserProfile(userId: string): Promise<PublicUser | null>
 export async function getEventByAccessLink(linkAcceso: string): Promise<Event> {
   const res = await api.get(`/events/acceso/${linkAcceso}`);
   const event = res.data as any;
-  const coords = parsePoint(event.location);
+  const coords = parseLocationPoint(event.location);
   return {
     id: event.id,
     title: event.title,

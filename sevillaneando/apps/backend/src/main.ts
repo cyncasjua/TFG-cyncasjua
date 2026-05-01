@@ -281,7 +281,7 @@ async function bootstrap() {
             relations: ['emisor', 'receptor'],
           });
 
-          logger.debug(`[dm_message] Enviando mensaje. Datos:`, JSON.stringify({
+          logger.debug('[dm_message] Enviando mensaje. Datos:', JSON.stringify({
             id: hydrated?.id,
             emisor_id: hydrated?.emisor?.id,
             emisor_nombre: hydrated?.emisor?.nombre,

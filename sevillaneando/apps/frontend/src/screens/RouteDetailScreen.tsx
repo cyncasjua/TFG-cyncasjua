@@ -20,6 +20,7 @@ import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRo
 import type { RootStackParamList } from '../App';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RouteDetail'>;
 
@@ -94,8 +95,8 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
   const initialRegion = useMemo(() => {
     if (coordinates.length === 0) {
       return {
-        latitude: 37.3891,
-        longitude: -5.9845,
+        latitude: SEVILLE_COORDINATES.latitude,
+        longitude: SEVILLE_COORDINATES.longitude,
         latitudeDelta: 0.08,
         longitudeDelta: 0.08,
       };
@@ -235,7 +236,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
           ]}
         >
           <MapView style={styles.map} initialRegion={initialRegion} scrollEnabled={true} zoomEnabled={true}>
-            <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+            <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
             {coordinates.length >= 2 && (
               <Polyline
                 coordinates={coordinates}

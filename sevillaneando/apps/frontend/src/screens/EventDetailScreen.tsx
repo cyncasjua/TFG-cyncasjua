@@ -67,31 +67,9 @@ import {
 import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
 import { reportError } from '../utils/telemetry';
+import { OSM_TILE_URL_TEMPLATE, parseEventPoint } from '../utils/map';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
-
-function parsePoint(event: Event) {
-  if (event.latitude !== undefined && event.longitude !== undefined) {
-    return { latitude: event.latitude, longitude: event.longitude };
-  }
-  if (event.location) {
-    if (typeof event.location === 'string') {
-      const locationStr: string = event.location;
-      const match = locationStr.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
-      if (match) {
-        return { latitude: parseFloat(match[2]), longitude: parseFloat(match[1]) };
-      }
-    } else if (
-      typeof event.location === 'object' &&
-      event.location.type === 'Point' &&
-      Array.isArray(event.location.coordinates) &&
-      event.location.coordinates.length === 2
-    ) {
-      return { latitude: event.location.coordinates[1], longitude: event.location.coordinates[0] };
-    }
-  }
-  return null;
-}
 
 type ChatMessage = {
   id: string;
@@ -110,7 +88,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const defaultEventImage = require('../../assets/splash.png');
   const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
-  const coords = useMemo(() => parsePoint(event), [event]);
+  const coords = useMemo(() => parseEventPoint(event), [event]);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<number, boolean>>({});
   const coverImage = useMemo(() => getFullImageUrl(event.imagen), [event.imagen]);
   const detailImages = useMemo<Array<{ uri: string; cache?: 'force-cache' } | number>>(() => {
@@ -905,7 +883,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 longitudeDelta: 0.01,
               }}
             >
-              <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               <Marker coordinate={coords} title={event.title} />
             </MapView>
           </ThemedView>

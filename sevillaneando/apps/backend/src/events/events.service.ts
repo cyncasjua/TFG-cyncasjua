@@ -10,6 +10,7 @@ import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Mensaje } from '../entities/mensaje.entity';
 import { Resena } from '../entities/resena.entity';
+import { parseEventImages, stringifyEventImages } from './event-images.util';
 
 type EventWithRatingsSummary = Event & {
   ratingAverage?: number | null;
@@ -49,40 +50,11 @@ export class EventsService {
   }
 
   /**
-   * Convierte imagenes a array si es string JSON o CSV
-   */
-  private parseImagenes(imagenes: any): string[] {
-    if (!imagenes) return [];
-
-    if (Array.isArray(imagenes)) {
-      return imagenes.filter(url => typeof url === 'string' && url.trim());
-    }
-
-    if (typeof imagenes === 'string') {
-      // Intentar parsear como JSON primero
-      if (imagenes.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(imagenes);
-          if (Array.isArray(parsed)) {
-            return parsed.filter(url => typeof url === 'string' && url.trim());
-          }
-        } catch (e) {
-          console.warn('[parseImagenes] JSON parse failed:', e);
-        }
-      }
-      // Si no es JSON, intentar como CSV
-      return imagenes.split(',').map(s => s.trim()).filter(s => s);
-    }
-
-    return [];
-  }
-
-  /**
    * Asegura que el array de imagenes en la entidad es array (deserializa si es necessary)
    */
   private ensureImagenesCorrectFormat(event: Event): void {
     if (event.imagenes) {
-      (event as any).imagenes = this.parseImagenes(event.imagenes);
+      event.imagenes = parseEventImages(event.imagenes);
     }
   }
 
@@ -91,8 +63,7 @@ export class EventsService {
    */
   private prepareEventForSave(event: Event): Event {
     if (event.imagenes !== undefined && event.imagenes !== null) {
-      const imgArray = this.parseImagenes(event.imagenes);
-      (event as any).imagenes = JSON.stringify(imgArray);
+      event.imagenes = stringifyEventImages(event.imagenes);
     }
     return event;
   }
@@ -267,8 +238,8 @@ export class EventsService {
 
     // Normalizar imagenes - convertir a array común format
     if (dto.imagenes !== undefined) {
-      const normalized = this.parseImagenes(dto.imagenes);
-      (event as any).imagenes = normalized.length > 0 ? normalized : undefined;
+      const normalized = parseEventImages(dto.imagenes);
+      event.imagenes = normalized.length > 0 ? normalized : undefined;
     }
 
     event.fechaInicio = dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;

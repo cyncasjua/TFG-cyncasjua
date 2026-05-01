@@ -20,6 +20,7 @@ import { api, getErrorMessage, getEvents, createRoute, type UserRoute } from '..
 import { useAuth } from '../hooks/useAuth';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { reportError } from '../utils/telemetry';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateRoute'>;
 
@@ -38,8 +39,6 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
 
   // Ruta
   const [routeCoordinates, setRouteCoordinates] = useState<Array<{ latitude: number; longitude: number }>>([]);
-  const [latitude, setLatitude] = useState<number>(37.3891);
-  const [longitude, setLongitude] = useState<number>(-5.9845);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -117,12 +116,6 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
       }));
     setRouteCoordinates(coordinates);
   }, [selectedEventosIds, eventos]);
-
-  const handleMapPress = (e: any) => {
-    const { latitude, longitude } = e.nativeEvent.coordinate;
-    setLatitude(latitude);
-    setLongitude(longitude);
-  };
 
   const handleCreateRoute = async () => {
     if (!titulo.trim()) {
@@ -229,15 +222,15 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
               ref={mapRef}
               style={styles.map}
               initialRegion={{
-                latitude,
-                longitude,
+                latitude: SEVILLE_COORDINATES.latitude,
+                longitude: SEVILLE_COORDINATES.longitude,
                 latitudeDelta: 0.08,
                 longitudeDelta: 0.08,
               }}
               scrollEnabled={true}
               zoomEnabled={true}
             >
-              <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               {routeCoordinates.map((coord, index) => (
                 <Marker key={index} coordinate={coord} title={`Evento ${index + 1}`}>
                   <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>

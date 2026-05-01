@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   Image,
   View,
-  Button,
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
@@ -20,17 +19,18 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api, getErrorMessage } from '../services/api';
+import { api, API_BASE_URL, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
-// import DropDownPicker from 'react-native-dropdown-picker';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { ComponentType } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { PrivateEventLinkModal } from './PrivateEventLinkModal';
 import { reportWarning } from '../utils/telemetry';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
+import { formatDateTime, updateDateKeepingTime, updateTimeKeepingDate } from '../utils/dateTime';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -41,8 +41,20 @@ type Categoria = {
   nombre: string;
 };
 
+const DEFAULT_MAP_DELTA = { latitudeDelta: 0.01, longitudeDelta: 0.01 };
+const FOCUSED_MAP_DELTA = { latitudeDelta: 0.0015, longitudeDelta: 0.0015 };
+
+const toAbsoluteApiUrl = (urlOrPath: string) => (
+  urlOrPath.startsWith('http') ? urlOrPath : `${API_BASE_URL}${urlOrPath}`
+);
+
+const parseOptionalNumber = (value: string) => {
+  const normalized = value.trim();
+  return normalized === '' ? null : parseFloat(normalized);
+};
+
 export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapView | null>(null);
   const { colors } = useTheme();
 
   const ArrowUpIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
@@ -68,9 +80,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     { label: 'Pendiente', value: 'Pendiente' },
   ]);
   // Centro de Sevilla por defecto
-  const [latitude, setLatitude] = useState<number | null>(37.3891);
-  const [longitude, setLongitude] = useState<number | null>(-5.9845);
-  const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
+  const [latitude, setLatitude] = useState<number | null>(SEVILLE_COORDINATES.latitude);
+  const [longitude, setLongitude] = useState<number | null>(SEVILLE_COORDINATES.longitude);
+  const [mapDelta, setMapDelta] = useState(DEFAULT_MAP_DELTA);
   const [precio, setPrecio] = useState('');
   const [precioMin, setPrecioMin] = useState('');
   const [precioMax, setPrecioMax] = useState('');
@@ -80,41 +92,34 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const [openCategoria, setOpenCategoria] = useState(false);
   const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = useState(false);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [privado, setPrivado] = useState(false);
   const [showPrivateLinkModal, setShowPrivateLinkModal] = useState(false);
-  const [eventLinkAcceso, setEventLinkAcceso] = useState('');
+  const [eventLinkAcceso, setEventLinkAcceso] = useState<string | null>(null);
   const descriptionRef = useRef<TextInput>(null);
-  const addressRef = useRef<TextInput>(null);
-  const fechaInicioRef = useRef<TextInput>(null);
-  const fechaFinRef = useRef<TextInput>(null);
   const precioRef = useRef<TextInput>(null);
   const precioMinRef = useRef<TextInput>(null);
   const precioMaxRef = useRef<TextInput>(null);
   const [localImageUris, setLocalImageUris] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
-  const scrollRef = useRef<ScrollView>(null);
-  const [maxScroll, setMaxScroll] = useState(0);
-  const [scrollX, setScrollX] = useState(0);
 
-  const showDatePicker = () => setDatePickerVisibility(true);
-  const hideDatePicker = () => setDatePickerVisibility(false);
-  const handleConfirm = (date: Date) => {
-    setFechaInicio(dayjs(date).format('YYYY-MM-DD HH:mm'));
-    hideDatePicker();
+  const focusMapOnLocation = (lat: number, lon: number) => {
+    mapRef.current?.animateToRegion(
+      {
+        latitude: lat,
+        longitude: lon,
+        latitudeDelta: FOCUSED_MAP_DELTA.latitudeDelta,
+        longitudeDelta: FOCUSED_MAP_DELTA.longitudeDelta,
+      },
+      500
+    );
   };
-
-  useEffect(() => {
-  }, [imageUrls]);
 
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
         const res = await api.get('/categorias');
-        setCategorias(res.data);
         setDropdownItems(res.data.map((cat: Categoria) => ({ label: cat.nombre, value: cat.id })));
       } catch (e) {
         Alert.alert('Error', 'No se pudieron cargar las categorías.');
@@ -126,6 +131,24 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     return () => {
     };
   }, []);
+
+  const uploadEventImage = async (uri: string) => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri,
+      name: 'event.jpg',
+      type: 'image/jpeg',
+    } as unknown as Blob);
+
+    const res = await fetch(`${API_BASE_URL}/events/upload-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      body: formData,
+    });
+
+    const data = await res.json();
+    return toAbsoluteApiUrl(data.url);
+  };
 
   const pickImages = async () => {
 
@@ -144,40 +167,22 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newUris = result.assets.map(asset => asset.uri).slice(0, remainingSlots);
+      const newUris = result.assets.map((asset) => asset.uri).slice(0, remainingSlots);
 
-      setLocalImageUris(prev => [...prev, ...newUris]);
+      setLocalImageUris((prev) => [...prev, ...newUris]);
 
       const newUrls: string[] = [];
-      for (let i = 0; i < newUris.length; i++) {
-        const uri = newUris[i];
-        const formData = new FormData();
-        formData.append('file', {
-          uri,
-          name: 'event.jpg',
-          type: 'image/jpeg',
-        } as any);
-
+      for (const uri of newUris) {
         try {
-          const res = await fetch(
-            `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/events/upload-image`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'multipart/form-data' },
-              body: formData,
-            }
-          );
-          const data = await res.json();
-          const url = data.url.startsWith('http')
-            ? data.url
-            : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
+          const url = await uploadEventImage(uri);
           newUrls.push(url);
         } catch (e) {
           Alert.alert('Error', 'No se pudo subir una imagen.');
+          reportWarning('create-event.upload-image', 'Error subiendo imagen', e);
         }
       }
 
-      setImageUrls(prev => {
+      setImageUrls((prev) => {
         const combined = [...prev, ...newUrls];
         if (!coverImageUrl && combined.length > 0) setCoverImageUrl(combined[0]);
         return combined;
@@ -185,10 +190,22 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const quitarImagen = () => {
-    setLocalImageUris([]);
-    setImageUrls([]);
-    setCoverImageUrl(null);
+  const removeImageAtIndex = (idx: number) => {
+    const newUris = [...localImageUris];
+    const newUrls = [...imageUrls];
+    newUris.splice(idx, 1);
+    newUrls.splice(idx, 1);
+    setLocalImageUris(newUris);
+    setImageUrls(newUrls);
+
+    if (newUrls.length === 0) {
+      setCoverImageUrl(null);
+      return;
+    }
+
+    if (coverImageUrl === imageUrls[idx]) {
+      setCoverImageUrl(newUrls[0] || null);
+    }
   };
 
   const geocodeAddress = async (address: string, showLoading = false) => {
@@ -204,17 +221,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         const lon = parseFloat(data[0].lon);
         setLatitude(lat);
         setLongitude(lon);
-        setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+        setMapDelta(FOCUSED_MAP_DELTA);
         setTimeout(() => {
-          mapRef.current?.animateToRegion(
-            {
-              latitude: lat,
-              longitude: lon,
-              latitudeDelta: 0.0015,
-              longitudeDelta: 0.0015,
-            },
-            500
-          );
+          focusMapOnLocation(lat, lon);
         }, 100);
       } else {
         Alert.alert('No encontrado', 'No se ha encontrado la dirección o lugar especificado.');
@@ -226,36 +235,30 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-const reverseGeocode = async (lat: number, lon: number) => {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
-      {
-        headers: {
-          'User-Agent': 'TuApp/1.0',
-          'Accept-Language': 'es',
-        },
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'TuApp/1.0',
+            'Accept-Language': 'es',
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data?.display_name) {
+        setAddress(data.display_name);
+        return;
       }
-    );
 
-    const data = await response.json();
-
-    if (data?.display_name) {
-      setAddress(data.display_name);
-      return;
+      setAddress('Dirección no encontrada');
+    } catch (e) {
+      setAddress('Dirección no encontrada');
+      reportWarning('create-event.reverse-geocode', 'Error en geocodificación inversa', e);
     }
-
-    setAddress('Dirección no encontrada');
-  } catch (e) {
-    setAddress('Dirección no encontrada');
-    reportWarning('create-event.reverse-geocode', 'Error en geocodificación inversa', e);
-  }
-};
-
-
-
-  const handleAddressBlur = () => {
-    geocodeAddress(address);
   };
 
   const handleSearch = () => {
@@ -263,6 +266,34 @@ const reverseGeocode = async (lat: number, lon: number) => {
       geocodeAddress(searchQuery, true);
     }
   };
+
+  const handleMapPress = (lat: number, lon: number) => {
+    setLatitude(lat);
+    setLongitude(lon);
+    setMapDelta(FOCUSED_MAP_DELTA);
+    reverseGeocode(lat, lon);
+    focusMapOnLocation(lat, lon);
+  };
+
+  const buildCreateEventPayload = () => ({
+    title,
+    description,
+    address,
+    fechaInicio: fechaInicio || undefined,
+    fechaFin: fechaFin || undefined,
+    location: {
+      type: 'Point' as const,
+      coordinates: [longitude, latitude],
+    },
+    precio: parseOptionalNumber(precio),
+    precioMin: parseOptionalNumber(precioMin),
+    precioMax: parseOptionalNumber(precioMax),
+    privado,
+    categoriaId,
+    creadorId: user?.id,
+    imagenes: imageUrls || undefined,
+    imagen: coverImageUrl || undefined,
+  });
 
   const handleCreateEvent = async () => {
     if (
@@ -282,28 +313,10 @@ const reverseGeocode = async (lat: number, lon: number) => {
     }
     setLoading(true);
     try {
-      const payload = {
-        title,
-        description,
-        address,
-        fechaInicio: fechaInicio || undefined,
-        fechaFin: fechaFin || undefined,
-        location: {
-          type: 'Point',
-          coordinates: [longitude, latitude],
-        },
-        precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
-        precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
-        precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
-        privado,
-        categoriaId,
-        creadorId: user.id,
-        imagenes: imageUrls || undefined,
-        imagen: coverImageUrl || undefined,
-      };
+      const payload = buildCreateEventPayload();
       const response = await api.post('/events', payload);
       setEventLinkAcceso(response.data.linkAcceso || null);
-      if( privado && response.data.linkAcceso) {
+      if (privado && response.data.linkAcceso) {
         setShowPrivateLinkModal(true);
       } else {
         Alert.alert(
@@ -312,14 +325,8 @@ const reverseGeocode = async (lat: number, lon: number) => {
         );
         navigation.goBack();
       }
-    } catch (error: any) {
-      let msg = 'No se pudo crear el evento.';
-      if (error?.response?.data?.message) {
-        msg = error.response.data.message;
-      } else if (error?.message) {
-        msg = error.message;
-      }
-      Alert.alert('Error', msg);
+    } catch (error: unknown) {
+      Alert.alert('Error', getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -370,7 +377,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
                 },
               ]}
               returnKeyType="next"
-              onSubmitEditing={() => addressRef.current?.focus()}
+              onSubmitEditing={Keyboard.dismiss}
               blurOnSubmit={false}
             />
 
@@ -380,8 +387,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
             </ThemedTextSecondary>
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
-                ref={fechaInicioRef}
-                value={fechaInicio ? dayjs(fechaInicio).format('YYYY-MM-DD HH:mm') : ''}
+                value={formatDateTime(fechaInicio)}
                 placeholder="YYYY-MM-DD HH:mm"
                 placeholderTextColor={colors.text + '99'}
                 style={[
@@ -397,9 +403,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
               mode="date"
               date={fechaInicio ? new Date(fechaInicio) : new Date()}
               onConfirm={(date: Date) => {
-                const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
-                const nuevaFecha = dayjs(date).hour(prev.hour()).minute(prev.minute());
-                setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setFechaInicio(updateDateKeepingTime(fechaInicio, date));
                 setShowFechaInicio(false);
                 setShowHoraInicio(false);
                 setTimeout(() => setShowHoraInicio(true), 350);
@@ -413,9 +417,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
               mode="time"
               date={fechaInicio ? new Date(fechaInicio) : new Date()}
               onConfirm={(date: Date) => {
-                const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
-                const nuevaFecha = prev.hour(dayjs(date).hour()).minute(dayjs(date).minute());
-                setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setFechaInicio(updateTimeKeepingDate(fechaInicio, date));
                 setShowHoraInicio(false);
               }}
               onCancel={() => setShowHoraInicio(false)}
@@ -424,8 +426,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
             <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
-                ref={fechaFinRef}
-                value={fechaFin ? dayjs(fechaFin).format('YYYY-MM-DD HH:mm') : ''}
+                value={formatDateTime(fechaFin)}
                 placeholder="YYYY-MM-DD HH:mm"
                 placeholderTextColor={colors.text + '99'}
                 style={[
@@ -441,9 +442,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
               mode="date"
               date={fechaFin ? new Date(fechaFin) : new Date()}
               onConfirm={(date: Date) => {
-                const prev = fechaFin ? dayjs(fechaFin) : dayjs();
-                const nuevaFecha = dayjs(date).hour(prev.hour()).minute(prev.minute());
-                setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setFechaFin(updateDateKeepingTime(fechaFin, date));
                 setShowFechaFin(false);
                 setShowHoraFin(false);
                 setTimeout(() => setShowHoraFin(true), 350);
@@ -457,9 +456,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
               mode="time"
               date={fechaFin ? new Date(fechaFin) : new Date()}
               onConfirm={(date: Date) => {
-                const prev = fechaFin ? dayjs(fechaFin) : dayjs();
-                const nuevaFecha = prev.hour(dayjs(date).hour()).minute(dayjs(date).minute());
-                setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
+                setFechaFin(updateTimeKeepingDate(fechaFin, date));
                 setShowHoraFin(false);
               }}
               onCancel={() => setShowHoraFin(false)}
@@ -552,39 +549,21 @@ const reverseGeocode = async (lat: number, lon: number) => {
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
                 region={{
-                  latitude: latitude ?? 37.3891,
-                  longitude: longitude ?? -5.9845,
+                  latitude: latitude ?? SEVILLE_COORDINATES.latitude,
+                  longitude: longitude ?? SEVILLE_COORDINATES.longitude,
                   latitudeDelta: mapDelta.latitudeDelta,
                   longitudeDelta: mapDelta.longitudeDelta,
                 }}
                 onPress={(e) => {
                   const lat = e.nativeEvent.coordinate.latitude;
                   const lon = e.nativeEvent.coordinate.longitude;
-
-                  setLatitude(lat);
-                  setLongitude(lon);
-                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
-
-                  reverseGeocode(lat, lon);
-
-                  mapRef.current?.animateToRegion(
-                    {
-                      latitude: lat,
-                      longitude: lon,
-                      latitudeDelta: 0.0015,
-                      longitudeDelta: 0.0015,
-                    },
-                    500
-                  );
+                  handleMapPress(lat, lon);
                 }}
               >
                 {latitude !== null && longitude !== null && (
                   <Marker coordinate={{ latitude, longitude }} />
                 )}
-                <UrlTile
-                  urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  maximumZ={19}
-                />
+                <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               </MapView>
             </View>
             <View style={{ marginBottom: 8 }}>
@@ -730,10 +709,6 @@ const reverseGeocode = async (lat: number, lon: number) => {
                   showsHorizontalScrollIndicator={true}
                   contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', minWidth: '100%' }}
                   style={{ width: '100%' }}
-                  ref={scrollRef}
-                  onContentSizeChange={(w, h) => setMaxScroll(w - 360)}
-                  onScroll={e => setScrollX(e.nativeEvent.contentOffset.x)}
-                  scrollEventThrottle={16}
                 >
                   {localImageUris.map((uri, idx) => (
                     <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
@@ -749,19 +724,7 @@ const reverseGeocode = async (lat: number, lon: number) => {
                         ]}
                       />
                       <TouchableOpacity
-                        onPress={() => {
-                          const newUris = [...localImageUris];
-                          const newUrls = [...imageUrls];
-                          newUris.splice(idx, 1);
-                          newUrls.splice(idx, 1);
-                          setLocalImageUris(newUris);
-                          setImageUrls(newUrls);
-                          if (newUrls.length === 0) {
-                            setCoverImageUrl(null);
-                          } else if (coverImageUrl === imageUrls[idx]) {
-                            setCoverImageUrl(newUrls[0] || null);
-                          }
-                        }}
+                        onPress={() => removeImageAtIndex(idx)}
                         style={styles.deleteImageBtn}
                       >
                         <Icon name="close" size={18} color="#fff" />
@@ -803,16 +766,6 @@ const reverseGeocode = async (lat: number, lon: number) => {
 };
 
 const styles = StyleSheet.create({
-  mapSearchContainer: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
-    zIndex: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
   mapSearchInput: {
     flex: 1,
     borderWidth: 1,

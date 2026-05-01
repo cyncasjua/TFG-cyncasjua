@@ -22,7 +22,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -30,6 +30,7 @@ import dayjs from 'dayjs';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -94,8 +95,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     { label: 'Pendiente', value: 'Pendiente' },
   ]);
 
-  const [latitude, setLatitude] = useState<number | null>(event.location?.coordinates?.[1] ?? 37.3891);
-  const [longitude, setLongitude] = useState<number | null>(event.location?.coordinates?.[0] ?? -5.9845);
+  const [latitude, setLatitude] = useState<number | null>(event.location?.coordinates?.[1] ?? SEVILLE_COORDINATES.latitude);
+  const [longitude, setLongitude] = useState<number | null>(event.location?.coordinates?.[0] ?? SEVILLE_COORDINATES.longitude);
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
 
   const [precio, setPrecio] = useState(event.precio ? String(event.precio) : '');
@@ -186,7 +187,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
         try {
           const res = await fetch(
-            `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/events/upload-image`,
+            `${API_BASE_URL}/events/upload-image`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'multipart/form-data' },
@@ -194,9 +195,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             }
           );
           const data = await res.json();
-          const url = data.url.startsWith('http')
-            ? data.url
-            : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
+          const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
           newUrls.push(url);
         } catch (e) {
           Alert.alert('Error', 'No se pudo subir una imagen.');
@@ -573,8 +572,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
                 region={{
-                  latitude: latitude ?? 37.3891,
-                  longitude: longitude ?? -5.9845,
+                  latitude: latitude ?? SEVILLE_COORDINATES.latitude,
+                  longitude: longitude ?? SEVILLE_COORDINATES.longitude,
                   latitudeDelta: mapDelta.latitudeDelta,
                   longitudeDelta: mapDelta.longitudeDelta,
                 }}
@@ -594,10 +593,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 {latitude !== null && longitude !== null && (
                   <Marker coordinate={{ latitude, longitude }} />
                 )}
-                <UrlTile
-                  urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  maximumZ={19}
-                />
+                <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               </MapView>
             </View>
             <View style={{ marginBottom: 8 }}>
