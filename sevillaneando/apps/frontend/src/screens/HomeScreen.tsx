@@ -7,7 +7,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
+  FlatList,
   ScrollView,
+  RefreshControl,
   View,
   TextInput,
   Modal,
@@ -20,25 +22,22 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import {
-  getEvents,
   api,
   getErrorMessage,
-  getEventByAccessLink,
   getEventById,
   getRecommendedEvents,
   getRecommendedRoutes,
   RecommendedEvent,
   RecommendedRoute,
 } from '../services/api';
-import { RootStackParamList } from '../App';
-import type { Event } from '../types/event';
+import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
+import { useEvents } from '../hooks/useEvents';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { formatEventDateRange, formatSevillaTime, isEventFinished } from '../utils/sevillaTime';
 import { getFullImageUrl } from '../utils/imageUrl';
 
-type EventWithDistance = Event & { distance?: number };
 import {
   ThemedView,
   ThemedCard,
@@ -46,6 +45,7 @@ import {
   ThemedTextSecondary,
   ThemedTitle,
   ThemedButton,
+  EventSkeleton,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { ImageBackground } from 'react-native';
@@ -58,7 +58,6 @@ type RouteStrategy = 'balanced' | 'walkable' | 'score';
 type RecommendedRouteWithSource = RecommendedRoute & { sourceStrategy?: RouteStrategy };
 type EventTab = 'active' | 'past';
 
-const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 const ROUTES_SETTINGS_KEY = 'routesSettingsV1';
 const UNIFIED_BORDER_RADIUS = 18;
 const RECOMMENDATION_BORDER_RADIUS = 24;
@@ -70,7 +69,6 @@ const RECOMMENDED_EVENTS_FETCH_LIMIT = 24;
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const [searchModalVisible, setSearchModalVisible] = useState(false);
-  const [items, setItems] = useState<EventWithDistance[]>([]);
   const [recommendedEvents, setRecommendedEvents] = useState<RecommendedEvent[]>([]);
   const [recommendedRoutes, setRecommendedRoutes] = useState<RecommendedRoute[]>([]);
   const [adjustedRoutes, setAdjustedRoutes] = useState<RecommendedRouteWithSource[]>([]);
@@ -87,8 +85,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [showRecommendedRoutes, setShowRecommendedRoutes] = useState(false);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [recommendationsError, setRecommendationsError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [categories, setCategories] = useState<{ id: string; nombre: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -99,6 +95,22 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [customRadiusInput, setCustomRadiusInput] = useState('');
   const [radiusOptions, setRadiusOptions] = useState([0.5, 1, 2, 5, 10]);
   const { role, logout, user } = useAuth();
+  const eventsUser = user
+  ? {
+      id: user.id,
+      ubicacion: user.ubicacion ?? undefined,
+    }
+  : null;
+
+const {
+  items,
+  setItems,
+  loading,
+  refreshing,
+  error,
+  fetchEvents,
+  onRefresh,
+} = useEvents(eventsUser);
   const { colors, setTheme, theme } = useTheme();
 
   const [privateAccessVisible, setPrivateAccessVisible] = useState(false);
@@ -189,20 +201,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         err,
       );
     }
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   };
 
   const formatDuration = (minutes: number): string => {
@@ -373,61 +371,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
     persistRoutesSettings();
   }, [routeStrategies, routeCount, routeMaxEvents, routeMaxGapMinutes, routeMaxOverlapMinutes]);
-
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const publicEvents = await getEvents(user?.id);
-
-      const raw = await AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY);
-      const links: string[] = raw ? JSON.parse(raw) : [];
-
-      const privateResults = await Promise.allSettled(
-        links.map((link) => getEventByAccessLink(link))
-      );
-
-      const privateEvents: Event[] = privateResults
-        .filter((r): r is PromiseFulfilledResult<Event> => r.status === 'fulfilled')
-        .map((r) => r.value);
-
-      const remote: Event[] = [...publicEvents, ...privateEvents].filter(
-        (event, index, arr) =>
-          index === arr.findIndex((e) => e.id === event.id)
-      );
-
-      if (user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2) {
-        const userLon = user.ubicacion.coordinates[0];
-        const userLat = user.ubicacion.coordinates[1];
-
-        const sortedEvents: EventWithDistance[] = remote
-          .map((event) => {
-            if (!event.location || !event.location.coordinates || event.location.coordinates.length !== 2) {
-              return { ...event, distance: Infinity };
-            }
-            const dist = calculateDistance(
-              userLat,
-              userLon,
-              event.location.coordinates[1],
-              event.location.coordinates[0]
-            );
-            return { ...event, distance: dist };
-          })
-          .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
-
-        setItems(sortedEvents);
-      } else {
-        setItems(remote as EventWithDistance[]);
-      }
-    } catch (err) {
-      reportError('home.fetch-events', 'Error cargando eventos', err);
-      const message = getErrorMessage(err);
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -746,12 +689,99 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         ]}
       />
       <ThemedView style={styles.container}>
-        <ScrollView
+        <FlatList
           style={{ flex: 1, minHeight: 0 }}
           contentContainerStyle={{ paddingBottom: 190 }}
-          nestedScrollEnabled
           showsVerticalScrollIndicator
-        >
+          data={loading ? Array(6).fill({ id: 'skeleton', isSkeleton: true }) : visibleItems}
+          keyExtractor={(item, index) => item.isSkeleton ? `skeleton-${index}` : item.id}
+          onEndReachedThreshold={0.8}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
+          renderItem={({ item }) => {
+            if ((item as any).isSkeleton) {
+              return <EventSkeleton />;
+            }
+            const nowMs = Date.now();
+            const startMs = item.fechaInicio ? new Date(item.fechaInicio).getTime() : NaN;
+            const endMs = item.fechaFin ? new Date(item.fechaFin).getTime() : NaN;
+            const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
+              ? nowMs >= startMs && nowMs <= endMs
+              : false;
+            const isWithinWeek = Number.isFinite(startMs)
+              ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
+              : false;
+            return (
+              <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
+                <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+                  {isOngoing && (
+                    <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>En curso</ThemedText>
+                  )}
+                  {!isOngoing && isWithinWeek && (
+                    <ThemedText style={[styles.statusBadge, styles.statusSoon]}>En &lt; 7 días</ThemedText>
+                  )}
+                  {item.distance !== undefined && item.distance !== Infinity && (
+                    <ThemedText style={{ position: 'absolute', top: 8, right: 8, backgroundColor: colors.primary, color: '#fff', paddingHorizontal: 8, paddingVertical: 4, borderRadius: UNIFIED_BORDER_RADIUS, fontSize: 12, fontWeight: 'bold', zIndex: 10 }}>
+                      {item.distance.toFixed(1)} km
+                    </ThemedText>
+                  )}
+                  <ImageBackground
+                    source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
+                    style={{ height: 120, justifyContent: 'flex-end' }}
+                    imageStyle={{ opacity: 0.2 }}
+                    resizeMode="cover"
+                  >
+                    <ThemedText style={{ fontSize: 18, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#222', marginBottom: 7, marginLeft: 14, textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }} numberOfLines={1} ellipsizeMode="tail">
+                      {item.title}
+                    </ThemedText>
+                    <ThemedTextSecondary style={{ fontSize: 13, color: theme === 'dark' ? '#eee' : '#444', marginLeft: 14, marginBottom: 6, flexDirection: 'row', alignItems: 'center', textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }} numberOfLines={1} ellipsizeMode="tail">
+                      <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
+                    </ThemedTextSecondary>
+                  </ImageBackground>
+                  <ThemedView style={{ padding: 12 }}>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <MaterialIcons name="event" size={16} color="#6c2eb7" />
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                        {item.hasMultipleDatesAvailable ? 'Varias fechas disponibles' : formatEventDateRange(item.fechaInicio, item.fechaFin)}
+                      </ThemedTextSecondary>
+                    </ThemedView>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <MaterialIcons name="category" size={16} color="#6c2eb7" />
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>{item.categoria?.nombre}</ThemedTextSecondary>
+                    </ThemedView>
+                    {item.distance !== undefined && item.distance !== Infinity && (
+                      <>
+                        <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                          <MaterialIcons name="directions-walk" size={16} color="#4caf50" />
+                          <ThemedTextSecondary style={{ marginLeft: 4 }}>{calculateWalkingTime(item.distance)} a pie</ThemedTextSecondary>
+                        </ThemedView>
+                        <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                          <MaterialIcons name="directions-car" size={16} color="#2196F3" />
+                          <ThemedTextSecondary style={{ marginLeft: 4 }}>{calculateDrivingTime(item.distance)} en coche</ThemedTextSecondary>
+                        </ThemedView>
+                      </>
+                    )}
+                    <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
+                      <ThemedText style={{ fontSize: 18, fontWeight: 'bold', color: '#fff', backgroundColor: '#6c2eb7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: UNIFIED_BORDER_RADIUS, overflow: 'hidden', alignSelf: 'flex-end' }}>
+                        {(() => {
+                          if (item.precio != null && item.precio !== 0) return `${item.precio} €`;
+                          if (item.precioMin != null && item.precioMax != null) return `${item.precioMin}€ - ${item.precioMax}€`;
+                          return 'Gratis';
+                        })()}
+                      </ThemedText>
+                    </ThemedView>
+                  </ThemedView>
+                </ThemedCard>
+              </TouchableOpacity>
+            );
+          }}
+          ListHeaderComponent={<>
         <ThemedView style={styles.header}>
           <View style={styles.headerTopRow}>
             <ThemedText style={styles.heroEyebrow}>{homeGreeting}</ThemedText>
@@ -1261,199 +1291,52 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
 
-        {visibleItems.map((item) => {
-          const nowMs = Date.now();
-          const startMs = item.fechaInicio ? new Date(item.fechaInicio).getTime() : NaN;
-          const endMs = item.fechaFin ? new Date(item.fechaFin).getTime() : NaN;
-          const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
-            ? nowMs >= startMs && nowMs <= endMs
-            : false;
-          const isWithinWeek = Number.isFinite(startMs)
-            ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
-            : false;
-          return (
-            <TouchableOpacity key={item.id} onPress={() => navigation.navigate('EventDetail', { event: item })}>
-              <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
-                {isOngoing && (
-                  <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
-                    En curso
-                  </ThemedText>
-                )}
-                {!isOngoing && isWithinWeek && (
-                  <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
-                    En &lt; 7 días
-                  </ThemedText>
-                )}
-                {item.distance !== undefined && item.distance !== Infinity && (
-                  <ThemedText
-                    style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      backgroundColor: colors.primary,
-                      color: '#fff',
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: UNIFIED_BORDER_RADIUS,
-                      fontSize: 12,
-                      fontWeight: 'bold',
-                      zIndex: 10,
-                    }}
-                  >
-                    {item.distance.toFixed(1)} km
-                  </ThemedText>
-                )}
-                <ImageBackground
-                  source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
-                  style={{ height: 120, justifyContent: 'flex-end' }}
-                  imageStyle={{ opacity: 0.2 }}
-                  resizeMode="cover"
-                >
-                  <ThemedText
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 'bold',
-                      color: theme === 'dark' ? '#fff' : '#222',
-                      marginBottom: 7,
-                      marginLeft: 14,
-                      textShadowColor:
-                        theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
-                      textShadowOffset: { width: 0, height: 2 },
-                      textShadowRadius: 6,
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.title}
-                  </ThemedText>
-                  <ThemedTextSecondary
-                    style={{
-                      fontSize: 13,
-                      color: theme === 'dark' ? '#eee' : '#444',
-                      marginLeft: 14,
-                      marginBottom: 6,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      textShadowColor:
-                        theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 2,
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
-                  </ThemedTextSecondary>
-                </ImageBackground>
-                <ThemedView style={{ padding: 12 }}>
-                  <ThemedView
-                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                  >
-                    <MaterialIcons name="event" size={16} color="#6c2eb7" />
-                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {item.hasMultipleDatesAvailable
-                        ? 'Varias fechas disponibles'
-                        : formatEventDateRange(item.fechaInicio, item.fechaFin)}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                  <ThemedView
-                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                  >
-                    <MaterialIcons name="category" size={16} color="#6c2eb7" />
-                    <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                      {item.categoria?.nombre}
-                    </ThemedTextSecondary>
-                  </ThemedView>
-                  {item.distance !== undefined && item.distance !== Infinity && (
-                    <>
-                      <ThemedView
-                        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                      >
-                        <MaterialIcons name="directions-walk" size={16} color="#4caf50" />
-                        <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                          {calculateWalkingTime(item.distance)} a pie
-                        </ThemedTextSecondary>
-                      </ThemedView>
-                      <ThemedView
-                        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
-                      >
-                        <MaterialIcons name="directions-car" size={16} color="#2196F3" />
-                        <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                          {calculateDrivingTime(item.distance)} en coche
-                        </ThemedTextSecondary>
-                      </ThemedView>
-                    </>
-                  )}
-                  <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
-                    <ThemedText
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                        color: '#fff',
-                        backgroundColor: '#6c2eb7',
-                        paddingHorizontal: 12,
-                        paddingVertical: 4,
-                        borderRadius: UNIFIED_BORDER_RADIUS,
-                        overflow: 'hidden',
-                        alignSelf: 'flex-end',
-                      }}
-                    >
-                      {
-                        (() => {
-                          if (item.precio != null && item.precio !== 0)
-                            return `${item.precio} €`;
-                          if (item.precioMin != null && item.precioMax != null)
-                            return `${item.precioMin}€ - ${item.precioMax}€`;
-                          return 'Gratis';
-                        })()
-                      }
-                    </ThemedText>
-                  </ThemedView>
-                </ThemedView>
-              </ThemedCard>
+        </>}
+        ListFooterComponent={
+          <ThemedView
+            style={[
+              styles.creatorCard,
+              {
+                backgroundColor: colors.card + 'E6',
+                borderColor: colors.primary + '44',
+              },
+            ]}
+          >
+            <View style={[styles.creatorBadge, { backgroundColor: colors.primary + '22' }]}>
+              <MaterialIcons name="verified" size={16} color={colors.primary} />
+              <ThemedText style={[styles.creatorBadgeText, { color: colors.primary }]}>
+                Creado por
+              </ThemedText>
+            </View>
+
+            <ThemedText style={styles.creatorName}>Cynthia Castaño Juan</ThemedText>
+
+            <TouchableOpacity
+              style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+              onPress={() => handleOpenLink('mailto:cynthiacj04@gmail.com')}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="email" size={18} color={colors.primary} />
+              <ThemedText style={styles.creatorLinkText}>cynthiacj04@gmail.com</ThemedText>
+              <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
             </TouchableOpacity>
-          );
-        })}
 
-        <ThemedView
-          style={[
-            styles.creatorCard,
-            {
-              backgroundColor: colors.card + 'E6',
-              borderColor: colors.primary + '44',
-            },
-          ]}
-        >
-          <View style={[styles.creatorBadge, { backgroundColor: colors.primary + '22' }]}>
-            <MaterialIcons name="verified" size={16} color={colors.primary} />
-            <ThemedText style={[styles.creatorBadgeText, { color: colors.primary }]}>Creado por</ThemedText>
-          </View>
-
-          <ThemedText style={styles.creatorName}>Cynthia Castaño Juan</ThemedText>
-
-          <TouchableOpacity
-            style={[styles.creatorLinkRow, { borderColor: colors.border }]}
-            onPress={() => handleOpenLink('mailto:cynthiacj04@gmail.com')}
-            activeOpacity={0.85}
-          >
-            <MaterialIcons name="email" size={18} color={colors.primary} />
-            <ThemedText style={styles.creatorLinkText}>cynthiacj04@gmail.com</ThemedText>
-            <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.creatorLinkRow, { borderColor: colors.border }]}
-            onPress={() =>
-              handleOpenLink('https://www.linkedin.com/in/cynthia-casta%C3%B1o-juan-4b7195387/')
-            }
-            activeOpacity={0.85}
-          >
-            <MaterialIcons name="work-outline" size={18} color={colors.primary} />
-            <ThemedText style={styles.creatorLinkText}>LinkedIn: cynthia-castaño-juan</ThemedText>
-            <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
-          </TouchableOpacity>
-        </ThemedView>
-        </ScrollView>
+            <TouchableOpacity
+              style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+              onPress={() =>
+                handleOpenLink('https://www.linkedin.com/in/cynthia-casta%C3%B1o-juan-4b7195387/')
+              }
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="work-outline" size={18} color={colors.primary} />
+              <ThemedText style={styles.creatorLinkText}>
+                LinkedIn: cynthia-castaño-juan
+              </ThemedText>
+              <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
+            </TouchableOpacity>
+          </ThemedView>
+        }
+        />
 
         <View style={[styles.bottomDock, { backgroundColor: colors.card + 'F2', borderColor: colors.border + 'AA' }]}>
           <TouchableOpacity

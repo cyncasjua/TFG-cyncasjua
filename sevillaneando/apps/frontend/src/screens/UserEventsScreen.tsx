@@ -16,7 +16,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import { getFullImageUrl } from '../utils/imageUrl';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import type { Event } from '../types/event';
 
 export const UserEventsScreen: React.FC = () => {

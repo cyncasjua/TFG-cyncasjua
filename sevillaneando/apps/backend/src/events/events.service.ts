@@ -1,7 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Event } from './event.entity';
+import { FindEventsQueryDto } from './dto/find-events-query.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EstadoEnum } from '../enums/estado.enum';
@@ -58,9 +59,6 @@ export class EventsService {
     }
   }
 
-  /**
-   * Prepara el evento para ser guardado en BD, convirtiendo imagenes a JSON string
-   */
   private prepareEventForSave(event: Event): Event {
     if (event.imagenes !== undefined && event.imagenes !== null) {
       event.imagenes = stringifyEventImages(event.imagenes);
@@ -68,9 +66,7 @@ export class EventsService {
     return event;
   }
 
-  /**
-   * Procesa un array de eventos para asegurar formato correcto de imagenes
-   */
+
   private processEventArray(events: Event[]): Event[] {
     events.forEach(event => this.ensureImagenesCorrectFormat(event));
     return events;
@@ -120,19 +116,72 @@ export class EventsService {
     return event.linkAcceso;
   }
 
-  findAll(userId?: string): Promise<Event[]> {
-    const query = this.eventRepo
+  async findAll(query: FindEventsQueryDto = {}): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
+    const { userId, lat, lng, radiusKm, limit = 50, offset = 0 } = query;
+    const hasLocation = lat != null && lng != null;
+    const effectiveLimit = Math.min(limit, 100);
+
+    const qb = this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoin('event.creador', 'creador')
+      .addSelect(['creador.id', 'creador.nombre', 'creador.fotoPerfil'])
+      .where(
+        new Brackets((qb2) => {
+          qb2.where('event.privado = false AND event.estado = :aprobado', { aprobado: EstadoEnum.Aprobado });
+          if (userId) {
+            qb2.orWhere('event.privado = true AND creador.id = :userId', { userId });
+          }
+        }),
+      );
+
+    if (hasLocation) {
+      qb.addSelect(
+        'ST_Distance(event.location::geography, ST_MakePoint(:lng, :lat)::geography) / 1000',
+        'distanceKm',
+      ).setParameters({ lat, lng });
+
+      if (radiusKm != null) {
+        qb.andWhere(
+          'ST_DWithin(event.location::geography, ST_MakePoint(:lng, :lat)::geography, :radiusMeters)',
+          { radiusMeters: radiusKm * 1000 },
+        );
+      }
+
+      qb.orderBy('"distanceKm"', 'ASC');
+    } else {
+      qb.orderBy('event.fechaInicio', 'ASC');
+    }
+
+    qb.limit(effectiveLimit + 1).offset(offset);
+
+    const { raw, entities } = await qb.getRawAndEntities();
+
+    const hasMore = entities.length > effectiveLimit;
+    const sliced = hasMore ? entities.slice(0, effectiveLimit) : entities;
+    const slicedRaw = hasMore ? raw.slice(0, effectiveLimit) : raw;
+
+    this.processEventArray(sliced);
+
+    const events = sliced.map((event, i) => {
+      if (!hasLocation) return event;
+      const rawDistKm = slicedRaw[i]?.distanceKm;
+      const distanceKm = rawDistKm != null ? Number(rawDistKm) : undefined;
+      return distanceKm !== undefined ? Object.assign(event, { distanceKm }) : event;
+    });
+
+    return { events, hasMore };
+  }
+
+  findAllForScheduler(): Promise<Event[]> {
+    return this.eventRepo
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.categoria', 'categoria')
       .leftJoinAndSelect('event.creador', 'creador')
       .leftJoinAndSelect('event.asistentes', 'asistentes')
-      .where('(event.privado = false AND event.estado = :aprobado)', { aprobado: EstadoEnum.Aprobado });
-
-    if (userId) {
-      query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
-    }
-
-    return query.getMany().then(events => this.processEventArray(events));
+      .where('event.privado = false AND event.estado = :aprobado', { aprobado: EstadoEnum.Aprobado })
+      .getMany()
+      .then((events) => this.processEventArray(events));
   }
 
   async findOne(id: string): Promise<Event> {

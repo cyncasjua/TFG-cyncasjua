@@ -341,7 +341,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Crear Evento</ThemedTitle>
@@ -548,12 +547,16 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               <MapView
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
-                region={{
+                initialRegion={{
                   latitude: latitude ?? SEVILLE_COORDINATES.latitude,
                   longitude: longitude ?? SEVILLE_COORDINATES.longitude,
-                  latitudeDelta: mapDelta.latitudeDelta,
-                  longitudeDelta: mapDelta.longitudeDelta,
+                  latitudeDelta: DEFAULT_MAP_DELTA.latitudeDelta,
+                  longitudeDelta: DEFAULT_MAP_DELTA.longitudeDelta,
                 }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                rotateEnabled={false}
+                pitchEnabled={false}
                 onPress={(e) => {
                   const lat = e.nativeEvent.coordinate.latitude;
                   const lon = e.nativeEvent.coordinate.longitude;

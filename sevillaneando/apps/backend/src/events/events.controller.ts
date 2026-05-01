@@ -17,6 +17,7 @@ import {
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { FindEventsQueryDto } from './dto/find-events-query.dto';
 import { Event } from './event.entity';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { EstadoEnum } from '../enums/estado.enum';
@@ -43,8 +44,8 @@ export class EventsController {
   }
 
   @Get()
-  async findAll(@Query('userId') userId?: string): Promise<Event[]> {
-    return this.eventsService.findAll(userId);
+  async findAll(@Query() query: FindEventsQueryDto) {
+    return this.eventsService.findAll(query);
   }
 
   @Get(':id')

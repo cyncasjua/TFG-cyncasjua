@@ -19,7 +19,7 @@ import {
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL } from '../services/api';
@@ -352,7 +352,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             {privado && eventLinkAcceso && (
@@ -568,15 +567,19 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 position: 'relative',
               }}
             >
-              <MapView
+            <MapView
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
-                region={{
+                initialRegion={{
                   latitude: latitude ?? SEVILLE_COORDINATES.latitude,
                   longitude: longitude ?? SEVILLE_COORDINATES.longitude,
-                  latitudeDelta: mapDelta.latitudeDelta,
-                  longitudeDelta: mapDelta.longitudeDelta,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                rotateEnabled={false}
+                pitchEnabled={false}
                 onPress={(e) => {
                   const lat = e.nativeEvent.coordinate.latitude;
                   const lon = e.nativeEvent.coordinate.longitude;

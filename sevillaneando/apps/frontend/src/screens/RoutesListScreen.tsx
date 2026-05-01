@@ -16,7 +16,7 @@ import { getRoutes, getErrorMessage, type UserRoute } from '../services/api';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import { reportError } from '../utils/telemetry';
 
 export const RoutesListScreen: React.FC = () => {

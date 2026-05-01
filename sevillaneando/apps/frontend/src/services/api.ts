@@ -78,35 +78,46 @@ export function setAuthToken(token: string) {
   }
 }
 
-export async function getEvents(userId?: string): Promise<Event[]> {
-  const res = await api.get('/events', userId ? { params: { userId } } : undefined);
-  return (res.data as any[]).map((event) => {
-    const coords = parseLocationPoint(event.location);
-    return {
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      address: event.address,
-      location: event.location,
-      fechaInicio: event.fechaInicio ?? null,
-      fechaFin: event.fechaFin ?? null,
-      hasMultipleDatesAvailable: event.hasMultipleDatesAvailable ?? false,
-      precio: event.precio,
-      precioMin: event.precioMin,
-      precioMax: event.precioMax,
-      categoria: event.categoria,
-      estado: event.estado,
-      creador: event.creador,
-      latitude: coords?.latitude,
-      longitude: coords?.longitude,
-      imagen: event.imagen,
-      imagenes: event.imagenes,
-      privado: event.privado,
-      linkAcceso: event.linkAcceso,
-      ratingAverage: event.ratingAverage,
-      ratingsCount: event.ratingsCount,
-    } as Event;
-  });
+function mapEventFromRaw(event: any): Event & { distanceKm?: number } {
+  const coords = parseLocationPoint(event.location);
+  return {
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    address: event.address,
+    location: event.location,
+    fechaInicio: event.fechaInicio ?? null,
+    fechaFin: event.fechaFin ?? null,
+    hasMultipleDatesAvailable: event.hasMultipleDatesAvailable ?? false,
+    precio: event.precio,
+    precioMin: event.precioMin,
+    precioMax: event.precioMax,
+    categoria: event.categoria,
+    estado: event.estado,
+    creador: event.creador,
+    latitude: coords?.latitude,
+    longitude: coords?.longitude,
+    imagen: event.imagen,
+    imagenes: event.imagenes,
+    privado: event.privado,
+    linkAcceso: event.linkAcceso,
+    ratingAverage: event.ratingAverage,
+    ratingsCount: event.ratingsCount,
+    distanceKm: event.distanceKm != null ? Number(event.distanceKm) : undefined,
+  };
+}
+
+export async function getEvents(
+  userId?: string,
+  params?: { lat?: number; lng?: number; radiusKm?: number; limit?: number; offset?: number },
+): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
+  const queryParams = { ...(userId ? { userId } : {}), ...params };
+  const res = await api.get('/events', { params: queryParams });
+  const data = res.data as { events: any[]; hasMore: boolean };
+  return {
+    events: data.events.map(mapEventFromRaw),
+    hasMore: data.hasMore,
+  };
 }
 
 export async function getEventById(eventId: string): Promise<Event> {

@@ -17,7 +17,7 @@ import {
 import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL } from '../services/api';
@@ -320,7 +320,6 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
@@ -402,8 +401,16 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <MapView
               ref={mapRef}
               style={styles.map}
-              initialRegion={{ latitude, longitude, ...mapDelta }}
-              region={{ latitude, longitude, ...mapDelta }}
+              initialRegion={{
+                latitude,
+                longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
               onPress={(e: MapPressEvent) => {
                 const newLat = e.nativeEvent.coordinate.latitude;
                 const newLon = e.nativeEvent.coordinate.longitude;

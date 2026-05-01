@@ -23,7 +23,7 @@ export class NotificacionesScheduler {
   @Cron(CronExpression.EVERY_HOUR)
   async notificarEventosCercanos() {
     this.logger.log('Ejecutando notificación de eventos cercanos...');
-    const eventos = await this.eventsService.findAll();
+    const eventos = await this.eventsService.findAllForScheduler();
     const usuarios = await this.usersService.findAll();
 
     for (const evento of eventos) {
@@ -56,7 +56,7 @@ async notificarEventosProximos() {
   const dentroUnaSemana = new Date();
   dentroUnaSemana.setDate(ahora.getDate() + 7);
 
-  const eventos = await this.eventsService.findAll();
+  const eventos = await this.eventsService.findAllForScheduler();
 
   for (const evento of eventos) {
     if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0 || !evento.title) continue;
@@ -94,7 +94,7 @@ async notificarEventosProximos() {
     const ahora = new Date();
     const en24h = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
 
-    const eventos = await this.eventsService.findAll();
+    const eventos = await this.eventsService.findAllForScheduler();
 
     for (const evento of eventos) {
       if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0 || !evento.title) continue;

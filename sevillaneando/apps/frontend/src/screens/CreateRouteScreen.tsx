@@ -63,7 +63,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const fetchEventos = async () => {
       try {
-        const allEventos = await getEvents();
+        const { events: allEventos } = await getEvents();
         setEventos(allEventos);
       } catch (error) {
         Alert.alert('Error', getErrorMessage(error));

@@ -12,7 +12,7 @@ import {
   ThemedTitle,
   ThemedView,
 } from '../components';
-import type { AuthStackParamList } from '../App';
+import type { AuthStackParamList } from '../navigation/types';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;

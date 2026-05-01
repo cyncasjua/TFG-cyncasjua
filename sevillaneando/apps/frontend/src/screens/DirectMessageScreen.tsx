@@ -24,7 +24,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';

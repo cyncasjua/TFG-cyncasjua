@@ -17,7 +17,7 @@ import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton 
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRoute } from '../services/api';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';

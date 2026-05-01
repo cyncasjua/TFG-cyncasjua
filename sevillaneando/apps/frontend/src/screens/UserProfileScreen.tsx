@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { getUserProfile } from '../services/api';
 import { Avatar, ThemedButton, ThemedText, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';

@@ -24,7 +24,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { useNsfwGuard } from '../hooks/useNsfwGuard';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -39,7 +39,6 @@ import {
 import type { Event } from '../types/event';
 import { useIsFocused } from '@react-navigation/native';
 import { TextInput, TouchableOpacity } from 'react-native';
-import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';

@@ -12,7 +12,7 @@ import {
   ThemedTitle,
   ThemedView,
 } from '../components';
-import type { AuthStackParamList } from '../App';
+import type { AuthStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { getErrorMessage, getEventByAccessLink } from '../services/api';

@@ -4,7 +4,7 @@ import MapView, { Marker, Circle, Callout, UrlTile } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { getEvents, getErrorMessage } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -57,26 +57,30 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const remote = await getEvents(user?.id);
+        const userLon = user?.ubicacion?.coordinates?.[0];
+        const userLat = user?.ubicacion?.coordinates?.[1];
+        const hasLocation = userLat != null && userLon != null;
 
-        if (user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2) {
-          const userLon = user.ubicacion.coordinates[0];
-          const userLat = user.ubicacion.coordinates[1];
+        const { events: remote } = await getEvents(
+          user?.id,
+          hasLocation ? { lat: userLat, lng: userLon } : undefined,
+        );
 
+        if (hasLocation) {
           const eventsWithDistance = remote.map((event) => {
-            if (!event.location || !event.location.coordinates || event.location.coordinates.length !== 2) {
+            const serverDist = (event as any).distanceKm;
+            if (serverDist != null) return { ...event, distance: Number(serverDist) };
+            if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
               return { ...event, distance: Infinity };
             }
-            const dist = haversineDistanceKm(
-              { latitude: userLat, longitude: userLon },
-              {
-                latitude: event.location.coordinates[1],
-                longitude: event.location.coordinates[0],
-              },
-            );
-            return { ...event, distance: dist };
+            return {
+              ...event,
+              distance: haversineDistanceKm(
+                { latitude: userLat, longitude: userLon },
+                { latitude: event.location.coordinates[1], longitude: event.location.coordinates[0] },
+              ),
+            };
           });
-
           setEvents(eventsWithDistance);
         } else {
           setEvents(remote);

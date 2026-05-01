@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Alert } from 'react-native';
 import { reportError } from '../utils/telemetry';
