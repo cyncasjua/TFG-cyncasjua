@@ -176,13 +176,13 @@ const styles = StyleSheet.create({
   markAllButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 45,
     marginBottom: 12,
   },
   mensaje: { fontSize: 16 },

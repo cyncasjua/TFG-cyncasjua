@@ -120,7 +120,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 <View
                   style={{
                     backgroundColor: '#ffd700',
-                    borderRadius: 16,
+                    borderRadius: 30,
                     padding: 6,
                     minWidth: 100,
                     alignItems: 'center',
@@ -167,7 +167,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                       <View
                         style={{
                           backgroundColor: theme === 'dark' ? '#000' : '#fff',
-                          borderRadius: 12,
+                          borderRadius: 30,
                           padding: 10,
                           width: 350,
                           maxWidth: 350,
@@ -254,7 +254,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 left: 12,
                 right: 12,
                 backgroundColor: theme === 'dark' ? '#000000' : '#fff',
-                borderRadius: 16,
+                borderRadius: 40,
                 padding: 8,
                 shadowColor: '#000',
                 shadowOpacity: 0.3,
@@ -270,7 +270,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                   right: 6,
                   width: 24,
                   height: 24,
-                  borderRadius: 12,
+                  borderRadius: 30,
                   backgroundColor: theme === 'dark' ? '#333' : '#f0f0f0',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -311,7 +311,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() => navigation.navigate('EventDetail', { event: selectedEvent })}
                 style={{
                   backgroundColor: '#6c2eb7',
-                  borderRadius: 6,
+                  borderRadius: 16,
                   paddingVertical: 6,
                   paddingHorizontal: 10,
                   alignItems: 'center',
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -398,6 +398,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 30,
   },
 });

@@ -335,7 +335,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         <View
           style={{
             height: 180,
-            borderRadius: 18,
+            borderRadius: 30,
             overflow: 'hidden',
             marginBottom: 10,
             borderWidth: 1,
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', marginBottom: 24, alignSelf: 'center' },
   input: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 30,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   },
   mapSearchInput: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 30,
     padding: 12,
     fontSize: 16,
   },
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   },
   interestChip: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 30,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },

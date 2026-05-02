@@ -13,6 +13,7 @@ import type { PublicUser } from '../types/user';
 import type { Event } from '../types/event';
 import { getFullImageUrl } from '../utils/imageUrl';
 import dayjs from 'dayjs';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserProfile'>;
 
@@ -109,12 +110,25 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <View style={styles.actions}>
                 <ThemedButton
                   title={loadingFollow ? '' : siguiendo ? 'Dejar de seguir' : 'Seguir'}
+                  icon={(
+                    <Icon
+                      name={siguiendo ? 'account-check' : 'account-plus'}
+                      size={18}
+                      color="#FFFFFF"
+                    />
+                  )}
+                  style={styles.primaryActionButton}
                   onPress={toggleSeguir}
                   disabled={loadingFollow}
                 />
                 {loadingFollow && <ActivityIndicator style={StyleSheet.absoluteFill} />}
                 <ThemedButton
                   title="Enviar mensaje privado"
+                  variant="secondary"
+                  icon={(
+                    <Icon name="message-text-outline" size={18} color={colors.primary} />
+                  )}
+                  style={[styles.secondaryActionButton, { borderColor: colors.primary }]}
                   onPress={() =>
                     navigation.navigate('DirectMessage', {
                       userId,
@@ -171,7 +185,16 @@ const styles = StyleSheet.create({
   statNumber: { fontSize: 18, fontWeight: 'bold' },
   statLabel: { fontSize: 12, opacity: 0.7 },
   statDivider: { width: 1, height: 32 },
-  actions: { width: '100%', gap: 8, marginTop: 8 },
+  actions: { width: '100%', gap: 10, marginTop: 10 },
+  primaryActionButton: {
+    paddingVertical: 14,
+    borderRadius: 999,
+  },
+  secondaryActionButton: {
+    paddingVertical: 14,
+    borderRadius: 999,
+    borderWidth: 1.5,
+  },
   sectionTitle: { fontWeight: 'bold', fontSize: 15, marginTop: 12, alignSelf: 'flex-start' },
   eventCard: { borderRadius: 12, flexDirection: 'row', overflow: 'hidden', marginBottom: 2 },
   eventImage: { width: 80, height: 80 },

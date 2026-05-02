@@ -774,7 +774,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       ? item
                       : { uri: item.uri, cache: 'force-cache' }
                 }
-                style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 12, marginRight: 10 }}
+                style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 40, marginRight: 10 }}
                 resizeMode="cover"
                 onError={() =>
                   setImageLoadErrors((prev) => ({
@@ -788,7 +788,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           />
           <ThemedView
             style={[
-              { borderRadius: 18, padding: 16, marginBottom: 12 },
+              { borderRadius: 40, padding: 16, marginBottom: 12 },
               { backgroundColor: colors.card + 'DD' },
             ]}
           >
@@ -858,7 +858,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   backgroundColor: '#6c2eb7',
                   paddingHorizontal: 16,
                   paddingVertical: 6,
-                  borderRadius: 18,
+                  borderRadius: 999,
                   overflow: 'hidden',
                   alignSelf: 'flex-end',
                 }}
@@ -988,7 +988,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       {
                         backgroundColor: colors.card,
                         borderColor: colors.border,
-                        borderRadius: 12,
+                        borderRadius: 40,
                         padding: 12,
                         marginBottom: 10,
                         borderWidth: 1,
@@ -1041,7 +1041,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onRequestClose={() => setShowAttendeesModal(false)}
           >
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18, maxHeight: '70%' }}>
+              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 40, padding: 18, maxHeight: '70%' }}>
                 <ThemedTitle style={{ marginBottom: 12 }}>Asistentes ({attendees.length})</ThemedTitle>
                 <ScrollView style={{ maxHeight: 350 }}>
                   {attendees.map((att) => (
@@ -1051,7 +1051,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         setShowAttendeesModal(false);
                         navigation.navigate('UserProfile', { userId: att.id });
                       }}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 16, marginBottom: 6 }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 999, marginBottom: 6 }}
                     >
                       <Avatar photoUrl={att.fotoPerfil} size={32} />
                       <ThemedText>{att.nombre}</ThemedText>
@@ -1069,7 +1069,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onRequestClose={() => setRatingModalVisible(false)}
           >
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18 }}>
+              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 40, padding: 18 }}>
                 <ThemedTitle style={{ marginBottom: 12 }}>
                   {hasExistingRating ? 'Tu valoración' : 'Valorar evento'}
                 </ThemedTitle>
@@ -1102,7 +1102,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     minHeight: 90,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 16,
+                    borderRadius: 40,
                     padding: 10,
                     color: colors.text,
                     marginBottom: 12,
@@ -1147,6 +1147,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 onLayout={scrollEventChatToBottom}
               >
                 {messages.map((item) => {
+                  const hasImage = !!getFullImageUrl(item.imageUrl);
                   const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
                   const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
                   const nameColor = isOwn && isLight ? '#e0e0e0' : (theme === 'dark' ? '#9bbcff' : '#3b5bdb');
@@ -1185,12 +1186,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         <TouchableOpacity
                           onLongPress={() => isOwn && handleDeleteEventMessage(item.id)}
                           activeOpacity={0.9}
-                          style={{
-                            padding: 8,
-                            borderRadius: 16,
-                            backgroundColor: isOwn ? '#6c2eb7' : colors.card,
-                            flex: 1,
-                          }}
+                          style={[
+                            styles.chatBubble,
+                            hasImage && styles.chatBubbleWithImage,
+                            {
+                              backgroundColor: isOwn ? '#6c2eb7' : colors.card,
+                            },
+                          ]}
                         >
                           <TouchableOpacity
                             onPress={() => {
@@ -1202,8 +1204,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             }}
                             disabled={!item.usuario?.id || isOwn}
                           >
-                            <ThemedTextSecondary
-                              style={{ fontSize: 12, color: nameColor }}
+                           <ThemedTextSecondary
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                              style={[styles.chatMetaText, { color: nameColor }]}
                             >
                               {isOwn ? 'Tú' : item.usuario?.nombre ?? 'Anónimo'}
                             </ThemedTextSecondary>
@@ -1249,11 +1253,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             </TouchableOpacity>
                           )}
                           <ThemedTextSecondary
-                            style={{
-                              fontSize: 11,
-                              marginTop: 4,
-                              color: colors.text + '99',
-                            }}
+                            numberOfLines={1}
+                            style={[
+                              styles.chatTimeText,
+                              {
+                                color: isOwn ? 'rgba(255,255,255,0.75)' : colors.text + '99',
+                              },
+                            ]}
                           >
                             {formatSevillaTime(item.fechaCreacion)}
                           </ThemedTextSecondary>
@@ -1424,7 +1430,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: 40,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -1475,12 +1481,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 18,
     padding: 12,
-  },
-  chatMessageImage: {
-    marginTop: 6,
-    width: 200,
-    height: 120,
-    borderRadius: 16,
   },
   chatAttachment: {
     flexDirection: 'row',
@@ -1539,4 +1539,30 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 18,
   },
+  chatBubble: {
+    padding: 8,
+    borderRadius: 20,
+    flexShrink: 1,
+    overflow: 'hidden',
+  },
+  chatBubbleWithImage: {
+    width: 216,
+  },
+  chatMessageImage: {
+    marginTop: 6,
+    width: '100%',
+    height: 120,
+    borderRadius: 16,
+  },
+  chatMetaText: {
+    fontSize: 12,
+    flexShrink: 1,
+    flexWrap: 'wrap',
+  },
+  chatTimeText: {
+    fontSize: 11,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+
 });

@@ -59,8 +59,8 @@ type RecommendedRouteWithSource = RecommendedRoute & { sourceStrategy?: RouteStr
 type EventTab = 'active' | 'past';
 
 const ROUTES_SETTINGS_KEY = 'routesSettingsV1';
-const UNIFIED_BORDER_RADIUS = 18;
-const RECOMMENDATION_BORDER_RADIUS = 24;
+const UNIFIED_BORDER_RADIUS = 24;
+const RECOMMENDATION_BORDER_RADIUS = 32;
 const BOTTOM_DOCK_ICON_SIZE = 36;
 const BOTTOM_DOCK_ICON_RADIUS = BOTTOM_DOCK_ICON_SIZE / 2;
 const INITIAL_RECOMMENDED_EVENTS_VISIBLE = 8;
@@ -1781,7 +1781,7 @@ const {
                 </ThemedView>
 
                 <ThemedView style={styles.menuSection}>
-                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Comunicacion:</ThemedTextSecondary>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Comunicación:</ThemedTextSecondary>
 
                 <TouchableOpacity
                   style={[styles.menuActionRow, { borderColor: colors.border }]}
@@ -1880,7 +1880,7 @@ const {
 
                 {role === 'admin' && (
                   <ThemedView style={styles.menuSection}>
-                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Administracion:</ThemedTextSecondary>
+                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Administración:</ThemedTextSecondary>
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {
@@ -2163,7 +2163,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
     borderWidth: 1,
-    borderRadius: UNIFIED_BORDER_RADIUS,
+    borderRadius: 999,
     paddingVertical: 7,
     paddingHorizontal: 8,
     shadowColor: '#000',
