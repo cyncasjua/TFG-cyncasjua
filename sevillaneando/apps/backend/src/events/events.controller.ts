@@ -37,7 +37,7 @@ export class EventsController {
     private readonly eventsService: EventsService,
     private readonly notificacionesService: NotificacionesService,
     private readonly usersService: UsersService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
   ) { }
 
   @Post()

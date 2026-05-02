@@ -12,6 +12,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Categoria } from '../categorias/categoria.entity';
 
 import { EstadoEnum } from './enums/estado.enum';
+import { RecurrenciaEnum } from './enums/recurrencia.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { User } from '../users/user.entity';
 import { countEventImages, stringifyEventImages } from './event-images.util';
@@ -41,6 +42,12 @@ export class Event {
 
   @Column({ type: 'boolean', default: false })
   hasMultipleDatesAvailable!: boolean;
+
+  @Column({ type: 'enum', enum: RecurrenciaEnum, nullable: true })
+  recurrencia?: RecurrenciaEnum | null;
+
+  @Column('timestamp', { nullable: true })
+  recurrenciaFin?: Date | null;
 
   @Column('float', { nullable: true })
   precio?: number | null;

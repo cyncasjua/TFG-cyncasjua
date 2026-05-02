@@ -120,4 +120,48 @@ export class UsersService {
   async findById(id: string): Promise<User | null> {
     return this.usersRepo.findOne({ where: { id } });
   }
+
+  async searchUsers(query: string): Promise<User[]> {
+    return this.usersRepo
+      .createQueryBuilder('user')
+      .where('LOWER(user.nombre) LIKE :q OR LOWER(user.email) LIKE :q', { q: `%${query.toLowerCase()}%` })
+      .limit(20)
+      .getMany();
+  }
+
+  async seguir(seguidorId: string, seguidoId: string): Promise<void> {
+    if (seguidorId === seguidoId) return;
+    const [seguidor, seguido] = await Promise.all([
+      this.usersRepo.findOne({ where: { id: seguidorId }, relations: ['seguidos'] }),
+      this.usersRepo.findOne({ where: { id: seguidoId } }),
+    ]);
+    if (!seguidor || !seguido) return;
+    const yaSigue = seguidor.seguidos.some((u) => u.id === seguidoId);
+    if (!yaSigue) {
+      seguidor.seguidos.push(seguido);
+      await this.usersRepo.save(seguidor);
+    }
+  }
+
+  async dejarDeSeguir(seguidorId: string, seguidoId: string): Promise<void> {
+    const seguidor = await this.usersRepo.findOne({ where: { id: seguidorId }, relations: ['seguidos'] });
+    if (!seguidor) return;
+    seguidor.seguidos = seguidor.seguidos.filter((u) => u.id !== seguidoId);
+    await this.usersRepo.save(seguidor);
+  }
+
+  async getSeguidos(userId: string): Promise<User[]> {
+    const user = await this.usersRepo.findOne({ where: { id: userId }, relations: ['seguidos'] });
+    return user?.seguidos ?? [];
+  }
+
+  async getSeguidores(userId: string): Promise<User[]> {
+    const user = await this.usersRepo.findOne({ where: { id: userId }, relations: ['seguidores'] });
+    return user?.seguidores ?? [];
+  }
+
+  async isSiguiendo(seguidorId: string, seguidoId: string): Promise<boolean> {
+    const user = await this.usersRepo.findOne({ where: { id: seguidorId }, relations: ['seguidos'] });
+    return user?.seguidos.some((u) => u.id === seguidoId) ?? false;
+  }
 }

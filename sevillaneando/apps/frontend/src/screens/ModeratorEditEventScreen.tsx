@@ -101,6 +101,17 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     { label: 'Rechazado', value: 'Rechazado' },
   ]);
   const [loading, setLoading] = useState(false);
+  const [recurrencia, setRecurrencia] = useState<string | null>((event as any).recurrencia ?? null);
+  const [openRecurrencia, setOpenRecurrencia] = useState(false);
+  const [recurrenciaItems] = useState([
+    { label: 'Sin recurrencia', value: '' },
+    { label: 'Diario', value: 'diario' },
+    { label: 'Semanal', value: 'semanal' },
+    { label: 'Quincenal', value: 'quincenal' },
+    { label: 'Mensual', value: 'mensual' },
+  ]);
+  const [recurrenciaFin, setRecurrenciaFin] = useState<string>((event as any).recurrenciaFin ?? '');
+  const [showRecurrenciaFin, setShowRecurrenciaFin] = useState(false);
   const descriptionRef = useRef<TextInput>(null);
   const addressRef = useRef<TextInput>(null);
   const fechaInicioRef = useRef<TextInput>(null);
@@ -294,6 +305,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         estado,
         imagenes: imageUrls || undefined,
         imagen: coverImageUrl || undefined,
+        recurrencia: recurrencia || undefined,
+        recurrenciaFin: recurrenciaFin || undefined,
       };
       await api.put(`/events/${event.id}`, payload);
       Alert.alert('Éxito', 'Evento actualizado');
@@ -658,6 +671,44 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
             />
+            <ThemedText style={styles.label}>Recurrencia</ThemedText>
+            <DropDownPicker
+              open={openRecurrencia}
+              value={recurrencia}
+              items={recurrenciaItems}
+              setOpen={setOpenRecurrencia}
+              setValue={setRecurrencia}
+              setItems={() => {}}
+              placeholder="Sin recurrencia"
+              style={{ backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10 }}
+              dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
+              textStyle={{ color: colors.text }}
+              placeholderStyle={{ color: colors.text + '99' }}
+              zIndex={850}
+              listMode="SCROLLVIEW"
+              ArrowUpIconComponent={ArrowUpIcon}
+              ArrowDownIconComponent={ArrowDownIcon}
+            />
+            {!!recurrencia && (
+              <>
+                <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
+                <TouchableOpacity
+                  onPress={() => setShowRecurrenciaFin(true)}
+                  style={[styles.input, { backgroundColor: colors.card, borderColor: colors.primary, justifyContent: 'center' }]}
+                >
+                  <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
+                    {recurrenciaFin ? dayjs(recurrenciaFin).format('DD/MM/YYYY') : 'Seleccionar fecha límite'}
+                  </ThemedText>
+                </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showRecurrenciaFin}
+                  mode="date"
+                  minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+                  onConfirm={(date: Date) => { setRecurrenciaFin(date.toISOString()); setShowRecurrenciaFin(false); }}
+                  onCancel={() => setShowRecurrenciaFin(false)}
+                />
+              </>
+            )}
             <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
 
             {localImageUris && localImageUris.length > 0 && (

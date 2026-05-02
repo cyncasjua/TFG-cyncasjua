@@ -11,7 +11,9 @@ import {
   Min,
   ArrayMaxSize,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
+import { RecurrenciaEnum } from '../enums/recurrencia.enum';
 import { Type } from 'class-transformer';
 import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
 import type { GeoJsonPoint } from '../../common/geojson-point';
@@ -94,4 +96,12 @@ export class CreateEventDto {
   @ArrayMaxSize(5, { message: 'Solo se pueden añadir hasta 5 imágenes por evento' })
   @IsString({ each: true })
   imagenes?: string[];
+
+  @IsEnum(RecurrenciaEnum, { message: 'Tipo de recurrencia no válido.' })
+  @IsOptional()
+  recurrencia?: RecurrenciaEnum;
+
+  @IsDateString({}, { message: 'La fecha fin de recurrencia debe tener un formato válido.' })
+  @IsOptional()
+  recurrenciaFin?: string;
 }

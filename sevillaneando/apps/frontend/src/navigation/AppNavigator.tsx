@@ -37,6 +37,7 @@ import { RoutesListScreen } from '../screens/RoutesListScreen';
 import { RouteDetailScreen } from '../screens/RouteDetailScreen';
 import { SavedAndPrivateEventsScreen } from '../screens/SavedAndPrivateEventsScreen';
 import { LegalAttributionsScreen } from '../screens/LegalAttributionsScreen';
+import { FriendsScreen } from '../screens/FriendsScreen';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -136,6 +137,7 @@ export function AppNavigator() {
           <AppStack.Screen name="RouteDetail" component={RouteDetailScreen} options={{ title: 'Detalle de ruta' }} />
           <AppStack.Screen name="SavedAndPrivateEvents" component={SavedAndPrivateEventsScreen} options={{ title: '' }} />
           <AppStack.Screen name="LegalAttributions" component={LegalAttributionsScreen} options={{ title: 'Licencias y atribuciones' }} />
+          <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   Req,
   UseGuards,
   Post,
@@ -24,13 +25,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
+import { TipoEnum } from '../notificaciones/enums/tipo.enum';
 
 @Controller('users')
 @UseGuards(FirebaseAuthGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly notificacionesService: NotificacionesService,
   ) { }
 
   @Post('upload-profile-image/firebase')
@@ -60,6 +64,13 @@ export class UsersController {
 
   private getFirebaseUser(req: { user: { uid: string; email?: string; name?: string } }) {
     return req.user;
+  }
+
+  @Get('search')
+  async search(@Query('q') q: string) {
+    if (!q || q.trim().length < 2) return [];
+    const users = await this.usersService.searchUsers(q.trim());
+    return users.map((u) => ({ id: u.id, nombre: u.nombre, fotoPerfil: u.fotoPerfil }));
   }
 
   @Get('me')
@@ -119,5 +130,55 @@ export class UsersController {
       fotoPerfil: user.fotoPerfil,
       intereses: user.intereses,
     };
+  }
+
+  @Post(':id/seguir')
+  @UseGuards(FirebaseAuthGuard)
+  async seguir(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
+    const yo = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!yo) return;
+    const yaSeguia = await this.usersService.isSiguiendo(yo.id, id);
+    await this.usersService.seguir(yo.id, id);
+    if (!yaSeguia) {
+      const seguido = await this.usersService.findById(id);
+      if (seguido) {
+        await this.notificacionesService.crearParaUsuario(
+          seguido,
+          `${yo.nombre} ha empezado a seguirte.`,
+          TipoEnum.NuevoSeguidor,
+        );
+      }
+    }
+    return { siguiendo: true };
+  }
+
+  @Delete(':id/seguir')
+  @UseGuards(FirebaseAuthGuard)
+  async dejarDeSeguir(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
+    const yo = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!yo) return;
+    await this.usersService.dejarDeSeguir(yo.id, id);
+    return { siguiendo: false };
+  }
+
+  @Get(':id/siguiendo')
+  @UseGuards(FirebaseAuthGuard)
+  async checkSiguiendo(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
+    const yo = await this.usersService.findByFirebaseUid(req.user.uid);
+    if (!yo) return { siguiendo: false };
+    const siguiendo = await this.usersService.isSiguiendo(yo.id, id);
+    return { siguiendo };
+  }
+
+  @Get(':id/seguidos')
+  async getSeguidos(@Param('id') id: string) {
+    const users = await this.usersService.getSeguidos(id);
+    return users.map((u) => ({ id: u.id, nombre: u.nombre, fotoPerfil: u.fotoPerfil }));
+  }
+
+  @Get(':id/seguidores')
+  async getSeguidores(@Param('id') id: string) {
+    const users = await this.usersService.getSeguidores(id);
+    return users.map((u) => ({ id: u.id, nombre: u.nombre, fotoPerfil: u.fotoPerfil }));
   }
 }

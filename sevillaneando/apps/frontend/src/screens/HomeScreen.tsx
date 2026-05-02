@@ -1402,6 +1402,18 @@ const {
               </TouchableOpacity>
             )
           )}
+
+          <TouchableOpacity
+            style={styles.bottomDockItem}
+            onPress={() => navigation.navigate('Friends')}
+            accessibilityLabel="Amigos"
+            activeOpacity={0.85}
+          >
+            <View style={[styles.bottomDockIconWrap, { backgroundColor: colors.background }]}>
+              <MaterialIcons name="people" size={18} color={colors.primary} />
+            </View>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Amigos</ThemedText>
+          </TouchableOpacity>
         </View>
 
       <Modal
@@ -1801,6 +1813,16 @@ const {
                       <Text style={styles.menuActionBadgeText}>{unreadMessages}</Text>
                     </View>
                   )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.menuActionRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('Friends');
+                  }}
+                >
+                  <MaterialIcons name="people" size={20} color={colors.primary} />
+                  <ThemedText style={styles.menuActionLabel}>Amigos</ThemedText>
                 </TouchableOpacity>
                 </ThemedView>
 

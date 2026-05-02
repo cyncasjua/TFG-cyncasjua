@@ -93,6 +93,17 @@ export class User {
   })
   eventosVisitados!: Event[];
 
+  @ManyToMany(() => User, (user) => user.seguidos)
+  @JoinTable({
+    name: 'user_seguidores',
+    joinColumn: { name: 'seguidor_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'seguido_id', referencedColumnName: 'id' },
+  })
+  seguidores!: User[];
+
+  @ManyToMany(() => User, (user) => user.seguidores)
+  seguidos!: User[];
+
   iniciarSesion() { }
   cerrarSesion() { }
   verEventos() { }

@@ -25,7 +25,6 @@ dayjs.extend(timezone);
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { RootStackParamList } from '../navigation/types';
-import { useNsfwGuard } from '../hooks/useNsfwGuard';
 import { useTheme } from '../hooks/useTheme';
 import {
   Avatar,
@@ -85,7 +84,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [event, setEvent] = useState<Event>(initialEvent);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const defaultEventImage = require('../../assets/splash.png');
-  const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
   const coords = useMemo(() => parseEventPoint(event), [event]);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<number, boolean>>({});
@@ -833,6 +831,16 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 {event.categoria?.nombre}
               </ThemedTextSecondary>
             </ThemedView>
+            {!!event.recurrencia && (
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <MaterialIcons name="repeat" size={16} color="#6c2eb7" />
+                <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                  {`Evento recurrente: ${
+                    { diario: 'cada día', semanal: 'cada semana', quincenal: 'cada 2 semanas', mensual: 'cada mes' }[event.recurrencia]
+                  }${event.recurrenciaFin ? ` hasta el ${dayjs(event.recurrenciaFin).format('DD/MM/YYYY')}` : ''}`}
+                </ThemedTextSecondary>
+              </ThemedView>
+            )}
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <MaterialIcons name="star" size={16} color="#f39c12" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>

@@ -6,6 +6,7 @@ import { FindEventsQueryDto } from './dto/find-events-query.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EstadoEnum } from './enums/estado.enum';
+import { RecurrenciaEnum } from './enums/recurrencia.enum';
 import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
@@ -77,6 +78,14 @@ export class EventsService {
     event = this.prepareEventForSave(event);
     const saved = await this.eventRepo.save(event);
     this.ensureImagenesCorrectFormat(saved);
+
+    if (saved.recurrencia && saved.recurrenciaFin) {
+      const instancias = this.generarInstanciasRecurrentes(saved);
+      if (instancias.length > 0) {
+        await this.eventRepo.save(instancias.map((i) => this.eventRepo.create(i)));
+      }
+    }
+
     return saved;
   }
 
@@ -244,7 +253,61 @@ export class EventsService {
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
       imagenes: dto.imagenes ? JSON.stringify(dto.imagenes) : undefined,
+      recurrencia: dto.recurrencia ?? null,
+      recurrenciaFin: dto.recurrenciaFin ? new Date(dto.recurrenciaFin) : null,
     };
+  }
+
+  private getRecurrenciaDias(recurrencia: RecurrenciaEnum): number {
+    const map: Record<RecurrenciaEnum, number> = {
+      [RecurrenciaEnum.Diario]: 1,
+      [RecurrenciaEnum.Semanal]: 7,
+      [RecurrenciaEnum.Quincenal]: 14,
+      [RecurrenciaEnum.Mensual]: 30,
+    };
+    return map[recurrencia];
+  }
+
+  private generarInstanciasRecurrentes(base: Event): Partial<Event>[] {
+    if (!base.recurrencia || !base.fechaInicio || !base.recurrenciaFin) return [];
+
+    const intervaloDias = this.getRecurrenciaDias(base.recurrencia);
+    const duracionMs = base.fechaFin
+      ? base.fechaFin.getTime() - base.fechaInicio.getTime()
+      : 0;
+    const instancias: Partial<Event>[] = [];
+    let cursor = new Date(base.fechaInicio);
+    cursor.setDate(cursor.getDate() + intervaloDias);
+
+    while (cursor <= base.recurrenciaFin) {
+      const fechaInicio = new Date(cursor);
+      const fechaFin = duracionMs > 0 ? new Date(cursor.getTime() + duracionMs) : null;
+
+      instancias.push({
+        title: base.title,
+        description: base.description,
+        address: base.address,
+        location: base.location,
+        fechaInicio,
+        fechaFin,
+        precio: base.precio,
+        precioMin: base.precioMin,
+        precioMax: base.precioMax,
+        privado: base.privado,
+        linkAcceso: base.privado ? uuidv4() : null,
+        categoria: base.categoria,
+        estado: base.estado,
+        creador: base.creador,
+        imagen: base.imagen,
+        imagenes: base.imagenes,
+        recurrencia: base.recurrencia,
+        recurrenciaFin: base.recurrenciaFin,
+      });
+
+      cursor.setDate(cursor.getDate() + intervaloDias);
+    }
+
+    return instancias;
   }
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
@@ -291,6 +354,8 @@ export class EventsService {
 
     event.fechaInicio = dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;
     event.fechaFin = dto.fechaFin !== undefined ? this.parseOptionalDate(dto.fechaFin) : event.fechaFin;
+    if (dto.recurrencia !== undefined) event.recurrencia = dto.recurrencia ?? null;
+    if (dto.recurrenciaFin !== undefined) event.recurrenciaFin = dto.recurrenciaFin ? new Date(dto.recurrenciaFin) : null;
   }
 
   private resolveVisibilityState(
