@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ImageBackground, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -57,6 +57,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <ImageBackground
       source={require('../../assets/icon.png')}
       style={[styles.background, { backgroundColor: colors.background }]}
@@ -130,6 +131,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>
+    </TouchableWithoutFeedback>
   );
 };
 

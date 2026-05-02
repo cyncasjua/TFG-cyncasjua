@@ -179,6 +179,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     };
   }, [event.id, token]);
 
+  const refreshReviews = useCallback(async () => {
+    try {
+      const eventReviews = await getEventReviews(event.id);
+      setReviews(eventReviews);
+    } catch {
+      setReviews([]);
+    }
+  }, [event.id]);
+
   useEffect(() => {
     let mounted = true;
     const loadReviews = async () => {
@@ -414,7 +423,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           ? { puntuacion: ratingValue, comentario }
           : { puntuacion: ratingValue },
       );
-      await refreshEventDetails();
+      await Promise.all([refreshEventDetails(), refreshReviews()]);
       setHasExistingRating(true);
       setRatingModalVisible(false);
       Alert.alert('Gracias', 'Tu valoración se ha guardado correctamente.');
