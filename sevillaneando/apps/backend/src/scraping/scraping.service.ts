@@ -3,10 +3,10 @@ import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from '../events/event.entity';
-import { Categoria } from '../entities/categoria.entity';
+import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
 import { IScraper, ScrapedEvent } from './interfaces/scraper.interface';
-import { EstadoEnum } from '../enums/estado.enum';
+import { EstadoEnum } from '../events/enums/estado.enum';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
 //import { GeminiScraperService } from './scrapers/gemini-scraper.service';
@@ -125,9 +125,7 @@ export class ScrapingService {
           existingEvent.precioMin = normalizedEvent.precioMin;
           existingEvent.precioMax = normalizedEvent.precioMax;
           existingEvent.imagen = normalizedEvent.imagen;
-          (existingEvent as any).imagenes = Array.isArray(normalizedEvent.imagenes)
-            ? JSON.stringify(normalizedEvent.imagenes)
-            : normalizedEvent.imagenes;
+          existingEvent.imagenes = normalizedEvent.imagenes;
           existingEvent.estado = EstadoEnum.Aprobado;
           existingEvent.creador = systemUser;
           existingEvent.privado = false;
@@ -154,9 +152,7 @@ export class ScrapingService {
           precioMin: normalizedEvent.precioMin,
           precioMax: normalizedEvent.precioMax,
           imagen: normalizedEvent.imagen,
-          imagenes: Array.isArray(normalizedEvent.imagenes)
-            ? JSON.stringify(normalizedEvent.imagenes)
-            : (normalizedEvent.imagenes as any),
+          imagenes: normalizedEvent.imagenes,
           estado: EstadoEnum.Aprobado,
           creador: systemUser,
           privado: false,

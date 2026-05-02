@@ -24,8 +24,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { RootStackParamList } from '../App';
-import { useNsfwGuard } from '../hooks/useNsfwGuard';
+import { RootStackParamList } from '../navigation/types';
 import { useTheme } from '../hooks/useTheme';
 import {
   Avatar,
@@ -39,7 +38,6 @@ import {
 import type { Event } from '../types/event';
 import { useIsFocused } from '@react-navigation/native';
 import { TextInput, TouchableOpacity } from 'react-native';
-import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
@@ -63,35 +61,13 @@ import {
   unsaveRecommendedEvent,
   visitRecommendedEvent,
   type EventReview,
-} from '../services/api';
+} from '../services';
 import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
 import { reportError } from '../utils/telemetry';
+import { OSM_TILE_URL_TEMPLATE, parseEventPoint } from '../utils/map';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
-
-function parsePoint(event: Event) {
-  if (event.latitude !== undefined && event.longitude !== undefined) {
-    return { latitude: event.latitude, longitude: event.longitude };
-  }
-  if (event.location) {
-    if (typeof event.location === 'string') {
-      const locationStr: string = event.location;
-      const match = locationStr.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
-      if (match) {
-        return { latitude: parseFloat(match[2]), longitude: parseFloat(match[1]) };
-      }
-    } else if (
-      typeof event.location === 'object' &&
-      event.location.type === 'Point' &&
-      Array.isArray(event.location.coordinates) &&
-      event.location.coordinates.length === 2
-    ) {
-      return { latitude: event.location.coordinates[1], longitude: event.location.coordinates[0] };
-    }
-  }
-  return null;
-}
 
 type ChatMessage = {
   id: string;
@@ -108,9 +84,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [event, setEvent] = useState<Event>(initialEvent);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const defaultEventImage = require('../../assets/splash.png');
-  const { evaluateImage } = useNsfwGuard();
   const { colors, theme } = useTheme();
-  const coords = useMemo(() => parsePoint(event), [event]);
+  const coords = useMemo(() => parseEventPoint(event), [event]);
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<number, boolean>>({});
   const coverImage = useMemo(() => getFullImageUrl(event.imagen), [event.imagen]);
   const detailImages = useMemo<Array<{ uri: string; cache?: 'force-cache' } | number>>(() => {
@@ -799,7 +774,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       ? item
                       : { uri: item.uri, cache: 'force-cache' }
                 }
-                style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 12, marginRight: 10 }}
+                style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 40, marginRight: 10 }}
                 resizeMode="cover"
                 onError={() =>
                   setImageLoadErrors((prev) => ({
@@ -813,7 +788,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           />
           <ThemedView
             style={[
-              { borderRadius: 18, padding: 16, marginBottom: 12 },
+              { borderRadius: 40, padding: 16, marginBottom: 12 },
               { backgroundColor: colors.card + 'DD' },
             ]}
           >
@@ -856,6 +831,16 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 {event.categoria?.nombre}
               </ThemedTextSecondary>
             </ThemedView>
+            {!!event.recurrencia && (
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <MaterialIcons name="repeat" size={16} color="#6c2eb7" />
+                <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                  {`Evento recurrente: ${
+                    { diario: 'cada día', semanal: 'cada semana', quincenal: 'cada 2 semanas', mensual: 'cada mes' }[event.recurrencia]
+                  }${event.recurrenciaFin ? ` hasta el ${dayjs(event.recurrenciaFin).format('DD/MM/YYYY')}` : ''}`}
+                </ThemedTextSecondary>
+              </ThemedView>
+            )}
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <MaterialIcons name="star" size={16} color="#f39c12" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
@@ -873,7 +858,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   backgroundColor: '#6c2eb7',
                   paddingHorizontal: 16,
                   paddingVertical: 6,
-                  borderRadius: 18,
+                  borderRadius: 999,
                   overflow: 'hidden',
                   alignSelf: 'flex-end',
                 }}
@@ -905,7 +890,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 longitudeDelta: 0.01,
               }}
             >
-              <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               <Marker coordinate={coords} title={event.title} />
             </MapView>
           </ThemedView>
@@ -1003,7 +988,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       {
                         backgroundColor: colors.card,
                         borderColor: colors.border,
-                        borderRadius: 12,
+                        borderRadius: 40,
                         padding: 12,
                         marginBottom: 10,
                         borderWidth: 1,
@@ -1056,7 +1041,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onRequestClose={() => setShowAttendeesModal(false)}
           >
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18, maxHeight: '70%' }}>
+              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 40, padding: 18, maxHeight: '70%' }}>
                 <ThemedTitle style={{ marginBottom: 12 }}>Asistentes ({attendees.length})</ThemedTitle>
                 <ScrollView style={{ maxHeight: 350 }}>
                   {attendees.map((att) => (
@@ -1066,7 +1051,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         setShowAttendeesModal(false);
                         navigation.navigate('UserProfile', { userId: att.id });
                       }}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 16, marginBottom: 6 }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 999, marginBottom: 6 }}
                     >
                       <Avatar photoUrl={att.fotoPerfil} size={32} />
                       <ThemedText>{att.nombre}</ThemedText>
@@ -1084,7 +1069,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onRequestClose={() => setRatingModalVisible(false)}
           >
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 18, padding: 18 }}>
+              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 40, padding: 18 }}>
                 <ThemedTitle style={{ marginBottom: 12 }}>
                   {hasExistingRating ? 'Tu valoración' : 'Valorar evento'}
                 </ThemedTitle>
@@ -1117,7 +1102,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     minHeight: 90,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 16,
+                    borderRadius: 40,
                     padding: 10,
                     color: colors.text,
                     marginBottom: 12,
@@ -1162,6 +1147,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 onLayout={scrollEventChatToBottom}
               >
                 {messages.map((item) => {
+                  const hasImage = !!getFullImageUrl(item.imageUrl);
                   const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
                   const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
                   const nameColor = isOwn && isLight ? '#e0e0e0' : (theme === 'dark' ? '#9bbcff' : '#3b5bdb');
@@ -1200,12 +1186,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         <TouchableOpacity
                           onLongPress={() => isOwn && handleDeleteEventMessage(item.id)}
                           activeOpacity={0.9}
-                          style={{
-                            padding: 8,
-                            borderRadius: 16,
-                            backgroundColor: isOwn ? '#6c2eb7' : colors.card,
-                            flex: 1,
-                          }}
+                          style={[
+                            styles.chatBubble,
+                            hasImage && styles.chatBubbleWithImage,
+                            {
+                              backgroundColor: isOwn ? '#6c2eb7' : colors.card,
+                            },
+                          ]}
                         >
                           <TouchableOpacity
                             onPress={() => {
@@ -1217,8 +1204,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             }}
                             disabled={!item.usuario?.id || isOwn}
                           >
-                            <ThemedTextSecondary
-                              style={{ fontSize: 12, color: nameColor }}
+                           <ThemedTextSecondary
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                              style={[styles.chatMetaText, { color: nameColor }]}
                             >
                               {isOwn ? 'Tú' : item.usuario?.nombre ?? 'Anónimo'}
                             </ThemedTextSecondary>
@@ -1264,11 +1253,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             </TouchableOpacity>
                           )}
                           <ThemedTextSecondary
-                            style={{
-                              fontSize: 11,
-                              marginTop: 4,
-                              color: colors.text + '99',
-                            }}
+                            numberOfLines={1}
+                            style={[
+                              styles.chatTimeText,
+                              {
+                                color: isOwn ? 'rgba(255,255,255,0.75)' : colors.text + '99',
+                              },
+                            ]}
                           >
                             {formatSevillaTime(item.fechaCreacion)}
                           </ThemedTextSecondary>
@@ -1439,7 +1430,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: 40,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -1490,12 +1481,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 18,
     padding: 12,
-  },
-  chatMessageImage: {
-    marginTop: 6,
-    width: 200,
-    height: 120,
-    borderRadius: 16,
   },
   chatAttachment: {
     flexDirection: 'row',
@@ -1554,4 +1539,30 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 18,
   },
+  chatBubble: {
+    padding: 8,
+    borderRadius: 20,
+    flexShrink: 1,
+    overflow: 'hidden',
+  },
+  chatBubbleWithImage: {
+    width: 216,
+  },
+  chatMessageImage: {
+    marginTop: 6,
+    width: '100%',
+    height: 120,
+    borderRadius: 16,
+  },
+  chatMetaText: {
+    fontSize: 12,
+    flexShrink: 1,
+    flexWrap: 'wrap',
+  },
+  chatTimeText: {
+    fontSize: 11,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+
 });

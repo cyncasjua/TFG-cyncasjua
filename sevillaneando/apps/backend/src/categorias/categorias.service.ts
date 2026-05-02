@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Categoria } from '../entities/categoria.entity';
+import { Categoria } from './categoria.entity';
 import { Repository } from 'typeorm';
 import { CreateCategoriaDTO } from './dto/create-categoria.dto';
 

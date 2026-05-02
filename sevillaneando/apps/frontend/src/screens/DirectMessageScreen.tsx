@@ -24,7 +24,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
@@ -33,7 +33,7 @@ import { getFullImageUrl, getOptimizedChatImageUrl } from '../utils/imageUrl';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
-import { api } from '../services/api';
+import { api } from '../services';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DirectMessage'>;
 
@@ -143,7 +143,6 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
     const userIdsToFetch = new Set<string>();
 
     messages.forEach((m) => {
-      // SIEMPRE intenta traer fotos, aunque vengan incompletas o null
       if (m.emisor?.id) {
         userIdsToFetch.add(m.emisor.id);
       }
@@ -376,6 +375,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
             const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
             const nameColor = isOwn && isLight ? '#e0e0e0' : '#9bbcff';
             const messageColor = isOwn && isLight ? '#fff' : '#e6e8ef';
+            const hasImage = !!getFullImageUrl(item.imageUrl);
 
             return (
               <ThemedView
@@ -404,18 +404,23 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                       }}
                       style={{ marginTop: 2 }}
                     >
-                      <Avatar photoUrl={item.emisor?.fotoPerfil ?? userPhotoById[item.emisor?.id ?? '']} size={24} />
+                      <Avatar
+                        photoUrl={item.emisor?.fotoPerfil ?? userPhotoById[item.emisor?.id ?? '']}
+                        size={24}
+                      />
                     </TouchableOpacity>
                   )}
+
                   <TouchableOpacity
                     onLongPress={() => isOwn && handleDeleteMessage(item.id)}
                     activeOpacity={0.9}
-                    style={{
-                      padding: 8,
-                      borderRadius: 16,
-                      backgroundColor: isOwn ? '#6c2eb7' : colors.card,
-                      flex: 1,
-                    }}
+                    style={[
+                      styles.chatBubble,
+                      hasImage && styles.chatBubbleWithImage,
+                      {
+                        backgroundColor: isOwn ? '#6c2eb7' : colors.card,
+                      },
+                    ]}
                   >
                     <TouchableOpacity
                       onPress={() => {
@@ -428,16 +433,20 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                       disabled={!item.emisor?.id || isOwn}
                     >
                       <ThemedTextSecondary
-                        style={{ fontSize: 12, color: nameColor }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={[styles.chatMetaText, { color: nameColor }]}
                       >
-                        {isOwn ? 'Tu' : item.emisor?.nombre ?? 'Usuario'}
+                        {isOwn ? 'Tú' : item.emisor?.nombre ?? 'Usuario'}
                       </ThemedTextSecondary>
                     </TouchableOpacity>
+
                     {!!item.contenido?.trim() && (
                       <ThemedText style={{ color: messageColor }}>
                         {item.contenido}
                       </ThemedText>
                     )}
+
                     {!!item.imageUrl && (
                       <TouchableOpacity
                         onPress={() => setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)}
@@ -459,32 +468,41 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                               <ActivityIndicator size="small" color="#6c2eb7" />
                             </View>
                           )}
+
                           {(() => {
                             const imageUri = getOptimizedChatImageUrl(item.imageUrl);
                             if (!imageUri) return null;
+
                             return (
-                          <Image
-                            source={{ uri: imageUri }}
-                            style={styles.chatMessageImage}
-                            resizeMode="cover"
-                            onLoadStart={() => setLoadingImages(prev => new Set(prev).add(item.id))}
-                            onLoadEnd={() => setLoadingImages(prev => {
-                              const next = new Set(prev);
-                              next.delete(item.id);
-                              return next;
-                            })}
-                          />
+                              <Image
+                                source={{ uri: imageUri }}
+                                style={styles.chatMessageImage}
+                                resizeMode="cover"
+                                onLoadStart={() =>
+                                  setLoadingImages((prev) => new Set(prev).add(item.id))
+                                }
+                                onLoadEnd={() =>
+                                  setLoadingImages((prev) => {
+                                    const next = new Set(prev);
+                                    next.delete(item.id);
+                                    return next;
+                                  })
+                                }
+                              />
                             );
                           })()}
                         </View>
                       </TouchableOpacity>
                     )}
+
                     <ThemedTextSecondary
-                      style={{
-                        fontSize: 11,
-                        marginTop: 4,
-                        color: colors.text + '99',
-                      }}
+                      numberOfLines={1}
+                      style={[
+                        styles.chatTimeText,
+                        {
+                          color: isOwn ? 'rgba(255,255,255,0.75)' : colors.text + '99',
+                        },
+                      ]}
                     >
                       {formatSevillaTime(item.fechaCreacion)}
                     </ThemedTextSecondary>
@@ -617,7 +635,7 @@ const styles = StyleSheet.create({
   },
   chatMessageImage: {
     marginTop: 6,
-    width: 200,
+    width: '100%',
     height: 120,
     borderRadius: 16,
   },
@@ -674,6 +692,29 @@ const styles = StyleSheet.create({
   imagePreviewImage: {
     width: '90%',
     height: '90%',
+  },
+
+  chatBubble: {
+    padding: 8,
+    borderRadius: 20,
+    flexShrink: 1,
+    overflow: 'hidden',
+  },
+
+  chatBubbleWithImage: {
+    width: 216,
+  },
+
+  chatMetaText: {
+    fontSize: 12,
+    flexShrink: 1,
+    flexWrap: 'wrap',
+  },
+
+  chatTimeText: {
+    fontSize: 11,
+    marginTop: 4,
+    alignSelf: 'flex-end',
   },
 });
 

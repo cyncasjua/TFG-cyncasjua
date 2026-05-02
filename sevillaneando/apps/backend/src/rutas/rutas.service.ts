@@ -5,11 +5,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Ruta } from '../entities/ruta.entity';
+import { In, Repository } from 'typeorm';
+import { Ruta } from './ruta.entity';
 import { Event } from '../events/event.entity';
 import { User } from '../users/user.entity';
-import { CalificacionRuta } from '../entities/calificacion-ruta.entity';
+import { CalificacionRuta } from './calificacion-ruta.entity';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { UpdateRutaDto } from './dto/update-ruta.dto';
 
@@ -30,7 +30,7 @@ export class RutasService {
       throw new BadRequestException('Debe seleccionar al menos un evento');
     }
 
-    const eventos = await this.eventsRepository.findByIds(createRutaDto.eventosIds);
+    const eventos = await this.eventsRepository.find({ where: { id: In(createRutaDto.eventosIds) } });
     if (eventos.length !== createRutaDto.eventosIds.length) {
       throw new BadRequestException('Uno o más eventos no fueron encontrados');
     }
@@ -90,7 +90,7 @@ export class RutasService {
     if (updateRutaDto.temporizacion) ruta.temporizacion = updateRutaDto.temporizacion;
 
     if (updateRutaDto.eventosIds && updateRutaDto.eventosIds.length > 0) {
-      const eventos = await this.eventsRepository.findByIds(updateRutaDto.eventosIds);
+      const eventos = await this.eventsRepository.find({ where: { id: In(updateRutaDto.eventosIds) } });
       if (eventos.length !== updateRutaDto.eventosIds.length) {
         throw new BadRequestException('Uno o más eventos no fueron encontrados');
       }
@@ -123,7 +123,6 @@ export class RutasService {
       throw new BadRequestException('La puntuación debe estar entre 1 y 5');
     }
 
-    // Buscar si ya existe una calificación de este usuario
     let calificacion = await this.calificacionesRepository.findOne({
       where: { usuario: { id: userId }, ruta: { id } },
     });
@@ -150,7 +149,6 @@ export class RutasService {
 
     const rutaActualizada = await this.rutasRepository.save(ruta);
 
-    // Asignar la calificación personal a la instancia con tipado correcto
     const resultado: Ruta & { miCalificacion?: number } = rutaActualizada;
     resultado.miCalificacion = calificacion.puntuacion;
     return resultado;

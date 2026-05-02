@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { reportWarning } from '../utils/telemetry';
 

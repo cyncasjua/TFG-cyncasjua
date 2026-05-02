@@ -16,10 +16,11 @@ import 'dayjs/locale/es';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
-import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRoute } from '../services/api';
-import type { RootStackParamList } from '../App';
+import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRoute } from '../services';
+import type { RootStackParamList } from '../navigation/types';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RouteDetail'>;
 
@@ -94,8 +95,8 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
   const initialRegion = useMemo(() => {
     if (coordinates.length === 0) {
       return {
-        latitude: 37.3891,
-        longitude: -5.9845,
+        latitude: SEVILLE_COORDINATES.latitude,
+        longitude: SEVILLE_COORDINATES.longitude,
         latitudeDelta: 0.08,
         longitudeDelta: 0.08,
       };
@@ -235,7 +236,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
           ]}
         >
           <MapView style={styles.map} initialRegion={initialRegion} scrollEnabled={true} zoomEnabled={true}>
-            <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+            <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
             {coordinates.length >= 2 && (
               <Polyline
                 coordinates={coordinates}
@@ -365,7 +366,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginTop: 12,
     marginBottom: 8,
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 12,
   },
@@ -380,19 +381,19 @@ const styles = StyleSheet.create({
   section: {
     marginHorizontal: 14,
     marginVertical: 8,
-    borderRadius: 12,
+    borderRadius: 30,
     borderWidth: 1,
     padding: 12,
   },
   map: {
     width: '100%',
     height: 300,
-    borderRadius: 8,
+    borderRadius: 30,
   },
   markerBubble: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,

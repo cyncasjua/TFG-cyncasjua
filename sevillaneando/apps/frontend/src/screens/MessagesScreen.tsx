@@ -8,13 +8,13 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 dayjs.extend(relativeTime);
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { reportWarning } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
-import { api } from '../services/api';
+import { api } from '../services';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Messages'>;
 

@@ -17,16 +17,20 @@ import {
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { FindEventsQueryDto } from './dto/find-events-query.dto';
 import { Event } from './event.entity';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
-import { EstadoEnum } from '../enums/estado.enum';
-import { TipoEnum } from '../enums/tipo.enum';
+import { EstadoEnum } from './enums/estado.enum';
+import { TipoEnum } from '../notificaciones/enums/tipo.enum';
 import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UsersService } from '../users/users.service';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { ThrottleStrict, ThrottleModerate, ThrottleUpload } from '../common/decorators/throttle-custom.decorator';
 
 @Controller('events')
 export class EventsController {
@@ -34,17 +38,19 @@ export class EventsController {
     private readonly eventsService: EventsService,
     private readonly notificacionesService: NotificacionesService,
     private readonly usersService: UsersService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
   ) { }
 
   @Post()
+  @UseGuards(FirebaseAuthGuard)
+  @ThrottleModerate()
   async create(@Body() dto: CreateEventDto): Promise<Event> {
     return this.eventsService.create(dto);
   }
 
   @Get()
-  async findAll(@Query('userId') userId?: string): Promise<Event[]> {
-    return this.eventsService.findAll(userId);
+  async findAll(@Query() query: FindEventsQueryDto) {
+    return this.eventsService.findAll(query);
   }
 
   @Get(':id')
@@ -68,16 +74,20 @@ export class EventsController {
   }
 
   @Put(':id')
+  @UseGuards(FirebaseAuthGuard)
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
     return this.eventsService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseAuthGuard)
   async remove(@Param('id') id: string): Promise<void> {
     return this.eventsService.remove(id);
   }
 
-@Patch(':id/aprobar')
+  @Patch(':id/aprobar')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
   async aprobar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Aprobado)
@@ -97,6 +107,8 @@ export class EventsController {
   }
 
   @Patch(':id/rechazar')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
   async rechazar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Rechazado)
@@ -116,6 +128,7 @@ export class EventsController {
   }
 
   @Post('upload-image')
+  @ThrottleUpload()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),

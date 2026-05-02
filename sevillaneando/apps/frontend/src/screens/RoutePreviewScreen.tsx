@@ -7,10 +7,11 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { getEventById, getErrorMessage, type RecommendedRoute } from '../services/api';
+import { getEventById, getErrorMessage, type RecommendedRoute } from '../services';
 import type { Event } from '../types/event';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
+import { haversineDistanceKm, SEVILLE_COORDINATES } from '../utils/map';
 
 type RoutePreviewStackParamList = {
   RoutePreview: { routePlan: RecommendedRoute };
@@ -35,8 +36,8 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const initialRegion = useMemo(() => {
     if (coordinates.length === 0) {
       return {
-        latitude: 37.3891,
-        longitude: -5.9845,
+        latitude: SEVILLE_COORDINATES.latitude,
+        longitude: SEVILLE_COORDINATES.longitude,
         latitudeDelta: 0.08,
         longitudeDelta: 0.08,
       };
@@ -83,23 +84,6 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const estimateDrivingMinutes = (distanceKm: number) => {
     const minutes = Math.round((distanceKm / 35) * 60);
     return Math.max(1, minutes);
-  };
-
-  const haversineKm = (
-    from: { latitude: number; longitude: number },
-    to: { latitude: number; longitude: number },
-  ) => {
-    const R = 6371;
-    const dLat = ((to.latitude - from.latitude) * Math.PI) / 180;
-    const dLon = ((to.longitude - from.longitude) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((from.latitude * Math.PI) / 180) *
-        Math.cos((to.latitude * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   };
 
   return (
@@ -159,7 +143,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
           const currentPoint = coordinates[index];
           const nextPoint = !isLast ? coordinates[index + 1] : undefined;
           const segmentDistanceKm =
-            currentPoint && nextPoint ? haversineKm(currentPoint, nextPoint) : null;
+            currentPoint && nextPoint ? haversineDistanceKm(currentPoint, nextPoint) : null;
 
           const nextEvent = !isLast ? routePlan.eventos[index + 1] : null;
           const currentEnd = event.fechaFin ? new Date(event.fechaFin).getTime() : null;

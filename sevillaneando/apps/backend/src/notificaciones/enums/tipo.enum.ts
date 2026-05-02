@@ -5,4 +5,5 @@ export enum TipoEnum {
   EventoCercano = 'EventoCercano',
   EventoProximo = 'EventoProximo',
   MensajePrivado = 'MensajePrivado',
+  NuevoSeguidor = 'NuevoSeguidor',
 }

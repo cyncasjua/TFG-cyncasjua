@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Share, Clipboard, Alert, StyleSheet } from 'react-native';
-import { ThemedView, ThemedText, ThemedButton } from '../components';
+import { ThemedView, ThemedText, ThemedButton } from './index';
 import { useTheme } from '../hooks/useTheme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 

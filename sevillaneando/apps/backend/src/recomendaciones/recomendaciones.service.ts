@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository, DataSource } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Event } from '../events/event.entity';
-import { Resena } from '../entities/resena.entity';
-import { Recomendacion } from '../entities/recomendacion.entity';
-import { EstadoEnum } from '../enums/estado.enum';
+import { Resena } from '../events/resena.entity';
+import { Recomendacion } from './recomendacion.entity';
+import { EstadoEnum } from '../events/enums/estado.enum';
 import { RateEventDto } from './dto/rate-event.dto';
 import { getSevillaDayKey } from '../common/sevilla-time';
+import { haversineDistanceKm } from '../common/distance.util';
 
 type RecommendOptions = {
   lat?: number;
@@ -324,7 +325,7 @@ export class RecomendacionesService {
     const scored: ScoredEvent[] = [];
 
     for (const event of events) {
-      const eventPoint = this.eventPoint(event);
+      const eventPoint = this.eventPointFromLocationField(event);
       const distanceKm = userPoint && eventPoint ? this.haversineKm(userPoint, eventPoint) : null;
       if (distanceKm !== null && distanceKm > radiusKm) {
         continue;
@@ -858,8 +859,11 @@ export class RecomendacionesService {
     return map;
   }
 
-  private eventPoint(event: Event): [number, number] | null {
-    const coordinates = event.location?.coordinates;
+  private eventPointFromLocationField(
+    event: Event | Array<{ id: string; location?: EventLocation }>,
+  ): [number, number] | null {
+    if (Array.isArray(event)) return null;
+    const coordinates = (event as Event).location?.coordinates;
     if (!coordinates || coordinates.length !== 2) return null;
     return [Number(coordinates[0]), Number(coordinates[1])];
   }
@@ -870,10 +874,7 @@ export class RecomendacionesService {
   ): [number, number] | null {
     const target = events.find((event) => event.id === eventId);
     if (!target) return null;
-
-    const coordinates = target.location?.coordinates;
-    if (!coordinates || coordinates.length !== 2) return null;
-    return [Number(coordinates[0]), Number(coordinates[1])];
+    return this.eventPointFromLocationField(target as unknown as Event);
   }
 
   private normalizeText(value: string): string {
@@ -889,16 +890,7 @@ export class RecomendacionesService {
   }
 
   private haversineKm([lng1, lat1]: [number, number], [lng2, lat2]: [number, number]): number {
-    const R = 6371;
-    const dLat = this.toRad(lat2 - lat1);
-    const dLng = this.toRad(lng2 - lng1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    return haversineDistanceKm(lat1, lng1, lat2, lng2);
   }
 
   private totalDistance(points: Array<{ coordinates: [number, number] }>): number {

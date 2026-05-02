@@ -3,7 +3,7 @@ import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, TouchableOp
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -13,7 +13,7 @@ import {
   getEventById,
   getSavedRecommendedEvents,
   RecommendedEvent,
-} from '../services/api';
+} from '../services';
 import { formatEventDateRange } from '../utils/sevillaTime';
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { Event } from '../types/event';

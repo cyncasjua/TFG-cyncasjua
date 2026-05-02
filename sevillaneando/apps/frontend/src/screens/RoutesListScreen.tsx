@@ -12,11 +12,11 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { getRoutes, getErrorMessage, type UserRoute } from '../services/api';
+import { getRoutes, getErrorMessage, type UserRoute } from '../services';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import { reportError } from '../utils/telemetry';
 
 export const RoutesListScreen: React.FC = () => {
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 20,
     borderWidth: 1,
     height: 44,
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 30,
     padding: 12,
   },
   cardHeader: {

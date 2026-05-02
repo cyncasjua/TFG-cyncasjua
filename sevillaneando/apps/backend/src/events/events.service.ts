@@ -1,15 +1,18 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Event } from './event.entity';
+import { FindEventsQueryDto } from './dto/find-events-query.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { EstadoEnum } from '../enums/estado.enum';
-import { Categoria } from '../entities/categoria.entity';
+import { EstadoEnum } from './enums/estado.enum';
+import { RecurrenciaEnum } from './enums/recurrencia.enum';
+import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Mensaje } from '../entities/mensaje.entity';
-import { Resena } from '../entities/resena.entity';
+import { Mensaje } from '../chat/mensaje.entity';
+import { Resena } from './resena.entity';
+import { parseEventImages, stringifyEventImages } from './event-images.util';
 
 type EventWithRatingsSummary = Event & {
   ratingAverage?: number | null;
@@ -49,57 +52,22 @@ export class EventsService {
   }
 
   /**
-   * Convierte imagenes a array si es string JSON o CSV
-   */
-  private parseImagenes(imagenes: any): string[] {
-    if (!imagenes) return [];
-
-    if (Array.isArray(imagenes)) {
-      return imagenes.filter(url => typeof url === 'string' && url.trim());
-    }
-
-    if (typeof imagenes === 'string') {
-      // Intentar parsear como JSON primero
-      if (imagenes.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(imagenes);
-          if (Array.isArray(parsed)) {
-            return parsed.filter(url => typeof url === 'string' && url.trim());
-          }
-        } catch (e) {
-          console.warn('[parseImagenes] JSON parse failed:', e);
-        }
-      }
-      // Si no es JSON, intentar como CSV
-      return imagenes.split(',').map(s => s.trim()).filter(s => s);
-    }
-
-    return [];
-  }
-
-  /**
    * Asegura que el array de imagenes en la entidad es array (deserializa si es necessary)
    */
   private ensureImagenesCorrectFormat(event: Event): void {
     if (event.imagenes) {
-      (event as any).imagenes = this.parseImagenes(event.imagenes);
+      event.imagenes = parseEventImages(event.imagenes);
     }
   }
 
-  /**
-   * Prepara el evento para ser guardado en BD, convirtiendo imagenes a JSON string
-   */
   private prepareEventForSave(event: Event): Event {
     if (event.imagenes !== undefined && event.imagenes !== null) {
-      const imgArray = this.parseImagenes(event.imagenes);
-      (event as any).imagenes = JSON.stringify(imgArray);
+      event.imagenes = stringifyEventImages(event.imagenes);
     }
     return event;
   }
 
-  /**
-   * Procesa un array de eventos para asegurar formato correcto de imagenes
-   */
+
   private processEventArray(events: Event[]): Event[] {
     events.forEach(event => this.ensureImagenesCorrectFormat(event));
     return events;
@@ -110,6 +78,14 @@ export class EventsService {
     event = this.prepareEventForSave(event);
     const saved = await this.eventRepo.save(event);
     this.ensureImagenesCorrectFormat(saved);
+
+    if (saved.recurrencia && saved.recurrenciaFin) {
+      const instancias = this.generarInstanciasRecurrentes(saved);
+      if (instancias.length > 0) {
+        await this.eventRepo.save(instancias.map((i) => this.eventRepo.create(i)));
+      }
+    }
+
     return saved;
   }
 
@@ -149,19 +125,70 @@ export class EventsService {
     return event.linkAcceso;
   }
 
-  findAll(userId?: string): Promise<Event[]> {
-    const query = this.eventRepo
+  async findAll(query: FindEventsQueryDto = {}): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
+    const { userId, lat, lng, radiusKm, limit, offset = 0 } = query;
+    const hasLocation = lat != null && lng != null;
+
+    const qb = this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoin('event.creador', 'creador')
+      .addSelect(['creador.id', 'creador.nombre', 'creador.fotoPerfil'])
+      .where(
+        new Brackets((qb2) => {
+          qb2.where('event.privado = false AND event.estado = :aprobado', { aprobado: EstadoEnum.Aprobado });
+          if (userId) {
+            qb2.orWhere('event.privado = true AND creador.id = :userId', { userId });
+          }
+        }),
+      );
+
+    if (hasLocation) {
+      qb.addSelect(
+        'ST_Distance(event.location::geography, ST_MakePoint(:lng, :lat)::geography) / 1000',
+        'distanceKm',
+      ).setParameters({ lat, lng });
+
+      if (radiusKm != null) {
+        qb.andWhere(
+          'ST_DWithin(event.location::geography, ST_MakePoint(:lng, :lat)::geography, :radiusMeters)',
+          { radiusMeters: radiusKm * 1000 },
+        );
+      }
+
+      qb.orderBy('"distanceKm"', 'ASC');
+    } else {
+      qb.orderBy('event.fechaInicio', 'ASC');
+    }
+
+    if (limit != null) {
+      qb.limit(limit);
+    }
+    qb.offset(offset);
+
+    const { raw, entities } = await qb.getRawAndEntities();
+
+    this.processEventArray(entities);
+
+    const events = entities.map((event, i) => {
+      if (!hasLocation) return event;
+      const rawDistKm = raw[i]?.distanceKm;
+      const distanceKm = rawDistKm != null ? Number(rawDistKm) : undefined;
+      return distanceKm !== undefined ? Object.assign(event, { distanceKm }) : event;
+    });
+
+    return { events, hasMore: false };
+  }
+
+  findAllForScheduler(): Promise<Event[]> {
+    return this.eventRepo
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.categoria', 'categoria')
       .leftJoinAndSelect('event.creador', 'creador')
       .leftJoinAndSelect('event.asistentes', 'asistentes')
-      .where('(event.privado = false AND event.estado = :aprobado)', { aprobado: EstadoEnum.Aprobado });
-
-    if (userId) {
-      query.orWhere('(event.privado = true AND event.creador = :userId)', { userId });
-    }
-
-    return query.getMany().then(events => this.processEventArray(events));
+      .where('event.privado = false AND event.estado = :aprobado', { aprobado: EstadoEnum.Aprobado })
+      .getMany()
+      .then((events) => this.processEventArray(events));
   }
 
   async findOne(id: string): Promise<Event> {
@@ -226,7 +253,61 @@ export class EventsService {
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
       imagen: dto.imagen ?? undefined,
       imagenes: dto.imagenes ? JSON.stringify(dto.imagenes) : undefined,
+      recurrencia: dto.recurrencia ?? null,
+      recurrenciaFin: dto.recurrenciaFin ? new Date(dto.recurrenciaFin) : null,
     };
+  }
+
+  private getRecurrenciaDias(recurrencia: RecurrenciaEnum): number {
+    const map: Record<RecurrenciaEnum, number> = {
+      [RecurrenciaEnum.Diario]: 1,
+      [RecurrenciaEnum.Semanal]: 7,
+      [RecurrenciaEnum.Quincenal]: 14,
+      [RecurrenciaEnum.Mensual]: 30,
+    };
+    return map[recurrencia];
+  }
+
+  private generarInstanciasRecurrentes(base: Event): Partial<Event>[] {
+    if (!base.recurrencia || !base.fechaInicio || !base.recurrenciaFin) return [];
+
+    const intervaloDias = this.getRecurrenciaDias(base.recurrencia);
+    const duracionMs = base.fechaFin
+      ? base.fechaFin.getTime() - base.fechaInicio.getTime()
+      : 0;
+    const instancias: Partial<Event>[] = [];
+    let cursor = new Date(base.fechaInicio);
+    cursor.setDate(cursor.getDate() + intervaloDias);
+
+    while (cursor <= base.recurrenciaFin) {
+      const fechaInicio = new Date(cursor);
+      const fechaFin = duracionMs > 0 ? new Date(cursor.getTime() + duracionMs) : null;
+
+      instancias.push({
+        title: base.title,
+        description: base.description,
+        address: base.address,
+        location: base.location,
+        fechaInicio,
+        fechaFin,
+        precio: base.precio,
+        precioMin: base.precioMin,
+        precioMax: base.precioMax,
+        privado: base.privado,
+        linkAcceso: base.privado ? uuidv4() : null,
+        categoria: base.categoria,
+        estado: base.estado,
+        creador: base.creador,
+        imagen: base.imagen,
+        imagenes: base.imagenes,
+        recurrencia: base.recurrencia,
+        recurrenciaFin: base.recurrenciaFin,
+      });
+
+      cursor.setDate(cursor.getDate() + intervaloDias);
+    }
+
+    return instancias;
   }
 
   async update(id: string, dto: UpdateEventDto): Promise<Event> {
@@ -267,12 +348,14 @@ export class EventsService {
 
     // Normalizar imagenes - convertir a array común format
     if (dto.imagenes !== undefined) {
-      const normalized = this.parseImagenes(dto.imagenes);
-      (event as any).imagenes = normalized.length > 0 ? normalized : undefined;
+      const normalized = parseEventImages(dto.imagenes);
+      event.imagenes = normalized.length > 0 ? normalized : undefined;
     }
 
     event.fechaInicio = dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;
     event.fechaFin = dto.fechaFin !== undefined ? this.parseOptionalDate(dto.fechaFin) : event.fechaFin;
+    if (dto.recurrencia !== undefined) event.recurrencia = dto.recurrencia ?? null;
+    if (dto.recurrenciaFin !== undefined) event.recurrenciaFin = dto.recurrenciaFin ? new Date(dto.recurrenciaFin) : null;
   }
 
   private resolveVisibilityState(

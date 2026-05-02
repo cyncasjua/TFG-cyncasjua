@@ -17,16 +17,17 @@ import {
 import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { StyleProp, ViewStyle } from 'react-native';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { ComponentType } from 'react';
 import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -75,8 +76,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const [showHoraInicio, setShowHoraInicio] = useState(false);
   const [showFechaFin, setShowFechaFin] = useState(false);
   const [showHoraFin, setShowHoraFin] = useState(false);
-  const [latitude, setLatitude] = useState(event.location?.coordinates[1] ?? 37.3891);
-  const [longitude, setLongitude] = useState(event.location?.coordinates[0] ?? -5.9845);
+  const [latitude, setLatitude] = useState(event.location?.coordinates[1] ?? SEVILLE_COORDINATES.latitude);
+  const [longitude, setLongitude] = useState(event.location?.coordinates[0] ?? SEVILLE_COORDINATES.longitude);
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [precio, setPrecio] = useState(String(event.precio ?? ''));
   const [precioMin, setPrecioMin] = useState(String(event.precioMin ?? ''));
@@ -100,6 +101,17 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     { label: 'Rechazado', value: 'Rechazado' },
   ]);
   const [loading, setLoading] = useState(false);
+  const [recurrencia, setRecurrencia] = useState<string | null>((event as any).recurrencia ?? null);
+  const [openRecurrencia, setOpenRecurrencia] = useState(false);
+  const [recurrenciaItems] = useState([
+    { label: 'Sin recurrencia', value: '' },
+    { label: 'Diario', value: 'diario' },
+    { label: 'Semanal', value: 'semanal' },
+    { label: 'Quincenal', value: 'quincenal' },
+    { label: 'Mensual', value: 'mensual' },
+  ]);
+  const [recurrenciaFin, setRecurrenciaFin] = useState<string>((event as any).recurrenciaFin ?? '');
+  const [showRecurrenciaFin, setShowRecurrenciaFin] = useState(false);
   const descriptionRef = useRef<TextInput>(null);
   const addressRef = useRef<TextInput>(null);
   const fechaInicioRef = useRef<TextInput>(null);
@@ -161,7 +173,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         } as any);
         try {
           const res = await fetch(
-            `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/events/upload-image`,
+            `${API_BASE_URL}/events/upload-image`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'multipart/form-data' },
@@ -169,9 +181,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             }
           );
           const data = await res.json();
-          const url = data.url.startsWith('http')
-            ? data.url
-            : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
+          const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
           newUrls.push(url);
         } catch (e) {
           Alert.alert('Error', 'No se pudo subir una imagen.');
@@ -295,6 +305,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         estado,
         imagenes: imageUrls || undefined,
         imagen: coverImageUrl || undefined,
+        recurrencia: recurrencia || undefined,
+        recurrenciaFin: recurrenciaFin || undefined,
       };
       await api.put(`/events/${event.id}`, payload);
       Alert.alert('Éxito', 'Evento actualizado');
@@ -321,7 +333,6 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
@@ -403,8 +414,16 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <MapView
               ref={mapRef}
               style={styles.map}
-              initialRegion={{ latitude, longitude, ...mapDelta }}
-              region={{ latitude, longitude, ...mapDelta }}
+              initialRegion={{
+                latitude,
+                longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
               onPress={(e: MapPressEvent) => {
                 const newLat = e.nativeEvent.coordinate.latitude;
                 const newLon = e.nativeEvent.coordinate.longitude;
@@ -426,10 +445,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 );
               }}
             >
-              <UrlTile
-                urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                maximumZ={19}
-              />
+              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               <Marker coordinate={{ latitude, longitude }} />
             </MapView>
             <View style={{ marginBottom: 8 }}>
@@ -655,6 +671,44 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
             />
+            <ThemedText style={styles.label}>Recurrencia</ThemedText>
+            <DropDownPicker
+              open={openRecurrencia}
+              value={recurrencia}
+              items={recurrenciaItems}
+              setOpen={setOpenRecurrencia}
+              setValue={setRecurrencia}
+              setItems={() => {}}
+              placeholder="Sin recurrencia"
+              style={{ backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10 }}
+              dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
+              textStyle={{ color: colors.text }}
+              placeholderStyle={{ color: colors.text + '99' }}
+              zIndex={850}
+              listMode="SCROLLVIEW"
+              ArrowUpIconComponent={ArrowUpIcon}
+              ArrowDownIconComponent={ArrowDownIcon}
+            />
+            {!!recurrencia && (
+              <>
+                <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
+                <TouchableOpacity
+                  onPress={() => setShowRecurrenciaFin(true)}
+                  style={[styles.input, { backgroundColor: colors.card, borderColor: colors.primary, justifyContent: 'center' }]}
+                >
+                  <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
+                    {recurrenciaFin ? dayjs(recurrenciaFin).format('DD/MM/YYYY') : 'Seleccionar fecha límite'}
+                  </ThemedText>
+                </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showRecurrenciaFin}
+                  mode="date"
+                  minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+                  onConfirm={(date: Date) => { setRecurrenciaFin(date.toISOString()); setShowRecurrenciaFin(false); }}
+                  onCancel={() => setShowRecurrenciaFin(false)}
+                />
+              </>
+            )}
             <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
 
             {localImageUris && localImageUris.length > 0 && (

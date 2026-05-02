@@ -14,7 +14,7 @@ import {
 import { RutasService } from './rutas.service';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { UpdateRutaDto } from './dto/update-ruta.dto';
-import { Ruta } from '../entities/ruta.entity';
+import { Ruta } from './ruta.entity';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { UsersService } from '../users/users.service';
 

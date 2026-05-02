@@ -2,12 +2,12 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList } from '../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Alert } from 'react-native';
 import { reportError } from '../utils/telemetry';
@@ -176,13 +176,13 @@ const styles = StyleSheet.create({
   markAllButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 45,
     marginBottom: 12,
   },
   mensaje: { fontSize: 16 },
@@ -200,13 +200,14 @@ const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   trashButton: {
     position: 'absolute',
-    bottom: 12,
-    right: 8,
-    width: 28,
-    height: 28,
-    padding: 0,
-    borderRadius: 14,
+    bottom: 6,
+    right: 4,
+    width: 44,
+    height: 44,
+    padding: 8,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
   },
 });

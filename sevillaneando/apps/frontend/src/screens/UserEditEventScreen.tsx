@@ -1,4 +1,4 @@
-import { PrivateEventLinkModal } from './PrivateEventLinkModal';
+import { PrivateEventLinkModal } from '../components';
 import React, { useState, useRef, useEffect, ComponentType } from 'react';
 import {
   Alert,
@@ -19,10 +19,10 @@ import {
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../navigation/types';
 import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
 import { useTheme } from '../hooks/useTheme';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -30,6 +30,7 @@ import dayjs from 'dayjs';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
 import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -94,8 +95,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     { label: 'Pendiente', value: 'Pendiente' },
   ]);
 
-  const [latitude, setLatitude] = useState<number | null>(event.location?.coordinates?.[1] ?? 37.3891);
-  const [longitude, setLongitude] = useState<number | null>(event.location?.coordinates?.[0] ?? -5.9845);
+  const [latitude, setLatitude] = useState<number | null>(event.location?.coordinates?.[1] ?? SEVILLE_COORDINATES.latitude);
+  const [longitude, setLongitude] = useState<number | null>(event.location?.coordinates?.[0] ?? SEVILLE_COORDINATES.longitude);
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
 
   const [precio, setPrecio] = useState(event.precio ? String(event.precio) : '');
@@ -125,6 +126,17 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
     getFullImageUrl(event.imagen) || initialEventImages[0] || null
   );
+  const [recurrencia, setRecurrencia] = useState<string | null>((event as any).recurrencia ?? null);
+  const [openRecurrencia, setOpenRecurrencia] = useState(false);
+  const [recurrenciaItems] = useState([
+    { label: 'Sin recurrencia', value: '' },
+    { label: 'Diario', value: 'diario' },
+    { label: 'Semanal', value: 'semanal' },
+    { label: 'Quincenal', value: 'quincenal' },
+    { label: 'Mensual', value: 'mensual' },
+  ]);
+  const [recurrenciaFin, setRecurrenciaFin] = useState<string>((event as any).recurrenciaFin ?? '');
+  const [showRecurrenciaFin, setShowRecurrenciaFin] = useState(false);
   const [failedImageAttempts, setFailedImageAttempts] = useState<Record<number, number>>({});
 
   const scrollRef = useRef<ScrollView>(null);
@@ -186,7 +198,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
         try {
           const res = await fetch(
-            `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/events/upload-image`,
+            `${API_BASE_URL}/events/upload-image`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'multipart/form-data' },
@@ -194,9 +206,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             }
           );
           const data = await res.json();
-          const url = data.url.startsWith('http')
-            ? data.url
-            : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
+          const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
           newUrls.push(url);
         } catch (e) {
           Alert.alert('Error', 'No se pudo subir una imagen.');
@@ -315,6 +325,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         estado,
         imagenes: imageUrls || [],
         imagen: coverImageUrl || undefined,
+        recurrencia: recurrencia || undefined,
+        recurrenciaFin: recurrenciaFin || undefined,
       };
 
       const wasPublic = !event.privado;
@@ -353,7 +365,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             {privado && eventLinkAcceso && (
@@ -569,15 +580,19 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 position: 'relative',
               }}
             >
-              <MapView
+            <MapView
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
-                region={{
-                  latitude: latitude ?? 37.3891,
-                  longitude: longitude ?? -5.9845,
-                  latitudeDelta: mapDelta.latitudeDelta,
-                  longitudeDelta: mapDelta.longitudeDelta,
+                initialRegion={{
+                  latitude: latitude ?? SEVILLE_COORDINATES.latitude,
+                  longitude: longitude ?? SEVILLE_COORDINATES.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                rotateEnabled={false}
+                pitchEnabled={false}
                 onPress={(e) => {
                   const lat = e.nativeEvent.coordinate.latitude;
                   const lon = e.nativeEvent.coordinate.longitude;
@@ -594,10 +609,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 {latitude !== null && longitude !== null && (
                   <Marker coordinate={{ latitude, longitude }} />
                 )}
-                <UrlTile
-                  urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  maximumZ={19}
-                />
+                <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               </MapView>
             </View>
             <View style={{ marginBottom: 8 }}>
@@ -671,6 +683,45 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
             />
+
+            <ThemedText style={styles.label}>Recurrencia</ThemedText>
+            <DropDownPicker
+              open={openRecurrencia}
+              value={recurrencia}
+              items={recurrenciaItems}
+              setOpen={setOpenRecurrencia}
+              setValue={setRecurrencia}
+              setItems={() => {}}
+              placeholder="Sin recurrencia"
+              style={{ backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10 }}
+              dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
+              textStyle={{ color: colors.text }}
+              placeholderStyle={{ color: colors.text + '99' }}
+              zIndex={950}
+              listMode="SCROLLVIEW"
+              ArrowUpIconComponent={ArrowUpIcon}
+              ArrowDownIconComponent={ArrowDownIcon}
+            />
+            {!!recurrencia && (
+              <>
+                <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
+                <TouchableOpacity
+                  onPress={() => setShowRecurrenciaFin(true)}
+                  style={[styles.input, { backgroundColor: colors.card, borderColor: colors.primary, justifyContent: 'center' }]}
+                >
+                  <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
+                    {recurrenciaFin ? dayjs(recurrenciaFin).format('DD/MM/YYYY') : 'Seleccionar fecha límite'}
+                  </ThemedText>
+                </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showRecurrenciaFin}
+                  mode="date"
+                  minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+                  onConfirm={(date: Date) => { setRecurrenciaFin(date.toISOString()); setShowRecurrenciaFin(false); }}
+                  onCancel={() => setShowRecurrenciaFin(false)}
+                />
+              </>
+            )}
 
             <ThemedText style={styles.label}>Categoría</ThemedText>
             {categoriasLoading ? (

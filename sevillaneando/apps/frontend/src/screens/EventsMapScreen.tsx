@@ -4,13 +4,14 @@ import MapView, { Marker, Circle, Callout, UrlTile } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
-import { getEvents, getErrorMessage } from '../services/api';
+import { RootStackParamList } from '../navigation/types';
+import { getEvents, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { ThemedView, ThemedText } from '../components';
 import type { Event } from '../types/event';
 import { reportError } from '../utils/telemetry';
+import { haversineDistanceKm, OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventsMap'>;
 
@@ -23,20 +24,6 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [radius, setRadius] = useState(1000);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
 
   const getMarkerColor = (distance?: number): string => {
     if (!distance || distance === Infinity) return '#9370DB';
@@ -70,25 +57,30 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const remote = await getEvents(user?.id);
+        const userLon = user?.ubicacion?.coordinates?.[0];
+        const userLat = user?.ubicacion?.coordinates?.[1];
+        const hasLocation = userLat != null && userLon != null;
 
-        if (user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2) {
-          const userLon = user.ubicacion.coordinates[0];
-          const userLat = user.ubicacion.coordinates[1];
+        const { events: remote } = await getEvents(
+          user?.id,
+          hasLocation ? { lat: userLat, lng: userLon } : undefined,
+        );
 
+        if (hasLocation) {
           const eventsWithDistance = remote.map((event) => {
-            if (!event.location || !event.location.coordinates || event.location.coordinates.length !== 2) {
+            const serverDist = (event as any).distanceKm;
+            if (serverDist != null) return { ...event, distance: Number(serverDist) };
+            if (!event.location?.coordinates || event.location.coordinates.length !== 2) {
               return { ...event, distance: Infinity };
             }
-            const dist = calculateDistance(
-              userLat,
-              userLon,
-              event.location.coordinates[1],
-              event.location.coordinates[0]
-            );
-            return { ...event, distance: dist };
+            return {
+              ...event,
+              distance: haversineDistanceKm(
+                { latitude: userLat, longitude: userLon },
+                { latitude: event.location.coordinates[1], longitude: event.location.coordinates[0] },
+              ),
+            };
           });
-
           setEvents(eventsWithDistance);
         } else {
           setEvents(remote);
@@ -103,8 +95,8 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
     fetchEvents();
   }, [user]);
 
-  const userLat = user?.ubicacion?.coordinates?.[1] ?? 37.3891;
-  const userLon = user?.ubicacion?.coordinates?.[0] ?? -5.9845;
+  const userLat = user?.ubicacion?.coordinates?.[1] ?? SEVILLE_COORDINATES.latitude;
+  const userLon = user?.ubicacion?.coordinates?.[0] ?? SEVILLE_COORDINATES.longitude;
 
   const hasUserLocation = user?.ubicacion?.coordinates && user.ubicacion.coordinates.length === 2;
 
@@ -119,7 +111,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           longitudeDelta: 0.05,
         }}
       >
-        <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+        <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
         {hasUserLocation && (
           <>
             <Marker coordinate={{ latitude: userLat, longitude: userLon }} title="Tu ubicación">
@@ -128,7 +120,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 <View
                   style={{
                     backgroundColor: '#ffd700',
-                    borderRadius: 16,
+                    borderRadius: 30,
                     padding: 6,
                     minWidth: 100,
                     alignItems: 'center',
@@ -175,7 +167,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                       <View
                         style={{
                           backgroundColor: theme === 'dark' ? '#000' : '#fff',
-                          borderRadius: 12,
+                          borderRadius: 30,
                           padding: 10,
                           width: 350,
                           maxWidth: 350,
@@ -262,7 +254,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 left: 12,
                 right: 12,
                 backgroundColor: theme === 'dark' ? '#000000' : '#fff',
-                borderRadius: 16,
+                borderRadius: 40,
                 padding: 8,
                 shadowColor: '#000',
                 shadowOpacity: 0.3,
@@ -278,7 +270,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                   right: 6,
                   width: 24,
                   height: 24,
-                  borderRadius: 12,
+                  borderRadius: 30,
                   backgroundColor: theme === 'dark' ? '#333' : '#f0f0f0',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -319,7 +311,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() => navigation.navigate('EventDetail', { event: selectedEvent })}
                 style={{
                   backgroundColor: '#6c2eb7',
-                  borderRadius: 6,
+                  borderRadius: 16,
                   paddingVertical: 6,
                   paddingHorizontal: 10,
                   alignItems: 'center',
@@ -396,7 +388,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -406,6 +398,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 30,
   },
 });

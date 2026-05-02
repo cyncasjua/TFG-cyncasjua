@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useAuthContext } from '../context/AuthContext';
-import { api, getErrorMessage } from '../services/api';
+import { api, getErrorMessage } from '../services';
 import {
   ThemedView,
   ThemedCard,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   item: {
     marginBottom: 0,
     padding: 16,
-    borderRadius: 22,
+    borderRadius: 30,
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.08,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   itemTitle: { fontSize: 15, fontWeight: 'bold', letterSpacing: 0.5 },
   itemDesc: { fontSize: 13, color: '#888', marginLeft: 2, marginTop: 2 },
   form: {
-    borderRadius: 24,
+    borderRadius: 30,
     padding: 18,
     elevation: 3,
     shadowColor: '#000',
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   formHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   formTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 0, letterSpacing: 0.5 },
-  input: { borderWidth: 1.5, borderRadius: 16, padding: 10, marginBottom: 12, fontSize: 13 },
+  input: { borderWidth: 1.5, borderRadius: 30, padding: 10, marginBottom: 12, fontSize: 13 },
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',

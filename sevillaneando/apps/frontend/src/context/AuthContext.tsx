@@ -6,7 +6,7 @@ import {
   getIdTokenResult,
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
-import { api, setAuthToken } from '../services/api';
+import { api, setAuthToken } from '../services';
 import type { User as AppUser } from '../types/user';
 import { reportWarning } from '../utils/telemetry';
 

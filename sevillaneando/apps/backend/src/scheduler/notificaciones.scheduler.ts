@@ -4,23 +4,11 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../events/events.service';
 import { UsersService } from '../users/users.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
-import { TipoEnum } from '../enums/tipo.enum';
+import { TipoEnum } from '../notificaciones/enums/tipo.enum';
+import { haversineDistanceKm } from '../common/distance.util';
 
 const RADIO_KM = 1;
 
-function calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-
-}
 
 @Injectable()
 export class NotificacionesScheduler {
@@ -35,19 +23,19 @@ export class NotificacionesScheduler {
   @Cron(CronExpression.EVERY_HOUR)
   async notificarEventosCercanos() {
     this.logger.log('Ejecutando notificación de eventos cercanos...');
-    const eventos = await this.eventsService.findAll();
+    const eventos = await this.eventsService.findAllForScheduler();
     const usuarios = await this.usersService.findAll();
 
     for (const evento of eventos) {
-      if (!evento.location || !evento.location.coordinates) continue;
+      if (!evento.location || !evento.location.coordinates || !evento.title) continue;
       const [lonEv, latEv] = evento.location.coordinates;
       for (const usuario of usuarios) {
         if (!usuario.ubicacion || !usuario.ubicacion.coordinates) continue;
         const [lonU, latU] = usuario.ubicacion.coordinates;
-        const distancia = calcularDistanciaKm(latEv, lonEv, latU, lonU);
+        const distancia = haversineDistanceKm(Number(latEv), Number(lonEv), Number(latU), Number(lonU));
         if (distancia <= RADIO_KM) {
           const notificaciones = await this.notificacionesService.obtenerParaUsuario(usuario.id);
-          const yaNotificado = notificaciones.some(n => n.mensaje.includes(evento.title));
+          const yaNotificado = notificaciones.some(n => n.mensaje.includes(evento.title!));
           if (!yaNotificado) {
             await this.notificacionesService.crearParaUsuario(
               usuario,
@@ -68,10 +56,10 @@ async notificarEventosProximos() {
   const dentroUnaSemana = new Date();
   dentroUnaSemana.setDate(ahora.getDate() + 7);
 
-  const eventos = await this.eventsService.findAll();
+  const eventos = await this.eventsService.findAllForScheduler();
 
   for (const evento of eventos) {
-    if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0) continue;
+    if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0 || !evento.title) continue;
 
     const fechaEvento = new Date(evento.fechaInicio);
 
@@ -82,7 +70,7 @@ async notificarEventosProximos() {
 
         const yaNotificado = notificaciones.some(n =>
           n.tipo === TipoEnum.EventoProximo &&
-          n.mensaje.includes(evento.title)
+          n.mensaje.includes(evento.title!)
         );
 
         if (!yaNotificado) {
@@ -106,10 +94,10 @@ async notificarEventosProximos() {
     const ahora = new Date();
     const en24h = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
 
-    const eventos = await this.eventsService.findAll();
+    const eventos = await this.eventsService.findAllForScheduler();
 
     for (const evento of eventos) {
-      if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0) continue;
+      if (!evento.fechaInicio || !evento.asistentes || evento.asistentes.length === 0 || !evento.title) continue;
 
       const fechaEvento = new Date(evento.fechaInicio);
 
@@ -118,7 +106,7 @@ async notificarEventosProximos() {
           const notificaciones = await this.notificacionesService.obtenerParaUsuario(usuario.id);
           const yaNotificado = notificaciones.some(n =>
             n.tipo === TipoEnum.EventoProximo &&
-            n.mensaje.includes(evento.title) &&
+            n.mensaje.includes(evento.title!) &&
             n.mensaje.includes('mañana')
           );
           if (!yaNotificado) {

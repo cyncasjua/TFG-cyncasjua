@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { EventsModule } from './events/events.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
@@ -8,26 +10,34 @@ import { Event } from './events/event.entity';
 import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
 import { SeedService } from './database/seed.service';
-import { Categoria } from './entities/categoria.entity';
-import { Resena } from './entities/resena.entity';
-import { Ruta } from './entities/ruta.entity';
-import { CalificacionRuta } from './entities/calificacion-ruta.entity';
-import { Notificacion } from './entities/notificacion.entity';
-import { Recomendacion } from './entities/recomendacion.entity';
+import { Categoria } from './categorias/categoria.entity';
+import { Resena } from './events/resena.entity';
+import { Ruta } from './rutas/ruta.entity';
+import { CalificacionRuta } from './rutas/calificacion-ruta.entity';
+import { Notificacion } from './notificaciones/notificacion.entity';
+import { Recomendacion } from './recomendaciones/recomendacion.entity';
 import { CategoriasModule } from './categorias/categorias.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
-import { Mensaje } from './entities/mensaje.entity';
+import { Mensaje } from './chat/mensaje.entity';
 import { ChatModule } from './chat/chat.module';
-import { MensajePrivado } from './entities/mensaje-privado.entity';
+import { MensajePrivado } from './chat/mensaje-privado.entity';
 import { ScrapingModule } from './scraping/scraping.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEditRequest } from './events/event-edit-request.entity';
 import { RecomendacionesModule } from './recomendaciones/recomendaciones.module';
 import { RutasModule } from './rutas/rutas.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
     CloudinaryModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -49,9 +59,10 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
           Recomendacion,
           Mensaje,
           MensajePrivado,
-          EventEditRequest
+          EventEditRequest,
         ],
         synchronize: true,
+        ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
       }),
     }),
     DatabaseModule,
@@ -65,6 +76,12 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
     SchedulerModule,
     RecomendacionesModule,
     RutasModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {

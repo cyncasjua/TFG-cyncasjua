@@ -10,6 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+import { ThrottleUpload } from '../common/decorators/throttle-custom.decorator';
 
 @Controller('chat')
 export class ChatController {
@@ -17,6 +18,7 @@ export class ChatController {
 
   @Post('upload')
   @UseGuards(FirebaseAuthGuard)
+  @ThrottleUpload()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),

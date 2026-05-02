@@ -18,6 +18,8 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl } from '../utils/imageUrl';
+import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
+import { API_BASE_URL } from '../services';
 import { Button } from 'react-native';
 import { Alert } from 'react-native';
 import { getAuth, deleteUser } from 'firebase/auth';
@@ -53,7 +55,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
     const fetchCategorias = async () => {
       try {
         const res = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}/categorias`,
+          `${API_BASE_URL}/categorias`,
           {
             headers: {
               Authorization: `Bearer ${token || ''}`,
@@ -93,7 +95,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
 
       try {
         const res = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${endpointFoto}`,
+          `${API_BASE_URL}${endpointFoto}`,
           {
             method: 'POST',
             headers: {
@@ -104,9 +106,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           }
         );
         const data = await res.json();
-        const url = data.url.startsWith('http')
-          ? data.url
-          : `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${data.url}`;
+        const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
         setFotoPerfil(url);
         if (user) setUser({ ...user, fotoPerfil: url });
       } catch (e) {
@@ -125,7 +125,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           : null;
 
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${endpointPerfil}`,
+        `${API_BASE_URL}${endpointPerfil}`,
         {
           method: 'PATCH',
           headers: {
@@ -154,7 +154,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   const quitarFotoPerfil = async () => {
     setFotoPerfil('');
-    await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${endpointPerfil}`, {
+    await fetch(`${API_BASE_URL}${endpointPerfil}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             try {
               const endpoint = '/users/me/firebase';
               const res = await fetch(
-                `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'}${endpoint}`,
+                `${API_BASE_URL}${endpoint}`,
                 {
                   method: 'DELETE',
                   headers: {
@@ -335,7 +335,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         <View
           style={{
             height: 180,
-            borderRadius: 18,
+            borderRadius: 30,
             overflow: 'hidden',
             marginBottom: 10,
             borderWidth: 1,
@@ -346,8 +346,8 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           <MapView
             style={StyleSheet.absoluteFillObject}
             region={{
-              latitude: latitud ?? 37.3891,
-              longitude: longitud ?? -5.9845,
+              latitude: latitud ?? SEVILLE_COORDINATES.latitude,
+              longitude: longitud ?? SEVILLE_COORDINATES.longitude,
               latitudeDelta: mapDelta.latitudeDelta,
               longitudeDelta: mapDelta.longitudeDelta,
             }}
@@ -362,7 +362,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             {latitud && longitud && (
               <Marker coordinate={{ latitude: latitud, longitude: longitud }} />
             )}
-            <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
+            <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
           </MapView>
         </View>
         <View style={{ marginBottom: 8 }}>
@@ -433,32 +433,28 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         )}
       </View>
       {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-      <ThemedButton
-        title={saving ? 'Guardando...' : 'Guardar'}
-        onPress={handleSave}
-        disabled={saving}
-        style={styles.saveButton}
-      />
-      <ThemedButton
-        title="Cambiar contraseña"
-        variant="secondary"
-        onPress={() => navigation.navigate('EditPassword')}
-        style={[styles.cancelButton, { backgroundColor: colors.primary }]}
-        textStyle={{ color: '#fff' }}
-      />
-      <ThemedButton
-        title="Cancelar"
-        variant="secondary"
-        onPress={() => navigation.goBack()}
-        style={styles.cancelButton}
-      />
-      <ThemedButton
-        title="Eliminar cuenta"
-        variant="secondary"
-        onPress={handleDeleteAccount}
-        style={[styles.cancelButton, { backgroundColor: colors.error }]}
-        textStyle={{ color: '#fff' }}
-      />
+      <View style={styles.actionsGroup}>
+        <ThemedButton
+          title={saving ? 'Guardando...' : 'Guardar'}
+          onPress={handleSave}
+          disabled={saving}
+          style={styles.primaryAction}
+        />
+        <ThemedButton
+          title="Cambiar contraseña"
+          variant="secondary"
+          onPress={() => navigation.navigate('EditPassword')}
+          style={[styles.secondaryAction, styles.outlinePrimaryAction, { borderColor: colors.primary }]}
+          textStyle={{ color: colors.primary }}
+        />
+        <ThemedButton
+          title="Eliminar cuenta"
+          variant="secondary"
+          onPress={handleDeleteAccount}
+          style={[styles.secondaryAction, { backgroundColor: colors.error }]}
+          textStyle={{ color: '#fff' }}
+        />
+      </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -470,7 +466,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', marginBottom: 24, alignSelf: 'center' },
   input: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 30,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
@@ -487,7 +483,7 @@ const styles = StyleSheet.create({
   },
   mapSearchInput: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 30,
     padding: 12,
     fontSize: 16,
   },
@@ -495,8 +491,20 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 8,
   },
-  saveButton: { marginTop: 8 },
-  cancelButton: { marginTop: 8 },
+  actionsGroup: {
+    marginTop: 12,
+    gap: 12,
+  },
+  primaryAction: {
+    minHeight: 48,
+  },
+  secondaryAction: {
+    minHeight: 48,
+  },
+  outlinePrimaryAction: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
   interestsContainer: {
     marginBottom: 12,
   },
@@ -507,7 +515,7 @@ const styles = StyleSheet.create({
   },
   interestChip: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 30,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },

@@ -7,14 +7,24 @@ import { seedEvents } from './database/seed';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Server, Socket } from 'socket.io';
-import { Mensaje } from './entities/mensaje.entity';
+import { Mensaje } from './chat/mensaje.entity';
 import { FirebaseService } from './auth/firebase.service';
 import { User } from './users/user.entity';
-import { MensajePrivado } from './entities/mensaje-privado.entity';
+import { MensajePrivado } from './chat/mensaje-privado.entity';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:8081', 'http://localhost:19006'];
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: {
+      origin: allowedOrigins,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      credentials: true,
+    },
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,12 +38,29 @@ async function bootstrap() {
   const server = app.getHttpServer();
   const io = new Server(server, {
     cors: {
-      origin: '*',
+      origin: allowedOrigins,
+      credentials: true,
     },
   });
 
   function emitSocketError(socket: Socket, code: string, message: string) {
     socket.emit('chat_error', { code, message });
+  }
+
+  // Ventana de 10 s, máximo 10 mensajes por usuario
+  const socketMessageCounts = new Map<string, { count: number; resetAt: number }>();
+  function checkSocketRateLimit(socketId: string): boolean {
+    const now = Date.now();
+    const window = 10_000;
+    const maxPerWindow = 10;
+    const entry = socketMessageCounts.get(socketId);
+    if (!entry || now > entry.resetAt) {
+      socketMessageCounts.set(socketId, { count: 1, resetAt: now + window });
+      return true;
+    }
+    if (entry.count >= maxPerWindow) return false;
+    entry.count++;
+    return true;
   }
   const firebaseService = app.get(FirebaseService);
   const dataSource = app.get(DataSource);
@@ -73,6 +100,7 @@ async function bootstrap() {
     }
 
     socket.on('disconnect', () => {
+      socketMessageCounts.delete(socket.id);
     });
 
     socket.on('get_conversations', async () => {
@@ -155,6 +183,10 @@ async function bootstrap() {
     socket.on(
       'chat_message',
       async ({ eventId, text, imageUrl }: { eventId: string; text?: string; imageUrl?: string }) => {
+        if (!checkSocketRateLimit(socket.id)) {
+          emitSocketError(socket, 'rate_limit', 'Demasiados mensajes. Espera unos segundos.');
+          return;
+        }
         try {
           const firebaseUid = socket.data.user?.uid;
           const trimmedText = text?.trim() ?? '';
@@ -210,15 +242,6 @@ async function bootstrap() {
           take: 50,
         });
 
-        logger.debug(`[dm_history] Enviando ${history.length} mensajes. Primer mensaje:`, JSON.stringify({
-          id: history[0]?.id,
-          emisor_id: history[0]?.emisor?.id,
-          emisor_nombre: history[0]?.emisor?.nombre,
-          emisor_fotoPerfil: history[0]?.emisor?.fotoPerfil,
-          receptor_id: history[0]?.receptor?.id,
-          receptor_fotoPerfil: history[0]?.receptor?.fotoPerfil,
-        }));
-
         socket.emit('dm_history', history);
       } catch (err) {
         emitSocketError(socket, 'dm_history_failed', 'Error al cargar historial de mensajes privados');
@@ -248,6 +271,10 @@ async function bootstrap() {
     socket.on(
       'dm_message',
       async ({ toUserId, text, imageUrl }: { toUserId: string; text?: string; imageUrl?: string }) => {
+        if (!checkSocketRateLimit(socket.id)) {
+          emitSocketError(socket, 'rate_limit', 'Demasiados mensajes. Espera unos segundos.');
+          return;
+        }
         try {
           const me = socket.data.userId;
           const trimmedText = text?.trim() ?? '';
@@ -280,15 +307,6 @@ async function bootstrap() {
             where: { id: saved.id },
             relations: ['emisor', 'receptor'],
           });
-
-          logger.debug(`[dm_message] Enviando mensaje. Datos:`, JSON.stringify({
-            id: hydrated?.id,
-            emisor_id: hydrated?.emisor?.id,
-            emisor_nombre: hydrated?.emisor?.nombre,
-            emisor_fotoPerfil: hydrated?.emisor?.fotoPerfil,
-            receptor_id: hydrated?.receptor?.id,
-            receptor_fotoPerfil: hydrated?.receptor?.fotoPerfil,
-          }));
 
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');

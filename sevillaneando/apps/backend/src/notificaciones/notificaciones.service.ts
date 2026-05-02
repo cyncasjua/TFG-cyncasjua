@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Notificacion } from '../entities/notificacion.entity';
+import { Notificacion } from './notificacion.entity';
 import { User } from '../users/user.entity';
-import { TipoEnum } from '../enums/tipo.enum';
+import { TipoEnum } from './enums/tipo.enum';
 
 @Injectable()
 export class NotificacionesService {

@@ -3,6 +3,7 @@ import { ScrapingService } from './scraping.service';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { ThrottleStrict } from '../common/decorators/throttle-custom.decorator';
 
 @Controller('scraping')
 @UseGuards(FirebaseAuthGuard, RolesGuard)
@@ -12,6 +13,7 @@ export class ScrapingController {
 
   @Post('run-all')
   @Roles('admin')
+  @ThrottleStrict()
   async runAllScrapers() {
     const result = await this.scrapingService.scrapeAll();
     return {
@@ -22,6 +24,7 @@ export class ScrapingController {
 
   @Post('run/:scraperName')
   @Roles('admin')
+  @ThrottleStrict()
   async runScraper(@Param('scraperName') scraperName: string) {
     const result = await this.scrapingService.scrapeByName(scraperName);
     return {

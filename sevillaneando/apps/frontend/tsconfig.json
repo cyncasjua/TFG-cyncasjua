@@ -16,6 +16,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "rootDir": ".",
     "customConditions": [
       "react-native"
     ],

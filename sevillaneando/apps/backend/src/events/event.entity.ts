@@ -7,14 +7,15 @@ import {
   BeforeUpdate,
   ManyToMany,
   JoinTable,
-  Index,
 } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { Categoria } from '../entities/categoria.entity';
+import { Categoria } from '../categorias/categoria.entity';
 
-import { EstadoEnum } from '../enums/estado.enum';
+import { EstadoEnum } from './enums/estado.enum';
+import { RecurrenciaEnum } from './enums/recurrencia.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { User } from '../users/user.entity';
+import { countEventImages, stringifyEventImages } from './event-images.util';
 
 @Entity({ name: 'events' })
 export class Event {
@@ -41,6 +42,12 @@ export class Event {
 
   @Column({ type: 'boolean', default: false })
   hasMultipleDatesAvailable!: boolean;
+
+  @Column({ type: 'enum', enum: RecurrenciaEnum, nullable: true })
+  recurrencia?: RecurrenciaEnum | null;
+
+  @Column('timestamp', { nullable: true })
+  recurrenciaFin?: Date | null;
 
   @Column('float', { nullable: true })
   precio?: number | null;
@@ -76,7 +83,7 @@ export class Event {
   imagen?: string;
 
   @Column({ type: 'text', nullable: true })
-  imagenes?: string; // JSON string, nunca simple-array
+  imagenes?: string | string[] | null; // JSON string en BD; array al serializar respuestas
 
   @ManyToMany(() => User, (user) => user.eventosAsistidos)
   @JoinTable({
@@ -101,20 +108,9 @@ export class Event {
   @BeforeInsert()
   @BeforeUpdate()
   validateDates() {
-    // Asegurar que imagenes SIEMPRE sea guardado como JSON string válido
+    // Asegurar que imagenes SIEMPRE se guarde como JSON string válido
     if (this.imagenes) {
-      if (Array.isArray(this.imagenes)) {
-        // Si es array, convertir a JSON string
-        (this as any).imagenes = JSON.stringify(this.imagenes);
-      } else if (typeof this.imagenes === 'string' && !this.imagenes.startsWith('[')) {
-        // Si es string pero no empieza con '[', intentar parsear como CSV
-        try {
-          const arr = this.imagenes.split(',').map(s => s.trim()).filter(s => s);
-          (this as any).imagenes = JSON.stringify(arr);
-        } catch {
-          // Mantener como está si hay error
-        }
-      }
+      this.imagenes = stringifyEventImages(this.imagenes);
     }
 
     if (this.fechaFin && this.fechaInicio && this.fechaFin <= this.fechaInicio) {
@@ -154,23 +150,9 @@ export class Event {
       throw new BadRequestException('La URL de la imagen no puede superar los 512 caracteres.');
     }
     if (this.imagenes) {
-      try {
-        let imagenCount = 0;
-        if (typeof this.imagenes === 'string') {
-          if (this.imagenes.startsWith('[')) {
-            const parsed = JSON.parse(this.imagenes);
-            imagenCount = Array.isArray(parsed) ? parsed.length : 0;
-          } else {
-            imagenCount = this.imagenes.split(',').filter(s => s.trim()).length;
-          }
-        }
-
-        if (imagenCount > 5) {
-          throw new BadRequestException('No puedes subir más de 5 imágenes para un evento.');
-        }
-      } catch (e) {
-        if (e instanceof BadRequestException) throw e;
-        throw new BadRequestException('Error validando imágenes.');
+      const imagenCount = countEventImages(this.imagenes);
+      if (imagenCount > 5) {
+        throw new BadRequestException('No puedes subir más de 5 imágenes para un evento.');
       }
     }
   }
