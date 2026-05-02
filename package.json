@@ -23,6 +23,7 @@
   "scripts": {},
   "devDependencies": {
     "@commitlint/config-conventional": "^20.4.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "@types/react-native": "^0.72.8",
     "commitlint": "^20.4.1",

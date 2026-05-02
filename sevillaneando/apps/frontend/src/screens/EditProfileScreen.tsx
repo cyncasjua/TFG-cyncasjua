@@ -433,32 +433,28 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         )}
       </View>
       {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-      <ThemedButton
-        title={saving ? 'Guardando...' : 'Guardar'}
-        onPress={handleSave}
-        disabled={saving}
-        style={styles.saveButton}
-      />
-      <ThemedButton
-        title="Cambiar contraseña"
-        variant="secondary"
-        onPress={() => navigation.navigate('EditPassword')}
-        style={[styles.cancelButton, { backgroundColor: colors.primary }]}
-        textStyle={{ color: '#fff' }}
-      />
-      <ThemedButton
-        title="Cancelar"
-        variant="secondary"
-        onPress={() => navigation.goBack()}
-        style={styles.cancelButton}
-      />
-      <ThemedButton
-        title="Eliminar cuenta"
-        variant="secondary"
-        onPress={handleDeleteAccount}
-        style={[styles.cancelButton, { backgroundColor: colors.error }]}
-        textStyle={{ color: '#fff' }}
-      />
+      <View style={styles.actionsGroup}>
+        <ThemedButton
+          title={saving ? 'Guardando...' : 'Guardar'}
+          onPress={handleSave}
+          disabled={saving}
+          style={styles.primaryAction}
+        />
+        <ThemedButton
+          title="Cambiar contraseña"
+          variant="secondary"
+          onPress={() => navigation.navigate('EditPassword')}
+          style={[styles.secondaryAction, styles.outlinePrimaryAction, { borderColor: colors.primary }]}
+          textStyle={{ color: colors.primary }}
+        />
+        <ThemedButton
+          title="Eliminar cuenta"
+          variant="secondary"
+          onPress={handleDeleteAccount}
+          style={[styles.secondaryAction, { backgroundColor: colors.error }]}
+          textStyle={{ color: '#fff' }}
+        />
+      </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -495,8 +491,20 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 8,
   },
-  saveButton: { marginTop: 8 },
-  cancelButton: { marginTop: 8 },
+  actionsGroup: {
+    marginTop: 12,
+    gap: 12,
+  },
+  primaryAction: {
+    minHeight: 48,
+  },
+  secondaryAction: {
+    minHeight: 48,
+  },
+  outlinePrimaryAction: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
   interestsContainer: {
     marginBottom: 12,
   },
