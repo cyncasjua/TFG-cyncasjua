@@ -14,6 +14,7 @@ import {
 } from '../components';
 import type { AuthStackParamList } from '../navigation/types';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -38,9 +39,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       } else {
         await AsyncStorage.removeItem('savedEmail');
       }
-    } catch (err: any) {
-      const message = err?.message ?? 'No se pudo iniciar sesión.';
-      setError(message);
+    } catch (err: unknown) {
+      setError(getFirebaseErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -57,8 +57,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       alert(
         'Te hemos enviado un email para restablecer tu contraseña. Si no lo ves, revisa la carpeta de spam.'
       );
-    } catch (err: any) {
-      setError('No se pudo enviar el email de recuperación.');
+    } catch (err: unknown) {
+      setError(getFirebaseErrorMessage(err));
     }
   };
 
