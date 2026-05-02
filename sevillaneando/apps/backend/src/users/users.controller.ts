@@ -100,6 +100,8 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async remove(@Param('id') id: string) {
     await this.usersService.deleteCompletelyById(id);
     return { success: true };

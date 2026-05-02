@@ -12,7 +12,7 @@
     "@react-native-firebase/storage": "^23.7.0",
     "axios": "^1.15.2",
     "dayjs": "^1.11.20",
-    "expo": "^49.0.23",
+    "expo": "^55.0.19",
     "expo-image-manipulator": "^55.0.14",
     "react": "19.1.0",
     "react-native": "0.81.5",

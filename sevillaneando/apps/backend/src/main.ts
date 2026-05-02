@@ -14,7 +14,17 @@ import { MensajePrivado } from './chat/mensaje-privado.entity';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:8081', 'http://localhost:19006'];
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: {
+      origin: allowedOrigins,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      credentials: true,
+    },
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,7 +38,8 @@ async function bootstrap() {
   const server = app.getHttpServer();
   const io = new Server(server, {
     cors: {
-      origin: '*',
+      origin: allowedOrigins,
+      credentials: true,
     },
   });
 
@@ -210,15 +221,6 @@ async function bootstrap() {
           take: 50,
         });
 
-        logger.debug(`[dm_history] Enviando ${history.length} mensajes. Primer mensaje:`, JSON.stringify({
-          id: history[0]?.id,
-          emisor_id: history[0]?.emisor?.id,
-          emisor_nombre: history[0]?.emisor?.nombre,
-          emisor_fotoPerfil: history[0]?.emisor?.fotoPerfil,
-          receptor_id: history[0]?.receptor?.id,
-          receptor_fotoPerfil: history[0]?.receptor?.fotoPerfil,
-        }));
-
         socket.emit('dm_history', history);
       } catch (err) {
         emitSocketError(socket, 'dm_history_failed', 'Error al cargar historial de mensajes privados');
@@ -280,15 +282,6 @@ async function bootstrap() {
             where: { id: saved.id },
             relations: ['emisor', 'receptor'],
           });
-
-          logger.debug('[dm_message] Enviando mensaje. Datos:', JSON.stringify({
-            id: hydrated?.id,
-            emisor_id: hydrated?.emisor?.id,
-            emisor_nombre: hydrated?.emisor?.nombre,
-            emisor_fotoPerfil: hydrated?.emisor?.fotoPerfil,
-            receptor_id: hydrated?.receptor?.id,
-            receptor_fotoPerfil: hydrated?.receptor?.fotoPerfil,
-          }));
 
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');

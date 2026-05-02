@@ -27,6 +27,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UsersService } from '../users/users.service';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 
 @Controller('events')
@@ -39,6 +41,7 @@ export class EventsController {
   ) { }
 
   @Post()
+  @UseGuards(FirebaseAuthGuard)
   async create(@Body() dto: CreateEventDto): Promise<Event> {
     return this.eventsService.create(dto);
   }
@@ -69,16 +72,20 @@ export class EventsController {
   }
 
   @Put(':id')
+  @UseGuards(FirebaseAuthGuard)
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
     return this.eventsService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseAuthGuard)
   async remove(@Param('id') id: string): Promise<void> {
     return this.eventsService.remove(id);
   }
 
-@Patch(':id/aprobar')
+  @Patch(':id/aprobar')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
   async aprobar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Aprobado)
@@ -98,6 +105,8 @@ export class EventsController {
   }
 
   @Patch(':id/rechazar')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
   async rechazar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
     if (event.estado === EstadoEnum.Rechazado)
