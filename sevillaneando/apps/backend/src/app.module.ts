@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { EventsModule } from './events/events.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
@@ -25,9 +27,17 @@ import { EventEditRequest } from './events/event-edit-request.entity';
 import { RecomendacionesModule } from './recomendaciones/recomendaciones.module';
 import { RutasModule } from './rutas/rutas.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
     CloudinaryModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -49,7 +59,7 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
           Recomendacion,
           Mensaje,
           MensajePrivado,
-          EventEditRequest
+          EventEditRequest,
         ],
         synchronize: process.env.NODE_ENV !== 'production',
       }),
@@ -65,6 +75,12 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
     SchedulerModule,
     RecomendacionesModule,
     RutasModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {

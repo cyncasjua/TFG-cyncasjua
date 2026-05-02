@@ -46,6 +46,22 @@ async function bootstrap() {
   function emitSocketError(socket: Socket, code: string, message: string) {
     socket.emit('chat_error', { code, message });
   }
+
+  // Ventana de 10 s, máximo 10 mensajes por usuario
+  const socketMessageCounts = new Map<string, { count: number; resetAt: number }>();
+  function checkSocketRateLimit(socketId: string): boolean {
+    const now = Date.now();
+    const window = 10_000;
+    const maxPerWindow = 10;
+    const entry = socketMessageCounts.get(socketId);
+    if (!entry || now > entry.resetAt) {
+      socketMessageCounts.set(socketId, { count: 1, resetAt: now + window });
+      return true;
+    }
+    if (entry.count >= maxPerWindow) return false;
+    entry.count++;
+    return true;
+  }
   const firebaseService = app.get(FirebaseService);
   const dataSource = app.get(DataSource);
 
@@ -84,6 +100,7 @@ async function bootstrap() {
     }
 
     socket.on('disconnect', () => {
+      socketMessageCounts.delete(socket.id);
     });
 
     socket.on('get_conversations', async () => {
@@ -166,6 +183,10 @@ async function bootstrap() {
     socket.on(
       'chat_message',
       async ({ eventId, text, imageUrl }: { eventId: string; text?: string; imageUrl?: string }) => {
+        if (!checkSocketRateLimit(socket.id)) {
+          emitSocketError(socket, 'rate_limit', 'Demasiados mensajes. Espera unos segundos.');
+          return;
+        }
         try {
           const firebaseUid = socket.data.user?.uid;
           const trimmedText = text?.trim() ?? '';
@@ -250,6 +271,10 @@ async function bootstrap() {
     socket.on(
       'dm_message',
       async ({ toUserId, text, imageUrl }: { toUserId: string; text?: string; imageUrl?: string }) => {
+        if (!checkSocketRateLimit(socket.id)) {
+          emitSocketError(socket, 'rate_limit', 'Demasiados mensajes. Espera unos segundos.');
+          return;
+        }
         try {
           const me = socket.data.userId;
           const trimmedText = text?.trim() ?? '';

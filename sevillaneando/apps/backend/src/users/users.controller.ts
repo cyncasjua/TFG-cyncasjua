@@ -27,6 +27,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { TipoEnum } from '../notificaciones/enums/tipo.enum';
+import { ThrottleUpload, ThrottleStrict } from '../common/decorators/throttle-custom.decorator';
 
 @Controller('users')
 @UseGuards(FirebaseAuthGuard)
@@ -38,6 +39,7 @@ export class UsersController {
   ) { }
 
   @Post('upload-profile-image/firebase')
+  @ThrottleUpload()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
