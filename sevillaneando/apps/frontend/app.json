@@ -4,9 +4,7 @@
     "slug": "sevillaneando",
     "scheme": "sevillaneando",
     "version": "1.0.0",
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -36,7 +34,9 @@
       "web"
     ],
     "updates": {
-      "url": "https://u.expo.dev/fc31833c-1165-492c-b635-129a38215d51"
+      "url": "https://u.expo.dev/fc31833c-1165-492c-b635-129a38215d51",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     },
     "extra": {
       "eas": {
