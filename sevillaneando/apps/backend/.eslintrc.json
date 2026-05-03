@@ -21,7 +21,7 @@
 
   "rules": {
     "semi": ["error", "always"],
-    "quotes": ["error", "single"],
+    "quotes": ["error", "single", {"avoidEscape": true}],
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
     "no-console": ["warn", {"allow": ["warn", "error","log"]}]
