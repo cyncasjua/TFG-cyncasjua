@@ -66,7 +66,7 @@ export class TicketmasterScraperService implements IScraper {
         const pageEvents = response.data?._embedded?.events ?? [];
 
         this.logger.log(
-          `Ticketmaster página ${page + 1}/${Math.min(totalPages, maxPages)}: ${pageEvents.length} eventos`,
+          `Ticketmaster página ${page + 1}/${Math.min(totalPages, maxPages)}: ${pageEvents.length} eventos`
         );
 
         for (const event of pageEvents) {
@@ -95,7 +95,7 @@ export class TicketmasterScraperService implements IScraper {
       const message = axiosError.message || 'Error desconocido';
 
       this.logger.error(
-        `Error scrapeando Ticketmaster API: ${status ?? 'N/A'} ${statusText ?? ''} - ${message}`.trim(),
+        `Error scrapeando Ticketmaster API: ${status ?? 'N/A'} ${statusText ?? ''} - ${message}`.trim()
       );
 
       if (responseData) {
@@ -105,9 +105,12 @@ export class TicketmasterScraperService implements IScraper {
   }
 
   private getApiKey(): string {
-    return this.configService.get<string>('TICKETMASTER_API_KEY') || process.env.TICKETMASTER_API_KEY || '';
+    return (
+      this.configService.get<string>('TICKETMASTER_API_KEY') ||
+      process.env.TICKETMASTER_API_KEY ||
+      ''
+    );
   }
-
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private parseTicketmasterEvent(tmEvent: any): ScrapedEvent | null {
@@ -117,10 +120,18 @@ export class TicketmasterScraperService implements IScraper {
       if (typeof tmEvent.info === 'string' && tmEvent.info.trim().length > 0) {
         description = tmEvent.info.trim();
       }
-      if (!description && typeof tmEvent.description === 'string' && tmEvent.description.trim().length > 0) {
+      if (
+        !description &&
+        typeof tmEvent.description === 'string' &&
+        tmEvent.description.trim().length > 0
+      ) {
         description = tmEvent.description.trim();
       }
-      if (!description && typeof tmEvent.pleaseNote === 'string' && tmEvent.pleaseNote.trim().length > 0) {
+      if (
+        !description &&
+        typeof tmEvent.pleaseNote === 'string' &&
+        tmEvent.pleaseNote.trim().length > 0
+      ) {
         description = tmEvent.pleaseNote.trim();
       }
       if (!description || description.trim().length === 0) {
@@ -130,14 +141,14 @@ export class TicketmasterScraperService implements IScraper {
       const fechaInicio = this.parseTicketmasterDateTime(
         tmEvent.dates.start?.dateTime,
         tmEvent.dates.start?.localDate,
-        tmEvent.dates.start?.localTime,
+        tmEvent.dates.start?.localTime
       );
       let fechaFin: Date | null = null;
 
       fechaFin = this.parseTicketmasterDateTime(
         tmEvent.dates.end?.dateTime,
         tmEvent.dates.end?.localDate,
-        tmEvent.dates.end?.localTime,
+        tmEvent.dates.end?.localTime
       );
 
       // No inventar fechaFin si no existe - dejar como null
@@ -162,7 +173,9 @@ export class TicketmasterScraperService implements IScraper {
       const cityLower = city.toLowerCase();
       const isSevillaCity = cityLower.includes('sevilla') || cityLower.includes('seville');
       if (!isSevillaCity) {
-        this.logger.debug(`Evento descartado por ciudad fuera de Sevilla: ${title} (${city}, ${stateCode})`);
+        this.logger.debug(
+          `Evento descartado por ciudad fuera de Sevilla: ${title} (${city}, ${stateCode})`
+        );
         return null;
       }
 
@@ -208,7 +221,7 @@ export class TicketmasterScraperService implements IScraper {
   private parseTicketmasterDateTime(
     dateTime?: string,
     localDate?: string,
-    localTime?: string,
+    localTime?: string
   ): Date | null {
     if (dateTime) {
       const parsedDateTime = new Date(dateTime);
@@ -236,7 +249,8 @@ export class TicketmasterScraperService implements IScraper {
     const second = timeMatch?.[3] ? Number(timeMatch[3]) : 0;
 
     const offsetMinutes = this.getSevillaOffsetMinutesForLocalDate(year, month - 1, day);
-    const utcMillis = Date.UTC(year, month - 1, day, hour, minute, second, 0) - offsetMinutes * 60 * 1000;
+    const utcMillis =
+      Date.UTC(year, month - 1, day, hour, minute, second, 0) - offsetMinutes * 60 * 1000;
     const parsedLocalDate = new Date(utcMillis);
 
     if (Number.isNaN(parsedLocalDate.getTime())) {
@@ -246,7 +260,11 @@ export class TicketmasterScraperService implements IScraper {
     return parsedLocalDate;
   }
 
-  private getSevillaOffsetMinutesForLocalDate(year: number, monthIndex: number, day: number): number {
+  private getSevillaOffsetMinutesForLocalDate(
+    year: number,
+    monthIndex: number,
+    day: number
+  ): number {
     const middayUtc = new Date(Date.UTC(year, monthIndex, day, 12, 0, 0, 0));
     return this.isSevillaDst(middayUtc) ? 120 : 60;
   }

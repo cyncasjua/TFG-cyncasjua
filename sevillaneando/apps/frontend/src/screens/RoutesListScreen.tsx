@@ -14,7 +14,13 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getRoutes, getErrorMessage, type UserRoute } from '../services';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
+import {
+  ThemedView,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedButton,
+} from '../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { RootStackParamList } from '../navigation/types';
 import { reportError } from '../utils/telemetry';
@@ -43,7 +49,7 @@ export const RoutesListScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       fetchRoutes();
-    }, [fetchRoutes]),
+    }, [fetchRoutes])
   );
 
   React.useLayoutEffect(() => {
@@ -55,10 +61,7 @@ export const RoutesListScreen: React.FC = () => {
         fontSize: 18,
       },
       headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ paddingHorizontal: 8 }}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingHorizontal: 8 }}>
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
       ),
@@ -66,9 +69,10 @@ export const RoutesListScreen: React.FC = () => {
     });
   }, [navigation, colors.primary]);
 
-  const filteredRoutes = routes.filter((route) =>
-    route.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    route.descripcion?.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredRoutes = routes.filter(
+    (route) =>
+      route.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      route.descripcion?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleRoutePress = (route: UserRoute) => {
@@ -91,7 +95,12 @@ export const RoutesListScreen: React.FC = () => {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
         <MaterialIcons name="search" size={20} color={colors.textSecondary} />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
@@ -168,7 +177,9 @@ export const RoutesListScreen: React.FC = () => {
                 <View style={styles.infoRow}>
                   <View style={styles.infoItem}>
                     <MaterialIcons name="location-on" size={14} color={colors.primary} />
-                    <ThemedTextSecondary>{item.secuenciaEventos.length} paradas</ThemedTextSecondary>
+                    <ThemedTextSecondary>
+                      {item.secuenciaEventos.length} paradas
+                    </ThemedTextSecondary>
                   </View>
 
                   <View style={styles.infoItem}>

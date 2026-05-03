@@ -26,7 +26,7 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       reportWarning(
         'notifications.refresh-unread',
         `No se pudieron actualizar las notificaciones: ${getErrorMessage(err)}`,
-        err,
+        err
       );
       setUnread(0);
     }

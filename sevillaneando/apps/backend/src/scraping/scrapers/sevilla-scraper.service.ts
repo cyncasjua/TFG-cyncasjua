@@ -12,7 +12,6 @@ type EventbriteListingCard = {
   locationText?: string;
 };
 
-
 @Injectable()
 export class SevillaScraperService implements IScraper {
   readonly name = 'sevilla-events';
@@ -88,7 +87,9 @@ export class SevillaScraperService implements IScraper {
           if (detailedEvent) {
             eventData = detailedEvent;
             const detailStartDateInfo = this.parseDateInfo(eventData?.startDate);
-            startDateInfo = this.pickBestDateInfo([listingCardDateInfo, startDateInfo, detailStartDateInfo]) ?? startDateInfo;
+            startDateInfo =
+              this.pickBestDateInfo([listingCardDateInfo, startDateInfo, detailStartDateInfo]) ??
+              startDateInfo;
             if (!endDateInfo?.date) {
               endDateInfo = this.extractEndDateInfo(eventData) ?? endDateInfo;
             }
@@ -99,7 +100,10 @@ export class SevillaScraperService implements IScraper {
             Boolean((eventData as JsonRecord | undefined)?.hasMultipleDatesAvailable);
 
           const title = String(eventData?.name || rawEvent?.name || '').trim();
-          const parsedStartDate = this.resolveEventbriteStartDate(startDateInfo, listingCard?.timeText);
+          const parsedStartDate = this.resolveEventbriteStartDate(
+            startDateInfo,
+            listingCard?.timeText
+          );
           const hasExplicitStartTime = Boolean(startDateInfo?.hasTime);
           const hasParsedEndDate = Boolean(endDateInfo?.date);
 
@@ -110,7 +114,11 @@ export class SevillaScraperService implements IScraper {
           let startDate = hasMultipleDatesAvailable ? null : parsedStartDate;
           let endDate = hasMultipleDatesAvailable
             ? null
-            : this.resolveEndDate(startDate, endDateInfo?.date ?? null, endDateInfo?.hasTime ?? true);
+            : this.resolveEndDate(
+                startDate,
+                endDateInfo?.date ?? null,
+                endDateInfo?.hasTime ?? true
+              );
 
           if (
             !hasMultipleDatesAvailable &&
@@ -128,7 +136,8 @@ export class SevillaScraperService implements IScraper {
           if (!title) continue;
 
           const address = this.extractAddress(eventData);
-          const coordinates = this.extractCoordinates(eventData) ?? this.extractCoordinates(rawEvent);
+          const coordinates =
+            this.extractCoordinates(eventData) ?? this.extractCoordinates(rawEvent);
           if (!coordinates) continue;
           if (!this.isSevillaEvent(eventData, address)) continue;
           const { precio, precioMin, precioMax } = this.extractPrice(eventData);
@@ -137,7 +146,8 @@ export class SevillaScraperService implements IScraper {
             : eventData?.image;
 
           const description = String(eventData?.description || rawEvent?.description || '').trim();
-          const categoriaHint = this.extractCategoryHint(eventData) ?? this.extractCategoryHint(rawEvent);
+          const categoriaHint =
+            this.extractCategoryHint(eventData) ?? this.extractCategoryHint(rawEvent);
           const externalId =
             this.asString(eventData?.identifier) ??
             this.asString(rawEvent?.identifier) ??
@@ -240,7 +250,7 @@ export class SevillaScraperService implements IScraper {
 
   private resolveEventbriteStartDate(
     startDateInfo: ParsedDateInfo | null,
-    listingTimeText?: string,
+    listingTimeText?: string
   ): Date | null {
     if (!startDateInfo?.date) return null;
 
@@ -261,24 +271,38 @@ export class SevillaScraperService implements IScraper {
   private parseEventbriteListingDateInfo(listingTimeText?: string): ParsedDateInfo | null {
     if (!listingTimeText) return null;
 
-    const text = listingTimeText
-      .replace(/\+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const text = listingTimeText.replace(/\+/g, ' ').replace(/\s+/g, ' ').trim();
 
     if (!text) return null;
 
-    const parsed = this.parseEventbriteListingDatePattern(text, 'month-day') ??
+    const parsed =
+      this.parseEventbriteListingDatePattern(text, 'month-day') ??
       this.parseEventbriteListingDatePattern(text, 'day-month');
 
     if (!parsed) return null;
 
     const now = new Date();
     const currentYear = now.getFullYear();
-    let resolvedDate = new Date(currentYear, parsed.monthIndex, parsed.day, parsed.hour, parsed.minute, 0, 0);
+    let resolvedDate = new Date(
+      currentYear,
+      parsed.monthIndex,
+      parsed.day,
+      parsed.hour,
+      parsed.minute,
+      0,
+      0
+    );
 
     if (resolvedDate.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 7) {
-      resolvedDate = new Date(currentYear + 1, parsed.monthIndex, parsed.day, parsed.hour, parsed.minute, 0, 0);
+      resolvedDate = new Date(
+        currentYear + 1,
+        parsed.monthIndex,
+        parsed.day,
+        parsed.hour,
+        parsed.minute,
+        0,
+        0
+      );
     }
 
     if (!Number.isFinite(resolvedDate.getTime())) return null;
@@ -288,7 +312,7 @@ export class SevillaScraperService implements IScraper {
 
   private parseEventbriteListingDatePattern(
     text: string,
-    mode: 'month-day' | 'day-month',
+    mode: 'month-day' | 'day-month'
   ): { monthIndex: number; day: number; hour: number; minute: number } | null {
     const normalized = text
       .replace(/\u2022/g, ',')
@@ -310,7 +334,12 @@ export class SevillaScraperService implements IScraper {
     const meridiem = this.normalizeMeridiem(match[5]);
 
     const monthIndex = this.resolveEventbriteMonthIndex(monthText);
-    if (monthIndex === null || !Number.isFinite(day) || !Number.isFinite(hour) || !Number.isFinite(minute)) {
+    if (
+      monthIndex === null ||
+      !Number.isFinite(day) ||
+      !Number.isFinite(hour) ||
+      !Number.isFinite(minute)
+    ) {
       return null;
     }
 
@@ -383,12 +412,16 @@ export class SevillaScraperService implements IScraper {
   }
 
   private extractAddress(rawEvent: JsonRecord): string {
-    const location = (rawEvent?.location && typeof rawEvent.location === 'object'
-      ? (rawEvent.location as JsonRecord)
-      : {}) as JsonRecord;
-    const address = (location?.address && typeof location.address === 'object'
-      ? (location.address as JsonRecord)
-      : {}) as JsonRecord;
+    const location = (
+      rawEvent?.location && typeof rawEvent.location === 'object'
+        ? (rawEvent.location as JsonRecord)
+        : {}
+    ) as JsonRecord;
+    const address = (
+      location?.address && typeof location.address === 'object'
+        ? (location.address as JsonRecord)
+        : {}
+    ) as JsonRecord;
     const parts = [
       address?.streetAddress,
       address?.addressLocality,
@@ -411,12 +444,14 @@ export class SevillaScraperService implements IScraper {
   }
 
   private extractCoordinates(rawEvent: JsonRecord): [number, number] | null {
-    const location = (rawEvent?.location && typeof rawEvent.location === 'object'
-      ? (rawEvent.location as JsonRecord)
-      : {}) as JsonRecord;
-    const geo = (location?.geo && typeof location.geo === 'object'
-      ? (location.geo as JsonRecord)
-      : {}) as JsonRecord;
+    const location = (
+      rawEvent?.location && typeof rawEvent.location === 'object'
+        ? (rawEvent.location as JsonRecord)
+        : {}
+    ) as JsonRecord;
+    const geo = (
+      location?.geo && typeof location.geo === 'object' ? (location.geo as JsonRecord) : {}
+    ) as JsonRecord;
     const longitude = Number(geo?.longitude);
     const latitude = Number(geo?.latitude);
 
@@ -431,12 +466,16 @@ export class SevillaScraperService implements IScraper {
     const attendanceMode = String(rawEvent?.eventAttendanceMode || '').toLowerCase();
     if (attendanceMode.includes('online')) return false;
 
-    const location = (rawEvent?.location && typeof rawEvent.location === 'object'
-      ? (rawEvent.location as JsonRecord)
-      : {}) as JsonRecord;
-    const locationAddress = (location?.address && typeof location.address === 'object'
-      ? (location.address as JsonRecord)
-      : {}) as JsonRecord;
+    const location = (
+      rawEvent?.location && typeof rawEvent.location === 'object'
+        ? (rawEvent.location as JsonRecord)
+        : {}
+    ) as JsonRecord;
+    const locationAddress = (
+      location?.address && typeof location.address === 'object'
+        ? (location.address as JsonRecord)
+        : {}
+    ) as JsonRecord;
 
     const locationType = String(location?.['@type'] || '').toLowerCase();
     if (locationType.includes('virtual')) return false;
@@ -538,13 +577,13 @@ export class SevillaScraperService implements IScraper {
     if (/(business|network|career|startup|tech|conference)/.test(normalized)) return 'Networking';
     if (/(workshop|course|class|seminar|training|masterclass)/.test(normalized)) return 'Talleres';
     if (/(sport|fitness|yoga|running|wellness)/.test(normalized)) return 'Deportes';
-    if (/(art|culture|museum|theatre|theater|cinema|film|literature)/.test(normalized)) return 'Cultura';
+    if (/(art|culture|museum|theatre|theater|cinema|film|literature)/.test(normalized))
+      return 'Cultura';
     if (/(family|kids|children|infantil)/.test(normalized)) return 'Infantil';
     if (/(party|nightlife|leisure|tour|escape)/.test(normalized)) return 'Ocio';
 
     return undefined;
   }
-
 
   private parseDate(dateValue?: unknown): Date | null {
     return this.parseDateInfo(dateValue)?.date ?? null;
@@ -625,8 +664,14 @@ export class SevillaScraperService implements IScraper {
 
   private pickBestDateInfo(values: Array<ParsedDateInfo | unknown>): ParsedDateInfo | null {
     const parsedDates = values
-      .map((value) => (value && typeof value === 'object' && 'date' in value ? (value as ParsedDateInfo) : this.parseDateInfo(value)))
-      .filter((value): value is ParsedDateInfo => value !== null && Number.isFinite(value.date.getTime()));
+      .map((value) =>
+        value && typeof value === 'object' && 'date' in value
+          ? (value as ParsedDateInfo)
+          : this.parseDateInfo(value)
+      )
+      .filter(
+        (value): value is ParsedDateInfo => value !== null && Number.isFinite(value.date.getTime())
+      );
 
     if (!parsedDates.length) return null;
 
@@ -729,9 +774,7 @@ export class SevillaScraperService implements IScraper {
     const longMatch = value.match(/(\d{1,2})\s+([a-záéíóú]+)\s+(\d{4})/);
     if (longMatch) {
       const day = Number(longMatch[1]);
-      const monthText = longMatch[2]
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
+      const monthText = longMatch[2].normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       const year = Number(longMatch[3]);
       const monthIndex = months[monthText];
 
@@ -786,7 +829,11 @@ export class SevillaScraperService implements IScraper {
     return null;
   }
 
-  private resolveEndDate(startDate: Date | null, endDate: Date | null, endHasTime = true): Date | null {
+  private resolveEndDate(
+    startDate: Date | null,
+    endDate: Date | null,
+    endHasTime = true
+  ): Date | null {
     // Si no hay fecha de inicio, no hay fecha de fin
     if (!startDate) return null;
 
@@ -831,7 +878,7 @@ export class SevillaScraperService implements IScraper {
 
   private async loadEventbriteEventDetailCached(
     url: string,
-    cache: Map<string, JsonRecord | null>,
+    cache: Map<string, JsonRecord | null>
   ): Promise<JsonRecord | null> {
     const normalizedUrl = this.normalizeUrlForComparison(url);
     if (cache.has(normalizedUrl)) {
@@ -908,7 +955,10 @@ export class SevillaScraperService implements IScraper {
     }
 
     if (startInfo.hasTime) {
-      const inferredDurationEnd = this.inferEventbriteEndDateFromDurationText(pageText, startInfo.date);
+      const inferredDurationEnd = this.inferEventbriteEndDateFromDurationText(
+        pageText,
+        startInfo.date
+      );
       if (inferredDurationEnd) {
         return {
           ...eventRecord,
@@ -957,14 +1007,19 @@ export class SevillaScraperService implements IScraper {
     return false;
   }
 
-  private inferEventbriteEndDateFromDurationText(pageText: string, startDate: Date): ParsedDateInfo | null {
+  private inferEventbriteEndDateFromDurationText(
+    pageText: string,
+    startDate: Date
+  ): ParsedDateInfo | null {
     const normalizedText = pageText.replace(/\s+/g, ' ').toLowerCase();
     const compactText = normalizedText
       .replace(/\babout\b|\baprox(?:\.|imadamente)?\b|\baround\b/g, ' ')
       .trim();
 
     const hourMatch = compactText.match(/(\d{1,2})\s*(?:h|hr|hrs|hour|hours|hora|horas)\b/);
-    const minuteMatch = compactText.match(/(\d{1,3})\s*(?:min|mins|minute|minutes|minuto|minutos)\b/);
+    const minuteMatch = compactText.match(
+      /(\d{1,3})\s*(?:min|mins|minute|minutes|minuto|minutos)\b/
+    );
 
     if (!hourMatch && !minuteMatch) return null;
 
@@ -987,7 +1042,7 @@ export class SevillaScraperService implements IScraper {
   private inferEventbriteEndDateFromText(pageText: string, startDate: Date): ParsedDateInfo | null {
     const normalizedText = pageText.replace(/\s+/g, ' ').toLowerCase();
     const match = normalizedText.match(
-      /(?:from|de)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?\s*(?:to|hasta|a|[-–—])\s*(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?/i,
+      /(?:from|de)?\s*(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?\s*(?:to|hasta|a|[-–—])\s*(\d{1,2})(?::(\d{2}))?\s*(a\.m\.|p\.m\.|am|pm)?/i
     );
 
     if (!match) return null;
@@ -1017,6 +1072,4 @@ export class SevillaScraperService implements IScraper {
     if (meridiem === 'am') return normalizedHour;
     return hour;
   }
-
-
 }

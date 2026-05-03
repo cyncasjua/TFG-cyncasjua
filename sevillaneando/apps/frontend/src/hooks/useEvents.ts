@@ -93,21 +93,21 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
       try {
         const { events: publicEvents } = await getEvents(
           user?.id,
-          hasLocation ? { lat: userLat, lng: userLon } : undefined,
+          hasLocation ? { lat: userLat, lng: userLon } : undefined
         );
 
         const raw = await AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY);
         const links: string[] = raw ? JSON.parse(raw) : [];
 
         const privateResults = await Promise.allSettled(
-          links.map((link) => getEventByAccessLink(link)),
+          links.map((link) => getEventByAccessLink(link))
         );
         const privateEvents: Event[] = privateResults
           .filter((r): r is PromiseFulfilledResult<Event> => r.status === 'fulfilled')
           .map((r) => r.value);
 
         const remote = [...publicEvents, ...privateEvents].filter(
-          (ev, idx, arr) => idx === arr.findIndex((e) => e.id === ev.id),
+          (ev, idx, arr) => idx === arr.findIndex((e) => e.id === ev.id)
         );
 
         let result: EventWithDistance[];
@@ -124,7 +124,7 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
                   userLat,
                   userLon,
                   ev.location.coordinates[1],
-                  ev.location.coordinates[0],
+                  ev.location.coordinates[0]
                 ),
               };
             })
@@ -144,12 +144,12 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
         fetchingRef.current = false;
       }
     },
-    [user],
+    [user]
   );
 
   const fetchEvents = useCallback(
     (opts?: { forceRefresh?: boolean }) => doFetch({ showLoadingSpinner: true, ...opts }),
-    [doFetch],
+    [doFetch]
   );
 
   const onRefresh = useCallback(() => {

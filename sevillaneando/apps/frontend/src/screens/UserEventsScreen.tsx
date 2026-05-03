@@ -62,9 +62,7 @@ export const UserEventsScreen: React.FC = () => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>
-          Cargando tus eventos...
-        </ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando tus eventos...</ThemedTextSecondary>
       </ThemedView>
     );
   }
@@ -88,7 +86,11 @@ export const UserEventsScreen: React.FC = () => {
               ]}
             >
               <Image
-                source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
+                source={
+                  getFullImageUrl(item.imagen)
+                    ? { uri: getFullImageUrl(item.imagen)! }
+                    : require('../../assets/splash.png')
+                }
                 style={styles.image}
                 resizeMode="cover"
               />
@@ -98,7 +100,10 @@ export const UserEventsScreen: React.FC = () => {
               </ThemedText>
 
               <ThemedTextSecondary style={styles.eventInfo}>
-                Fecha: {item.fechaInicio ? dayjs(item.fechaInicio).format('YYYY/MM/DD HH:mm') : 'No definida'}
+                Fecha:{' '}
+                {item.fechaInicio
+                  ? dayjs(item.fechaInicio).format('YYYY/MM/DD HH:mm')
+                  : 'No definida'}
               </ThemedTextSecondary>
 
               <ThemedTextSecondary style={styles.eventInfo}>

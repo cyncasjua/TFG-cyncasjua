@@ -22,7 +22,7 @@ export const EventSkeleton: React.FC = () => {
           duration: 1500,
           useNativeDriver: false,
         }),
-      ]),
+      ])
     ).start();
   }, [shimmerAnim]);
 

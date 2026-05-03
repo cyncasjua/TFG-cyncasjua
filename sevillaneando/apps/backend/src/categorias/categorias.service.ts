@@ -22,7 +22,7 @@ export class CategoriasService {
   async findAll(): Promise<Categoria[]> {
     return await this.categoriaRepo
       .createQueryBuilder('categoria')
-      .orderBy('CASE WHEN LOWER(TRIM(categoria.nombre)) = \'otros\' THEN 1 ELSE 0 END', 'ASC')
+      .orderBy("CASE WHEN LOWER(TRIM(categoria.nombre)) = 'otros' THEN 1 ELSE 0 END", 'ASC')
       .addOrderBy('categoria.nombre', 'ASC')
       .getMany();
   }

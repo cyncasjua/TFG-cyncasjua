@@ -35,8 +35,8 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly notificacionesService: NotificacionesService,
-  ) { }
+    private readonly notificacionesService: NotificacionesService
+  ) {}
 
   @Post('upload-profile-image/firebase')
   @ThrottleUpload()
@@ -100,7 +100,10 @@ export class UsersController {
   }
 
   @Patch('me/firebase')
-  async updateMeFirebase(@Req() req: { user: { uid: string } }, @Body() body: UpdateProfileDto): Promise<User> {
+  async updateMeFirebase(
+    @Req() req: { user: { uid: string } },
+    @Body() body: UpdateProfileDto
+  ): Promise<User> {
     const decoded = req.user;
     return this.usersService.updateProfile(decoded.uid, body);
   }
@@ -147,7 +150,7 @@ export class UsersController {
         await this.notificacionesService.crearParaUsuario(
           seguido,
           `${yo.nombre} ha empezado a seguirte.`,
-          TipoEnum.NuevoSeguidor,
+          TipoEnum.NuevoSeguidor
         );
       }
     }

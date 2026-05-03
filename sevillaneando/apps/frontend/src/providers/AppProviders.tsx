@@ -18,9 +18,7 @@ export function AppProviders({ children }: Props) {
         <ThemeProvider>
           <AuthProvider>
             <SocketProvider>
-              <NotificacionesProvider>
-                {children}
-              </NotificacionesProvider>
+              <NotificacionesProvider>{children}</NotificacionesProvider>
             </SocketProvider>
           </AuthProvider>
         </ThemeProvider>

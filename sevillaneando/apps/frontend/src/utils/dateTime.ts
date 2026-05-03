@@ -10,5 +10,8 @@ export const updateDateKeepingTime = (currentValue: string, pickedDate: Date): s
 
 export const updateTimeKeepingDate = (currentValue: string, pickedTime: Date): string => {
   const prev = currentValue ? dayjs(currentValue) : dayjs();
-  return prev.hour(dayjs(pickedTime).hour()).minute(dayjs(pickedTime).minute()).format('YYYY-MM-DD HH:mm');
+  return prev
+    .hour(dayjs(pickedTime).hour())
+    .minute(dayjs(pickedTime).minute())
+    .format('YYYY-MM-DD HH:mm');
 };

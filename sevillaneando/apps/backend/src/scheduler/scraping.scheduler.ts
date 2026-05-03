@@ -22,7 +22,7 @@ export class ScrapingScheduler {
       const result = await this.scrapingService.scrapeAll();
       this.logger.log(
         `Scraping ${source} completado: ${result.total} eventos encontrados, ` +
-        `${result.saved} guardados, ${result.errors} errores`
+          `${result.saved} guardados, ${result.errors} errores`
       );
     } catch (error) {
       this.logger.error(`Error durante el scraping ${source}:`, error);

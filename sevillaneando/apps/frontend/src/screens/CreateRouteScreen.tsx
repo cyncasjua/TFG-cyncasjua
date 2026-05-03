@@ -14,7 +14,13 @@ import {
 import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
+import {
+  ThemedView,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedButton,
+} from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, getErrorMessage, getEvents, createRoute, type UserRoute } from '../services';
 import { useAuth } from '../hooks/useAuth';
@@ -38,7 +44,9 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
   const [temporizacion, setTemporizacion] = useState('60');
 
   // Ruta
-  const [routeCoordinates, setRouteCoordinates] = useState<Array<{ latitude: number; longitude: number }>>([]);
+  const [routeCoordinates, setRouteCoordinates] = useState<
+    Array<{ latitude: number; longitude: number }>
+  >([]);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -49,10 +57,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
         fontSize: 18,
       },
       headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ paddingHorizontal: 8 }}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingHorizontal: 8 }}>
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
       ),
@@ -153,22 +158,18 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
         temporizacion: parseInt(temporizacion),
       });
 
-      Alert.alert(
-        'Éxito',
-        'Ruta creada correctamente',
-        [
-          {
-            text: 'Ver ruta',
-            onPress: () => {
-              navigation.replace('RouteDetail', { routeId: route.id });
-            },
+      Alert.alert('Éxito', 'Ruta creada correctamente', [
+        {
+          text: 'Ver ruta',
+          onPress: () => {
+            navigation.replace('RouteDetail', { routeId: route.id });
           },
-          {
-            text: 'Volver',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-      );
+        },
+        {
+          text: 'Volver',
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
       reportError('create-route.failed', getErrorMessage(error), error);
       Alert.alert('Error', getErrorMessage(error));
@@ -189,7 +190,9 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Nombre Ruta */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <ThemedView
+            style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
             <ThemedText style={styles.label}>Título de la ruta</ThemedText>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border }]}
@@ -202,10 +205,15 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
           </ThemedView>
 
           {/* Descripción */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <ThemedView
+            style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
             <ThemedText style={styles.label}>Descripción</ThemedText>
             <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border, minHeight: 80 }]}
+              style={[
+                styles.input,
+                { color: colors.text, borderColor: colors.border, minHeight: 80 },
+              ]}
               placeholder="Describe brevemente tu ruta..."
               placeholderTextColor={colors.textSecondary}
               value={descripcion}
@@ -261,7 +269,9 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
           </ThemedView>
 
           {/* Temporización */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <ThemedView
+            style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
             <ThemedText style={styles.label}>Duración estimada (minutos)</ThemedText>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border }]}
@@ -286,7 +296,10 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                   {selectedEventosIds.map((eventId, index) => {
                     const evento = eventos.find((e) => e.id === eventId);
                     return (
-                      <View key={eventId} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                      <View
+                        key={eventId}
+                        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}
+                      >
                         <View style={{ flex: 1 }}>
                           <TouchableOpacity
                             style={[
@@ -298,16 +311,14 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                             ]}
                             onPress={() => toggleEventSelection(eventId)}
                           >
-                            <MaterialIcons
-                              name="check-circle"
-                              size={20}
-                              color={colors.primary}
-                            />
+                            <MaterialIcons name="check-circle" size={20} color={colors.primary} />
                             <View style={{ flex: 1, marginLeft: 10 }}>
                               <ThemedText numberOfLines={1} style={{ fontWeight: '600' }}>
                                 {index + 1}. {evento?.title}
                               </ThemedText>
-                              <ThemedTextSecondary numberOfLines={1}>{evento?.address}</ThemedTextSecondary>
+                              <ThemedTextSecondary numberOfLines={1}>
+                                {evento?.address}
+                              </ThemedTextSecondary>
                             </View>
                           </TouchableOpacity>
                         </View>
@@ -320,11 +331,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                               opacity: index === 0 ? 0.3 : 1,
                             }}
                           >
-                            <MaterialIcons
-                              name="arrow-upward"
-                              size={20}
-                              color={colors.primary}
-                            />
+                            <MaterialIcons name="arrow-upward" size={20} color={colors.primary} />
                           </TouchableOpacity>
                           <TouchableOpacity
                             onPress={() => moveEventDown(index)}
@@ -334,11 +341,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                               opacity: index === selectedEventosIds.length - 1 ? 0.3 : 1,
                             }}
                           >
-                            <MaterialIcons
-                              name="arrow-downward"
-                              size={20}
-                              color={colors.primary}
-                            />
+                            <MaterialIcons name="arrow-downward" size={20} color={colors.primary} />
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -375,10 +378,16 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                     onPress={() => toggleEventSelection(evento.id)}
                   >
                     <MaterialIcons
-                      name={selectedEventosIds.includes(evento.id) ? 'check-circle' : 'radio-button-unchecked'}
+                      name={
+                        selectedEventosIds.includes(evento.id)
+                          ? 'check-circle'
+                          : 'radio-button-unchecked'
+                      }
                       size={20}
                       color={
-                        selectedEventosIds.includes(evento.id) ? colors.primary : colors.textSecondary
+                        selectedEventosIds.includes(evento.id)
+                          ? colors.primary
+                          : colors.textSecondary
                       }
                     />
                     <View style={{ flex: 1, marginLeft: 10 }}>
@@ -393,11 +402,19 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
         </ScrollView>
 
         {/* Botón Crear */}
-        <ThemedView style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+        <ThemedView
+          style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}
+        >
           <ThemedButton
             onPress={handleCreateRoute}
             disabled={loading}
-            icon={loading ? <ActivityIndicator size="small" color="white" /> : <MaterialIcons name="check" size={18} color="white" />}
+            icon={
+              loading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <MaterialIcons name="check" size={18} color="white" />
+              )
+            }
           >
             {loading ? 'Creando ruta...' : 'Crear ruta'}
           </ThemedButton>

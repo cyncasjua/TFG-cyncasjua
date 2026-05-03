@@ -125,8 +125,8 @@ async function bootstrap() {
               where: {
                 receptor: { id: me },
                 emisor: { id: otherId },
-                leido: false
-              }
+                leido: false,
+              },
             });
 
             conversationMap.set(otherId, {
@@ -182,7 +182,15 @@ async function bootstrap() {
 
     socket.on(
       'chat_message',
-      async ({ eventId, text, imageUrl }: { eventId: string; text?: string; imageUrl?: string }) => {
+      async ({
+        eventId,
+        text,
+        imageUrl,
+      }: {
+        eventId: string;
+        text?: string;
+        imageUrl?: string;
+      }) => {
         if (!checkSocketRateLimit(socket.id)) {
           emitSocketError(socket, 'rate_limit', 'Demasiados mensajes. Espera unos segundos.');
           return;
@@ -244,7 +252,11 @@ async function bootstrap() {
 
         socket.emit('dm_history', history);
       } catch (err) {
-        emitSocketError(socket, 'dm_history_failed', 'Error al cargar historial de mensajes privados');
+        emitSocketError(
+          socket,
+          'dm_history_failed',
+          'Error al cargar historial de mensajes privados'
+        );
       }
     });
 
@@ -264,13 +276,25 @@ async function bootstrap() {
 
         io.to(`user:${me}`).emit('refresh_conversations');
       } catch (err) {
-        emitSocketError(socket, 'dm_mark_read_failed', 'Error al marcar mensajes privados como leidos');
+        emitSocketError(
+          socket,
+          'dm_mark_read_failed',
+          'Error al marcar mensajes privados como leidos'
+        );
       }
     });
 
     socket.on(
       'dm_message',
-      async ({ toUserId, text, imageUrl }: { toUserId: string; text?: string; imageUrl?: string }) => {
+      async ({
+        toUserId,
+        text,
+        imageUrl,
+      }: {
+        toUserId: string;
+        text?: string;
+        imageUrl?: string;
+      }) => {
         if (!checkSocketRateLimit(socket.id)) {
           emitSocketError(socket, 'rate_limit', 'Demasiados mensajes. Espera unos segundos.');
           return;
@@ -281,7 +305,7 @@ async function bootstrap() {
 
           if (!me || !toUserId || (trimmedText.length === 0 && !imageUrl)) {
             logger.warn(
-              `dm_message: datos inválidos ${JSON.stringify({ me, toUserId, textLength: trimmedText.length, hasImage: !!imageUrl })}`,
+              `dm_message: datos inválidos ${JSON.stringify({ me, toUserId, textLength: trimmedText.length, hasImage: !!imageUrl })}`
             );
             return;
           }
@@ -291,7 +315,7 @@ async function bootstrap() {
 
           if (!sender || !receiver) {
             logger.warn(
-              `dm_message: usuario no encontrado ${JSON.stringify({ sender: !!sender, receiver: !!receiver })}`,
+              `dm_message: usuario no encontrado ${JSON.stringify({ sender: !!sender, receiver: !!receiver })}`
             );
             return;
           }
@@ -308,7 +332,9 @@ async function bootstrap() {
             relations: ['emisor', 'receptor'],
           });
 
-          io.to(`user:${me}`).to(`user:${toUserId}`).emit('dm_message', hydrated ?? saved);
+          io.to(`user:${me}`)
+            .to(`user:${toUserId}`)
+            .emit('dm_message', hydrated ?? saved);
           io.to(`user:${me}`).to(`user:${toUserId}`).emit('refresh_conversations');
         } catch (err) {
           logger.error('dm_message error', err as Error);
@@ -317,43 +343,40 @@ async function bootstrap() {
       }
     );
 
-    socket.on(
-      'delete_dm',
-      async ({ messageId }: { messageId: string }) => {
-        try {
-          const me = socket.data.userId;
-          if (!me || !messageId) {
-            logger.warn(`delete_dm: datos inválidos ${JSON.stringify({ me, messageId })}`);
-            return;
-          }
-
-          const message = await privateRepo.findOne({
-            where: { id: messageId },
-            relations: ['emisor', 'receptor'],
-          });
-
-          if (!message) {
-            logger.warn(`delete_dm: mensaje no encontrado ${JSON.stringify({ messageId })}`);
-            return;
-          }
-
-          if (message.emisor.id !== me) {
-            logger.warn(
-              `delete_dm: no autorizado ${JSON.stringify({ messageOwner: message.emisor.id, requester: me })}`,
-            );
-            return;
-          }
-
-          await privateRepo.remove(message);
-          const toUserId = message.receptor.id;
-
-          io.to(`user:${me}`).to(`user:${toUserId}`).emit('delete_dm_success', messageId);
-        } catch (err) {
-          logger.error('delete_dm error', err as Error);
-          emitSocketError(socket, 'delete_dm_failed', 'Error al borrar mensaje privado');
+    socket.on('delete_dm', async ({ messageId }: { messageId: string }) => {
+      try {
+        const me = socket.data.userId;
+        if (!me || !messageId) {
+          logger.warn(`delete_dm: datos inválidos ${JSON.stringify({ me, messageId })}`);
+          return;
         }
+
+        const message = await privateRepo.findOne({
+          where: { id: messageId },
+          relations: ['emisor', 'receptor'],
+        });
+
+        if (!message) {
+          logger.warn(`delete_dm: mensaje no encontrado ${JSON.stringify({ messageId })}`);
+          return;
+        }
+
+        if (message.emisor.id !== me) {
+          logger.warn(
+            `delete_dm: no autorizado ${JSON.stringify({ messageOwner: message.emisor.id, requester: me })}`
+          );
+          return;
+        }
+
+        await privateRepo.remove(message);
+        const toUserId = message.receptor.id;
+
+        io.to(`user:${me}`).to(`user:${toUserId}`).emit('delete_dm_success', messageId);
+      } catch (err) {
+        logger.error('delete_dm error', err as Error);
+        emitSocketError(socket, 'delete_dm_failed', 'Error al borrar mensaje privado');
       }
-    );
+    });
 
     socket.on(
       'delete_event_message',
@@ -361,7 +384,9 @@ async function bootstrap() {
         try {
           const me = socket.data.userId;
           if (!me || !eventId || !messageId) {
-            logger.warn(`delete_event_message: datos inválidos ${JSON.stringify({ me, eventId, messageId })}`);
+            logger.warn(
+              `delete_event_message: datos inválidos ${JSON.stringify({ me, eventId, messageId })}`
+            );
             return;
           }
 
@@ -372,14 +397,14 @@ async function bootstrap() {
 
           if (!message) {
             logger.warn(
-              `delete_event_message: mensaje no encontrado ${JSON.stringify({ eventId, messageId })}`,
+              `delete_event_message: mensaje no encontrado ${JSON.stringify({ eventId, messageId })}`
             );
             return;
           }
 
           if (message.usuario.id !== me) {
             logger.warn(
-              `delete_event_message: no autorizado ${JSON.stringify({ messageOwner: message.usuario.id, requester: me })}`,
+              `delete_event_message: no autorizado ${JSON.stringify({ messageOwner: message.usuario.id, requester: me })}`
             );
             return;
           }
@@ -389,12 +414,15 @@ async function bootstrap() {
           io.to(`event:${eventId}`).emit('delete_event_message_success', messageId);
         } catch (err) {
           logger.error('delete_event_message error', err as Error);
-          emitSocketError(socket, 'delete_event_message_failed', 'Error al borrar mensaje del evento');
+          emitSocketError(
+            socket,
+            'delete_event_message_failed',
+            'Error al borrar mensaje del evento'
+          );
         }
       }
     );
   });
-
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',

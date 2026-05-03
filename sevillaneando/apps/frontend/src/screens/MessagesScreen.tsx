@@ -42,7 +42,6 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
 
     if (userIdsToFetch.size === 0) return;
 
-
     userIdsToFetch.forEach((userId) => {
       void api
         .get(`/users/${userId}`)
@@ -82,15 +81,20 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
         clearTimeout(timeout);
         setLoading(false);
         setConversations((prev) => {
-          const otherUserId = message.emisor?.id === user?.id ? message.receptor?.id : message.emisor?.id;
-          const otherUserName = message.emisor?.id === user?.id ? message.receptor?.nombre : message.emisor?.nombre;
-          const otherUserPhoto = message.emisor?.id === user?.id ? message.receptor?.fotoPerfil : message.emisor?.fotoPerfil;
+          const otherUserId =
+            message.emisor?.id === user?.id ? message.receptor?.id : message.emisor?.id;
+          const otherUserName =
+            message.emisor?.id === user?.id ? message.receptor?.nombre : message.emisor?.nombre;
+          const otherUserPhoto =
+            message.emisor?.id === user?.id
+              ? message.receptor?.fotoPerfil
+              : message.emisor?.fotoPerfil;
 
-                if (!otherUserId || !otherUserName) {
-                  reportWarning('messages.dm-message', 'Datos incompletos en dm_message', undefined, {
-                    otherUserId,
-                    otherUserName,
-                  });
+          if (!otherUserId || !otherUserName) {
+            reportWarning('messages.dm-message', 'Datos incompletos en dm_message', undefined, {
+              otherUserId,
+              otherUserName,
+            });
             return prev;
           }
 
@@ -154,15 +158,16 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
           ]}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-            <Avatar photoUrl={item.userPhoto ?? userPhotoById[item.userId]} size={48} style={styles.avatar} />
+            <Avatar
+              photoUrl={item.userPhoto ?? userPhotoById[item.userId]}
+              size={48}
+              style={styles.avatar}
+            />
 
             <View style={{ flex: 1 }}>
               <ThemedText style={{ fontWeight: '600' }}>{item.userName}</ThemedText>
               {item.lastMessage && (
-                <ThemedTextSecondary
-                  style={{ marginTop: 4, fontSize: 12 }}
-                  numberOfLines={1}
-                >
+                <ThemedTextSecondary style={{ marginTop: 4, fontSize: 12 }} numberOfLines={1}>
                   {item.lastMessage}
                 </ThemedTextSecondary>
               )}
@@ -174,12 +179,7 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             {unreadCount > 0 && (
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: '#6c2eb7' },
-                ]}
-              >
+              <View style={[styles.badge, { backgroundColor: '#6c2eb7' }]}>
                 <ThemedText style={{ color: '#fff', fontSize: 11, fontWeight: 'bold' }}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </ThemedText>

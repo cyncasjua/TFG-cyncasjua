@@ -13,7 +13,12 @@ import { GeminiScraperService } from './scrapers/gemini-scraper.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Event, Categoria, User]), AuthModule],
   controllers: [ScrapingController],
-  providers: [ScrapingService, SevillaScraperService, TicketmasterScraperService, GeminiScraperService],
+  providers: [
+    ScrapingService,
+    SevillaScraperService,
+    TicketmasterScraperService,
+    GeminiScraperService,
+  ],
   exports: [ScrapingService],
 })
 export class ScrapingModule {}

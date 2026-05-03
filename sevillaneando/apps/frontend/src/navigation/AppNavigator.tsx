@@ -60,9 +60,7 @@ export function AppNavigator() {
         }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 8, color: colors.text }}>
-          Comprobando sesión...
-        </Text>
+        <Text style={{ marginTop: 8, color: colors.text }}>Comprobando sesión...</Text>
       </View>
     );
   }
@@ -101,42 +99,138 @@ export function AppNavigator() {
             }}
           />
 
-          <AppStack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Detalle del evento' }} />
-          <AppStack.Screen name="EventDetailLink" component={EventDetailLinkScreen} options={{ title: 'Abriendo evento...' }} />
-          <AppStack.Screen name="EventsMap" component={EventsMapScreen} options={{ title: 'Mapa de eventos', headerShown: false }} />
+          <AppStack.Screen
+            name="EventDetail"
+            component={EventDetailScreen}
+            options={{ title: 'Detalle del evento' }}
+          />
+          <AppStack.Screen
+            name="EventDetailLink"
+            component={EventDetailLinkScreen}
+            options={{ title: 'Abriendo evento...' }}
+          />
+          <AppStack.Screen
+            name="EventsMap"
+            component={EventsMapScreen}
+            options={{ title: 'Mapa de eventos', headerShown: false }}
+          />
 
           {role === 'admin' && (
             <>
-              <AppStack.Screen name="Admin" component={AdminScreen} options={{ title: 'Panel de Admin' }} />
-              <AppStack.Screen name="Categories" component={CategoriesScreen} options={{ title: 'Gestión de categorías' }} />
+              <AppStack.Screen
+                name="Admin"
+                component={AdminScreen}
+                options={{ title: 'Panel de Admin' }}
+              />
+              <AppStack.Screen
+                name="Categories"
+                component={CategoriesScreen}
+                options={{ title: 'Gestión de categorías' }}
+              />
             </>
           )}
 
-          <AppStack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar perfil' }} />
-          <AppStack.Screen name="EditPassword" component={EditPasswordScreen} options={{ title: 'Cambiar contraseña' }} />
-          <AppStack.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: 'Crear evento' }} />
+          <AppStack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
+            options={{ title: 'Editar perfil' }}
+          />
+          <AppStack.Screen
+            name="EditPassword"
+            component={EditPasswordScreen}
+            options={{ title: 'Cambiar contraseña' }}
+          />
+          <AppStack.Screen
+            name="CreateEvent"
+            component={CreateEventScreen}
+            options={{ title: 'Crear evento' }}
+          />
 
           {role === 'moderator' && (
             <>
-              <AppStack.Screen name="ModeratorEvents" component={ModeratorEventsScreen} options={{ title: 'Moderación' }} />
-              <AppStack.Screen name="ModeratorEditEvent" component={ModeratorEditEventScreen} options={{ title: 'Editar evento' }} />
+              <AppStack.Screen
+                name="ModeratorEvents"
+                component={ModeratorEventsScreen}
+                options={{ title: 'Moderación' }}
+              />
+              <AppStack.Screen
+                name="ModeratorEditEvent"
+                component={ModeratorEditEventScreen}
+                options={{ title: 'Editar evento' }}
+              />
             </>
           )}
 
-          <AppStack.Screen name="Notifications" component={NotificacionesScreen} options={{ title: 'Notificaciones' }} />
-          <AppStack.Screen name="Messages" component={MessagesScreen} options={{ title: 'Mensajes' }} />
-          <AppStack.Screen name="UserProfile" component={UserProfileScreen} options={{ title: 'Perfil' }} />
-          <AppStack.Screen name="DirectMessage" component={DirectMessageScreen} options={{ title: 'Mensaje privado' }} />
-          <AppStack.Screen name="AccessPrivateEvent" component={AccessPrivateEventScreen} options={{ title: 'Acceso privado' }} />
-          <AppStack.Screen name="EditEvent" component={UserEditEventScreen} options={{ title: 'Editar evento' }} />
-          <AppStack.Screen name="UserEvents" component={UserEventsScreen} options={{ title: 'Mis eventos' }} />
-          <AppStack.Screen name="CalendarEvents" component={CalendarEventsScreen} options={{ title: 'Calendario' }} />
-          <AppStack.Screen name="RoutePreview" component={RoutePreviewScreen} options={{ title: 'Ruta recomendada' }} />
-          <AppStack.Screen name="Routes" component={RoutesListScreen} options={{ title: 'Rutas' }} />
-          <AppStack.Screen name="CreateRoute" component={CreateRouteScreen} options={{ title: 'Crear ruta' }} />
-          <AppStack.Screen name="RouteDetail" component={RouteDetailScreen} options={{ title: 'Detalle de ruta' }} />
-          <AppStack.Screen name="SavedAndPrivateEvents" component={SavedAndPrivateEventsScreen} options={{ title: '' }} />
-          <AppStack.Screen name="LegalAttributions" component={LegalAttributionsScreen} options={{ title: 'Licencias y atribuciones' }} />
+          <AppStack.Screen
+            name="Notifications"
+            component={NotificacionesScreen}
+            options={{ title: 'Notificaciones' }}
+          />
+          <AppStack.Screen
+            name="Messages"
+            component={MessagesScreen}
+            options={{ title: 'Mensajes' }}
+          />
+          <AppStack.Screen
+            name="UserProfile"
+            component={UserProfileScreen}
+            options={{ title: 'Perfil' }}
+          />
+          <AppStack.Screen
+            name="DirectMessage"
+            component={DirectMessageScreen}
+            options={{ title: 'Mensaje privado' }}
+          />
+          <AppStack.Screen
+            name="AccessPrivateEvent"
+            component={AccessPrivateEventScreen}
+            options={{ title: 'Acceso privado' }}
+          />
+          <AppStack.Screen
+            name="EditEvent"
+            component={UserEditEventScreen}
+            options={{ title: 'Editar evento' }}
+          />
+          <AppStack.Screen
+            name="UserEvents"
+            component={UserEventsScreen}
+            options={{ title: 'Mis eventos' }}
+          />
+          <AppStack.Screen
+            name="CalendarEvents"
+            component={CalendarEventsScreen}
+            options={{ title: 'Calendario' }}
+          />
+          <AppStack.Screen
+            name="RoutePreview"
+            component={RoutePreviewScreen}
+            options={{ title: 'Ruta recomendada' }}
+          />
+          <AppStack.Screen
+            name="Routes"
+            component={RoutesListScreen}
+            options={{ title: 'Rutas' }}
+          />
+          <AppStack.Screen
+            name="CreateRoute"
+            component={CreateRouteScreen}
+            options={{ title: 'Crear ruta' }}
+          />
+          <AppStack.Screen
+            name="RouteDetail"
+            component={RouteDetailScreen}
+            options={{ title: 'Detalle de ruta' }}
+          />
+          <AppStack.Screen
+            name="SavedAndPrivateEvents"
+            component={SavedAndPrivateEventsScreen}
+            options={{ title: '' }}
+          />
+          <AppStack.Screen
+            name="LegalAttributions"
+            component={LegalAttributionsScreen}
+            options={{ title: 'Licencias y atribuciones' }}
+          />
           <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
         </AppStack.Navigator>
       ) : (

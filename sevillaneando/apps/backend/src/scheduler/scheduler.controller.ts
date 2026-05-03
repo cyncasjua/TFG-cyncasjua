@@ -6,7 +6,7 @@ import { NotificacionesScheduler } from './notificaciones.scheduler';
 export class SchedulerController {
   constructor(
     private readonly scrapingScheduler: ScrapingScheduler,
-    private readonly notificacionesScheduler: NotificacionesScheduler,
+    private readonly notificacionesScheduler: NotificacionesScheduler
   ) {}
 
   @Post('run-scraping')

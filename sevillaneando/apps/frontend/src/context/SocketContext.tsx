@@ -46,14 +46,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     resetInactivityTimeout();
   }, [token, resetInactivityTimeout]);
 
-  const sendMessage = useCallback((event: string, data: any) => {
-    if (!socketRef.current || !socketRef.current.connected) {
-      connect();
-    }
+  const sendMessage = useCallback(
+    (event: string, data: any) => {
+      if (!socketRef.current || !socketRef.current.connected) {
+        connect();
+      }
 
-    socketRef.current?.emit(event, data);
-    resetInactivityTimeout();
-  }, [connect, resetInactivityTimeout]);
+      socketRef.current?.emit(event, data);
+      resetInactivityTimeout();
+    },
+    [connect, resetInactivityTimeout]
+  );
 
   useEffect(() => {
     connect();

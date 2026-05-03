@@ -3,7 +3,6 @@ import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } f
 
 @Entity('mensajes_privados')
 export class MensajePrivado {
-
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

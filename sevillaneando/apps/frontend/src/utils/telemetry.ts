@@ -32,7 +32,7 @@ export function reportError(
   scope: string,
   message: string,
   error?: unknown,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ) {
   publish({
     level: 'error',
@@ -48,7 +48,7 @@ export function reportWarning(
   scope: string,
   message: string,
   error?: unknown,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ) {
   publish({
     level: 'warning',

@@ -10,7 +10,6 @@ import { ThrottleStrict } from '../common/decorators/throttle-custom.decorator';
 export class ScrapingController {
   constructor(private readonly scrapingService: ScrapingService) {}
 
-
   @Post('run-all')
   @Roles('admin')
   @ThrottleStrict()

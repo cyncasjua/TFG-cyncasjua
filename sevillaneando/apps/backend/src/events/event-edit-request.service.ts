@@ -14,10 +14,14 @@ export class EventEditRequestService {
     @InjectRepository(Event)
     private readonly eventRepo: Repository<Event>,
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    private readonly userRepo: Repository<User>
   ) {}
 
-  async create(eventId: string, userId: string, dto: EventEditRequestDto): Promise<EventEditRequest> {
+  async create(
+    eventId: string,
+    userId: string,
+    dto: EventEditRequestDto
+  ): Promise<EventEditRequest> {
     const event = await this.eventRepo.findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Evento no encontrado');
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -37,7 +41,8 @@ export class EventEditRequestService {
       relations: ['event'],
     });
     if (!editRequest) throw new NotFoundException('Solicitud no encontrada');
-    if (editRequest.status !== 'pendiente') throw new ForbiddenException('La solicitud ya fue gestionada');
+    if (editRequest.status !== 'pendiente')
+      throw new ForbiddenException('La solicitud ya fue gestionada');
     const event = editRequest.event;
     Object.assign(event, editRequest);
     await this.eventRepo.save(event);
@@ -49,7 +54,8 @@ export class EventEditRequestService {
   async reject(requestId: string, motivoRechazo?: string): Promise<EventEditRequest> {
     const editRequest = await this.editRequestRepo.findOne({ where: { id: requestId } });
     if (!editRequest) throw new NotFoundException('Solicitud no encontrada');
-    if (editRequest.status !== 'pendiente') throw new ForbiddenException('La solicitud ya fue gestionada');
+    if (editRequest.status !== 'pendiente')
+      throw new ForbiddenException('La solicitud ya fue gestionada');
     editRequest.status = 'rechazada';
     editRequest.motivoRechazo = motivoRechazo;
     return this.editRequestRepo.save(editRequest);

@@ -17,7 +17,14 @@ import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton, OsmAttribution } from '../components';
+import {
+  ThemedView,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedButton,
+  OsmAttribution,
+} from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
@@ -44,9 +51,8 @@ type Categoria = {
 const DEFAULT_MAP_DELTA = { latitudeDelta: 0.01, longitudeDelta: 0.01 };
 const FOCUSED_MAP_DELTA = { latitudeDelta: 0.0015, longitudeDelta: 0.0015 };
 
-const toAbsoluteApiUrl = (urlOrPath: string) => (
-  urlOrPath.startsWith('http') ? urlOrPath : `${API_BASE_URL}${urlOrPath}`
-);
+const toAbsoluteApiUrl = (urlOrPath: string) =>
+  urlOrPath.startsWith('http') ? urlOrPath : `${API_BASE_URL}${urlOrPath}`;
 
 const parseOptionalNumber = (value: string) => {
   const normalized = value.trim();
@@ -76,9 +82,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const [showHoraFin, setShowHoraFin] = useState(false);
   const [estado, setEstado] = useState('Pendiente');
   const [openEstado, setOpenEstado] = useState(false);
-  const [estadoItems, setEstadoItems] = useState([
-    { label: 'Pendiente', value: 'Pendiente' },
-  ]);
+  const [estadoItems, setEstadoItems] = useState([{ label: 'Pendiente', value: 'Pendiente' }]);
   // Centro de Sevilla por defecto
   const [latitude, setLatitude] = useState<number | null>(SEVILLE_COORDINATES.latitude);
   const [longitude, setLongitude] = useState<number | null>(SEVILLE_COORDINATES.longitude);
@@ -139,8 +143,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       }
     };
     fetchCategorias();
-    return () => {
-    };
+    return () => {};
   }, []);
 
   const uploadEventImage = async (uri: string) => {
@@ -162,7 +165,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const pickImages = async () => {
-
     const remainingSlots = 5 - imageUrls.length;
     if (remainingSlots <= 0) {
       Alert.alert('Límite alcanzado', 'No puedes añadir más de 5 imágenes.');
@@ -706,10 +708,19 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
-                  style={[styles.input, { backgroundColor: colors.card, borderColor: colors.primary, justifyContent: 'center' }]}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      justifyContent: 'center',
+                    },
+                  ]}
                 >
                   <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
-                    {recurrenciaFin ? dayjs(recurrenciaFin).format('DD/MM/YYYY') : 'Seleccionar fecha límite'}
+                    {recurrenciaFin
+                      ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
+                      : 'Seleccionar fecha límite'}
                   </ThemedText>
                 </TouchableOpacity>
                 <DateTimePickerModal
@@ -769,11 +780,17 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
 
             {localImageUris && localImageUris.length > 0 && (
-              <View style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}>
+              <View
+                style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
+              >
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={true}
-                  contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', minWidth: '100%' }}
+                  contentContainerStyle={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    minWidth: '100%',
+                  }}
                   style={{ width: '100%' }}
                 >
                   {localImageUris.map((uri, idx) => (
@@ -785,7 +802,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                           {
                             width: 120,
                             borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
-                            borderColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
+                            borderColor:
+                              coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
                           },
                         ]}
                       />
@@ -799,7 +817,10 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                         onPress={() => setCoverImageUrl(imageUrls[idx])}
                         style={[
                           styles.coverImageBtn,
-                          { backgroundColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)' }
+                          {
+                            backgroundColor:
+                              coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)',
+                          },
                         ]}
                       >
                         <ThemedText style={{ color: '#fff', fontSize: 12 }}>
@@ -815,7 +836,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             {imageUrls.length < 5 && (
               <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
                 <Icon name="image-plus" size={24} color={colors.primary} />
-                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>Añadir imágenes</ThemedText>
+                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
+                  Añadir imágenes
+                </ThemedText>
               </TouchableOpacity>
             )}
             <ThemedButton

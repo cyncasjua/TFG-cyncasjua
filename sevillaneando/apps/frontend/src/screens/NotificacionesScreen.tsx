@@ -40,7 +40,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       reportError(
         'notifications.fetch',
         `Error cargando notificaciones: ${getErrorMessage(err)}`,
-        err,
+        err
       );
     } finally {
       setLoading(false);
@@ -68,7 +68,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       reportError(
         'notifications.mark-all',
         `Error marcando todas como leídas: ${getErrorMessage(err)}`,
-        err,
+        err
       );
       Alert.alert('Error', 'No se pudieron marcar todas las notificaciones como leídas');
     } finally {
@@ -85,7 +85,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       reportError(
         'notifications.delete',
         `Error borrando notificación: ${getErrorMessage(err)}`,
-        err,
+        err
       );
     }
   };
@@ -171,7 +171,12 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: { fontSize: 20, fontWeight: 'bold', flex: 1 },
   markAllButton: {
     width: 40,

@@ -138,9 +138,14 @@ const CategoriesScreen = () => {
                                   fetchCategories();
                                   Alert.alert('Eliminada', 'Categoría borrada correctamente');
                                 } catch (error: any) {
-                                  reportError('categories.delete', 'Error al borrar categoría', error, {
-                                    responseData: error?.response?.data,
-                                  });
+                                  reportError(
+                                    'categories.delete',
+                                    'Error al borrar categoría',
+                                    error,
+                                    {
+                                      responseData: error?.response?.data,
+                                    }
+                                  );
                                   let msg = 'No se pudo borrar la categoría';
                                   if (error?.response?.data?.message) {
                                     msg += `: ${error.response.data.message}`;

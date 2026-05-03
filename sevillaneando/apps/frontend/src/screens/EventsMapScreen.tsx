@@ -63,7 +63,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
 
         const { events: remote } = await getEvents(
           user?.id,
-          hasLocation ? { lat: userLat, lng: userLon } : undefined,
+          hasLocation ? { lat: userLat, lng: userLon } : undefined
         );
 
         if (hasLocation) {
@@ -77,7 +77,10 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
               ...event,
               distance: haversineDistanceKm(
                 { latitude: userLat, longitude: userLon },
-                { latitude: event.location.coordinates[1], longitude: event.location.coordinates[0] },
+                {
+                  latitude: event.location.coordinates[1],
+                  longitude: event.location.coordinates[0],
+                }
               ),
             };
           });
@@ -86,7 +89,11 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           setEvents(remote);
         }
       } catch (err) {
-        reportError('events-map.fetch-events', `Error cargando eventos: ${getErrorMessage(err)}`, err);
+        reportError(
+          'events-map.fetch-events',
+          `Error cargando eventos: ${getErrorMessage(err)}`,
+          err
+        );
       } finally {
         setLoading(false);
       }
@@ -140,9 +147,12 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
         )}
 
         {events
-          .filter((ev) => ev.location && ev.location.coordinates && ev.location.coordinates.length === 2)
+          .filter(
+            (ev) => ev.location && ev.location.coordinates && ev.location.coordinates.length === 2
+          )
           .map((event) => {
-            const descriptionPreview = event.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
+            const descriptionPreview =
+              event.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
             const isAndroid = Platform.OS === 'android';
 
             return (
@@ -164,87 +174,102 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
               >
                 {!isAndroid && (
                   <Callout tooltip>
-                      <View
-                        style={{
-                          backgroundColor: theme === 'dark' ? '#000' : '#fff',
-                          borderRadius: 30,
-                          padding: 10,
-                          width: 350,
-                          maxWidth: 350,
-                          shadowColor: '#000',
-                          shadowOpacity: 0.25,
-                          shadowRadius: 6,
-                          shadowOffset: { width: 0, height: 2 },
-                          elevation: 6,
-                        }}
+                    <View
+                      style={{
+                        backgroundColor: theme === 'dark' ? '#000' : '#fff',
+                        borderRadius: 30,
+                        padding: 10,
+                        width: 350,
+                        maxWidth: 350,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.25,
+                        shadowRadius: 6,
+                        shadowOffset: { width: 0, height: 2 },
+                        elevation: 6,
+                      }}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('EventDetail', { event })}
                       >
-                        <TouchableOpacity
-                          activeOpacity={0.8}
-                          onPress={() => navigation.navigate('EventDetail', { event })}
+                        <Text
+                          style={{
+                            fontWeight: 'bold',
+                            fontSize: 13,
+                            marginBottom: 4,
+                            color: theme === 'dark' ? '#fff' : '#222',
+                            flexShrink: 1,
+                          }}
+                          numberOfLines={3}
+                          ellipsizeMode="tail"
                         >
+                          {event.title}
+                        </Text>
+
+                        {event.description && (
                           <Text
                             style={{
-                              fontWeight: 'bold',
-                              fontSize: 13,
+                              fontSize: 11,
+                              color: theme === 'dark' ? '#ddd' : '#555',
                               marginBottom: 4,
-                              color: theme === 'dark' ? '#fff' : '#222',
-                              flexShrink: 1,
+                              lineHeight: 15,
                             }}
-                            numberOfLines={3}
+                            numberOfLines={2}
                             ellipsizeMode="tail"
                           >
-                            {event.title}
+                            {descriptionPreview}
                           </Text>
+                        )}
 
-                          {event.description && (
-                            <Text
-                              style={{
-                                fontSize: 11,
-                                color: theme === 'dark' ? '#ddd' : '#555',
-                                marginBottom: 4,
-                                lineHeight: 15,
-                              }}
-                              numberOfLines={2}
-                              ellipsizeMode="tail"
-                            >
-                              {descriptionPreview}
-                            </Text>
-                          )}
+                        <Text
+                          style={{
+                            fontSize: 10,
+                            color: theme === 'dark' ? '#bbb' : '#777',
+                            marginBottom: 3,
+                          }}
+                          numberOfLines={2}
+                        >
+                          📍 {event.address}
+                        </Text>
 
+                        {event.distance !== undefined && event.distance !== Infinity && (
                           <Text
                             style={{
                               fontSize: 10,
-                              color: theme === 'dark' ? '#bbb' : '#777',
-                              marginBottom: 3,
+                              fontWeight: '600',
+                              color: '#6c2eb7',
+                              marginBottom: 2,
                             }}
-                            numberOfLines={2}
                           >
-                            📍 {event.address}
+                            📏 {event.distance.toFixed(1)} km
                           </Text>
+                        )}
 
-                          {event.distance !== undefined && event.distance !== Infinity && (
-                            <Text style={{ fontSize: 10, fontWeight: '600', color: '#6c2eb7', marginBottom: 2 }}>
-                              📏 {event.distance.toFixed(1)} km
-                            </Text>
-                          )}
-
-                          <Text style={{ fontSize: 9, color: theme === 'dark' ? '#aaa' : '#999', fontStyle: 'italic' }}>
-                            Toca para ver detalles
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </Callout>
+                        <Text
+                          style={{
+                            fontSize: 9,
+                            color: theme === 'dark' ? '#aaa' : '#999',
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          Toca para ver detalles
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </Callout>
                 )}
               </Marker>
             );
           })}
       </MapView>
 
-      {Platform.OS === 'android' && selectedEventId && (
+      {Platform.OS === 'android' &&
+        selectedEventId &&
         (() => {
-          const selectedEvent = events.find(e => e.id === selectedEventId);
+          const selectedEvent = events.find((e) => e.id === selectedEventId);
           if (!selectedEvent) return null;
-          const descriptionPreview = selectedEvent.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
+          const descriptionPreview =
+            selectedEvent.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
 
           return (
             <View
@@ -282,7 +307,13 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
 
               <Text
-                style={{ fontWeight: 'bold', fontSize: 12, marginBottom: 3, color: theme === 'dark' ? '#fff' : '#333', paddingRight: 20 }}
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 12,
+                  marginBottom: 3,
+                  color: theme === 'dark' ? '#fff' : '#333',
+                  paddingRight: 20,
+                }}
                 numberOfLines={2}
               >
                 {selectedEvent.title}
@@ -290,19 +321,28 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
 
               {selectedEvent.description && (
                 <Text
-                  style={{ fontSize: 10, color: theme === 'dark' ? '#ddd' : '#555', marginBottom: 3, lineHeight: 14 }}
+                  style={{
+                    fontSize: 10,
+                    color: theme === 'dark' ? '#ddd' : '#555',
+                    marginBottom: 3,
+                    lineHeight: 14,
+                  }}
                   numberOfLines={2}
                 >
                   {descriptionPreview}
                 </Text>
               )}
 
-              <Text style={{ fontSize: 9, color: theme === 'dark' ? '#bbb' : '#888', marginBottom: 3 }}>
+              <Text
+                style={{ fontSize: 9, color: theme === 'dark' ? '#bbb' : '#888', marginBottom: 3 }}
+              >
                 📍 {selectedEvent.address}
               </Text>
 
               {selectedEvent.distance !== undefined && selectedEvent.distance !== Infinity && (
-                <Text style={{ fontSize: 10, fontWeight: '600', color: '#6c2eb7', marginBottom: 6 }}>
+                <Text
+                  style={{ fontSize: 10, fontWeight: '600', color: '#6c2eb7', marginBottom: 6 }}
+                >
                   📏 {selectedEvent.distance.toFixed(1)} km
                 </Text>
               )}
@@ -317,14 +357,11 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>
-                  Ver detalles
-                </Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>Ver detalles</Text>
               </TouchableOpacity>
             </View>
           );
-        })()
-      )}
+        })()}
 
       {hasUserLocation && (
         <ThemedView style={[styles.radiusBox, { backgroundColor: colors.card }]}>

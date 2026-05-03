@@ -137,9 +137,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { socket, sendMessage, isConnected } = useSocket();
 
   const refreshEventDetails = useCallback(async () => {
-    const freshEvent = initialEvent.privado && initialEvent.linkAcceso
-      ? await getEventByAccessLink(initialEvent.linkAcceso)
-      : await getEventById(initialEvent.id);
+    const freshEvent =
+      initialEvent.privado && initialEvent.linkAcceso
+        ? await getEventByAccessLink(initialEvent.linkAcceso)
+        : await getEventById(initialEvent.id);
     setEvent(freshEvent);
   }, [initialEvent.id, initialEvent.linkAcceso, initialEvent.privado]);
 
@@ -334,7 +335,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const isPrivateCreator = Boolean(isPrivate && user?.id && event.creador?.id === user.id);
 
     if (isPrivate && !isPrivateCreator) {
-      Alert.alert('Acceso restringido', 'Solo el creador puede compartir el enlace de este evento privado.');
+      Alert.alert(
+        'Acceso restringido',
+        'Solo el creador puede compartir el enlace de este evento privado.'
+      );
       return;
     }
 
@@ -347,7 +351,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           setEvent((prev) => ({ ...prev, linkAcceso: privateLinkAcceso }));
         }
       } catch (err) {
-        Alert.alert('Error', getErrorMessage(err) || 'No se pudo obtener el enlace privado para compartir.');
+        Alert.alert(
+          'Error',
+          getErrorMessage(err) || 'No se pudo obtener el enlace privado para compartir.'
+        );
         return;
       }
     }
@@ -363,16 +370,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       : `sevillaneando://evento/${event.id}`;
     const webEventLink = shareBaseUrl ? `${shareBaseUrl}/evento/${event.id}` : '';
     const webPrivateLink =
-      shareBaseUrl && canBuildPrivateLink
-        ? `${shareBaseUrl}/acceso/${privateLinkAcceso}`
-        : '';
+      shareBaseUrl && canBuildPrivateLink ? `${shareBaseUrl}/acceso/${privateLinkAcceso}` : '';
     const webLink = webPrivateLink || webEventLink;
     const eventLink = webLink || deepLink;
     const startText = formatEventDateRange(event.fechaInicio, event.fechaFin);
     const priceText = (() => {
       if (event.precio === 0) return 'Gratis';
       if (event.precio != null) return `${event.precio} EUR`;
-      if (event.precioMin != null && event.precioMax != null) return `${event.precioMin} - ${event.precioMax} EUR`;
+      if (event.precioMin != null && event.precioMax != null)
+        return `${event.precioMin} - ${event.precioMax} EUR`;
       return 'Precio variable';
     })();
 
@@ -422,7 +428,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         event.id,
         comentario.length > 0
           ? { puntuacion: ratingValue, comentario }
-          : { puntuacion: ratingValue },
+          : { puntuacion: ratingValue }
       );
       await Promise.all([refreshEventDetails(), refreshReviews()]);
       setHasExistingRating(true);
@@ -464,7 +470,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     const onHistory = (history: ChatMessage[]) => setMessages(history);
     const onMessage = (message: ChatMessage) => setMessages((prev) => [...prev, message]);
-    const onDelete = (messageId: string) => setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    const onDelete = (messageId: string) =>
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
     const onError = (err: { message: string }) => setChatError(err.message);
 
     socket.on('chat_history', onHistory);
@@ -507,7 +514,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const isPastEvent = useMemo(
     () => isEventFinished(event.fechaInicio, event.fechaFin),
-    [event.fechaInicio, event.fechaFin],
+    [event.fechaInicio, event.fechaFin]
   );
 
   const remainingText = useMemo(() => {
@@ -548,11 +555,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       setChatError('');
       setIsUploadingImage(true);
 
-      const processed = await manipulateAsync(
-        asset.uri,
-        [{ resize: { width: 800 } }],
-        { compress: 0.6, format: SaveFormat.JPEG }
-      ).catch(() => null);
+      const processed = await manipulateAsync(asset.uri, [{ resize: { width: 800 } }], {
+        compress: 0.6,
+        format: SaveFormat.JPEG,
+      }).catch(() => null);
 
       // Si la manipulación falla, usar la imagen original
       const uploadUri = processed?.uri || asset.uri;
@@ -586,7 +592,11 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
       setPendingImageUrl(data.imageUrl);
     } catch (error) {
-      reportError('event-detail.upload-chat-image', 'Error al subir imagen en chat de evento', error);
+      reportError(
+        'event-detail.upload-chat-image',
+        'Error al subir imagen en chat de evento',
+        error
+      );
       setChatError('Error al subir la imagen');
       setPendingImageLocalUri(null);
       setPendingImageUrl(null);
@@ -618,7 +628,11 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       if (!asset?.uri) return;
       await uploadChatImage(asset);
     } catch (error) {
-      reportError('event-detail.pick-image', 'Error al seleccionar imagen del chat de evento', error);
+      reportError(
+        'event-detail.pick-image',
+        'Error al seleccionar imagen del chat de evento',
+        error
+      );
       setChatError('Error al seleccionar la imagen');
     }
   };
@@ -652,23 +666,19 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleDeleteEventMessage = (messageId: string) => {
-    Alert.alert(
-      'Borrar mensaje',
-      '¿Estás seguro de que quieres borrar este mensaje?',
-      [
-        { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
-        {
-          text: 'Borrar',
-          onPress: () => {
-            sendMessage('delete_event_message', {
-              eventId: event?.id,
-              messageId
-            });
-          },
-          style: 'destructive',
+    Alert.alert('Borrar mensaje', '¿Estás seguro de que quieres borrar este mensaje?', [
+      { text: 'Cancelar', onPress: () => {}, style: 'cancel' },
+      {
+        text: 'Borrar',
+        onPress: () => {
+          sendMessage('delete_event_message', {
+            eventId: event?.id,
+            messageId,
+          });
         },
-      ]
-    );
+        style: 'destructive',
+      },
+    ]);
   };
 
   const renderActionButton = ({
@@ -705,11 +715,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           { backgroundColor: accent ? 'rgba(255,255,255,0.2)' : '#6c2eb71A' },
         ]}
       >
-        <MaterialIcons
-          name={icon as any}
-          size={18}
-          color={accent ? '#FFFFFF' : '#6c2eb7'}
-        />
+        <MaterialIcons name={icon as any} size={18} color={accent ? '#FFFFFF' : '#6c2eb7'} />
       </View>
       <View style={styles.actionTextWrap}>
         <ThemedText style={[styles.actionTitle, { color: accent ? '#FFFFFF' : colors.text }]}>
@@ -717,7 +723,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         </ThemedText>
         {!!subtitle && (
           <ThemedTextSecondary
-            style={[styles.actionSubtitle, { color: accent ? 'rgba(255,255,255,0.85)' : colors.text + 'AA' }]}
+            style={[
+              styles.actionSubtitle,
+              { color: accent ? 'rgba(255,255,255,0.85)' : colors.text + 'AA' },
+            ]}
           >
             {subtitle}
           </ThemedTextSecondary>
@@ -749,8 +758,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         style={[
           styles.backgroundOverlay,
           {
-            backgroundColor:
-              theme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.45)',
+            backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.45)',
           },
         ]}
       />
@@ -781,10 +789,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   imageLoadErrors[index]
                     ? defaultEventImage
                     : typeof item === 'number'
-                      ? item
-                      : { uri: item.uri, cache: 'force-cache' }
+                    ? item
+                    : { uri: item.uri, cache: 'force-cache' }
                 }
-                style={{ width: Dimensions.get('window').width - 40, height: 220, borderRadius: 40, marginRight: 10 }}
+                style={{
+                  width: Dimensions.get('window').width - 40,
+                  height: 220,
+                  borderRadius: 40,
+                  marginRight: 10,
+                }}
                 resizeMode="cover"
                 onError={() =>
                   setImageLoadErrors((prev) => ({
@@ -846,8 +859,17 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <MaterialIcons name="repeat" size={16} color="#6c2eb7" />
                 <ThemedTextSecondary style={{ marginLeft: 4 }}>
                   {`Evento recurrente: ${
-                    { diario: 'cada día', semanal: 'cada semana', quincenal: 'cada 2 semanas', mensual: 'cada mes' }[event.recurrencia]
-                  }${event.recurrenciaFin ? ` hasta el ${dayjs(event.recurrenciaFin).format('DD/MM/YYYY')}` : ''}`}
+                    {
+                      diario: 'cada día',
+                      semanal: 'cada semana',
+                      quincenal: 'cada 2 semanas',
+                      mensual: 'cada mes',
+                    }[event.recurrencia]
+                  }${
+                    event.recurrenciaFin
+                      ? ` hasta el ${dayjs(event.recurrenciaFin).format('DD/MM/YYYY')}`
+                      : ''
+                  }`}
                 </ThemedTextSecondary>
               </ThemedView>
             )}
@@ -873,15 +895,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   alignSelf: 'flex-end',
                 }}
               >
-                {
-                  (() => {
-                    if (event.precio === 0) return 'Gratis';
-                    if (event.precio != null) return `${event.precio} €`;
-                    if (event.precioMin != null && event.precioMax != null)
-                      return `${event.precioMin}€ - ${event.precioMax}€`;
-                    return 'Precio variable';
-                  })()
-                }
+                {(() => {
+                  if (event.precio === 0) return 'Gratis';
+                  if (event.precio != null) return `${event.precio} €`;
+                  if (event.precioMin != null && event.precioMax != null)
+                    return `${event.precioMin}€ - ${event.precioMax}€`;
+                  return 'Precio variable';
+                })()}
               </ThemedText>
             </ThemedView>
           </ThemedView>
@@ -917,15 +937,25 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             ]}
           >
             <View style={styles.actionsHeader}>
-              <ThemedText style={[styles.actionsHeaderTitle, { color: colors.text }]}>Acciones del evento</ThemedText>
-              <ThemedTextSecondary style={styles.actionsHeaderHint}>Guarda, comparte y valora para mejorar recomendaciones</ThemedTextSecondary>
+              <ThemedText style={[styles.actionsHeaderTitle, { color: colors.text }]}>
+                Acciones del evento
+              </ThemedText>
+              <ThemedTextSecondary style={styles.actionsHeaderHint}>
+                Guarda, comparte y valora para mejorar recomendaciones
+              </ThemedTextSecondary>
             </View>
             {renderActionButton({
               icon: isAttending ? 'event-busy' : 'event-available',
-              title: isPastEvent ? 'Evento finalizado' : (isAttending ? 'Ya no asistiré' : 'Asistiré'),
+              title: isPastEvent
+                ? 'Evento finalizado'
+                : isAttending
+                ? 'Ya no asistiré'
+                : 'Asistiré',
               subtitle: isPastEvent
                 ? 'No se puede apuntar a eventos pasados'
-                : (isAttending ? 'Eliminar de tu agenda' : 'Añadir a tu agenda'),
+                : isAttending
+                ? 'Eliminar de tu agenda'
+                : 'Añadir a tu agenda',
               onPress: handleToggleAttend,
               accent: true,
               disabled: isPastEvent,
@@ -956,9 +986,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 icon: 'share',
                 title: event.privado ? 'Invitar' : 'Compartir',
                 subtitle: event.privado
-                  ? (event.creador?.id === user?.id
+                  ? event.creador?.id === user?.id
                     ? 'Enviar enlace de acceso privado'
-                    : 'Solo el creador puede compartir')
+                    : 'Solo el creador puede compartir'
                   : 'Enviar a tus contactos',
                 onPress: handleShareEvent,
                 disabled: Boolean(event.privado && event.creador?.id !== user?.id),
@@ -979,66 +1009,67 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           <ThemedView style={{ marginTop: 16, marginBottom: 12 }}>
             <ThemedTitle style={{ fontSize: 18, marginBottom: 12 }}>Opiniones</ThemedTitle>
             {reviewsLoading ? (
-              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 8 }} />
+              <ActivityIndicator
+                size="small"
+                color={colors.primary}
+                style={{ marginVertical: 8 }}
+              />
             ) : reviews.length === 0 ? (
               <ThemedTextSecondary style={{ fontSize: 14, fontStyle: 'italic' }}>
                 No hay opiniones aún. ¡Sé el primero en valorar este evento!
               </ThemedTextSecondary>
             ) : (
-              <ScrollView
-                scrollEnabled={false}
-                nestedScrollEnabled={false}
-              >
+              <ScrollView scrollEnabled={false} nestedScrollEnabled={false}>
                 {reviews.map((review) => {
                   const autor = review.autor;
                   return (
-                  <ThemedView
-                    key={review.id}
-                    style={[
-                      {
-                        backgroundColor: colors.card,
-                        borderColor: colors.border,
-                        borderRadius: 40,
-                        padding: 12,
-                        marginBottom: 10,
-                        borderWidth: 1,
-                      },
-                    ]}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                      {autor?.id && (
-                        <TouchableOpacity
-                          onPress={() => navigation.navigate('UserProfile', { userId: autor.id })}
-                          style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
-                        >
-                          <Avatar photoUrl={autor.fotoPerfil} size={32} />
-                          <View style={{ marginLeft: 10, flex: 1 }}>
-                            <ThemedText style={{ fontWeight: '600', fontSize: 13 }}>
-                              {autor.nombre}
-                            </ThemedText>
-                            <ThemedTextSecondary style={{ fontSize: 11 }}>
-                              {formatSevillaTime(review.fecha)}
-                            </ThemedTextSecondary>
-                          </View>
-                        </TouchableOpacity>
-                      )}
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {[...Array(5)].map((_, i) => (
-                          <MaterialIcons
-                            key={i}
-                            name={i < review.puntuacion ? 'star' : 'star-border'}
-                            size={14}
-                            color={i < review.puntuacion ? '#f39c12' : colors.text + '44'}
-                          />
-                        ))}
+                    <ThemedView
+                      key={review.id}
+                      style={[
+                        {
+                          backgroundColor: colors.card,
+                          borderColor: colors.border,
+                          borderRadius: 40,
+                          padding: 12,
+                          marginBottom: 10,
+                          borderWidth: 1,
+                        },
+                      ]}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                        {autor?.id && (
+                          <TouchableOpacity
+                            onPress={() => navigation.navigate('UserProfile', { userId: autor.id })}
+                            style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                          >
+                            <Avatar photoUrl={autor.fotoPerfil} size={32} />
+                            <View style={{ marginLeft: 10, flex: 1 }}>
+                              <ThemedText style={{ fontWeight: '600', fontSize: 13 }}>
+                                {autor.nombre}
+                              </ThemedText>
+                              <ThemedTextSecondary style={{ fontSize: 11 }}>
+                                {formatSevillaTime(review.fecha)}
+                              </ThemedTextSecondary>
+                            </View>
+                          </TouchableOpacity>
+                        )}
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          {[...Array(5)].map((_, i) => (
+                            <MaterialIcons
+                              key={i}
+                              name={i < review.puntuacion ? 'star' : 'star-border'}
+                              size={14}
+                              color={i < review.puntuacion ? '#f39c12' : colors.text + '44'}
+                            />
+                          ))}
+                        </View>
                       </View>
-                    </View>
-                    {review.comentario && (
-                      <ThemedText style={{ fontSize: 13, lineHeight: 18 }}>
-                        {review.comentario}
-                      </ThemedText>
-                    )}
-                  </ThemedView>
+                      {review.comentario && (
+                        <ThemedText style={{ fontSize: 13, lineHeight: 18 }}>
+                          {review.comentario}
+                        </ThemedText>
+                      )}
+                    </ThemedView>
                   );
                 })}
               </ScrollView>
@@ -1050,9 +1081,26 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             animationType="slide"
             onRequestClose={() => setShowAttendeesModal(false)}
           >
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 40, padding: 18, maxHeight: '70%' }}>
-                <ThemedTitle style={{ marginBottom: 12 }}>Asistentes ({attendees.length})</ThemedTitle>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0,0,0,0.45)',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View
+                style={{
+                  width: '85%',
+                  backgroundColor: colors.card,
+                  borderRadius: 40,
+                  padding: 18,
+                  maxHeight: '70%',
+                }}
+              >
+                <ThemedTitle style={{ marginBottom: 12 }}>
+                  Asistentes ({attendees.length})
+                </ThemedTitle>
                 <ScrollView style={{ maxHeight: 350 }}>
                   {attendees.map((att) => (
                     <TouchableOpacity
@@ -1061,14 +1109,26 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         setShowAttendeesModal(false);
                         navigation.navigate('UserProfile', { userId: att.id });
                       }}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, backgroundColor: colors.card, borderRadius: 999, marginBottom: 6 }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: 8,
+                        backgroundColor: colors.card,
+                        borderRadius: 999,
+                        marginBottom: 6,
+                      }}
                     >
                       <Avatar photoUrl={att.fotoPerfil} size={32} />
                       <ThemedText>{att.nombre}</ThemedText>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <ThemedButton title="Cerrar" variant="secondary" onPress={() => setShowAttendeesModal(false)} />
+                <ThemedButton
+                  title="Cerrar"
+                  variant="secondary"
+                  onPress={() => setShowAttendeesModal(false)}
+                />
               </View>
             </View>
           </Modal>
@@ -1078,8 +1138,22 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             animationType="slide"
             onRequestClose={() => setRatingModalVisible(false)}
           >
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 40, padding: 18 }}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0,0,0,0.45)',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View
+                style={{
+                  width: '85%',
+                  backgroundColor: colors.card,
+                  borderRadius: 40,
+                  padding: 18,
+                }}
+              >
                 <ThemedTitle style={{ marginBottom: 12 }}>
                   {hasExistingRating ? 'Tu valoración' : 'Valorar evento'}
                 </ThemedTitle>
@@ -1088,7 +1162,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     ? 'Puedes editar tu puntuación y comentario cuando quieras.'
                     : 'Tu puntuación ayuda a mejorar recomendaciones y rutas.'}
                 </ThemedTextSecondary>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginBottom: 12,
+                  }}
+                >
                   {[1, 2, 3, 4, 5].map((value) => (
                     <TouchableOpacity
                       key={value}
@@ -1139,8 +1219,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         </ScrollView>
         {isChatOpen && (
           <View style={styles.chatOverlay}>
-            <ThemedView style={[styles.chatPanel, { backgroundColor: colors.card }]}
-            >
+            <ThemedView style={[styles.chatPanel, { backgroundColor: colors.card }]}>
               <ThemedView style={styles.chatHeader}>
                 <ThemedTitle>Chat del evento</ThemedTitle>
               </ThemedView>
@@ -1159,9 +1238,14 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 {messages.map((item) => {
                   const hasImage = !!getFullImageUrl(item.imageUrl);
                   const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
-                  const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
-                  const nameColor = isOwn && isLight ? '#e0e0e0' : (theme === 'dark' ? '#9bbcff' : '#3b5bdb');
-                  const messageColor = isOwn && isLight ? '#fff' : (theme === 'dark' ? '#e6e8ef' : '#1f2937');
+                  const isLight =
+                    colors.background === '#FFFFFF' ||
+                    colors.background === '#fff' ||
+                    colors.background === 'white';
+                  const nameColor =
+                    isOwn && isLight ? '#e0e0e0' : theme === 'dark' ? '#9bbcff' : '#3b5bdb';
+                  const messageColor =
+                    isOwn && isLight ? '#fff' : theme === 'dark' ? '#e6e8ef' : '#1f2937';
 
                   return (
                     <ThemedView
@@ -1214,7 +1298,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                             }}
                             disabled={!item.usuario?.id || isOwn}
                           >
-                           <ThemedTextSecondary
+                            <ThemedTextSecondary
                               numberOfLines={1}
                               ellipsizeMode="tail"
                               style={[styles.chatMetaText, { color: nameColor }]}
@@ -1229,7 +1313,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                           )}
                           {!!getFullImageUrl(item.imageUrl) && (
                             <TouchableOpacity
-                              onPress={() => setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)}
+                              onPress={() =>
+                                setPreviewImageUrl(getFullImageUrl(item.imageUrl) ?? null)
+                              }
                             >
                               <View style={{ position: 'relative' }}>
                                 {loadingImages.has(item.id) && (
@@ -1252,12 +1338,16 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                                   source={{ uri: getOptimizedChatImageUrl(item.imageUrl)! }}
                                   style={styles.chatMessageImage}
                                   resizeMode="cover"
-                                  onLoadStart={() => setLoadingImages(prev => new Set(prev).add(item.id))}
-                                  onLoadEnd={() => setLoadingImages(prev => {
-                                    const next = new Set(prev);
-                                    next.delete(item.id);
-                                    return next;
-                                  })}
+                                  onLoadStart={() =>
+                                    setLoadingImages((prev) => new Set(prev).add(item.id))
+                                  }
+                                  onLoadEnd={() =>
+                                    setLoadingImages((prev) => {
+                                      const next = new Set(prev);
+                                      next.delete(item.id);
+                                      return next;
+                                    })
+                                  }
                                 />
                               </View>
                             </TouchableOpacity>
@@ -1373,8 +1463,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               </ThemedView>
             </ThemedView>
           </View>
-        )
-        }
+        )}
         <Modal
           visible={!!previewImageUrl}
           transparent
@@ -1404,8 +1493,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
           </View>
         </Modal>
-      </SafeAreaView >
-    </ImageBackground >
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
@@ -1574,5 +1663,4 @@ const styles = StyleSheet.create({
     marginTop: 4,
     alignSelf: 'flex-end',
   },
-
 });

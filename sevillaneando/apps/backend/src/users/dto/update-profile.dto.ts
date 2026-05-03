@@ -12,10 +12,7 @@ import {
 import { Transform, Type } from 'class-transformer';
 import type { GeoJsonPoint } from '../../common/geojson-point';
 import { GeoJsonPointDto } from '../../common/geojson-point.dto';
-import {
-  InteresCategoriaEnum,
-  normalizeIntereses,
-} from '../enums/interes-categoria.enum';
+import { InteresCategoriaEnum, normalizeIntereses } from '../enums/interes-categoria.enum';
 
 export class UpdateProfileDto {
   @IsOptional()

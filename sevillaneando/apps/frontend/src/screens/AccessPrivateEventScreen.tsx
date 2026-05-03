@@ -19,7 +19,6 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
   const [error, setError] = useState<string | null>(null);
   const { colors } = useTheme();
 
-
   useEffect(() => {
     const loadEvent = async () => {
       try {
@@ -54,10 +53,7 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
     return (
       <ThemedView style={styles.container}>
         <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
-        <ThemedButton
-          onPress={() => navigation.goBack()}
-          title="Volver"
-        />
+        <ThemedButton onPress={() => navigation.goBack()} title="Volver" />
       </ThemedView>
     );
   }

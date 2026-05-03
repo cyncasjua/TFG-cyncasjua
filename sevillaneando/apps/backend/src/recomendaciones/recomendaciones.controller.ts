@@ -24,7 +24,7 @@ type AuthRequest = Request & { user: { uid: string } };
 export class RecomendacionesController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly recomendacionesService: RecomendacionesService,
+    private readonly recomendacionesService: RecomendacionesService
   ) {}
 
   private async resolveUserId(req: AuthRequest): Promise<string> {
@@ -61,7 +61,7 @@ export class RecomendacionesController {
   async rateEvent(
     @Req() req: AuthRequest,
     @Param('eventId', ParseUUIDPipe) eventId: string,
-    @Body() body: RateEventDto,
+    @Body() body: RateEventDto
   ) {
     const userId = await this.resolveUserId(req);
     return this.recomendacionesService.rateEvent(userId, eventId, body);
@@ -70,7 +70,7 @@ export class RecomendacionesController {
   @Get('events/:eventId/valorar/me')
   async getMyEventRating(
     @Req() req: AuthRequest,
-    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string
   ) {
     const userId = await this.resolveUserId(req);
     return this.recomendacionesService.getMyEventRating(userId, eventId);
@@ -84,7 +84,7 @@ export class RecomendacionesController {
     @Query('radiusKm') radiusKm?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
-    @Query('limit') limit?: string,
+    @Query('limit') limit?: string
   ) {
     const userId = await this.resolveUserId(req);
     return this.recomendacionesService.recommendEvents(userId, {
@@ -117,7 +117,7 @@ export class RecomendacionesController {
     @Query('maxEventsPerRoute') maxEventsPerRoute?: string,
     @Query('strategy') strategy?: string,
     @Query('maxGapMinutes') maxGapMinutes?: string,
-    @Query('maxOverlapMinutes') maxOverlapMinutes?: string,
+    @Query('maxOverlapMinutes') maxOverlapMinutes?: string
   ) {
     const userId = await this.resolveUserId(req);
     return this.recomendacionesService.recommendRoutes(userId, {

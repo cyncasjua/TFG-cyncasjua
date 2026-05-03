@@ -33,7 +33,7 @@ export class NotificacionesService {
     await this.notificacionesRepo.update(id, { leida: true });
   }
 
-  async delete (id: string) {
+  async delete(id: string) {
     await this.notificacionesRepo.delete(id);
   }
 }

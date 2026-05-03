@@ -48,7 +48,7 @@ export async function updateRoute(
     trayecto?: Array<{ type: 'Point'; coordinates: [number, number] }>;
     eventosIds?: string[];
     temporizacion?: number;
-  },
+  }
 ): Promise<UserRoute> {
   const res = await api.patch(`/rutas/${id}`, payload);
   return res.data as UserRoute;

@@ -104,13 +104,13 @@ export class User {
   @ManyToMany(() => User, (user) => user.seguidores)
   seguidos!: User[];
 
-  iniciarSesion() { }
-  cerrarSesion() { }
-  verEventos() { }
-  subirFoto() { }
-  editarPerfil() { }
-  añadirEvento() { }
-  añadirReseña() { }
+  iniciarSesion() {}
+  cerrarSesion() {}
+  verEventos() {}
+  subirFoto() {}
+  editarPerfil() {}
+  añadirEvento() {}
+  añadirReseña() {}
 
   @BeforeInsert()
   @BeforeUpdate()
@@ -155,7 +155,7 @@ export class User {
             length: loc.coordinates?.length,
             coord0Type: typeof loc.coordinates?.[0],
             coord1Type: typeof loc.coordinates?.[1],
-          })}`,
+          })}`
         );
         throw new Error('La ubicación debe ser un GeoJsonPoint válido.');
       }

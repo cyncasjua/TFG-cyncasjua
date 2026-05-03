@@ -5,14 +5,11 @@ import { User } from './user.entity';
 import { RolEnum } from './enums/rol.enum';
 import * as admin from 'firebase-admin';
 import type { GeoJsonPoint } from '../common/geojson-point';
-import {
-  InteresCategoriaEnum,
-  normalizeIntereses,
-} from './enums/interes-categoria.enum';
+import { InteresCategoriaEnum, normalizeIntereses } from './enums/interes-categoria.enum';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) { }
+  constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
 
   async ensureFromFirebase(payload: {
     uid: string;
@@ -124,7 +121,9 @@ export class UsersService {
   async searchUsers(query: string): Promise<User[]> {
     return this.usersRepo
       .createQueryBuilder('user')
-      .where('LOWER(user.nombre) LIKE :q OR LOWER(user.email) LIKE :q', { q: `%${query.toLowerCase()}%` })
+      .where('LOWER(user.nombre) LIKE :q OR LOWER(user.email) LIKE :q', {
+        q: `%${query.toLowerCase()}%`,
+      })
       .limit(20)
       .getMany();
   }
@@ -144,7 +143,10 @@ export class UsersService {
   }
 
   async dejarDeSeguir(seguidorId: string, seguidoId: string): Promise<void> {
-    const seguidor = await this.usersRepo.findOne({ where: { id: seguidorId }, relations: ['seguidos'] });
+    const seguidor = await this.usersRepo.findOne({
+      where: { id: seguidorId },
+      relations: ['seguidos'],
+    });
     if (!seguidor) return;
     seguidor.seguidos = seguidor.seguidos.filter((u) => u.id !== seguidoId);
     await this.usersRepo.save(seguidor);
@@ -161,7 +163,10 @@ export class UsersService {
   }
 
   async isSiguiendo(seguidorId: string, seguidoId: string): Promise<boolean> {
-    const user = await this.usersRepo.findOne({ where: { id: seguidorId }, relations: ['seguidos'] });
+    const user = await this.usersRepo.findOne({
+      where: { id: seguidorId },
+      relations: ['seguidos'],
+    });
     return user?.seguidos.some((u) => u.id === seguidoId) ?? false;
   }
 }

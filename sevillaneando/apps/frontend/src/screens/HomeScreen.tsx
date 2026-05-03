@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import dayjs from 'dayjs';
@@ -67,7 +66,6 @@ const INITIAL_RECOMMENDED_EVENTS_VISIBLE = 8;
 const RECOMMENDED_EVENTS_FETCH_LIMIT = 24;
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
-
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [recommendedEvents, setRecommendedEvents] = useState<RecommendedEvent[]>([]);
   const [recommendedRoutes, setRecommendedRoutes] = useState<RecommendedRoute[]>([]);
@@ -96,21 +94,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [radiusOptions, setRadiusOptions] = useState([0.5, 1, 2, 5, 10]);
   const { role, logout, user } = useAuth();
   const eventsUser = user
-  ? {
-      id: user.id,
-      ubicacion: user.ubicacion ?? undefined,
-    }
-  : null;
+    ? {
+        id: user.id,
+        ubicacion: user.ubicacion ?? undefined,
+      }
+    : null;
 
-const {
-  items,
-  setItems,
-  loading,
-  refreshing,
-  error,
-  fetchEvents,
-  onRefresh,
-} = useEvents(eventsUser);
+  const { items, setItems, loading, refreshing, error, fetchEvents, onRefresh } =
+    useEvents(eventsUser);
   const { colors, setTheme, theme } = useTheme();
 
   const [privateAccessVisible, setPrivateAccessVisible] = useState(false);
@@ -123,7 +114,6 @@ const {
   const [dateTo, setDateTo] = useState('');
   const [showDateFromPicker, setShowDateFromPicker] = useState(false);
   const [showDateToPicker, setShowDateToPicker] = useState(false);
-
 
   const { unread } = useNotificaciones();
 
@@ -186,7 +176,7 @@ const {
       reportWarning(
         'home.persist-category-order',
         `Error guardando orden de categorías: ${getErrorMessage(err)}`,
-        err,
+        err
       );
     }
   };
@@ -198,7 +188,7 @@ const {
       reportWarning(
         'home.persist-radius-options',
         `Error guardando radios personalizados: ${getErrorMessage(err)}`,
-        err,
+        err
       );
     }
   };
@@ -234,7 +224,6 @@ const {
       persistRadiusOptions(newRadiusOptions);
     }
   };
-
 
   const { socket, isConnected } = useSocket();
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -273,7 +262,6 @@ const {
       socket.off('dm_message', fetchUnreadCount);
     };
   }, [socket, isConnected, fetchUnreadCount]);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -334,14 +322,20 @@ const {
           setRouteStrategies(
             parsed.routeStrategies.filter(
               (item): item is RouteStrategy =>
-                item === 'balanced' || item === 'walkable' || item === 'score',
-            ),
+                item === 'balanced' || item === 'walkable' || item === 'score'
+            )
           );
         }
-        if (Number.isFinite(parsed.routeCount)) setRouteCount(Math.max(1, Math.min(8, Number(parsed.routeCount))));
-        if (Number.isFinite(parsed.routeMaxEvents)) setRouteMaxEvents(Math.max(3, Math.min(8, Number(parsed.routeMaxEvents))));
-        if (Number.isFinite(parsed.routeMaxGapMinutes)) setRouteMaxGapMinutes(Math.max(30, Math.min(720, Number(parsed.routeMaxGapMinutes))));
-        if (Number.isFinite(parsed.routeMaxOverlapMinutes)) setRouteMaxOverlapMinutes(Math.max(0, Math.min(60, Number(parsed.routeMaxOverlapMinutes))));
+        if (Number.isFinite(parsed.routeCount))
+          setRouteCount(Math.max(1, Math.min(8, Number(parsed.routeCount))));
+        if (Number.isFinite(parsed.routeMaxEvents))
+          setRouteMaxEvents(Math.max(3, Math.min(8, Number(parsed.routeMaxEvents))));
+        if (Number.isFinite(parsed.routeMaxGapMinutes))
+          setRouteMaxGapMinutes(Math.max(30, Math.min(720, Number(parsed.routeMaxGapMinutes))));
+        if (Number.isFinite(parsed.routeMaxOverlapMinutes))
+          setRouteMaxOverlapMinutes(
+            Math.max(0, Math.min(60, Number(parsed.routeMaxOverlapMinutes)))
+          );
       } catch (err) {
         reportWarning('home.load-routes-settings', 'No se pudieron cargar ajustes de rutas', err);
         // Ignore invalid persisted settings.
@@ -362,10 +356,14 @@ const {
             routeMaxEvents,
             routeMaxGapMinutes,
             routeMaxOverlapMinutes,
-          }),
+          })
         );
       } catch (err) {
-        reportWarning('home.persist-routes-settings', 'No se pudieron guardar ajustes de rutas', err);
+        reportWarning(
+          'home.persist-routes-settings',
+          'No se pudieron guardar ajustes de rutas',
+          err
+        );
       }
     };
 
@@ -450,8 +448,8 @@ const {
             maxEventsPerRoute: routeMaxEvents,
             maxGapMinutes: routeMaxGapMinutes,
             maxOverlapMinutes: routeMaxOverlapMinutes,
-          }),
-        ),
+          })
+        )
       );
 
       const seen = new Set<string>();
@@ -512,7 +510,7 @@ const {
         Alert.alert('Error', getErrorMessage(err) || 'No se pudo abrir el evento recomendado.');
       }
     },
-    [items, navigation],
+    [items, navigation]
   );
 
   const onLogout = async () => {
@@ -531,16 +529,14 @@ const {
     }
 
     if (filterNearby && searchRadius) {
-      filtered = filtered.filter(
-        (ev) => ev.distance !== undefined && ev.distance <= searchRadius,
-      );
+      filtered = filtered.filter((ev) => ev.distance !== undefined && ev.distance <= searchRadius);
     }
 
     if (searchText.trim() !== '') {
       const text = searchText.trim().toLowerCase();
       filtered = filtered.filter(
         (ev) =>
-          ev.title?.toLowerCase().includes(text) || ev.description?.toLowerCase().includes(text),
+          ev.title?.toLowerCase().includes(text) || ev.description?.toLowerCase().includes(text)
       );
     }
 
@@ -598,17 +594,17 @@ const {
 
   const activeFilteredItems = useMemo(
     () => filteredItems.filter((item) => !isEventFinished(item.fechaInicio, item.fechaFin)),
-    [filteredItems],
+    [filteredItems]
   );
 
   const pastFilteredItems = useMemo(
     () => filteredItems.filter((item) => isEventFinished(item.fechaInicio, item.fechaFin)),
-    [filteredItems],
+    [filteredItems]
   );
 
   const visibleItems = useMemo(
     () => (selectedEventTab === 'past' ? pastFilteredItems : activeFilteredItems),
-    [activeFilteredItems, pastFilteredItems, selectedEventTab],
+    [activeFilteredItems, pastFilteredItems, selectedEventTab]
   );
 
   const discoveryTitle = useMemo(() => {
@@ -621,11 +617,10 @@ const {
       showAllRecommendedEvents
         ? recommendedEvents
         : recommendedEvents.slice(0, INITIAL_RECOMMENDED_EVENTS_VISIBLE),
-    [recommendedEvents, showAllRecommendedEvents],
+    [recommendedEvents, showAllRecommendedEvents]
   );
 
-  const hasMoreRecommendedEvents =
-    recommendedEvents.length > INITIAL_RECOMMENDED_EVENTS_VISIBLE;
+  const hasMoreRecommendedEvents = recommendedEvents.length > INITIAL_RECOMMENDED_EVENTS_VISIBLE;
 
   const homeGreeting = useMemo(() => {
     const hour = dayjs().hour();
@@ -683,8 +678,7 @@ const {
         style={[
           StyleSheet.absoluteFillObject,
           {
-            backgroundColor:
-              theme === 'dark' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.25)',
+            backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.25)',
           },
         ]}
       />
@@ -694,7 +688,7 @@ const {
           contentContainerStyle={{ paddingBottom: 190 }}
           showsVerticalScrollIndicator
           data={loading ? Array(6).fill({ id: 'skeleton', isSkeleton: true }) : visibleItems}
-          keyExtractor={(item, index) => item.isSkeleton ? `skeleton-${index}` : item.id}
+          keyExtractor={(item, index) => (item.isSkeleton ? `skeleton-${index}` : item.id)}
           onEndReachedThreshold={0.8}
           refreshControl={
             <RefreshControl
@@ -711,9 +705,10 @@ const {
             const nowMs = Date.now();
             const startMs = item.fechaInicio ? new Date(item.fechaInicio).getTime() : NaN;
             const endMs = item.fechaFin ? new Date(item.fechaFin).getTime() : NaN;
-            const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
-              ? nowMs >= startMs && nowMs <= endMs
-              : false;
+            const isOngoing =
+              Number.isFinite(startMs) && Number.isFinite(endMs)
+                ? nowMs >= startMs && nowMs <= endMs
+                : false;
             const isWithinWeek = Number.isFinite(startMs)
               ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
               : false;
@@ -721,58 +716,138 @@ const {
               <TouchableOpacity onPress={() => navigation.navigate('EventDetail', { event: item })}>
                 <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
                   {isOngoing && (
-                    <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>En curso</ThemedText>
+                    <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
+                      En curso
+                    </ThemedText>
                   )}
                   {!isOngoing && isWithinWeek && (
-                    <ThemedText style={[styles.statusBadge, styles.statusSoon]}>En &lt; 7 días</ThemedText>
+                    <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
+                      En &lt; 7 días
+                    </ThemedText>
                   )}
                   {item.distance !== undefined && item.distance !== Infinity && (
-                    <ThemedText style={{ position: 'absolute', top: 8, right: 8, backgroundColor: colors.primary, color: '#fff', paddingHorizontal: 8, paddingVertical: 4, borderRadius: UNIFIED_BORDER_RADIUS, fontSize: 12, fontWeight: 'bold', zIndex: 10 }}>
+                    <ThemedText
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: colors.primary,
+                        color: '#fff',
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: UNIFIED_BORDER_RADIUS,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        zIndex: 10,
+                      }}
+                    >
                       {item.distance.toFixed(1)} km
                     </ThemedText>
                   )}
                   <ImageBackground
-                    source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
+                    source={
+                      getFullImageUrl(item.imagen)
+                        ? { uri: getFullImageUrl(item.imagen)! }
+                        : require('../../assets/splash.png')
+                    }
                     style={{ height: 120, justifyContent: 'flex-end' }}
                     imageStyle={{ opacity: 0.2 }}
                     resizeMode="cover"
                   >
-                    <ThemedText style={{ fontSize: 18, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#222', marginBottom: 7, marginLeft: 14, textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }} numberOfLines={1} ellipsizeMode="tail">
+                    <ThemedText
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: theme === 'dark' ? '#fff' : '#222',
+                        marginBottom: 7,
+                        marginLeft: 14,
+                        textShadowColor:
+                          theme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.2)',
+                        textShadowOffset: { width: 0, height: 2 },
+                        textShadowRadius: 6,
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
                       {item.title}
                     </ThemedText>
-                    <ThemedTextSecondary style={{ fontSize: 13, color: theme === 'dark' ? '#eee' : '#444', marginLeft: 14, marginBottom: 6, flexDirection: 'row', alignItems: 'center', textShadowColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }} numberOfLines={1} ellipsizeMode="tail">
+                    <ThemedTextSecondary
+                      style={{
+                        fontSize: 13,
+                        color: theme === 'dark' ? '#eee' : '#444',
+                        marginLeft: 14,
+                        marginBottom: 6,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        textShadowColor:
+                          theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
                       <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
                     </ThemedTextSecondary>
                   </ImageBackground>
                   <ThemedView style={{ padding: 12 }}>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <ThemedView
+                      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                    >
                       <MaterialIcons name="event" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                        {item.hasMultipleDatesAvailable ? 'Varias fechas disponibles' : formatEventDateRange(item.fechaInicio, item.fechaFin)}
+                        {item.hasMultipleDatesAvailable
+                          ? 'Varias fechas disponibles'
+                          : formatEventDateRange(item.fechaInicio, item.fechaFin)}
                       </ThemedTextSecondary>
                     </ThemedView>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <ThemedView
+                      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                    >
                       <MaterialIcons name="category" size={16} color="#6c2eb7" />
-                      <ThemedTextSecondary style={{ marginLeft: 4 }}>{item.categoria?.nombre}</ThemedTextSecondary>
+                      <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                        {item.categoria?.nombre}
+                      </ThemedTextSecondary>
                     </ThemedView>
                     {item.distance !== undefined && item.distance !== Infinity && (
                       <>
-                        <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <ThemedView
+                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                        >
                           <MaterialIcons name="directions-walk" size={16} color="#4caf50" />
-                          <ThemedTextSecondary style={{ marginLeft: 4 }}>{calculateWalkingTime(item.distance)} a pie</ThemedTextSecondary>
+                          <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                            {calculateWalkingTime(item.distance)} a pie
+                          </ThemedTextSecondary>
                         </ThemedView>
-                        <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <ThemedView
+                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+                        >
                           <MaterialIcons name="directions-car" size={16} color="#2196F3" />
-                          <ThemedTextSecondary style={{ marginLeft: 4 }}>{calculateDrivingTime(item.distance)} en coche</ThemedTextSecondary>
+                          <ThemedTextSecondary style={{ marginLeft: 4 }}>
+                            {calculateDrivingTime(item.distance)} en coche
+                          </ThemedTextSecondary>
                         </ThemedView>
                       </>
                     )}
                     <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
-                      <ThemedText style={{ fontSize: 18, fontWeight: 'bold', color: '#fff', backgroundColor: '#6c2eb7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: UNIFIED_BORDER_RADIUS, overflow: 'hidden', alignSelf: 'flex-end' }}>
+                      <ThemedText
+                        style={{
+                          fontSize: 18,
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          backgroundColor: '#6c2eb7',
+                          paddingHorizontal: 12,
+                          paddingVertical: 4,
+                          borderRadius: UNIFIED_BORDER_RADIUS,
+                          overflow: 'hidden',
+                          alignSelf: 'flex-end',
+                        }}
+                      >
                         {(() => {
                           if (item.precio === 0) return 'Gratis';
                           if (item.precio != null) return `${item.precio} €`;
-                          if (item.precioMin != null && item.precioMax != null) return `${item.precioMin}€ - ${item.precioMax}€`;
+                          if (item.precioMin != null && item.precioMax != null)
+                            return `${item.precioMin}€ - ${item.precioMax}€`;
                           return 'Precio variable';
                         })()}
                       </ThemedText>
@@ -782,564 +857,632 @@ const {
               </TouchableOpacity>
             );
           }}
-          ListHeaderComponent={<>
-        <ThemedView style={styles.header}>
-          <View style={styles.headerTopRow}>
-            <ThemedText style={styles.heroEyebrow}>{homeGreeting}</ThemedText>
-          </View>
-
-          <ThemedTitle style={styles.heroTitle}>{discoveryTitle}</ThemedTitle>
-        </ThemedView>
-
-        <ThemedView
-          style={[
-            styles.recommendationSection,
-            { backgroundColor: colors.card + 'D9', borderColor: colors.border },
-          ]}
-        >
-          <ThemedView style={styles.recommendationHeader}>
-            <ThemedView style={styles.recommendationHeaderLeft}>
-              <View style={[styles.recommendationHeaderIcon, { backgroundColor: colors.primary + '22' }]}>
-                <MaterialIcons name="auto-awesome" size={16} color={colors.primary} />
-              </View>
-              <ThemedTitle style={styles.recommendationTitle}>Para ti</ThemedTitle>
-            </ThemedView>
-            <View style={styles.recommendationHeaderActions}>
-              <TouchableOpacity onPress={fetchRecommendations} style={styles.recommendationRefreshButton}>
-                <MaterialIcons name="refresh" size={18} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setShowRecommendedEvents((prev) => !prev)}
-                style={styles.recommendationToggleButton}
-              >
-                <MaterialIcons
-                  name={showRecommendedEvents ? 'expand-less' : 'expand-more'}
-                  size={20}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-          </ThemedView>
-          {showRecommendedEvents && (loadingRecommendations ? (
-            <ThemedTextSecondary>Cargando recomendaciones...</ThemedTextSecondary>
-          ) : recommendationsError ? (
-            <ThemedTextSecondary style={{ color: colors.error }}>
-              {recommendationsError}
-            </ThemedTextSecondary>
-          ) : recommendedEvents.length === 0 ? (
-            <ThemedTextSecondary>Aun no hay suficientes señales para recomendarte eventos.</ThemedTextSecondary>
-          ) : (
+          ListHeaderComponent={
             <>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.recommendedListContent}
-              >
-                {visibleRecommendedEvents.map((event) => (
-                  <TouchableOpacity
-                    key={event.id}
-                    onPress={() => openRecommendedEvent(event.id)}
-                    activeOpacity={0.88}
-                    style={[
-                      styles.recommendedCard,
-                      { backgroundColor: colors.background, borderColor: colors.border },
-                    ]}
-                  >
-                    <View style={styles.recommendedCardTop}>
-                      <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
-                        {event.title}
-                      </ThemedText>
-                      <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
-                    </View>
-                    <ThemedTextSecondary numberOfLines={1}>{event.categoria || 'General'}</ThemedTextSecondary>
-                    {!event.hasMultipleDatesAvailable && (
-                      <ThemedTextSecondary numberOfLines={1}>
-                        {formatSevillaTime(event.fechaInicio)}
-                      </ThemedTextSecondary>
-                    )}
-                    {event.hasMultipleDatesAvailable && (
-                      <ThemedTextSecondary numberOfLines={1}>
-                        Varias fechas disponibles
-                      </ThemedTextSecondary>
-                    )}
-                    <ThemedView style={styles.recommendedMetaRow}>
-                      <MaterialIcons name="star" size={14} color="#f39c12" />
-                      <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
-                      {event.distanceKm != null && (
-                        <>
-                          <MaterialIcons name="near-me" size={14} color={colors.primary} style={{ marginLeft: 8 }} />
-                          <ThemedTextSecondary>{event.distanceKm.toFixed(1)} km</ThemedTextSecondary>
-                        </>
-                      )}
-                    </ThemedView>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              {hasMoreRecommendedEvents && (
-                <TouchableOpacity
-                  onPress={() => setShowAllRecommendedEvents((prev) => !prev)}
-                  style={[styles.recommendedMoreButton, { borderColor: colors.primary + '66' }]}
-                  activeOpacity={0.85}
-                >
-                  <ThemedText style={[styles.recommendedMoreButtonText, { color: colors.primary }]}>
-                    {showAllRecommendedEvents ? 'Ver menos' : `Ver más (${recommendedEvents.length})`}
-                  </ThemedText>
-                  <MaterialIcons
-                    name={showAllRecommendedEvents ? 'expand-less' : 'expand-more'}
-                    size={16}
-                    color={colors.primary}
-                  />
-                </TouchableOpacity>
-              )}
-            </>
-          ))}
-        </ThemedView>
+              <ThemedView style={styles.header}>
+                <View style={styles.headerTopRow}>
+                  <ThemedText style={styles.heroEyebrow}>{homeGreeting}</ThemedText>
+                </View>
 
-        <ThemedView
-          style={[
-            styles.recommendationSection,
-            { backgroundColor: colors.card + 'D9', borderColor: colors.border },
-          ]}
-        >
-          <ThemedView style={styles.recommendationHeader}>
-            <ThemedView style={styles.recommendationHeaderLeft}>
-              <View style={[styles.recommendationHeaderIcon, { backgroundColor: colors.primary + '22' }]}>
-                <MaterialIcons name="route" size={16} color={colors.primary} />
-              </View>
-              <ThemedTitle style={styles.recommendationTitle}>Rutas recomendadas</ThemedTitle>
-            </ThemedView>
-            <View style={styles.recommendationHeaderActions}>
-              <TouchableOpacity
-                onPress={() => setRoutesSettingsVisible(true)}
-                style={styles.recommendationRefreshButton}
-              >
-                <MaterialIcons name="tune" size={18} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setShowRecommendedRoutes((prev) => !prev)}
-                style={styles.recommendationToggleButton}
-              >
-                <MaterialIcons
-                  name={showRecommendedRoutes ? 'expand-less' : 'expand-more'}
-                  size={20}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-          </ThemedView>
-          {showRecommendedRoutes && (loadingRecommendations ? (
-            <ThemedTextSecondary>Preparando rutas...</ThemedTextSecondary>
-          ) : recommendedRoutes.length === 0 ? (
-            <ThemedTextSecondary>Todavia no hay rutas optimizadas para tus gustos.</ThemedTextSecondary>
-          ) : (
-            <ThemedView style={styles.routesList}>
-              {recommendedRoutes.map((route, index) => (
-                <TouchableOpacity
-                  key={`route-${route.day}-${route.eventos[0]?.id ?? 'x'}-${index}`}
-                  activeOpacity={0.88}
-                  style={[styles.routeCard, { backgroundColor: colors.background, borderColor: colors.border }]}
-                  onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
-                >
-                  <View style={styles.routeCardTop}>
-                    <ThemedText style={styles.routeCardTitle}>
-                      {route.day === 'Sin fecha'
-                        ? '📅 Varias fechas disponibles'
-                        : dayjs(route.day).locale('es').format('dddd DD/MM')}
-                    </ThemedText>
-                    <ThemedTextSecondary>Score {route.scoreMedio.toFixed(1)}</ThemedTextSecondary>
-                  </View>
-                  <ThemedTextSecondary>
-                    {route.eventos.length} eventos · {route.distanceTotalKm.toFixed(1)} km · {formatDuration(route.temporizacionMinutos)}
-                  </ThemedTextSecondary>
-                  <ThemedTextSecondary numberOfLines={1}>
-                    {route.eventos.map((event) => event.title).join(' · ')}
-                  </ThemedTextSecondary>
-                </TouchableOpacity>
-              ))}
-            </ThemedView>
-          ))}
+                <ThemedTitle style={styles.heroTitle}>{discoveryTitle}</ThemedTitle>
+              </ThemedView>
 
-          {showRecommendedRoutes && (
-            <ThemedView style={{ marginTop: 10 }}>
-              <ThemedText style={{ fontWeight: '700', marginBottom: 6 }}>
-                Según tus ajustes
-              </ThemedText>
-
-              {loadingAdjustedRoutes ? (
-                <ThemedTextSecondary>Generando rutas personalizadas...</ThemedTextSecondary>
-              ) : adjustedRoutesError ? (
-                <ThemedTextSecondary style={{ color: colors.error }}>
-                  {adjustedRoutesError}
-                </ThemedTextSecondary>
-              ) : adjustedRoutes.length === 0 ? (
-                <ThemedTextSecondary>
-                  Pulsa en ajustes para generar rutas alternativas.
-                </ThemedTextSecondary>
-              ) : (
-                <ThemedView style={styles.routesList}>
-                  {adjustedRoutes.map((route, index) => (
-                    <TouchableOpacity
-                      key={`adjusted-${route.day}-${route.eventos[0]?.id ?? 'x'}-${index}`}
-                      activeOpacity={0.88}
-                      style={[styles.routeCard, { backgroundColor: colors.background, borderColor: colors.border }]}
-                      onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
+              <ThemedView
+                style={[
+                  styles.recommendationSection,
+                  { backgroundColor: colors.card + 'D9', borderColor: colors.border },
+                ]}
+              >
+                <ThemedView style={styles.recommendationHeader}>
+                  <ThemedView style={styles.recommendationHeaderLeft}>
+                    <View
+                      style={[
+                        styles.recommendationHeaderIcon,
+                        { backgroundColor: colors.primary + '22' },
+                      ]}
                     >
-                      <View style={styles.routeCardTop}>
-                        <ThemedText style={styles.routeCardTitle}>
-                          {route.day === 'Sin fecha'
-                            ? '📅 Varias fechas disponibles'
-                            : dayjs(route.day).locale('es').format('dddd DD/MM')}
-                        </ThemedText>
-                        <ThemedTextSecondary>Score {route.scoreMedio.toFixed(1)}</ThemedTextSecondary>
-                      </View>
-                      <View style={styles.routeMetaRow}>
-                        <ThemedTextSecondary>
-                          Calidad {Number(route.quality ?? 0).toFixed(0)}%
-                        </ThemedTextSecondary>
-                        <ThemedTextSecondary>
-                          {route.sourceStrategy === 'walkable'
-                            ? 'Caminable'
-                            : route.sourceStrategy === 'score'
-                              ? 'Top score'
-                              : 'Equilibrada'}
-                        </ThemedTextSecondary>
-                      </View>
-                      <ThemedTextSecondary>
-                        {route.eventos.length} eventos · {route.distanceTotalKm.toFixed(1)} km · {formatDuration(route.temporizacionMinutos)}
-                      </ThemedTextSecondary>
-                      <ThemedTextSecondary numberOfLines={1}>
-                        {route.eventos.map((event) => event.title).join(' · ')}
-                      </ThemedTextSecondary>
+                      <MaterialIcons name="auto-awesome" size={16} color={colors.primary} />
+                    </View>
+                    <ThemedTitle style={styles.recommendationTitle}>Para ti</ThemedTitle>
+                  </ThemedView>
+                  <View style={styles.recommendationHeaderActions}>
+                    <TouchableOpacity
+                      onPress={fetchRecommendations}
+                      style={styles.recommendationRefreshButton}
+                    >
+                      <MaterialIcons name="refresh" size={18} color={colors.primary} />
                     </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setShowRecommendedEvents((prev) => !prev)}
+                      style={styles.recommendationToggleButton}
+                    >
+                      <MaterialIcons
+                        name={showRecommendedEvents ? 'expand-less' : 'expand-more'}
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </ThemedView>
+                {showRecommendedEvents &&
+                  (loadingRecommendations ? (
+                    <ThemedTextSecondary>Cargando recomendaciones...</ThemedTextSecondary>
+                  ) : recommendationsError ? (
+                    <ThemedTextSecondary style={{ color: colors.error }}>
+                      {recommendationsError}
+                    </ThemedTextSecondary>
+                  ) : recommendedEvents.length === 0 ? (
+                    <ThemedTextSecondary>
+                      Aun no hay suficientes señales para recomendarte eventos.
+                    </ThemedTextSecondary>
+                  ) : (
+                    <>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.recommendedListContent}
+                      >
+                        {visibleRecommendedEvents.map((event) => (
+                          <TouchableOpacity
+                            key={event.id}
+                            onPress={() => openRecommendedEvent(event.id)}
+                            activeOpacity={0.88}
+                            style={[
+                              styles.recommendedCard,
+                              { backgroundColor: colors.background, borderColor: colors.border },
+                            ]}
+                          >
+                            <View style={styles.recommendedCardTop}>
+                              <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
+                                {event.title}
+                              </ThemedText>
+                              <MaterialIcons
+                                name="chevron-right"
+                                size={16}
+                                color={colors.primary}
+                              />
+                            </View>
+                            <ThemedTextSecondary numberOfLines={1}>
+                              {event.categoria || 'General'}
+                            </ThemedTextSecondary>
+                            {!event.hasMultipleDatesAvailable && (
+                              <ThemedTextSecondary numberOfLines={1}>
+                                {formatSevillaTime(event.fechaInicio)}
+                              </ThemedTextSecondary>
+                            )}
+                            {event.hasMultipleDatesAvailable && (
+                              <ThemedTextSecondary numberOfLines={1}>
+                                Varias fechas disponibles
+                              </ThemedTextSecondary>
+                            )}
+                            <ThemedView style={styles.recommendedMetaRow}>
+                              <MaterialIcons name="star" size={14} color="#f39c12" />
+                              <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
+                              {event.distanceKm != null && (
+                                <>
+                                  <MaterialIcons
+                                    name="near-me"
+                                    size={14}
+                                    color={colors.primary}
+                                    style={{ marginLeft: 8 }}
+                                  />
+                                  <ThemedTextSecondary>
+                                    {event.distanceKm.toFixed(1)} km
+                                  </ThemedTextSecondary>
+                                </>
+                              )}
+                            </ThemedView>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                      {hasMoreRecommendedEvents && (
+                        <TouchableOpacity
+                          onPress={() => setShowAllRecommendedEvents((prev) => !prev)}
+                          style={[
+                            styles.recommendedMoreButton,
+                            { borderColor: colors.primary + '66' },
+                          ]}
+                          activeOpacity={0.85}
+                        >
+                          <ThemedText
+                            style={[styles.recommendedMoreButtonText, { color: colors.primary }]}
+                          >
+                            {showAllRecommendedEvents
+                              ? 'Ver menos'
+                              : `Ver más (${recommendedEvents.length})`}
+                          </ThemedText>
+                          <MaterialIcons
+                            name={showAllRecommendedEvents ? 'expand-less' : 'expand-more'}
+                            size={16}
+                            color={colors.primary}
+                          />
+                        </TouchableOpacity>
+                      )}
+                    </>
                   ))}
+              </ThemedView>
+
+              <ThemedView
+                style={[
+                  styles.recommendationSection,
+                  { backgroundColor: colors.card + 'D9', borderColor: colors.border },
+                ]}
+              >
+                <ThemedView style={styles.recommendationHeader}>
+                  <ThemedView style={styles.recommendationHeaderLeft}>
+                    <View
+                      style={[
+                        styles.recommendationHeaderIcon,
+                        { backgroundColor: colors.primary + '22' },
+                      ]}
+                    >
+                      <MaterialIcons name="route" size={16} color={colors.primary} />
+                    </View>
+                    <ThemedTitle style={styles.recommendationTitle}>Rutas recomendadas</ThemedTitle>
+                  </ThemedView>
+                  <View style={styles.recommendationHeaderActions}>
+                    <TouchableOpacity
+                      onPress={() => setRoutesSettingsVisible(true)}
+                      style={styles.recommendationRefreshButton}
+                    >
+                      <MaterialIcons name="tune" size={18} color={colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setShowRecommendedRoutes((prev) => !prev)}
+                      style={styles.recommendationToggleButton}
+                    >
+                      <MaterialIcons
+                        name={showRecommendedRoutes ? 'expand-less' : 'expand-more'}
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </ThemedView>
+                {showRecommendedRoutes &&
+                  (loadingRecommendations ? (
+                    <ThemedTextSecondary>Preparando rutas...</ThemedTextSecondary>
+                  ) : recommendedRoutes.length === 0 ? (
+                    <ThemedTextSecondary>
+                      Todavia no hay rutas optimizadas para tus gustos.
+                    </ThemedTextSecondary>
+                  ) : (
+                    <ThemedView style={styles.routesList}>
+                      {recommendedRoutes.map((route, index) => (
+                        <TouchableOpacity
+                          key={`route-${route.day}-${route.eventos[0]?.id ?? 'x'}-${index}`}
+                          activeOpacity={0.88}
+                          style={[
+                            styles.routeCard,
+                            { backgroundColor: colors.background, borderColor: colors.border },
+                          ]}
+                          onPress={() => navigation.navigate('RoutePreview', { routePlan: route })}
+                        >
+                          <View style={styles.routeCardTop}>
+                            <ThemedText style={styles.routeCardTitle}>
+                              {route.day === 'Sin fecha'
+                                ? '📅 Varias fechas disponibles'
+                                : dayjs(route.day).locale('es').format('dddd DD/MM')}
+                            </ThemedText>
+                            <ThemedTextSecondary>
+                              Score {route.scoreMedio.toFixed(1)}
+                            </ThemedTextSecondary>
+                          </View>
+                          <ThemedTextSecondary>
+                            {route.eventos.length} eventos · {route.distanceTotalKm.toFixed(1)} km ·{' '}
+                            {formatDuration(route.temporizacionMinutos)}
+                          </ThemedTextSecondary>
+                          <ThemedTextSecondary numberOfLines={1}>
+                            {route.eventos.map((event) => event.title).join(' · ')}
+                          </ThemedTextSecondary>
+                        </TouchableOpacity>
+                      ))}
+                    </ThemedView>
+                  ))}
+
+                {showRecommendedRoutes && (
+                  <ThemedView style={{ marginTop: 10 }}>
+                    <ThemedText style={{ fontWeight: '700', marginBottom: 6 }}>
+                      Según tus ajustes
+                    </ThemedText>
+
+                    {loadingAdjustedRoutes ? (
+                      <ThemedTextSecondary>Generando rutas personalizadas...</ThemedTextSecondary>
+                    ) : adjustedRoutesError ? (
+                      <ThemedTextSecondary style={{ color: colors.error }}>
+                        {adjustedRoutesError}
+                      </ThemedTextSecondary>
+                    ) : adjustedRoutes.length === 0 ? (
+                      <ThemedTextSecondary>
+                        Pulsa en ajustes para generar rutas alternativas.
+                      </ThemedTextSecondary>
+                    ) : (
+                      <ThemedView style={styles.routesList}>
+                        {adjustedRoutes.map((route, index) => (
+                          <TouchableOpacity
+                            key={`adjusted-${route.day}-${route.eventos[0]?.id ?? 'x'}-${index}`}
+                            activeOpacity={0.88}
+                            style={[
+                              styles.routeCard,
+                              { backgroundColor: colors.background, borderColor: colors.border },
+                            ]}
+                            onPress={() =>
+                              navigation.navigate('RoutePreview', { routePlan: route })
+                            }
+                          >
+                            <View style={styles.routeCardTop}>
+                              <ThemedText style={styles.routeCardTitle}>
+                                {route.day === 'Sin fecha'
+                                  ? '📅 Varias fechas disponibles'
+                                  : dayjs(route.day).locale('es').format('dddd DD/MM')}
+                              </ThemedText>
+                              <ThemedTextSecondary>
+                                Score {route.scoreMedio.toFixed(1)}
+                              </ThemedTextSecondary>
+                            </View>
+                            <View style={styles.routeMetaRow}>
+                              <ThemedTextSecondary>
+                                Calidad {Number(route.quality ?? 0).toFixed(0)}%
+                              </ThemedTextSecondary>
+                              <ThemedTextSecondary>
+                                {route.sourceStrategy === 'walkable'
+                                  ? 'Caminable'
+                                  : route.sourceStrategy === 'score'
+                                  ? 'Top score'
+                                  : 'Equilibrada'}
+                              </ThemedTextSecondary>
+                            </View>
+                            <ThemedTextSecondary>
+                              {route.eventos.length} eventos · {route.distanceTotalKm.toFixed(1)} km
+                              · {formatDuration(route.temporizacionMinutos)}
+                            </ThemedTextSecondary>
+                            <ThemedTextSecondary numberOfLines={1}>
+                              {route.eventos.map((event) => event.title).join(' · ')}
+                            </ThemedTextSecondary>
+                          </TouchableOpacity>
+                        ))}
+                      </ThemedView>
+                    )}
+                  </ThemedView>
+                )}
+              </ThemedView>
+
+              {filterNearby && user?.ubicacion && (
+                <ThemedView style={{ marginBottom: 12 }}>
+                  <ThemedText
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: 13,
+                      marginLeft: 1,
+                      marginBottom: 6,
+                      color: colors.primary,
+                    }}
+                  >
+                    Mostrar hasta:
+                  </ThemedText>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingRight: 12 }}
+                  >
+                    {radiusOptions.map((radius) => (
+                      <TouchableOpacity
+                        key={radius}
+                        style={{
+                          paddingVertical: 6,
+                          paddingHorizontal: 12,
+                          borderRadius: UNIFIED_BORDER_RADIUS,
+                          backgroundColor: searchRadius === radius ? '#ffd700' : colors.card,
+                          marginRight: 6,
+                          borderWidth: 1,
+                          borderColor: searchRadius === radius ? '#ffd700' : colors.text + '33',
+                        }}
+                        onPress={() => setSearchRadius(radius)}
+                      >
+                        <ThemedText
+                          style={{
+                            color: searchRadius === radius ? '#fff' : colors.text,
+                            fontWeight: '500',
+                            fontSize: 11,
+                          }}
+                        >
+                          {radius === 0.5 ? '<= 500 m' : `<= ${radius} km`}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity
+                      style={{
+                        paddingVertical: 6,
+                        paddingHorizontal: 12,
+                        borderRadius: UNIFIED_BORDER_RADIUS,
+                        backgroundColor: colors.card,
+                        marginRight: 6,
+                        borderWidth: 1,
+                        borderColor: colors.primary + '66',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => setCustomRadiusVisible(true)}
+                    >
+                      <MaterialIcons name="add" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+                  </ScrollView>
                 </ThemedView>
               )}
-            </ThemedView>
-          )}
-        </ThemedView>
 
-        {filterNearby && user?.ubicacion && (
-          <ThemedView style={{ marginBottom: 12 }}>
-            <ThemedText
-              style={{
-                fontWeight: 'bold',
-                fontSize: 13,
-                marginLeft: 1,
-                marginBottom: 6,
-                color: colors.primary,
-              }}
-            >
-              Mostrar hasta:
-            </ThemedText>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: 12 }}
-            >
-              {radiusOptions.map((radius) => (
-                <TouchableOpacity
-                  key={radius}
+              <ThemedView style={{ marginBottom: 8 }}>
+                <View
                   style={{
-                    paddingVertical: 6,
-                    paddingHorizontal: 12,
-                    borderRadius: UNIFIED_BORDER_RADIUS,
-                    backgroundColor: searchRadius === radius ? '#ffd700' : colors.card,
-                    marginRight: 6,
-                    borderWidth: 1,
-                    borderColor: searchRadius === radius ? '#ffd700' : colors.text + '33',
-                  }}
-                  onPress={() => setSearchRadius(radius)}
-                >
-                  <ThemedText
-                    style={{
-                      color: searchRadius === radius ? '#fff' : colors.text,
-                      fontWeight: '500',
-                      fontSize: 11,
-                    }}
-                  >
-                    {radius === 0.5 ? '<= 500 m' : `<= ${radius} km`}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-              <TouchableOpacity
-                style={{
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderRadius: UNIFIED_BORDER_RADIUS,
-                  backgroundColor: colors.card,
-                  marginRight: 6,
-                  borderWidth: 1,
-                  borderColor: colors.primary + '66',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => setCustomRadiusVisible(true)}
-              >
-                <MaterialIcons name="add" size={16} color={colors.primary} />
-              </TouchableOpacity>
-            </ScrollView>
-          </ThemedView>
-        )}
-
-        <ThemedView style={{ marginBottom: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <ThemedText
-              style={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                marginLeft: 1,
-                marginBottom: 8,
-                color: colors.primary,
-              }}
-            >
-              Categoría:
-            </ThemedText>
-            <View style={styles.heroActionsRow}>
-              {user?.ubicacion && (
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: 7,
-                    paddingHorizontal: 14,
-                    borderRadius: UNIFIED_BORDER_RADIUS,
-                    backgroundColor: filterNearby ? '#ffd700' : colors.card,
-                    borderWidth: 1.5,
-                    borderColor: '#ffd700',
                     flexDirection: 'row',
                     alignItems: 'center',
-                    marginBottom: 8,
+                    justifyContent: 'space-between',
                   }}
-                  onPress={() => setFilterNearby(!filterNearby)}
+                >
+                  <ThemedText
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: 14,
+                      marginLeft: 1,
+                      marginBottom: 8,
+                      color: colors.primary,
+                    }}
+                  >
+                    Categoría:
+                  </ThemedText>
+                  <View style={styles.heroActionsRow}>
+                    {user?.ubicacion && (
+                      <TouchableOpacity
+                        style={{
+                          paddingVertical: 7,
+                          paddingHorizontal: 14,
+                          borderRadius: UNIFIED_BORDER_RADIUS,
+                          backgroundColor: filterNearby ? '#ffd700' : colors.card,
+                          borderWidth: 1.5,
+                          borderColor: '#ffd700',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          marginBottom: 8,
+                        }}
+                        onPress={() => setFilterNearby(!filterNearby)}
+                      >
+                        <MaterialIcons
+                          name="near-me"
+                          size={15}
+                          color={filterNearby ? '#fff' : '#ffd700'}
+                          style={{ marginRight: 4 }}
+                        />
+                        <ThemedText
+                          style={{
+                            color: filterNearby ? '#fff' : colors.text + '99',
+                            fontWeight: '500',
+                            fontSize: 11,
+                          }}
+                        >
+                          Cerca
+                        </ThemedText>
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      style={{
+                        paddingVertical: 7,
+                        paddingHorizontal: 10,
+                        borderRadius: UNIFIED_BORDER_RADIUS,
+                        backgroundColor: colors.card,
+                        borderWidth: 1.5,
+                        borderColor: colors.primary,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: 8,
+                      }}
+                      onPress={() => setSearchModalVisible(true)}
+                      accessibilityLabel="Buscar y filtrar"
+                    >
+                      <MaterialIcons name="search" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ThemedView>
+
+              <ThemedView style={{ marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                  <TouchableOpacity
+                    style={{
+                      paddingVertical: 7,
+                      paddingHorizontal: 14,
+                      borderRadius: UNIFIED_BORDER_RADIUS,
+                      backgroundColor: selectedEventTab === 'active' ? colors.primary : colors.card,
+                      borderWidth: 1.5,
+                      borderColor: colors.primary,
+                    }}
+                    onPress={() => setSelectedEventTab('active')}
+                  >
+                    <ThemedText
+                      style={{
+                        color: selectedEventTab === 'active' ? '#fff' : colors.primary,
+                        fontWeight: 'bold',
+                        fontSize: 13,
+                      }}
+                    >
+                      Activos
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      paddingVertical: 7,
+                      paddingHorizontal: 14,
+                      borderRadius: UNIFIED_BORDER_RADIUS,
+                      backgroundColor: selectedEventTab === 'past' ? colors.primary : colors.card,
+                      borderWidth: 1.5,
+                      borderColor: colors.primary,
+                    }}
+                    onPress={() => setSelectedEventTab('past')}
+                  >
+                    <ThemedText
+                      style={{
+                        color: selectedEventTab === 'past' ? '#fff' : colors.primary,
+                        fontWeight: 'bold',
+                        fontSize: 13,
+                      }}
+                    >
+                      Finalizados
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </ThemedView>
+
+              {categories.length > 0 && (
+                <ThemedView style={{ marginBottom: 12 }}>
+                  <DraggableFlatList
+                    horizontal
+                    data={categories}
+                    keyExtractor={(item) => item.id}
+                    onDragEnd={({ data }) => {
+                      const sortedData = sortWithOtrosLast(data);
+                      setCategories(sortedData);
+                      persistCategoryOrder(sortedData.map((item) => item.id));
+                    }}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingRight: 12 }}
+                    ListHeaderComponent={
+                      <TouchableOpacity
+                        style={{
+                          paddingVertical: 7,
+                          paddingHorizontal: 16,
+                          borderRadius: UNIFIED_BORDER_RADIUS,
+                          backgroundColor: selectedCategory === null ? colors.primary : colors.card,
+                          marginRight: 8,
+                          borderWidth: 1.5,
+                          borderColor: colors.primary,
+                        }}
+                        onPress={() => setSelectedCategory(null)}
+                      >
+                        <ThemedText
+                          style={{
+                            color: selectedCategory === null ? '#fff' : colors.primary,
+                            fontWeight: 'bold',
+                            fontSize: 13,
+                          }}
+                        >
+                          Todas
+                        </ThemedText>
+                      </TouchableOpacity>
+                    }
+                    renderItem={({ item, drag, isActive }) => (
+                      <TouchableOpacity
+                        style={{
+                          paddingVertical: 7,
+                          paddingHorizontal: 16,
+                          borderRadius: UNIFIED_BORDER_RADIUS,
+                          backgroundColor:
+                            selectedCategory === item.id ? colors.primary : colors.card,
+                          marginRight: 8,
+                          borderWidth: 1.5,
+                          borderColor: colors.primary,
+                          opacity: isActive ? 0.7 : 1,
+                        }}
+                        onPress={() => setSelectedCategory(item.id)}
+                        onLongPress={drag}
+                        delayLongPress={150}
+                      >
+                        <ThemedText
+                          style={{
+                            color: selectedCategory === item.id ? '#fff' : colors.primary,
+                            fontWeight: 'bold',
+                            fontSize: 13,
+                          }}
+                        >
+                          {item.nombre}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </ThemedView>
+              )}
+              {!user?.ubicacion && (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('EditProfile')}
+                  style={{
+                    backgroundColor: colors.primary + '20',
+                    borderLeftWidth: 3,
+                    borderLeftColor: colors.primary,
+                    padding: 12,
+                    marginBottom: 12,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
                 >
                   <MaterialIcons
-                    name="near-me"
-                    size={15}
-                    color={filterNearby ? '#fff' : '#ffd700'}
-                    style={{ marginRight: 4 }}
+                    name="location-on"
+                    size={20}
+                    color={colors.primary}
+                    style={{ marginRight: 8 }}
                   />
-                  <ThemedText
-                    style={{
-                      color: filterNearby ? '#fff' : colors.text + '99',
-                      fontWeight: '500',
-                      fontSize: 11,
-                    }}
-                  >
-                    Cerca
+                  <ThemedText style={{ flex: 1, fontSize: 13, color: colors.primary }}>
+                    Configura tu ubicación para ver eventos ordenados por cercanía
                   </ThemedText>
+                  <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
                 </TouchableOpacity>
               )}
+
+              {error && (
+                <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>
+              )}
+            </>
+          }
+          ListFooterComponent={
+            <ThemedView
+              style={[
+                styles.creatorCard,
+                {
+                  backgroundColor: colors.card + 'E6',
+                  borderColor: colors.primary + '44',
+                },
+              ]}
+            >
+              <View style={[styles.creatorBadge, { backgroundColor: colors.primary + '22' }]}>
+                <MaterialIcons name="verified" size={16} color={colors.primary} />
+                <ThemedText style={[styles.creatorBadgeText, { color: colors.primary }]}>
+                  Creado por
+                </ThemedText>
+              </View>
+
+              <ThemedText style={styles.creatorName}>Cynthia Castaño Juan</ThemedText>
 
               <TouchableOpacity
-                style={{
-                  paddingVertical: 7,
-                  paddingHorizontal: 10,
-                  borderRadius: UNIFIED_BORDER_RADIUS,
-                  backgroundColor: colors.card,
-                  borderWidth: 1.5,
-                  borderColor: colors.primary,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 8,
-                }}
-                onPress={() => setSearchModalVisible(true)}
-                accessibilityLabel="Buscar y filtrar"
+                style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+                onPress={() => handleOpenLink('mailto:cynthiacj04@gmail.com')}
+                activeOpacity={0.85}
               >
-                <MaterialIcons name="search" size={16} color={colors.primary} />
+                <MaterialIcons name="email" size={18} color={colors.primary} />
+                <ThemedText style={styles.creatorLinkText}>cynthiacj04@gmail.com</ThemedText>
+                <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
               </TouchableOpacity>
-            </View>
-          </View>
-        </ThemedView>
 
-        <ThemedView style={{ marginBottom: 12 }}>
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-            <TouchableOpacity
-              style={{
-                paddingVertical: 7,
-                paddingHorizontal: 14,
-                borderRadius: UNIFIED_BORDER_RADIUS,
-                backgroundColor: selectedEventTab === 'active' ? colors.primary : colors.card,
-                borderWidth: 1.5,
-                borderColor: colors.primary,
-              }}
-              onPress={() => setSelectedEventTab('active')}
-            >
-              <ThemedText
-                style={{
-                  color: selectedEventTab === 'active' ? '#fff' : colors.primary,
-                  fontWeight: 'bold',
-                  fontSize: 13,
-                }}
+              <TouchableOpacity
+                style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+                onPress={() =>
+                  handleOpenLink('https://www.linkedin.com/in/cynthia-casta%C3%B1o-juan-4b7195387/')
+                }
+                activeOpacity={0.85}
               >
-                Activos
-              </ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                paddingVertical: 7,
-                paddingHorizontal: 14,
-                borderRadius: UNIFIED_BORDER_RADIUS,
-                backgroundColor: selectedEventTab === 'past' ? colors.primary : colors.card,
-                borderWidth: 1.5,
-                borderColor: colors.primary,
-              }}
-              onPress={() => setSelectedEventTab('past')}
-            >
-              <ThemedText
-                style={{
-                  color: selectedEventTab === 'past' ? '#fff' : colors.primary,
-                  fontWeight: 'bold',
-                  fontSize: 13,
-                }}
-              >
-                Finalizados
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
-        </ThemedView>
-
-        {categories.length > 0 && (
-          <ThemedView style={{ marginBottom: 12 }}>
-            <DraggableFlatList
-              horizontal
-              data={categories}
-              keyExtractor={(item) => item.id}
-              onDragEnd={({ data }) => {
-                const sortedData = sortWithOtrosLast(data);
-                setCategories(sortedData);
-                persistCategoryOrder(sortedData.map((item) => item.id));
-              }}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: 12 }}
-              ListHeaderComponent={
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: 7,
-                    paddingHorizontal: 16,
-                    borderRadius: UNIFIED_BORDER_RADIUS,
-                    backgroundColor: selectedCategory === null ? colors.primary : colors.card,
-                    marginRight: 8,
-                    borderWidth: 1.5,
-                    borderColor: colors.primary,
-                  }}
-                  onPress={() => setSelectedCategory(null)}
-                >
-                  <ThemedText
-                    style={{
-                      color: selectedCategory === null ? '#fff' : colors.primary,
-                      fontWeight: 'bold',
-                      fontSize: 13,
-                    }}
-                  >
-                    Todas
-                  </ThemedText>
-                </TouchableOpacity>
-              }
-              renderItem={({ item, drag, isActive }) => (
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: 7,
-                    paddingHorizontal: 16,
-                    borderRadius: UNIFIED_BORDER_RADIUS,
-                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.card,
-                    marginRight: 8,
-                    borderWidth: 1.5,
-                    borderColor: colors.primary,
-                    opacity: isActive ? 0.7 : 1,
-                  }}
-                  onPress={() => setSelectedCategory(item.id)}
-                  onLongPress={drag}
-                  delayLongPress={150}
-                >
-                  <ThemedText
-                    style={{
-                      color: selectedCategory === item.id ? '#fff' : colors.primary,
-                      fontWeight: 'bold',
-                      fontSize: 13,
-                    }}
-                  >
-                    {item.nombre}
-                  </ThemedText>
-                </TouchableOpacity>
-              )}
-            />
-          </ThemedView>
-        )}
-        {!user?.ubicacion && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('EditProfile')}
-            style={{
-              backgroundColor: colors.primary + '20',
-              borderLeftWidth: 3,
-              borderLeftColor: colors.primary,
-              padding: 12,
-              marginBottom: 12,
-              borderRadius: UNIFIED_BORDER_RADIUS,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <MaterialIcons
-              name="location-on"
-              size={20}
-              color={colors.primary}
-              style={{ marginRight: 8 }}
-            />
-            <ThemedText style={{ flex: 1, fontSize: 13, color: colors.primary }}>
-              Configura tu ubicación para ver eventos ordenados por cercanía
-            </ThemedText>
-            <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
-          </TouchableOpacity>
-        )}
-
-        {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-
-        </>}
-        ListFooterComponent={
-          <ThemedView
-            style={[
-              styles.creatorCard,
-              {
-                backgroundColor: colors.card + 'E6',
-                borderColor: colors.primary + '44',
-              },
-            ]}
-          >
-            <View style={[styles.creatorBadge, { backgroundColor: colors.primary + '22' }]}>
-              <MaterialIcons name="verified" size={16} color={colors.primary} />
-              <ThemedText style={[styles.creatorBadgeText, { color: colors.primary }]}>
-                Creado por
-              </ThemedText>
-            </View>
-
-            <ThemedText style={styles.creatorName}>Cynthia Castaño Juan</ThemedText>
-
-            <TouchableOpacity
-              style={[styles.creatorLinkRow, { borderColor: colors.border }]}
-              onPress={() => handleOpenLink('mailto:cynthiacj04@gmail.com')}
-              activeOpacity={0.85}
-            >
-              <MaterialIcons name="email" size={18} color={colors.primary} />
-              <ThemedText style={styles.creatorLinkText}>cynthiacj04@gmail.com</ThemedText>
-              <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.creatorLinkRow, { borderColor: colors.border }]}
-              onPress={() =>
-                handleOpenLink('https://www.linkedin.com/in/cynthia-casta%C3%B1o-juan-4b7195387/')
-              }
-              activeOpacity={0.85}
-            >
-              <MaterialIcons name="work-outline" size={18} color={colors.primary} />
-              <ThemedText style={styles.creatorLinkText}>
-                LinkedIn: cynthia-castaño-juan
-              </ThemedText>
-              <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
-            </TouchableOpacity>
-          </ThemedView>
-        }
+                <MaterialIcons name="work-outline" size={18} color={colors.primary} />
+                <ThemedText style={styles.creatorLinkText}>
+                  LinkedIn: cynthia-castaño-juan
+                </ThemedText>
+                <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
+              </TouchableOpacity>
+            </ThemedView>
+          }
         />
 
-        <View style={[styles.bottomDock, { backgroundColor: colors.card + 'F2', borderColor: colors.border + 'AA' }]}>
+        <View
+          style={[
+            styles.bottomDock,
+            { backgroundColor: colors.card + 'F2', borderColor: colors.border + 'AA' },
+          ]}
+        >
           <TouchableOpacity
             style={styles.bottomDockItem}
             onPress={() => navigation.navigate('Notifications')}
@@ -1354,7 +1497,9 @@ const {
                 </View>
               )}
             </View>
-            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Notificaciones</ThemedText>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
+              Notificaciones
+            </ThemedText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -1373,7 +1518,9 @@ const {
                 </View>
               )}
             </View>
-            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Mensajes</ThemedText>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
+              Mensajes
+            </ThemedText>
           </TouchableOpacity>
 
           {role === 'user' ? (
@@ -1386,7 +1533,9 @@ const {
               <View style={[styles.bottomDockIconWrap, styles.bottomDockPrimaryIconWrap]}>
                 <MaterialIcons name="add" size={20} color="#fff" />
               </View>
-              <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Crear</ThemedText>
+              <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
+                Crear
+              </ThemedText>
             </TouchableOpacity>
           ) : (
             role === 'moderator' && (
@@ -1399,7 +1548,9 @@ const {
                 <View style={[styles.bottomDockIconWrap, styles.bottomDockSuccessIconWrap]}>
                   <MaterialIcons name="check" size={20} color="#fff" />
                 </View>
-                <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Moderar</ThemedText>
+                <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
+                  Moderar
+                </ThemedText>
               </TouchableOpacity>
             )
           )}
@@ -1413,275 +1564,365 @@ const {
             <View style={[styles.bottomDockIconWrap, { backgroundColor: colors.background }]}>
               <MaterialIcons name="people" size={18} color={colors.primary} />
             </View>
-            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>Amigos</ThemedText>
+            <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
+              Amigos
+            </ThemedText>
           </TouchableOpacity>
         </View>
 
-      <Modal
-        visible={searchModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSearchModalVisible(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: '#0008', justifyContent: 'center', alignItems: 'center' }}>
-          <ThemedView style={{ width: '90%', backgroundColor: colors.card, borderRadius: UNIFIED_BORDER_RADIUS, padding: 20 }}>
-            <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
-            <TextInput
-              style={{ backgroundColor: colors.background, color: colors.text, borderRadius: UNIFIED_BORDER_RADIUS, paddingHorizontal: 10, height: 38, borderWidth: 1, borderColor: colors.primary + '33', marginBottom: 12 }}
-              placeholder="Buscar por título o descripción"
-              placeholderTextColor={colors.text + '66'}
-              value={searchText}
-              onChangeText={setSearchText}
-            />
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-              <TextInput
-                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: UNIFIED_BORDER_RADIUS, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
-                placeholder="Min €"
-                placeholderTextColor={colors.text + '66'}
-                value={minPrice}
-                onChangeText={setMinPrice}
-                keyboardType="numeric"
-              />
-              <TextInput
-                style={{ flex: 1, backgroundColor: colors.background, color: colors.text, borderRadius: UNIFIED_BORDER_RADIUS, paddingHorizontal: 8, height: 38, borderWidth: 1, borderColor: colors.primary + '33' }}
-                placeholder="Max €"
-                placeholderTextColor={colors.text + '66'}
-                value={maxPrice}
-                onChangeText={setMaxPrice}
-                keyboardType="numeric"
-              />
-            </View>
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-              <TouchableOpacity
-                style={{ flex: 1, backgroundColor: colors.background, borderRadius: UNIFIED_BORDER_RADIUS, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
-                onPress={() => setShowDateFromPicker(true)}
-              >
-                <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
-                  {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : 'Desde '}
-                </ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ flex: 1, backgroundColor: colors.background, borderRadius: UNIFIED_BORDER_RADIUS, borderWidth: 1, borderColor: colors.primary + '33', height: 38, justifyContent: 'center', paddingHorizontal: 8 }}
-                onPress={() => setShowDateToPicker(true)}
-              >
-                <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
-                  {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : 'Hasta'}
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-            <DateTimePickerModal
-              isVisible={showDateFromPicker}
-              mode="date"
-              onConfirm={date => {
-                setDateFrom(dayjs(date).format('YYYY-MM-DD'));
-                setShowDateFromPicker(false);
-              }}
-              onCancel={() => setShowDateFromPicker(false)}
-              maximumDate={dateTo ? new Date(dateTo) : undefined}
-            />
-            <DateTimePickerModal
-              isVisible={showDateToPicker}
-              mode="date"
-              onConfirm={date => {
-                setDateTo(dayjs(date).format('YYYY-MM-DD'));
-                setShowDateToPicker(false);
-              }}
-              onCancel={() => setShowDateToPicker(false)}
-              minimumDate={dateFrom ? new Date(dateFrom) : undefined}
-            />
-            <View style={{ gap: 8 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <ThemedButton title="Limpiar" variant="secondary" onPress={() => { setSearchText(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo(''); }} style={{ flex: 1 }} />
-              </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <ThemedButton title="Cerrar" variant="secondary" onPress={() => setSearchModalVisible(false)} style={{ flex: 1 }} />
-                <ThemedButton title="Buscar" variant="primary" onPress={() => setSearchModalVisible(false)} style={{ flex: 1 }} />
-              </View>
-            </View>
-          </ThemedView>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={privateAccessVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={closePrivateAccess}
-      >
-        <View style={styles.privateModalBackdrop}>
-          <ThemedView
-            style={[
-              styles.privateModalCard,
-              {
-                backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
-                borderColor: colors.primary + '55',
-              },
-            ]}
+        <Modal
+          visible={searchModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSearchModalVisible(false)}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: '#0008',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
           >
-            <View style={styles.privateModalHeader}>
-              <View style={[styles.privateModalIcon, { backgroundColor: colors.primary }]}>
-                <MaterialIcons name="lock-open" size={18} color="#fff" />
-              </View>
-              <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
-            </View>
-            <ThemedTextSecondary style={styles.privateModalHint}>
-              Introduce el enlace completo o solo el código final.
-            </ThemedTextSecondary>
-
-            <TextInput
-              value={privateAccessInput}
-              onChangeText={setPrivateAccessInput}
-              placeholder="Pega el enlace o código"
-              placeholderTextColor={theme === 'dark' ? '#aaa' : '#666'}
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={[
-                styles.privateModalInput,
-                {
-                  borderColor: colors.border,
+            <ThemedView
+              style={{
+                width: '90%',
+                backgroundColor: colors.card,
+                borderRadius: UNIFIED_BORDER_RADIUS,
+                padding: 20,
+              }}
+            >
+              <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
+              <TextInput
+                style={{
+                  backgroundColor: colors.background,
                   color: colors.text,
-                  backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
-                },
-              ]}
-            />
-
-            <View style={styles.privateModalActions}>
-              <ThemedButton title="Cancelar" onPress={closePrivateAccess} />
-              <ThemedButton title="Entrar" onPress={handlePrivateAccessSubmit} />
-            </View>
-          </ThemedView>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={routesSettingsVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setRoutesSettingsVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <ThemedView style={[styles.modalContainer, { backgroundColor: colors.card }]}>
-            <ThemedTitle style={styles.modalTitle}>Ajustes de rutas</ThemedTitle>
-
-            <ThemedTextSecondary style={{ marginBottom: 6 }}>
-              Prioridad (puedes elegir varias)
-            </ThemedTextSecondary>
-            <View style={styles.routeStrategyRow}>
-              {[
-                { key: 'balanced', label: 'Equilibrada' },
-                { key: 'walkable', label: 'Caminable' },
-                { key: 'score', label: 'Top score' },
-              ].map((option) => (
-                <TouchableOpacity
-                  key={option.key}
-                  onPress={() => {
-                    const strategy = option.key as RouteStrategy;
-                    setRouteStrategies((prev) =>
-                      prev.includes(strategy)
-                        ? prev.filter((item) => item !== strategy)
-                        : [...prev, strategy],
-                    );
+                  borderRadius: UNIFIED_BORDER_RADIUS,
+                  paddingHorizontal: 10,
+                  height: 38,
+                  borderWidth: 1,
+                  borderColor: colors.primary + '33',
+                  marginBottom: 12,
+                }}
+                placeholder="Buscar por título o descripción"
+                placeholderTextColor={colors.text + '66'}
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                <TextInput
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    paddingHorizontal: 8,
+                    height: 38,
+                    borderWidth: 1,
+                    borderColor: colors.primary + '33',
                   }}
-                  style={[
-                    styles.routeStrategyChip,
-                    {
-                      backgroundColor: routeStrategies.includes(option.key as RouteStrategy)
-                        ? colors.primary
-                        : colors.background,
-                      borderColor: colors.primary,
-                    },
-                  ]}
+                  placeholder="Min €"
+                  placeholderTextColor={colors.text + '66'}
+                  value={minPrice}
+                  onChangeText={setMinPrice}
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    paddingHorizontal: 8,
+                    height: 38,
+                    borderWidth: 1,
+                    borderColor: colors.primary + '33',
+                  }}
+                  placeholder="Max €"
+                  placeholderTextColor={colors.text + '66'}
+                  value={maxPrice}
+                  onChangeText={setMaxPrice}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    borderWidth: 1,
+                    borderColor: colors.primary + '33',
+                    height: 38,
+                    justifyContent: 'center',
+                    paddingHorizontal: 8,
+                  }}
+                  onPress={() => setShowDateFromPicker(true)}
                 >
-                  <ThemedText
-                    style={{
-                      color: routeStrategies.includes(option.key as RouteStrategy)
-                        ? '#fff'
-                        : colors.primary,
-                    }}
-                  >
-                    {option.label}
+                  <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
+                    {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : 'Desde '}
                   </ThemedText>
                 </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Número de rutas</ThemedTextSecondary>
-              <View style={styles.routeStepper}>
-                <TouchableOpacity onPress={() => setRouteCount((prev) => Math.max(1, prev - 1))}>
-                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-                <ThemedText style={styles.routeStepperValue}>{routeCount}</ThemedText>
-                <TouchableOpacity onPress={() => setRouteCount((prev) => Math.min(8, prev + 1))}>
-                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    borderRadius: UNIFIED_BORDER_RADIUS,
+                    borderWidth: 1,
+                    borderColor: colors.primary + '33',
+                    height: 38,
+                    justifyContent: 'center',
+                    paddingHorizontal: 8,
+                  }}
+                  onPress={() => setShowDateToPicker(true)}
+                >
+                  <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
+                    {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : 'Hasta'}
+                  </ThemedText>
                 </TouchableOpacity>
               </View>
-            </View>
-
-            <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Eventos máximos por ruta</ThemedTextSecondary>
-              <View style={styles.routeStepper}>
-                <TouchableOpacity onPress={() => setRouteMaxEvents((prev) => Math.max(3, prev - 1))}>
-                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-                <ThemedText style={styles.routeStepperValue}>{routeMaxEvents}</ThemedText>
-                <TouchableOpacity onPress={() => setRouteMaxEvents((prev) => Math.min(8, prev + 1))}>
-                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Hueco máximo entre eventos</ThemedTextSecondary>
-              <View style={styles.routeStepper}>
-                <TouchableOpacity
-                  onPress={() => setRouteMaxGapMinutes((prev) => Math.max(30, prev - 30))}
-                >
-                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-                <ThemedText style={styles.routeStepperValue}>{formatDuration(routeMaxGapMinutes)}</ThemedText>
-                <TouchableOpacity
-                  onPress={() => setRouteMaxGapMinutes((prev) => Math.min(720, prev + 30))}
-                >
-                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.routeStepRow}>
-              <ThemedTextSecondary>Solape máximo permitido</ThemedTextSecondary>
-              <View style={styles.routeStepper}>
-                <TouchableOpacity
-                  onPress={() => setRouteMaxOverlapMinutes((prev) => Math.max(0, prev - 5))}
-                >
-                  <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-                <ThemedText style={styles.routeStepperValue}>{formatDuration(routeMaxOverlapMinutes)}</ThemedText>
-                <TouchableOpacity
-                  onPress={() => setRouteMaxOverlapMinutes((prev) => Math.min(60, prev + 5))}
-                >
-                  <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.modalButtonsContainer}>
-              <ThemedButton
-                title="Cancelar"
-                variant="secondary"
-                onPress={() => setRoutesSettingsVisible(false)}
-                style={{ flex: 1 }}
+              <DateTimePickerModal
+                isVisible={showDateFromPicker}
+                mode="date"
+                onConfirm={(date) => {
+                  setDateFrom(dayjs(date).format('YYYY-MM-DD'));
+                  setShowDateFromPicker(false);
+                }}
+                onCancel={() => setShowDateFromPicker(false)}
+                maximumDate={dateTo ? new Date(dateTo) : undefined}
               />
-              <ThemedButton
-                title="Generar"
-                variant="primary"
-                onPress={fetchAdjustedRoutes}
-                style={{ flex: 1 }}
+              <DateTimePickerModal
+                isVisible={showDateToPicker}
+                mode="date"
+                onConfirm={(date) => {
+                  setDateTo(dayjs(date).format('YYYY-MM-DD'));
+                  setShowDateToPicker(false);
+                }}
+                onCancel={() => setShowDateToPicker(false)}
+                minimumDate={dateFrom ? new Date(dateFrom) : undefined}
               />
-            </View>
-          </ThemedView>
-        </View>
-      </Modal>
+              <View style={{ gap: 8 }}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <ThemedButton
+                    title="Limpiar"
+                    variant="secondary"
+                    onPress={() => {
+                      setSearchText('');
+                      setMinPrice('');
+                      setMaxPrice('');
+                      setDateFrom('');
+                      setDateTo('');
+                    }}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <ThemedButton
+                    title="Cerrar"
+                    variant="secondary"
+                    onPress={() => setSearchModalVisible(false)}
+                    style={{ flex: 1 }}
+                  />
+                  <ThemedButton
+                    title="Buscar"
+                    variant="primary"
+                    onPress={() => setSearchModalVisible(false)}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              </View>
+            </ThemedView>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={privateAccessVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={closePrivateAccess}
+        >
+          <View style={styles.privateModalBackdrop}>
+            <ThemedView
+              style={[
+                styles.privateModalCard,
+                {
+                  backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
+                  borderColor: colors.primary + '55',
+                },
+              ]}
+            >
+              <View style={styles.privateModalHeader}>
+                <View style={[styles.privateModalIcon, { backgroundColor: colors.primary }]}>
+                  <MaterialIcons name="lock-open" size={18} color="#fff" />
+                </View>
+                <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
+              </View>
+              <ThemedTextSecondary style={styles.privateModalHint}>
+                Introduce el enlace completo o solo el código final.
+              </ThemedTextSecondary>
+
+              <TextInput
+                value={privateAccessInput}
+                onChangeText={setPrivateAccessInput}
+                placeholder="Pega el enlace o código"
+                placeholderTextColor={theme === 'dark' ? '#aaa' : '#666'}
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={[
+                  styles.privateModalInput,
+                  {
+                    borderColor: colors.border,
+                    color: colors.text,
+                    backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
+                  },
+                ]}
+              />
+
+              <View style={styles.privateModalActions}>
+                <ThemedButton title="Cancelar" onPress={closePrivateAccess} />
+                <ThemedButton title="Entrar" onPress={handlePrivateAccessSubmit} />
+              </View>
+            </ThemedView>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={routesSettingsVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setRoutesSettingsVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <ThemedView style={[styles.modalContainer, { backgroundColor: colors.card }]}>
+              <ThemedTitle style={styles.modalTitle}>Ajustes de rutas</ThemedTitle>
+
+              <ThemedTextSecondary style={{ marginBottom: 6 }}>
+                Prioridad (puedes elegir varias)
+              </ThemedTextSecondary>
+              <View style={styles.routeStrategyRow}>
+                {[
+                  { key: 'balanced', label: 'Equilibrada' },
+                  { key: 'walkable', label: 'Caminable' },
+                  { key: 'score', label: 'Top score' },
+                ].map((option) => (
+                  <TouchableOpacity
+                    key={option.key}
+                    onPress={() => {
+                      const strategy = option.key as RouteStrategy;
+                      setRouteStrategies((prev) =>
+                        prev.includes(strategy)
+                          ? prev.filter((item) => item !== strategy)
+                          : [...prev, strategy]
+                      );
+                    }}
+                    style={[
+                      styles.routeStrategyChip,
+                      {
+                        backgroundColor: routeStrategies.includes(option.key as RouteStrategy)
+                          ? colors.primary
+                          : colors.background,
+                        borderColor: colors.primary,
+                      },
+                    ]}
+                  >
+                    <ThemedText
+                      style={{
+                        color: routeStrategies.includes(option.key as RouteStrategy)
+                          ? '#fff'
+                          : colors.primary,
+                      }}
+                    >
+                      {option.label}
+                    </ThemedText>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.routeStepRow}>
+                <ThemedTextSecondary>Número de rutas</ThemedTextSecondary>
+                <View style={styles.routeStepper}>
+                  <TouchableOpacity onPress={() => setRouteCount((prev) => Math.max(1, prev - 1))}>
+                    <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                  <ThemedText style={styles.routeStepperValue}>{routeCount}</ThemedText>
+                  <TouchableOpacity onPress={() => setRouteCount((prev) => Math.min(8, prev + 1))}>
+                    <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.routeStepRow}>
+                <ThemedTextSecondary>Eventos máximos por ruta</ThemedTextSecondary>
+                <View style={styles.routeStepper}>
+                  <TouchableOpacity
+                    onPress={() => setRouteMaxEvents((prev) => Math.max(3, prev - 1))}
+                  >
+                    <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                  <ThemedText style={styles.routeStepperValue}>{routeMaxEvents}</ThemedText>
+                  <TouchableOpacity
+                    onPress={() => setRouteMaxEvents((prev) => Math.min(8, prev + 1))}
+                  >
+                    <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.routeStepRow}>
+                <ThemedTextSecondary>Hueco máximo entre eventos</ThemedTextSecondary>
+                <View style={styles.routeStepper}>
+                  <TouchableOpacity
+                    onPress={() => setRouteMaxGapMinutes((prev) => Math.max(30, prev - 30))}
+                  >
+                    <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                  <ThemedText style={styles.routeStepperValue}>
+                    {formatDuration(routeMaxGapMinutes)}
+                  </ThemedText>
+                  <TouchableOpacity
+                    onPress={() => setRouteMaxGapMinutes((prev) => Math.min(720, prev + 30))}
+                  >
+                    <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.routeStepRow}>
+                <ThemedTextSecondary>Solape máximo permitido</ThemedTextSecondary>
+                <View style={styles.routeStepper}>
+                  <TouchableOpacity
+                    onPress={() => setRouteMaxOverlapMinutes((prev) => Math.max(0, prev - 5))}
+                  >
+                    <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                  <ThemedText style={styles.routeStepperValue}>
+                    {formatDuration(routeMaxOverlapMinutes)}
+                  </ThemedText>
+                  <TouchableOpacity
+                    onPress={() => setRouteMaxOverlapMinutes((prev) => Math.min(60, prev + 5))}
+                  >
+                    <MaterialIcons name="add-circle-outline" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.modalButtonsContainer}>
+                <ThemedButton
+                  title="Cancelar"
+                  variant="secondary"
+                  onPress={() => setRoutesSettingsVisible(false)}
+                  style={{ flex: 1 }}
+                />
+                <ThemedButton
+                  title="Generar"
+                  variant="primary"
+                  onPress={fetchAdjustedRoutes}
+                  style={{ flex: 1 }}
+                />
+              </View>
+            </ThemedView>
+          </View>
+        </Modal>
 
         {menuVisible && (
           <ThemedView style={styles.menuOverlay}>
@@ -1725,122 +1966,128 @@ const {
                 <ThemedView style={styles.menuSection}>
                   <ThemedTextSecondary style={{ marginBottom: 8 }}>Accesos:</ThemedTextSecondary>
 
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('EventsMap');
-                  }}
-                >
-                  <MaterialIcons name="map" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Mapa de eventos</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('SavedAndPrivateEvents', { mode: 'saved' });
-                  }}
-                >
-                  <MaterialIcons name="bookmark" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Eventos guardados</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('SavedAndPrivateEvents', { mode: 'private' });
-                  }}
-                >
-                  <MaterialIcons name="lock" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Eventos privados</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('SavedAndPrivateEvents', { mode: 'joined' });
-                  }}
-                >
-                  <MaterialIcons name="how-to-reg" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Eventos apuntados</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    openPrivateAccess();
-                  }}
-                >
-                  <MaterialIcons name="vpn-key" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Entrar con enlace privado</ThemedText>
-                </TouchableOpacity>
-                </ThemedView>
-
-                <ThemedView style={styles.menuSection}>
-                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Comunicación:</ThemedTextSecondary>
-
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('Notifications');
-                  }}
-                >
-                  <MaterialIcons name="notifications" size={20} color="#ffd700" />
-                  <ThemedText style={styles.menuActionLabel}>Notificaciones</ThemedText>
-                  {unread > 0 && (
-                    <View style={styles.menuActionBadge}>
-                      <Text style={styles.menuActionBadgeText}>{unread}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('Messages');
-                  }}
-                >
-                  <MaterialIcons name="mail" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Mensajes privados</ThemedText>
-                  {unreadMessages > 0 && (
-                    <View style={styles.menuActionBadge}>
-                      <Text style={styles.menuActionBadgeText}>{unreadMessages}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.menuActionRow, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate('Friends');
-                  }}
-                >
-                  <MaterialIcons name="people" size={20} color={colors.primary} />
-                  <ThemedText style={styles.menuActionLabel}>Amigos</ThemedText>
-                </TouchableOpacity>
-                </ThemedView>
-
-                <ThemedView style={styles.menuSection}>
-                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Tu actividad:</ThemedTextSecondary>
-                {role === 'user' && (
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {
                       setMenuVisible(false);
-                      navigation.navigate('UserEvents');
+                      navigation.navigate('EventsMap');
                     }}
                   >
-                    <MaterialIcons name="edit" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Mis eventos</ThemedText>
+                    <MaterialIcons name="map" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Mapa de eventos</ThemedText>
                   </TouchableOpacity>
-                )}
+
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('SavedAndPrivateEvents', { mode: 'saved' });
+                    }}
+                  >
+                    <MaterialIcons name="bookmark" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Eventos guardados</ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('SavedAndPrivateEvents', { mode: 'private' });
+                    }}
+                  >
+                    <MaterialIcons name="lock" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Eventos privados</ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('SavedAndPrivateEvents', { mode: 'joined' });
+                    }}
+                  >
+                    <MaterialIcons name="how-to-reg" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Eventos apuntados</ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      openPrivateAccess();
+                    }}
+                  >
+                    <MaterialIcons name="vpn-key" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>
+                      Entrar con enlace privado
+                    </ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
+
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>
+                    Comunicación:
+                  </ThemedTextSecondary>
+
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('Notifications');
+                    }}
+                  >
+                    <MaterialIcons name="notifications" size={20} color="#ffd700" />
+                    <ThemedText style={styles.menuActionLabel}>Notificaciones</ThemedText>
+                    {unread > 0 && (
+                      <View style={styles.menuActionBadge}>
+                        <Text style={styles.menuActionBadgeText}>{unread}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('Messages');
+                    }}
+                  >
+                    <MaterialIcons name="mail" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Mensajes privados</ThemedText>
+                    {unreadMessages > 0 && (
+                      <View style={styles.menuActionBadge}>
+                        <Text style={styles.menuActionBadgeText}>{unreadMessages}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
+                      navigation.navigate('Friends');
+                    }}
+                  >
+                    <MaterialIcons name="people" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Amigos</ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
+
+                <ThemedView style={styles.menuSection}>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>
+                    Tu actividad:
+                  </ThemedTextSecondary>
+                  {role === 'user' && (
+                    <TouchableOpacity
+                      style={[styles.menuActionRow, { borderColor: colors.border }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        navigation.navigate('UserEvents');
+                      }}
+                    >
+                      <MaterialIcons name="edit" size={20} color={colors.primary} />
+                      <ThemedText style={styles.menuActionLabel}>Mis eventos</ThemedText>
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {
@@ -1865,48 +2112,56 @@ const {
 
                 {role === 'moderator' && (
                   <ThemedView style={styles.menuSection}>
-                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Moderacion:</ThemedTextSecondary>
-                  <TouchableOpacity
-                    style={[styles.menuActionRow, { borderColor: colors.border }]}
-                    onPress={() => {
-                      setMenuVisible(false);
-                      navigation.navigate('ModeratorEvents');
-                    }}
-                  >
-                    <MaterialIcons name="check-circle" size={20} color="#4caf50" />
-                    <ThemedText style={styles.menuActionLabel}>Aprobar eventos</ThemedText>
-                  </TouchableOpacity>
+                    <ThemedTextSecondary style={{ marginBottom: 8 }}>
+                      Moderacion:
+                    </ThemedTextSecondary>
+                    <TouchableOpacity
+                      style={[styles.menuActionRow, { borderColor: colors.border }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        navigation.navigate('ModeratorEvents');
+                      }}
+                    >
+                      <MaterialIcons name="check-circle" size={20} color="#4caf50" />
+                      <ThemedText style={styles.menuActionLabel}>Aprobar eventos</ThemedText>
+                    </TouchableOpacity>
                   </ThemedView>
                 )}
 
                 {role === 'admin' && (
                   <ThemedView style={styles.menuSection}>
-                    <ThemedTextSecondary style={{ marginBottom: 8 }}>Administración:</ThemedTextSecondary>
-                  <TouchableOpacity
-                    style={[styles.menuActionRow, { borderColor: colors.border }]}
-                    onPress={() => {
-                      setMenuVisible(false);
-                      navigation.navigate('Admin');
-                    }}
-                  >
-                    <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Panel de administracion</ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.menuActionRow, { borderColor: colors.border }]}
-                    onPress={() => {
-                      setMenuVisible(false);
-                      navigation.navigate('Categories');
-                    }}
-                  >
-                    <MaterialIcons name="category" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Gestionar categorias</ThemedText>
-                  </TouchableOpacity>
+                    <ThemedTextSecondary style={{ marginBottom: 8 }}>
+                      Administración:
+                    </ThemedTextSecondary>
+                    <TouchableOpacity
+                      style={[styles.menuActionRow, { borderColor: colors.border }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        navigation.navigate('Admin');
+                      }}
+                    >
+                      <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
+                      <ThemedText style={styles.menuActionLabel}>
+                        Panel de administracion
+                      </ThemedText>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.menuActionRow, { borderColor: colors.border }]}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        navigation.navigate('Categories');
+                      }}
+                    >
+                      <MaterialIcons name="category" size={20} color={colors.primary} />
+                      <ThemedText style={styles.menuActionLabel}>Gestionar categorias</ThemedText>
+                    </TouchableOpacity>
                   </ThemedView>
                 )}
 
                 <ThemedView style={styles.menuSection}>
-                  <ThemedTextSecondary style={{ marginBottom: 8 }}>Información:</ThemedTextSecondary>
+                  <ThemedTextSecondary style={{ marginBottom: 8 }}>
+                    Información:
+                  </ThemedTextSecondary>
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {

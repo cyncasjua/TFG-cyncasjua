@@ -18,7 +18,12 @@ export const OsmAttribution: React.FC<Props> = ({ compact = false }) => {
   };
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: colors.card + 'E8', borderColor: colors.border }]}>
+    <ThemedView
+      style={[
+        styles.container,
+        { backgroundColor: colors.card + 'E8', borderColor: colors.border },
+      ]}
+    >
       <TouchableOpacity onPress={openOsmCredits} activeOpacity={0.8}>
         <ThemedText style={[styles.text, compact && styles.compactText]}>
           Map data © OpenStreetMap contributors, ODbL 1.0

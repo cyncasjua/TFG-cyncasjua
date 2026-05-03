@@ -79,14 +79,10 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       const res = await api.get(`/notificaciones/usuario/${user.id}`);
       const privadasNoLeidas = res.data.filter(
-        (n: any) =>
-          !n.leida &&
-          n.mensaje?.toLowerCase().includes(userName.toLowerCase())
+        (n: any) => !n.leida && n.mensaje?.toLowerCase().includes(userName.toLowerCase())
       );
       await Promise.all(
-        privadasNoLeidas.map((n: any) =>
-          api.patch(`/notificaciones/${n.id}/leida`)
-        )
+        privadasNoLeidas.map((n: any) => api.patch(`/notificaciones/${n.id}/leida`))
       );
       await refreshNotificaciones();
     } catch (e) {
@@ -153,7 +149,6 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
     if (userIdsToFetch.size === 0) return;
 
-
     userIdsToFetch.forEach((uid) => {
       void api
         .get(`/users/${uid}`)
@@ -194,11 +189,10 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       setChatError('');
       setIsUploadingImage(true);
 
-      const processed = await manipulateAsync(
-        asset.uri,
-        [{ resize: { width: 800 } }],
-        { compress: 0.6, format: SaveFormat.JPEG }
-      ).catch(() => null);
+      const processed = await manipulateAsync(asset.uri, [{ resize: { width: 800 } }], {
+        compress: 0.6,
+        format: SaveFormat.JPEG,
+      }).catch(() => null);
 
       // Si la manipulación falla, usar la imagen original
       const uploadUri = processed?.uri || asset.uri;
@@ -298,20 +292,16 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    Alert.alert(
-      'Borrar mensaje',
-      '¿Estás seguro de que quieres borrar este mensaje?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Borrar',
-          onPress: () => {
-            sendMessage('delete_dm', { messageId });
-          },
-          style: 'destructive',
+    Alert.alert('Borrar mensaje', '¿Estás seguro de que quieres borrar este mensaje?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Borrar',
+        onPress: () => {
+          sendMessage('delete_dm', { messageId });
         },
-      ]
-    );
+        style: 'destructive',
+      },
+    ]);
   };
 
   useEffect(() => {
@@ -372,7 +362,10 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
         >
           {messages.map((item) => {
             const isOwn = item.emisor?.id === user?.id;
-            const isLight = colors.background === '#FFFFFF' || colors.background === '#fff' || colors.background === 'white';
+            const isLight =
+              colors.background === '#FFFFFF' ||
+              colors.background === '#fff' ||
+              colors.background === 'white';
             const nameColor = isOwn && isLight ? '#e0e0e0' : '#9bbcff';
             const messageColor = isOwn && isLight ? '#fff' : '#e6e8ef';
             const hasImage = !!getFullImageUrl(item.imageUrl);
@@ -442,9 +435,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                     </TouchableOpacity>
 
                     {!!item.contenido?.trim() && (
-                      <ThemedText style={{ color: messageColor }}>
-                        {item.contenido}
-                      </ThemedText>
+                      <ThemedText style={{ color: messageColor }}>{item.contenido}</ThemedText>
                     )}
 
                     {!!item.imageUrl && (
@@ -717,6 +708,3 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
 });
-
-
-

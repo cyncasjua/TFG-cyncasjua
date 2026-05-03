@@ -11,7 +11,11 @@ import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Event, Resena, Recomendacion, Ruta]), UsersModule, AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([User, Event, Resena, Recomendacion, Ruta]),
+    UsersModule,
+    AuthModule,
+  ],
   controllers: [RecomendacionesController],
   providers: [RecomendacionesService],
   exports: [RecomendacionesService],

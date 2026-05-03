@@ -26,19 +26,20 @@ export const CalendarEventsScreen: React.FC = () => {
       setLoading(false);
       return;
     }
-    api.get(`/events/attending/${user.id}`)
-      .then(res => setEvents(res.data))
+    api
+      .get(`/events/attending/${user.id}`)
+      .then((res) => setEvents(res.data))
       .catch(() => Alert.alert('Error', 'No se pudieron cargar tus eventos.'))
       .finally(() => setLoading(false));
   }, [user?.id]);
 
   const markedDates = useMemo(() => {
     const marks: any = {};
-    events.forEach(event => {
+    events.forEach((event) => {
       const date = getSevillaDayKey(event.fechaInicio);
       marks[date] = {
         marked: true,
-        dotColor: '#6c2eb7'
+        dotColor: '#6c2eb7',
       };
     });
 
@@ -51,7 +52,7 @@ export const CalendarEventsScreen: React.FC = () => {
   }, [events, selectedDate]);
 
   const eventsForSelectedDate = useMemo(() => {
-    return events.filter(event => getSevillaDayKey(event.fechaInicio) === selectedDate);
+    return events.filter((event) => getSevillaDayKey(event.fechaInicio) === selectedDate);
   }, [events, selectedDate]);
 
   if (loading) {
@@ -91,9 +92,7 @@ export const CalendarEventsScreen: React.FC = () => {
       />
 
       <ThemedView style={[styles.eventsContainer, { backgroundColor: colors.background }]}>
-        <ThemedText style={styles.title}>
-          Eventos para el {selectedDate}
-        </ThemedText>
+        <ThemedText style={styles.title}>Eventos para el {selectedDate}</ThemedText>
 
         <FlatList
           data={eventsForSelectedDate}
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
   eventTitle: { fontWeight: 'bold', fontSize: 16 },
   eventSubtitle: { color: '#666', fontSize: 14, marginTop: 4 },
   eventTime: { color: '#6c2eb7', fontSize: 12, marginTop: 4, fontWeight: '600' },
-  emptyText: { textAlign: 'center', color: '#999', marginTop: 20 }
+  emptyText: { textAlign: 'center', color: '#999', marginTop: 20 },
 });
 
 export default CalendarEventsScreen;

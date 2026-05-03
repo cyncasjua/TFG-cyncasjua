@@ -1,10 +1,6 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  UploadApiErrorResponse,
-  UploadApiResponse,
-  v2 as cloudinary,
-} from 'cloudinary';
+import { UploadApiErrorResponse, UploadApiResponse, v2 as cloudinary } from 'cloudinary';
 
 type UploadImageOptions = {
   folder: string;
@@ -40,9 +36,7 @@ export class CloudinaryService {
 
   async uploadImage(fileBuffer: Buffer, options: UploadImageOptions) {
     if (!this.isConfigured) {
-      throw new InternalServerErrorException(
-        'Cloudinary no está configurado en el backend.'
-      );
+      throw new InternalServerErrorException('Cloudinary no está configurado en el backend.');
     }
 
     const uploadResult = await new Promise<UploadApiResponse>((resolve, reject) => {
@@ -57,10 +51,7 @@ export class CloudinaryService {
           public_id: publicId,
           overwrite: false,
         },
-        (
-          error: UploadApiErrorResponse | undefined,
-          result: UploadApiResponse | undefined
-        ) => {
+        (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
           if (error || !result) {
             reject(error ?? new Error('Cloudinary no devolvió resultado'));
             return;

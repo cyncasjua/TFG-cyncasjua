@@ -5,7 +5,7 @@ export const OSM_TILE_URL_TEMPLATE = 'http://c.tile.openstreetmap.org/{z}/{x}/{y
 
 export const haversineDistanceKm = (
   from: { latitude: number; longitude: number },
-  to: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number }
 ): number => {
   const earthRadiusKm = 6371;
   const dLat = ((to.latitude - from.latitude) * Math.PI) / 180;
@@ -47,7 +47,7 @@ export const parseEventPoint = (event: Event): { latitude: number; longitude: nu
  * Returns { latitude, longitude } or null if parsing fails
  */
 export const parseLocationPoint = (
-  location?: string | any,
+  location?: string | any
 ): { latitude: number; longitude: number } | null => {
   if (!location) return null;
 

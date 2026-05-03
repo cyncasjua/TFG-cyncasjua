@@ -4,7 +4,6 @@ import { Event } from '../events/event.entity';
 
 @Entity('mensajes')
 export class Mensaje {
-
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

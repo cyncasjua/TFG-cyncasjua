@@ -11,4 +11,3 @@ export class CreateCategoriaDTO {
   @Length(5, 200, { message: 'La descripción debe tener entre 5 y 200 caracteres.' })
   descripcion: string;
 }
-

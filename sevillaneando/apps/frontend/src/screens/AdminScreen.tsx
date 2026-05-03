@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Modal, Alert, TouchableOpacity } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Modal,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import { View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -58,11 +65,11 @@ export const AdminScreen: React.FC<Props> = () => {
       const errorMsg =
         error instanceof Error && 'response' in error
           ? (error as AxiosError<{ message: string }>).response?.data?.message ||
-          error.message ||
-          'No se pudo cambiar el rol.'
+            error.message ||
+            'No se pudo cambiar el rol.'
           : error instanceof Error
-            ? error.message
-            : 'No se pudo cambiar el rol.';
+          ? error.message
+          : 'No se pudo cambiar el rol.';
       if (error instanceof Error && 'response' in error) {
         const axiosErr = error as AxiosError;
         reportError('admin.change-role', 'Error cambiando rol de usuario', err, {
@@ -91,7 +98,10 @@ export const AdminScreen: React.FC<Props> = () => {
             try {
               setResetting(true);
               const res = await api.post('/scraping/reset');
-              Alert.alert('Completado', `${res.data.message}\nEliminados: ${res.data.deleted} | Guardados: ${res.data.saved}`);
+              Alert.alert(
+                'Completado',
+                `${res.data.message}\nEliminados: ${res.data.deleted} | Guardados: ${res.data.saved}`
+              );
             } catch (err) {
               Alert.alert('Error', getErrorMessage(err));
             } finally {
@@ -124,11 +134,11 @@ export const AdminScreen: React.FC<Props> = () => {
               const errorMsg =
                 error instanceof Error && 'response' in error
                   ? (error as AxiosError<{ message: string }>).response?.data?.message ||
-                  error.message ||
-                  'No se pudo borrar el usuario.'
+                    error.message ||
+                    'No se pudo borrar el usuario.'
                   : error instanceof Error
-                    ? error.message
-                    : 'No se pudo borrar el usuario.';
+                  ? error.message
+                  : 'No se pudo borrar el usuario.';
               Alert.alert('Error', errorMsg);
             } finally {
               setChangingRole(false);

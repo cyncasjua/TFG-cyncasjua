@@ -19,4 +19,4 @@ export type PublicUser = {
   nombre: string;
   fotoPerfil: string | null;
   intereses?: string[];
-}
+};

@@ -22,12 +22,15 @@ import { UsersService } from '../users/users.service';
 export class RutasController {
   constructor(
     private readonly rutasService: RutasService,
-    private readonly usersService: UsersService,
+    private readonly usersService: UsersService
   ) {}
 
   @Post()
   @UseGuards(FirebaseAuthGuard)
-  async create(@Body() createRutaDto: CreateRutaDto, @Req() req: { user: { uid: string } }): Promise<Ruta> {
+  async create(
+    @Body() createRutaDto: CreateRutaDto,
+    @Req() req: { user: { uid: string } }
+  ): Promise<Ruta> {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
     return this.rutasService.create(createRutaDto, user.id);
@@ -55,7 +58,7 @@ export class RutasController {
   @UseGuards(FirebaseAuthGuard)
   async getMyRating(
     @Param('id') id: string,
-    @Req() req: { user: { uid: string } },
+    @Req() req: { user: { uid: string } }
   ): Promise<{ calificacion: number | null }> {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
@@ -68,7 +71,7 @@ export class RutasController {
   async update(
     @Param('id') id: string,
     @Body() updateRutaDto: UpdateRutaDto,
-    @Req() req: { user: { uid: string } },
+    @Req() req: { user: { uid: string } }
   ): Promise<Ruta> {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');
@@ -88,7 +91,7 @@ export class RutasController {
   async rateRuta(
     @Param('id') id: string,
     @Body() { puntuacion }: { puntuacion: number },
-    @Req() req: { user: { uid: string } },
+    @Req() req: { user: { uid: string } }
   ): Promise<Ruta> {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!user) throw new NotFoundException('Usuario no encontrado');

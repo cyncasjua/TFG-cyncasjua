@@ -35,7 +35,10 @@ export async function unsaveRecommendedEvent(eventId: string): Promise<{ ok: boo
   return res.data as { ok: boolean };
 }
 
-export async function getSavedRecommendedEvents(): Promise<{ total: number; eventos: RecommendedEvent[] }> {
+export async function getSavedRecommendedEvents(): Promise<{
+  total: number;
+  eventos: RecommendedEvent[];
+}> {
   const res = await api.get('/recomendaciones/me/guardados');
   return res.data as { total: number; eventos: RecommendedEvent[] };
 }
@@ -52,15 +55,20 @@ export async function visitRecommendedEvent(eventId: string): Promise<{ ok: bool
 
 export async function rateRecommendedEvent(
   eventId: string,
-  payload: { puntuacion: number; comentario?: string },
+  payload: { puntuacion: number; comentario?: string }
 ): Promise<{ ok: boolean; action: string; resenaId: string }> {
   const res = await api.post(`/recomendaciones/events/${eventId}/valorar`, payload);
   return res.data as { ok: boolean; action: string; resenaId: string };
 }
 
 export async function getMyRecommendedEventRating(
-  eventId: string,
-): Promise<{ hasRating: boolean; puntuacion: number | null; comentario: string; fecha: string | null }> {
+  eventId: string
+): Promise<{
+  hasRating: boolean;
+  puntuacion: number | null;
+  comentario: string;
+  fecha: string | null;
+}> {
   const res = await api.get(`/recomendaciones/events/${eventId}/valorar/me`);
   return res.data as {
     hasRating: boolean;

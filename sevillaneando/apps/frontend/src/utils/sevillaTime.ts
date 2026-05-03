@@ -89,7 +89,7 @@ export function formatSevillaDateTime(value: Date | string | number | null | und
 
 export function formatEventDateRange(
   start: Date | string | number | null | undefined,
-  end: Date | string | number | null | undefined,
+  end: Date | string | number | null | undefined
 ): string {
   const hasStart = start !== null && start !== undefined && start !== '';
   const hasEnd = end !== null && end !== undefined && end !== '';
@@ -108,7 +108,7 @@ export function formatEventDateRange(
 export function isEventFinished(
   start: Date | string | number | null | undefined,
   end: Date | string | number | null | undefined,
-  referenceDate: Date = new Date(),
+  referenceDate: Date = new Date()
 ): boolean {
   const startDate = toDate(start);
   const endDate = toDate(end);

@@ -64,7 +64,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     })
     .filter((image: string | undefined): image is string => Boolean(image));
 
-
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
   const [showPrivateLinkModal, setShowPrivateLinkModal] = useState(false);
@@ -91,12 +90,14 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const [estado, setEstado] = useState(event.estado || 'Pendiente');
   const [openEstado, setOpenEstado] = useState(false);
-  const [estadoItems, setEstadoItems] = useState([
-    { label: 'Pendiente', value: 'Pendiente' },
-  ]);
+  const [estadoItems, setEstadoItems] = useState([{ label: 'Pendiente', value: 'Pendiente' }]);
 
-  const [latitude, setLatitude] = useState<number | null>(event.location?.coordinates?.[1] ?? SEVILLE_COORDINATES.latitude);
-  const [longitude, setLongitude] = useState<number | null>(event.location?.coordinates?.[0] ?? SEVILLE_COORDINATES.longitude);
+  const [latitude, setLatitude] = useState<number | null>(
+    event.location?.coordinates?.[1] ?? SEVILLE_COORDINATES.latitude
+  );
+  const [longitude, setLongitude] = useState<number | null>(
+    event.location?.coordinates?.[0] ?? SEVILLE_COORDINATES.longitude
+  );
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
 
   const [precio, setPrecio] = useState(event.precio ? String(event.precio) : '');
@@ -105,7 +106,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const [categoriaId, setCategoriaId] = useState<string | null>(event.categoria.id || event.categoria?.id || null);
+  const [categoriaId, setCategoriaId] = useState<string | null>(
+    event.categoria.id || event.categoria?.id || null
+  );
   const [openCategoria, setOpenCategoria] = useState(false);
   const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -183,9 +186,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newUris = result.assets.map(asset => asset.uri).slice(0, remainingSlots);
+      const newUris = result.assets.map((asset) => asset.uri).slice(0, remainingSlots);
 
-      setLocalImageUris(prev => [...prev, ...newUris]);
+      setLocalImageUris((prev) => [...prev, ...newUris]);
 
       const newUrls: string[] = [];
       for (const uri of newUris) {
@@ -197,14 +200,11 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         } as any);
 
         try {
-          const res = await fetch(
-            `${API_BASE_URL}/events/upload-image`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'multipart/form-data' },
-              body: formData,
-            }
-          );
+          const res = await fetch(`${API_BASE_URL}/events/upload-image`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'multipart/form-data' },
+            body: formData,
+          });
           const data = await res.json();
           const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
           newUrls.push(url);
@@ -213,7 +213,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         }
       }
 
-      setImageUrls(prev => {
+      setImageUrls((prev) => {
         const combined = [...prev, ...newUrls];
         if (!coverImageUrl && combined.length > 0) setCoverImageUrl(combined[0]);
         return combined;
@@ -406,13 +406,17 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               multiline
               style={[
                 styles.input,
-                { height: 80, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                {
+                  height: 80,
+                  color: colors.text,
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                },
               ]}
               returnKeyType="next"
               onSubmitEditing={() => addressRef.current?.focus()}
               blurOnSubmit={false}
             />
-
 
             <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
@@ -511,7 +515,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               <View
                 style={[
                   styles.checkbox,
-                  { borderColor: colors.primary, backgroundColor: privado ? colors.primary : colors.card },
+                  {
+                    borderColor: colors.primary,
+                    backgroundColor: privado ? colors.primary : colors.card,
+                  },
                 ]}
               >
                 {privado && <Icon name="check" size={16} color="#fff" />}
@@ -527,7 +534,12 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   placeholderTextColor={colors.text + '99'}
                   style={[
                     styles.mapSearchInput,
-                    { flex: 1, color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+                    {
+                      flex: 1,
+                      color: colors.text,
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                    },
                   ]}
                   returnKeyType="search"
                   onSubmitEditing={handleSearch}
@@ -545,27 +557,27 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   )}
                 </TouchableOpacity>
               </View>
-                <View
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.primary,
-                      minHeight: 44,
-                      justifyContent: 'center',
-                    },
-                  ]}
+              <View
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                    minHeight: 44,
+                    justifyContent: 'center',
+                  },
+                ]}
+              >
+                <ThemedText
+                  style={{
+                    color: address ? colors.text : colors.text + '99',
+                    fontSize: 16,
+                  }}
+                  numberOfLines={3}
                 >
-                  <ThemedText
-                    style={{
-                      color: address ? colors.text : colors.text + '99',
-                      fontSize: 16,
-                    }}
-                    numberOfLines={3}
-                  >
-                    {address || 'Dirección'}
-                  </ThemedText>
-                </View>
+                  {address || 'Dirección'}
+                </ThemedText>
+              </View>
             </View>
 
             <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
@@ -580,7 +592,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 position: 'relative',
               }}
             >
-            <MapView
+              <MapView
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
                 initialRegion={{
@@ -600,7 +612,12 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   setLongitude(lon);
                   setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
                   mapRef.current?.animateToRegion(
-                    { latitude: lat, longitude: lon, latitudeDelta: 0.0015, longitudeDelta: 0.0015 },
+                    {
+                      latitude: lat,
+                      longitude: lon,
+                      latitudeDelta: 0.0015,
+                      longitudeDelta: 0.0015,
+                    },
                     500
                   );
                   reverseGeocode(lat, lon);
@@ -672,7 +689,11 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               setValue={setEstado}
               setItems={setEstadoItems}
               style={{
-                backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10,
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                minHeight: 40,
+                borderRadius: 16,
+                marginBottom: 10,
               }}
               dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
               textStyle={{ color: colors.text }}
@@ -693,7 +714,13 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               setValue={setRecurrencia}
               setItems={() => {}}
               placeholder="Sin recurrencia"
-              style={{ backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10 }}
+              style={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                minHeight: 40,
+                borderRadius: 16,
+                marginBottom: 10,
+              }}
               dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
               textStyle={{ color: colors.text }}
               placeholderStyle={{ color: colors.text + '99' }}
@@ -707,17 +734,29 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
-                  style={[styles.input, { backgroundColor: colors.card, borderColor: colors.primary, justifyContent: 'center' }]}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      justifyContent: 'center',
+                    },
+                  ]}
                 >
                   <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
-                    {recurrenciaFin ? dayjs(recurrenciaFin).format('DD/MM/YYYY') : 'Seleccionar fecha límite'}
+                    {recurrenciaFin
+                      ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
+                      : 'Seleccionar fecha límite'}
                   </ThemedText>
                 </TouchableOpacity>
                 <DateTimePickerModal
                   isVisible={showRecurrenciaFin}
                   mode="date"
                   minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
-                  onConfirm={(date: Date) => { setRecurrenciaFin(date.toISOString()); setShowRecurrenciaFin(false); }}
+                  onConfirm={(date: Date) => {
+                    setRecurrenciaFin(date.toISOString());
+                    setShowRecurrenciaFin(false);
+                  }}
                   onCancel={() => setShowRecurrenciaFin(false)}
                 />
               </>
@@ -736,9 +775,16 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 setItems={setDropdownItems}
                 placeholder="Selecciona una categoría..."
                 style={{
-                  backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10,
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  minHeight: 40,
+                  borderRadius: 16,
+                  marginBottom: 10,
                 }}
-                dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
+                dropDownContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                }}
                 textStyle={{ color: colors.text }}
                 placeholderStyle={{ color: colors.text + '99' }}
                 zIndex={1000}
@@ -751,15 +797,21 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
 
             {localImageUris && localImageUris.length > 0 && (
-              <View style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}>
+              <View
+                style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
+              >
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={true}
-                  contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', minWidth: '100%' }}
+                  contentContainerStyle={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    minWidth: '100%',
+                  }}
                   style={{ width: '100%' }}
                   ref={scrollRef}
                   onContentSizeChange={(w, h) => setMaxScroll(w - 360)}
-                  onScroll={e => setScrollX(e.nativeEvent.contentOffset.x)}
+                  onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
                   scrollEventThrottle={16}
                 >
                   {localImageUris.map((uri, idx) => {
@@ -772,56 +824,65 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                     const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
 
                     return (
-                    <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
-                      <Image
-                        source={
-                          hasExhaustedCandidates
-                            ? require('../../assets/splash.png')
-                            : { uri: currentUri }
-                        }
-                        onError={() => {
-                          setFailedImageAttempts((prev) => ({ ...prev, [idx]: (prev[idx] ?? 0) + 1 }));
-                        }}
-                        style={[
-                          styles.imagePreview,
-                          {
-                            width: 120,
-                            borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
-                            borderColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
-                          },
-                        ]}
-                      />
-                      <TouchableOpacity
-                        onPress={() => {
-                          const newUris = [...localImageUris];
-                          const newUrls = [...imageUrls];
-                          newUris.splice(idx, 1);
-                          newUrls.splice(idx, 1);
-                          setLocalImageUris(newUris);
-                          setImageUrls(newUrls);
-                          setFailedImageAttempts({});
-                          if (newUrls.length === 0) {
-                            setCoverImageUrl(null);
-                          } else if (coverImageUrl === imageUrls[idx]) {
-                            setCoverImageUrl(newUrls[0] || null);
+                      <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
+                        <Image
+                          source={
+                            hasExhaustedCandidates
+                              ? require('../../assets/splash.png')
+                              : { uri: currentUri }
                           }
-                        }}
-                        style={styles.deleteImageBtn}
-                      >
-                        <Icon name="close" size={18} color="#fff" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => setCoverImageUrl(imageUrls[idx])}
-                        style={[
-                          styles.coverImageBtn,
-                          { backgroundColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)' }
-                        ]}
-                      >
-                        <ThemedText style={{ color: '#fff', fontSize: 12 }}>
-                          {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    </View>
+                          onError={() => {
+                            setFailedImageAttempts((prev) => ({
+                              ...prev,
+                              [idx]: (prev[idx] ?? 0) + 1,
+                            }));
+                          }}
+                          style={[
+                            styles.imagePreview,
+                            {
+                              width: 120,
+                              borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
+                              borderColor:
+                                coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
+                            },
+                          ]}
+                        />
+                        <TouchableOpacity
+                          onPress={() => {
+                            const newUris = [...localImageUris];
+                            const newUrls = [...imageUrls];
+                            newUris.splice(idx, 1);
+                            newUrls.splice(idx, 1);
+                            setLocalImageUris(newUris);
+                            setImageUrls(newUrls);
+                            setFailedImageAttempts({});
+                            if (newUrls.length === 0) {
+                              setCoverImageUrl(null);
+                            } else if (coverImageUrl === imageUrls[idx]) {
+                              setCoverImageUrl(newUrls[0] || null);
+                            }
+                          }}
+                          style={styles.deleteImageBtn}
+                        >
+                          <Icon name="close" size={18} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => setCoverImageUrl(imageUrls[idx])}
+                          style={[
+                            styles.coverImageBtn,
+                            {
+                              backgroundColor:
+                                coverImageUrl === imageUrls[idx]
+                                  ? colors.primary
+                                  : 'rgba(0,0,0,0.6)',
+                            },
+                          ]}
+                        >
+                          <ThemedText style={{ color: '#fff', fontSize: 12 }}>
+                            {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
+                          </ThemedText>
+                        </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </ScrollView>
@@ -831,7 +892,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             {imageUrls.length < 5 && (
               <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
                 <Icon name="image-plus" size={24} color={colors.primary} />
-                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>Añadir imágenes</ThemedText>
+                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
+                  Añadir imágenes
+                </ThemedText>
               </TouchableOpacity>
             )}
 
@@ -842,7 +905,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 disabled={loading}
               />
             </View>
-
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -927,6 +989,5 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 16,
     marginTop: 8,
-  }
+  },
 });
-

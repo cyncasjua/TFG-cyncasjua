@@ -12,22 +12,23 @@ export class GeminiScraperService implements IScraper {
 
   private readonly urlsToScrape = [
     // --- INSTITUCIONALES Y OFICIALES ---
-    'https://www.juntadeandalucia.es/cultura/agendaculturaldeandalucia/sevilla',  //añade 9
-    'https://visitasevilla.es/ahora-en-sevilla/',  //añade 100
+    'https://www.juntadeandalucia.es/cultura/agendaculturaldeandalucia/sevilla', //añade 9
+    'https://visitasevilla.es/ahora-en-sevilla/', //añade 100
 
     // --- GRANDES RECINTOS Y TEATROS ---
     'https://www.teatrodelamaestranza.es/es/programacion/', //añade 28
-    'https://fundacioncajasol.com/category/exposiciones/',  //añade 6
+    'https://fundacioncajasol.com/category/exposiciones/', //añade 6
 
     // --- GUÍAS DE OCIO Y AGENDAS CULTURALES ---
-    'https://www.escenaensevilla.es/',  //añade 4
-    'https://salirporsevilla.com/que-hacer-en-sevilla-mejores-planes/',  //añade 5 (estos son los que se añaden sin foto)
+    'https://www.escenaensevilla.es/', //añade 4
+    'https://salirporsevilla.com/que-hacer-en-sevilla-mejores-planes/', //añade 5 (estos son los que se añaden sin foto)
     'https://www.andalunet.com/agenda-sevilla/', //añade 13 (estos tambien se añaden sin foto)
-
   ];
 
   async scrape(): Promise<ScrapedEvent[]> {
-    this.logger.log(`Iniciando extracción masiva con Gemini en ${this.urlsToScrape.length} URLs...`);
+    this.logger.log(
+      `Iniciando extracción masiva con Gemini en ${this.urlsToScrape.length} URLs...`
+    );
     let todosLosEventos: ScrapedEvent[] = [];
 
     for (const url of this.urlsToScrape) {
@@ -37,14 +38,18 @@ export class GeminiScraperService implements IScraper {
         todosLosEventos = [...todosLosEventos, ...eventosDeEstaWeb];
         this.logger.log(`Extraídos ${eventosDeEstaWeb.length} eventos de ${url}`);
 
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       } catch (error) {
-        this.logger.error(`Falló la extracción en ${url}:`, error instanceof Error ? error.message : String(error));
+        this.logger.error(
+          `Falló la extracción en ${url}:`,
+          error instanceof Error ? error.message : String(error)
+        );
       }
     }
 
-    this.logger.log(`Proceso finalizado. Gemini extrajo un total de ${todosLosEventos.length} eventos.`);
+    this.logger.log(
+      `Proceso finalizado. Gemini extrajo un total de ${todosLosEventos.length} eventos.`
+    );
     return todosLosEventos;
   }
 
@@ -55,7 +60,7 @@ export class GeminiScraperService implements IScraper {
       'teatro lope de vega': 'Av. María Luisa, s/n, 41013 Sevilla, España',
       'auditorio rocio jurado': 'Camino de los Descubrimientos, s/n, 41092 Sevilla, España',
       'cartuja center': 'C. Leonardo da Vinci, 7, 41092 Sevilla, España',
-      'fibes': 'Av. Alcalde Luis Uruñuela, 1, 41020 Sevilla, España',
+      fibes: 'Av. Alcalde Luis Uruñuela, 1, 41020 Sevilla, España',
       'real alcázar': 'Patio de Banderas, s/n, 41004 Sevilla, España',
       'catedral de sevilla': 'Av. de la Constitución, s/n, 41004 Sevilla, España',
       'recinto ferial': 'Calle Antonio Bienvenida, 41011 Sevilla, España',
@@ -66,14 +71,14 @@ export class GeminiScraperService implements IScraper {
     };
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      }
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
     });
 
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
     }
-
 
     const htmlRaw = await response.text();
 
@@ -143,7 +148,7 @@ Reglas estrictas:
 - Si el texto no contiene ningún evento real en Sevilla, devuelve {"eventos": []}.
 
 Imágenes principales encontradas en la página (puedes usarlas para asociar a los eventos si corresponde, intenta asociar la imagen más relevante a cada evento):
-${imagenesPrincipales.length ? imagenesPrincipales.map((img, i) => `Imagen${i+1}: ${img}`).join('\n') : 'Ninguna'}
+${imagenesPrincipales.length ? imagenesPrincipales.map((img, i) => `Imagen${i + 1}: ${img}`).join('\n') : 'Ninguna'}
 
 Texto de la página:
 ${htmlLimpio}
@@ -153,14 +158,16 @@ ${htmlLimpio}
     const result = await model.generateContent(prompt);
 
     let textoRespuesta = result.response.text();
-    textoRespuesta = textoRespuesta.replace(/```json/gi, '').replace(/```/g, '').trim();
+    textoRespuesta = textoRespuesta
+      .replace(/```json/gi, '')
+      .replace(/```/g, '')
+      .trim();
 
     try {
       const datosParseados = JSON.parse(textoRespuesta);
 
       const eventos: ScrapedEvent[] = [];
       for (const evento of datosParseados.eventos || []) {
-
         const fechaInicio = evento.fechaInicio ? new Date(evento.fechaInicio) : null;
         const fechaFin = evento.fechaFin ? new Date(evento.fechaFin) : null;
 
@@ -179,24 +186,37 @@ ${htmlLimpio}
         }
 
         let locationFinal = null;
-        if (evento.location && evento.location.coordinates && evento.location.coordinates.length === 2) {
+        if (
+          evento.location &&
+          evento.location.coordinates &&
+          evento.location.coordinates.length === 2
+        ) {
           const [lon, lat] = evento.location.coordinates;
           if (!isNaN(lon) && !isNaN(lat)) {
             locationFinal = evento.location;
           }
-        } else if (addressFinal && addressFinal !== 'Sevilla' && addressFinal !== 'Sevilla, España') {
+        } else if (
+          addressFinal &&
+          addressFinal !== 'Sevilla' &&
+          addressFinal !== 'Sevilla, España'
+        ) {
           // Primer intento: dirección completa
           let geoData = null;
           try {
             const query = encodeURIComponent(addressFinal);
-            const geoResp = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`, {
-              headers: { 'User-Agent': 'sevillaneando-bot/1.0' }
-            });
+            const geoResp = await fetch(
+              `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
+              {
+                headers: { 'User-Agent': 'sevillaneando-bot/1.0' },
+              }
+            );
             if (geoResp.ok) {
               geoData = await geoResp.json();
             }
           } catch (err) {
-            this.logger.debug(`Geocodificación principal fallida para "${addressFinal}": ${String(err)}`);
+            this.logger.debug(
+              `Geocodificación principal fallida para "${addressFinal}": ${String(err)}`
+            );
           }
 
           if (!geoData || geoData.length === 0) {
@@ -205,14 +225,19 @@ ${htmlLimpio}
             if (soloNombre && soloNombre.trim().length > 3) {
               try {
                 const query = encodeURIComponent(soloNombre + ', Sevilla, España');
-                const geoResp = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`, {
-                  headers: { 'User-Agent': 'sevillaneando-bot/1.0' }
-                });
+                const geoResp = await fetch(
+                  `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
+                  {
+                    headers: { 'User-Agent': 'sevillaneando-bot/1.0' },
+                  }
+                );
                 if (geoResp.ok) {
                   geoData = await geoResp.json();
                 }
               } catch (err) {
-                this.logger.debug(`Geocodificación por nombre fallida para "${soloNombre}": ${String(err)}`);
+                this.logger.debug(
+                  `Geocodificación por nombre fallida para "${soloNombre}": ${String(err)}`
+                );
               }
             }
           }
@@ -221,14 +246,19 @@ ${htmlLimpio}
           if ((!geoData || geoData.length === 0) && addressFinal.includes('España')) {
             try {
               const query = encodeURIComponent(addressFinal.replace(', España', ''));
-              const geoResp = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`, {
-                headers: { 'User-Agent': 'sevillaneando-bot/1.0' }
-              });
+              const geoResp = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
+                {
+                  headers: { 'User-Agent': 'sevillaneando-bot/1.0' },
+                }
+              );
               if (geoResp.ok) {
                 geoData = await geoResp.json();
               }
             } catch (err) {
-              this.logger.debug(`Geocodificación sin país fallida para "${addressFinal}": ${String(err)}`);
+              this.logger.debug(
+                `Geocodificación sin país fallida para "${addressFinal}": ${String(err)}`
+              );
             }
           }
 
@@ -299,7 +329,9 @@ ${htmlLimpio}
       return eventos;
     } catch (parseError) {
       const mensajeError = parseError instanceof Error ? parseError.message : String(parseError);
-      throw new Error(`Gemini devolvió un formato no válido: ${mensajeError}. Respuesta original: ${textoRespuesta.substring(0, 100)}...`);
+      throw new Error(
+        `Gemini devolvió un formato no válido: ${mensajeError}. Respuesta original: ${textoRespuesta.substring(0, 100)}...`
+      );
     }
   }
 }

@@ -1,4 +1,13 @@
-import { IsString, IsNotEmpty, IsArray, IsOptional, IsNumber, IsInt, Min, ArrayNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  IsOptional,
+  IsNumber,
+  IsInt,
+  Min,
+  ArrayNotEmpty,
+} from 'class-validator';
 import type { GeoJsonPoint } from '../../common/geojson-point';
 
 export class CreateRutaDto {

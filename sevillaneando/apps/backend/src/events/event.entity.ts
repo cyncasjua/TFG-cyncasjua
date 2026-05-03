@@ -129,13 +129,19 @@ export class Event {
       throw new BadRequestException('El precio mínimo debe ser menor que el precio máximo.');
     }
     if (this.precio != null && (this.precioMin != null || this.precioMax != null)) {
-      throw new BadRequestException('No puedes especificar un precio fijo junto con un intervalo. Deja vacío el campo de precio fijo si has especificado un intervalo, y viceversa.');
+      throw new BadRequestException(
+        'No puedes especificar un precio fijo junto con un intervalo. Deja vacío el campo de precio fijo si has especificado un intervalo, y viceversa.'
+      );
     }
     if (this.precioMin != null && this.precioMax == null) {
-      throw new BadRequestException('Si especificas un precio mínimo, también debes especificar un precio máximo.');
+      throw new BadRequestException(
+        'Si especificas un precio mínimo, también debes especificar un precio máximo.'
+      );
     }
     if (this.precioMax != null && this.precioMin == null) {
-      throw new BadRequestException('Si especificas un precio máximo, también debes especificar un precio mínimo.');
+      throw new BadRequestException(
+        'Si especificas un precio máximo, también debes especificar un precio mínimo.'
+      );
     }
     if (this.title && (this.title.length < 3 || this.title.length > 100)) {
       throw new BadRequestException('El título debe tener entre 3 y 100 caracteres.');

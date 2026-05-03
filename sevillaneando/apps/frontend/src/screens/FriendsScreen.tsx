@@ -52,27 +52,30 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [user?.id]);
 
-  const loadSeguidores = useCallback(async (seguidosList?: PublicUser[]) => {
-    if (!user?.id) return;
-    setLoadingSeguidores(true);
-    try {
-      const [allFollowers, currentSeguidos] = await Promise.all([
-        getSeguidores(user.id),
-        seguidosList ? Promise.resolve(seguidosList) : getSeguidos(user.id),
-      ]);
-      const seguidosIds = new Set(currentSeguidos.map((s) => s.id));
-      setSeguidoresNoSeguidos(allFollowers.filter((f) => !seguidosIds.has(f.id)));
-    } catch {
-      setSeguidoresNoSeguidos([]);
-    } finally {
-      setLoadingSeguidores(false);
-    }
-  }, [user?.id]);
+  const loadSeguidores = useCallback(
+    async (seguidosList?: PublicUser[]) => {
+      if (!user?.id) return;
+      setLoadingSeguidores(true);
+      try {
+        const [allFollowers, currentSeguidos] = await Promise.all([
+          getSeguidores(user.id),
+          seguidosList ? Promise.resolve(seguidosList) : getSeguidos(user.id),
+        ]);
+        const seguidosIds = new Set(currentSeguidos.map((s) => s.id));
+        setSeguidoresNoSeguidos(allFollowers.filter((f) => !seguidosIds.has(f.id)));
+      } catch {
+        setSeguidoresNoSeguidos([]);
+      } finally {
+        setLoadingSeguidores(false);
+      }
+    },
+    [user?.id]
+  );
 
   useFocusEffect(
     useCallback(() => {
       loadSeguidos().then((list) => loadSeguidores(list));
-    }, [loadSeguidos, loadSeguidores]),
+    }, [loadSeguidos, loadSeguidores])
   );
 
   const handleFollowBack = async (targetId: string) => {
@@ -95,22 +98,25 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleSearch = useCallback(async (q: string) => {
-    setSearchQuery(q);
-    if (q.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    setSearching(true);
-    try {
-      const results = await searchUsers(q.trim());
-      setSearchResults(results.filter((u) => u.id !== user?.id));
-    } catch {
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }, [user?.id]);
+  const handleSearch = useCallback(
+    async (q: string) => {
+      setSearchQuery(q);
+      if (q.trim().length < 2) {
+        setSearchResults([]);
+        return;
+      }
+      setSearching(true);
+      try {
+        const results = await searchUsers(q.trim());
+        setSearchResults(results.filter((u) => u.id !== user?.id));
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    },
+    [user?.id]
+  );
 
   const renderUser = ({ item }: { item: PublicUser }) => (
     <TouchableOpacity
@@ -146,10 +152,11 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
           onPress={() => handleFollowBack(item.id)}
           disabled={loading}
         >
-          {loading
-            ? <ActivityIndicator size="small" color="#fff" />
-            : <ThemedText style={styles.followBackText}>Seguir</ThemedText>
-          }
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <ThemedText style={styles.followBackText}>Seguir</ThemedText>
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -222,7 +229,12 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
       ) : (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
-            <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+            <View
+              style={[
+                styles.searchBox,
+                { backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+            >
               <Icon name="magnify" size={20} color={colors.text + '88'} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}

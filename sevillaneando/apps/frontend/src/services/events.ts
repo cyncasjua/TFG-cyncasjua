@@ -34,7 +34,7 @@ function mapEventFromRaw(event: any): Event & { distanceKm?: number } {
 
 export async function getEvents(
   userId?: string,
-  params?: { lat?: number; lng?: number; radiusKm?: number; limit?: number; offset?: number },
+  params?: { lat?: number; lng?: number; radiusKm?: number; limit?: number; offset?: number }
 ): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
   const queryParams = { ...(userId ? { userId } : {}), ...params };
   const res = await api.get('/events', { params: queryParams });

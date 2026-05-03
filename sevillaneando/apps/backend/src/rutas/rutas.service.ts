@@ -19,7 +19,8 @@ export class RutasService {
     @InjectRepository(Ruta) private rutasRepository: Repository<Ruta>,
     @InjectRepository(Event) private eventsRepository: Repository<Event>,
     @InjectRepository(User) private usersRepository: Repository<User>,
-    @InjectRepository(CalificacionRuta) private calificacionesRepository: Repository<CalificacionRuta>,
+    @InjectRepository(CalificacionRuta)
+    private calificacionesRepository: Repository<CalificacionRuta>
   ) {}
 
   async create(createRutaDto: CreateRutaDto, userId: string): Promise<Ruta> {
@@ -30,7 +31,9 @@ export class RutasService {
       throw new BadRequestException('Debe seleccionar al menos un evento');
     }
 
-    const eventos = await this.eventsRepository.find({ where: { id: In(createRutaDto.eventosIds) } });
+    const eventos = await this.eventsRepository.find({
+      where: { id: In(createRutaDto.eventosIds) },
+    });
     if (eventos.length !== createRutaDto.eventosIds.length) {
       throw new BadRequestException('Uno o más eventos no fueron encontrados');
     }
@@ -73,11 +76,7 @@ export class RutasService {
     return ruta;
   }
 
-  async update(
-    id: string,
-    updateRutaDto: UpdateRutaDto,
-    userId: string,
-  ): Promise<Ruta> {
+  async update(id: string, updateRutaDto: UpdateRutaDto, userId: string): Promise<Ruta> {
     const ruta = await this.findOne(id);
 
     if (ruta.creador.id !== userId) {
@@ -90,7 +89,9 @@ export class RutasService {
     if (updateRutaDto.temporizacion) ruta.temporizacion = updateRutaDto.temporizacion;
 
     if (updateRutaDto.eventosIds && updateRutaDto.eventosIds.length > 0) {
-      const eventos = await this.eventsRepository.find({ where: { id: In(updateRutaDto.eventosIds) } });
+      const eventos = await this.eventsRepository.find({
+        where: { id: In(updateRutaDto.eventosIds) },
+      });
       if (eventos.length !== updateRutaDto.eventosIds.length) {
         throw new BadRequestException('Uno o más eventos no fueron encontrados');
       }
@@ -113,7 +114,7 @@ export class RutasService {
   async rateRuta(
     id: string,
     puntuacion: number,
-    userId: string,
+    userId: string
   ): Promise<Ruta & { miCalificacion?: number }> {
     const ruta = await this.findOne(id);
     const user = await this.usersRepository.findOne({ where: { id: userId } });
@@ -145,7 +146,8 @@ export class RutasService {
 
     const totalPuntos = todasCalificaciones.reduce((sum, cal) => sum + cal.puntuacion, 0);
     ruta.numCalificaciones = todasCalificaciones.length;
-    ruta.puntuacionPromedio = todasCalificaciones.length > 0 ? totalPuntos / todasCalificaciones.length : 0;
+    ruta.puntuacionPromedio =
+      todasCalificaciones.length > 0 ? totalPuntos / todasCalificaciones.length : 0;
 
     const rutaActualizada = await this.rutasRepository.save(ruta);
 

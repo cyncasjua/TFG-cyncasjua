@@ -4,7 +4,6 @@ import * as cheerio from 'cheerio';
 import type { Element } from 'domhandler';
 import { IScraper, ScrapedEvent } from '../interfaces/scraper.interface';
 
-
 @Injectable()
 export class PlantillaScraperService implements IScraper {
   readonly name = 'plantilla-ejemplo';
@@ -39,7 +38,6 @@ export class PlantillaScraperService implements IScraper {
           this.logger.error(`Error parseando evento ${index + 1}:`, error);
         }
       });
-
     } catch (error) {
       this.logger.error('Error durante el scraping:', error);
     }
@@ -53,8 +51,9 @@ export class PlantillaScraperService implements IScraper {
     try {
       const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
           'Accept-Language': 'es-ES,es;q=0.9',
         },
         timeout: 10000,
@@ -65,7 +64,6 @@ export class PlantillaScraperService implements IScraper {
       throw error;
     }
   }
-
 
   private parseEventElement($: cheerio.CheerioAPI, element: Element): ScrapedEvent {
     const $el = $(element);
@@ -107,13 +105,16 @@ export class PlantillaScraperService implements IScraper {
   }
 
   //Extrae atributo de un elemento
-  private extractAttribute($el: cheerio.Cheerio<Element>, selector: string, attribute: string): string {
+  private extractAttribute(
+    $el: cheerio.Cheerio<Element>,
+    selector: string,
+    attribute: string
+  ): string {
     return $el.find(selector).first().attr(attribute)?.trim() || '';
   }
 
   //Parsea una fecha desde texto (varia segun la página)
   private parseFecha(fechaTexto: string, horaTexto: string = ''): Date {
-
     const date = new Date();
 
     const match = fechaTexto.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
@@ -140,7 +141,10 @@ export class PlantillaScraperService implements IScraper {
   }
 
   //Geocodifica una dirección (o retorna coordenadas por defecto)
-  private geocodificarDireccion(direccion: string): { type: 'Point'; coordinates: [number, number] } {
+  private geocodificarDireccion(direccion: string): {
+    type: 'Point';
+    coordinates: [number, number];
+  } {
     // Por defecto: Centro de Sevilla
     let lat = 37.3891;
     let lng = -5.9845;

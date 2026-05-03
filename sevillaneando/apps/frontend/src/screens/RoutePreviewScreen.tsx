@@ -30,7 +30,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         latitude: point.coordinates[1],
         longitude: point.coordinates[0],
       })),
-    [routePlan.trayecto],
+    [routePlan.trayecto]
   );
 
   const initialRegion = useMemo(() => {
@@ -64,7 +64,11 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
       const event = await getEventById(eventId);
       navigation.navigate('EventDetail', { event });
     } catch (error) {
-        reportError('route-preview.open-event', `No se pudo abrir evento desde ruta: ${getErrorMessage(error)}`, error);
+      reportError(
+        'route-preview.open-event',
+        `No se pudo abrir evento desde ruta: ${getErrorMessage(error)}`,
+        error
+      );
     }
   };
 
@@ -88,18 +92,23 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedView style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <ThemedView
+        style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+      >
         <ThemedTitle style={styles.summaryTitle}>
           {routePlan.day === 'Sin fecha'
             ? '📅 Ruta con varias fechas disponibles'
             : `Ruta de ${dayjs(routePlan.day).locale('es').format('dddd DD/MM')}`}
         </ThemedTitle>
         <ThemedTextSecondary>
-          {routePlan.eventos.length} paradas · {routePlan.distanceTotalKm.toFixed(1)} km · {formatDuration(routePlan.temporizacionMinutos)}
+          {routePlan.eventos.length} paradas · {routePlan.distanceTotalKm.toFixed(1)} km ·{' '}
+          {formatDuration(routePlan.temporizacionMinutos)}
         </ThemedTextSecondary>
         <ThemedTextSecondary>Score medio: {routePlan.scoreMedio.toFixed(2)}</ThemedTextSecondary>
         {routePlan.quality != null && (
-          <ThemedTextSecondary>Calidad de ruta: {routePlan.quality.toFixed(0)}%</ThemedTextSecondary>
+          <ThemedTextSecondary>
+            Calidad de ruta: {routePlan.quality.toFixed(0)}%
+          </ThemedTextSecondary>
         )}
       </ThemedView>
 
@@ -118,7 +127,11 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         )}
 
         {coordinates.map((coordinate, index) => (
-          <Marker key={`${routePlan.day}-${index}`} coordinate={coordinate} title={`Parada ${index + 1}`}>
+          <Marker
+            key={`${routePlan.day}-${index}`}
+            coordinate={coordinate}
+            title={`Parada ${index + 1}`}
+          >
             <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>
               <ThemedText style={styles.markerLabel}>{index + 1}</ThemedText>
             </View>
@@ -131,10 +144,22 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={styles.timelineContent}
       >
         {routePlan.day === 'Sin fecha' && (
-          <ThemedView style={{ padding: 12, marginBottom: 12, backgroundColor: colors.card, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-            <ThemedText style={{ fontWeight: '600', marginBottom: 4 }}>ℹ️ Eventos con múltiples fechas</ThemedText>
+          <ThemedView
+            style={{
+              padding: 12,
+              marginBottom: 12,
+              backgroundColor: colors.card,
+              borderRadius: 8,
+              borderLeftWidth: 3,
+              borderLeftColor: colors.primary,
+            }}
+          >
+            <ThemedText style={{ fontWeight: '600', marginBottom: 4 }}>
+              ℹ️ Eventos con múltiples fechas
+            </ThemedText>
             <ThemedTextSecondary>
-              Estos eventos tienen varias fechas y horas disponibles. Mire la disponibilidad de horarios en la web.
+              Estos eventos tienen varias fechas y horas disponibles. Mire la disponibilidad de
+              horarios en la web.
             </ThemedTextSecondary>
           </ThemedView>
         )}
@@ -147,7 +172,9 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 
           const nextEvent = !isLast ? routePlan.eventos[index + 1] : null;
           const currentEnd = event.fechaFin ? new Date(event.fechaFin).getTime() : null;
-          const nextStart = nextEvent?.fechaInicio ? new Date(nextEvent.fechaInicio).getTime() : null;
+          const nextStart = nextEvent?.fechaInicio
+            ? new Date(nextEvent.fechaInicio).getTime()
+            : null;
           const transitionGapMin =
             nextStart !== null && currentEnd !== null && Number.isFinite(currentEnd)
               ? Math.max(0, Math.round((nextStart - currentEnd) / (1000 * 60)))
@@ -158,12 +185,17 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
               <View style={styles.timelineRow}>
                 <View style={styles.timelineRail}>
                   <View style={[styles.timelineDot, { borderColor: colors.primary }]} />
-                  {!isLast && <View style={[styles.timelineLine, { backgroundColor: colors.border }]} />}
+                  {!isLast && (
+                    <View style={[styles.timelineLine, { backgroundColor: colors.border }]} />
+                  )}
                 </View>
 
                 <TouchableOpacity
                   activeOpacity={0.85}
-                  style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[
+                    styles.eventCard,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                  ]}
                   onPress={() => openEvent(event.id)}
                 >
                   <View style={styles.eventTitleRow}>
@@ -195,23 +227,34 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
               </View>
 
               {!isLast && segmentDistanceKm != null && (
-                <View style={[styles.segmentInfoRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
+                <View
+                  style={[
+                    styles.segmentInfoRow,
+                    { borderColor: colors.border, backgroundColor: colors.card },
+                  ]}
+                >
                   <View style={styles.segmentInfoItem}>
                     <MaterialIcons name="straight" size={14} color={colors.primary} />
                     <ThemedTextSecondary>{segmentDistanceKm.toFixed(2)} km</ThemedTextSecondary>
                   </View>
                   <View style={styles.segmentInfoItem}>
                     <MaterialIcons name="directions-walk" size={14} color={colors.primary} />
-                    <ThemedTextSecondary>{formatDuration(estimateWalkingMinutes(segmentDistanceKm))}</ThemedTextSecondary>
+                    <ThemedTextSecondary>
+                      {formatDuration(estimateWalkingMinutes(segmentDistanceKm))}
+                    </ThemedTextSecondary>
                   </View>
                   <View style={styles.segmentInfoItem}>
                     <MaterialIcons name="directions-car" size={14} color={colors.primary} />
-                    <ThemedTextSecondary>{formatDuration(estimateDrivingMinutes(segmentDistanceKm))}</ThemedTextSecondary>
+                    <ThemedTextSecondary>
+                      {formatDuration(estimateDrivingMinutes(segmentDistanceKm))}
+                    </ThemedTextSecondary>
                   </View>
                   {transitionGapMin != null && (
                     <View style={styles.segmentInfoItem}>
                       <MaterialIcons name="schedule" size={14} color={colors.primary} />
-                      <ThemedTextSecondary>hueco {formatDuration(transitionGapMin)}</ThemedTextSecondary>
+                      <ThemedTextSecondary>
+                        hueco {formatDuration(transitionGapMin)}
+                      </ThemedTextSecondary>
                     </View>
                   )}
                 </View>

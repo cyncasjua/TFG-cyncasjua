@@ -15,7 +15,7 @@ import { EventEditRequestController } from './event-edit-request.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Event, User, Mensaje, Resena,  EventEditRequest]),
+    TypeOrmModule.forFeature([Event, User, Mensaje, Resena, EventEditRequest]),
     AuthModule,
     NotificacionesModule,
     UsersModule,
@@ -24,4 +24,4 @@ import { EventEditRequestController } from './event-edit-request.controller';
   providers: [EventsService, EventEditRequestService],
   exports: [EventsService],
 })
-export class EventsModule { }
+export class EventsModule {}

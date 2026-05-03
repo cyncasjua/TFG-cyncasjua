@@ -76,8 +76,12 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const [showHoraInicio, setShowHoraInicio] = useState(false);
   const [showFechaFin, setShowFechaFin] = useState(false);
   const [showHoraFin, setShowHoraFin] = useState(false);
-  const [latitude, setLatitude] = useState(event.location?.coordinates[1] ?? SEVILLE_COORDINATES.latitude);
-  const [longitude, setLongitude] = useState(event.location?.coordinates[0] ?? SEVILLE_COORDINATES.longitude);
+  const [latitude, setLatitude] = useState(
+    event.location?.coordinates[1] ?? SEVILLE_COORDINATES.latitude
+  );
+  const [longitude, setLongitude] = useState(
+    event.location?.coordinates[0] ?? SEVILLE_COORDINATES.longitude
+  );
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
   const [precio, setPrecio] = useState(String(event.precio ?? ''));
   const [precioMin, setPrecioMin] = useState(String(event.precioMin ?? ''));
@@ -162,7 +166,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       quality: 0.7,
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newUris = result.assets.map(asset => asset.uri).slice(0, remainingSlots);
+      const newUris = result.assets.map((asset) => asset.uri).slice(0, remainingSlots);
       const newUrls: string[] = [];
       for (const uri of newUris) {
         const formData = new FormData();
@@ -172,14 +176,11 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
           type: 'image/jpeg',
         } as any);
         try {
-          const res = await fetch(
-            `${API_BASE_URL}/events/upload-image`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'multipart/form-data' },
-              body: formData,
-            }
-          );
+          const res = await fetch(`${API_BASE_URL}/events/upload-image`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'multipart/form-data' },
+            body: formData,
+          });
           const data = await res.json();
           const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
           newUrls.push(url);
@@ -187,8 +188,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
           Alert.alert('Error', 'No se pudo subir una imagen.');
         }
       }
-      setLocalImageUris(prev => [...prev, ...newUris]);
-      setImageUrls(prev => {
+      setLocalImageUris((prev) => [...prev, ...newUris]);
+      setImageUrls((prev) => {
         const combined = [...prev, ...newUrls];
         if (!coverImageUrl && combined.length > 0) setCoverImageUrl(combined[0]);
         return combined;
@@ -680,7 +681,13 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               setValue={setRecurrencia}
               setItems={() => {}}
               placeholder="Sin recurrencia"
-              style={{ backgroundColor: colors.card, borderColor: colors.primary, minHeight: 40, borderRadius: 16, marginBottom: 10 }}
+              style={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                minHeight: 40,
+                borderRadius: 16,
+                marginBottom: 10,
+              }}
               dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
               textStyle={{ color: colors.text }}
               placeholderStyle={{ color: colors.text + '99' }}
@@ -694,17 +701,29 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
-                  style={[styles.input, { backgroundColor: colors.card, borderColor: colors.primary, justifyContent: 'center' }]}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      justifyContent: 'center',
+                    },
+                  ]}
                 >
                   <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
-                    {recurrenciaFin ? dayjs(recurrenciaFin).format('DD/MM/YYYY') : 'Seleccionar fecha límite'}
+                    {recurrenciaFin
+                      ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
+                      : 'Seleccionar fecha límite'}
                   </ThemedText>
                 </TouchableOpacity>
                 <DateTimePickerModal
                   isVisible={showRecurrenciaFin}
                   mode="date"
                   minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
-                  onConfirm={(date: Date) => { setRecurrenciaFin(date.toISOString()); setShowRecurrenciaFin(false); }}
+                  onConfirm={(date: Date) => {
+                    setRecurrenciaFin(date.toISOString());
+                    setShowRecurrenciaFin(false);
+                  }}
                   onCancel={() => setShowRecurrenciaFin(false)}
                 />
               </>
@@ -712,15 +731,21 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
 
             {localImageUris && localImageUris.length > 0 && (
-              <View style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}>
+              <View
+                style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
+              >
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={true}
-                  contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', minWidth: '100%' }}
+                  contentContainerStyle={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    minWidth: '100%',
+                  }}
                   style={{ width: '100%' }}
                   ref={scrollRef}
                   onContentSizeChange={(w, h) => setMaxScroll(w - 360)}
-                  onScroll={e => setScrollX(e.nativeEvent.contentOffset.x)}
+                  onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
                   scrollEventThrottle={16}
                 >
                   {localImageUris.map((uri, idx) => {
@@ -732,56 +757,65 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                     const hasExhaustedCandidates = attempts >= candidates.length;
                     const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
                     return (
-                    <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
-                      <Image
-                        source={
-                          hasExhaustedCandidates
-                            ? require('../../assets/splash.png')
-                            : { uri: currentUri }
-                        }
-                        onError={() => {
-                          setFailedImageAttempts((prev) => ({ ...prev, [idx]: (prev[idx] ?? 0) + 1 }));
-                        }}
-                        style={[
-                          styles.imagePreview,
-                          {
-                            width: 120,
-                            borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
-                            borderColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
-                          },
-                        ]}
-                      />
-                      <TouchableOpacity
-                        onPress={() => {
-                          const newUris = [...localImageUris];
-                          const newUrls = [...imageUrls];
-                          newUris.splice(idx, 1);
-                          newUrls.splice(idx, 1);
-                          setLocalImageUris(newUris);
-                          setImageUrls(newUrls);
-                          setFailedImageAttempts({});
-                          if (newUrls.length === 0) {
-                            setCoverImageUrl(null);
-                          } else if (coverImageUrl === imageUrls[idx]) {
-                            setCoverImageUrl(newUrls[0] || null);
+                      <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
+                        <Image
+                          source={
+                            hasExhaustedCandidates
+                              ? require('../../assets/splash.png')
+                              : { uri: currentUri }
                           }
-                        }}
-                        style={styles.deleteImageBtn}
-                      >
-                        <Icon name="close" size={18} color="#fff" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => setCoverImageUrl(imageUrls[idx])}
-                        style={[
-                          styles.coverImageBtn,
-                          { backgroundColor: coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)' }
-                        ]}
-                      >
-                        <ThemedText style={{ color: '#fff', fontSize: 12 }}>
-                          {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    </View>
+                          onError={() => {
+                            setFailedImageAttempts((prev) => ({
+                              ...prev,
+                              [idx]: (prev[idx] ?? 0) + 1,
+                            }));
+                          }}
+                          style={[
+                            styles.imagePreview,
+                            {
+                              width: 120,
+                              borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
+                              borderColor:
+                                coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
+                            },
+                          ]}
+                        />
+                        <TouchableOpacity
+                          onPress={() => {
+                            const newUris = [...localImageUris];
+                            const newUrls = [...imageUrls];
+                            newUris.splice(idx, 1);
+                            newUrls.splice(idx, 1);
+                            setLocalImageUris(newUris);
+                            setImageUrls(newUrls);
+                            setFailedImageAttempts({});
+                            if (newUrls.length === 0) {
+                              setCoverImageUrl(null);
+                            } else if (coverImageUrl === imageUrls[idx]) {
+                              setCoverImageUrl(newUrls[0] || null);
+                            }
+                          }}
+                          style={styles.deleteImageBtn}
+                        >
+                          <Icon name="close" size={18} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => setCoverImageUrl(imageUrls[idx])}
+                          style={[
+                            styles.coverImageBtn,
+                            {
+                              backgroundColor:
+                                coverImageUrl === imageUrls[idx]
+                                  ? colors.primary
+                                  : 'rgba(0,0,0,0.6)',
+                            },
+                          ]}
+                        >
+                          <ThemedText style={{ color: '#fff', fontSize: 12 }}>
+                            {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
+                          </ThemedText>
+                        </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </ScrollView>
@@ -791,7 +825,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             {imageUrls.length < 5 && (
               <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
                 <Icon name="image-plus" size={24} color={colors.primary} />
-                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>Añadir imágenes</ThemedText>
+                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
+                  Añadir imágenes
+                </ThemedText>
               </TouchableOpacity>
             )}
             <ThemedButton

@@ -16,7 +16,8 @@ export class ScrapingService {
   private readonly logger = new Logger(ScrapingService.name);
   private readonly categoriaCache = new Map<string, Categoria>();
   private readonly scraperSystemUid = process.env.SCRAPER_SYSTEM_UID || 'system-scraper-uid';
-  private readonly scraperSystemEmail = process.env.SCRAPER_SYSTEM_EMAIL || 'scraper.bot@sevillaneando.local';
+  private readonly scraperSystemEmail =
+    process.env.SCRAPER_SYSTEM_EMAIL || 'scraper.bot@sevillaneando.local';
   private readonly scraperSystemName = process.env.SCRAPER_SYSTEM_NAME || 'Sevillaneando Bot';
   private readonly legacyScraperEmail = process.env.LEGACY_SCRAPER_EMAIL || 'mod@demo.com';
 
@@ -27,7 +28,7 @@ export class ScrapingService {
     private readonly categoriaRepo: Repository<Categoria>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly moduleRef: ModuleRef,
+    private readonly moduleRef: ModuleRef
   ) {}
 
   async scrapeAll(): Promise<{ total: number; saved: number; errors: number }> {
@@ -45,7 +46,9 @@ export class ScrapingService {
         const saved = await this.saveScrapedEvents(events);
         totalSaved += saved;
 
-        this.logger.log(`${scraper.name}: ${events.length} eventos encontrados, ${saved} guardados`);
+        this.logger.log(
+          `${scraper.name}: ${events.length} eventos encontrados, ${saved} guardados`
+        );
       } catch (error) {
         totalErrors++;
         this.logger.error(`Error en scraper ${scraper.name}:`, error);
@@ -120,7 +123,8 @@ export class ScrapingService {
           existingEvent.location = normalizedEvent.location;
           existingEvent.fechaInicio = normalizedEvent.fechaInicio;
           existingEvent.fechaFin = normalizedEvent.fechaFin;
-          existingEvent.hasMultipleDatesAvailable = normalizedEvent.hasMultipleDatesAvailable ?? false;
+          existingEvent.hasMultipleDatesAvailable =
+            normalizedEvent.hasMultipleDatesAvailable ?? false;
           existingEvent.precio = normalizedEvent.precio;
           existingEvent.precioMin = normalizedEvent.precioMin;
           existingEvent.precioMax = normalizedEvent.precioMax;
@@ -179,7 +183,9 @@ export class ScrapingService {
   }
 
   async resetScrapedEvents(): Promise<{ deleted: number; saved: number; errors: number }> {
-    const systemUser = await this.userRepo.findOne({ where: { firebaseUid: this.scraperSystemUid } });
+    const systemUser = await this.userRepo.findOne({
+      where: { firebaseUid: this.scraperSystemUid },
+    });
     const legacyUser = await this.userRepo.findOne({ where: { email: this.legacyScraperEmail } });
 
     const conditions: object[] = [];
@@ -189,7 +195,7 @@ export class ScrapingService {
     let deleted = 0;
     if (conditions.length > 0) {
       const { affected } = await this.eventRepo.delete(
-        conditions.length === 1 ? conditions[0] : (conditions as object),
+        conditions.length === 1 ? conditions[0] : (conditions as object)
       );
       deleted = affected ?? 0;
     }
@@ -203,7 +209,9 @@ export class ScrapingService {
     const scrapers: IScraper[] = [];
 
     const sevillaScraperService = this.moduleRef.get(SevillaScraperService, { strict: false });
-    const ticketmasterScraperService = this.moduleRef.get(TicketmasterScraperService, { strict: false });
+    const ticketmasterScraperService = this.moduleRef.get(TicketmasterScraperService, {
+      strict: false,
+    });
     //const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
 
     if (sevillaScraperService) {
@@ -234,7 +242,8 @@ export class ScrapingService {
   }
 
   private normalizeLongEventDates(event: ScrapedEvent): ScrapedEvent {
-    const isEventbriteSource = typeof event.sourceUrl === 'string' && /eventbrite\./i.test(event.sourceUrl);
+    const isEventbriteSource =
+      typeof event.sourceUrl === 'string' && /eventbrite\./i.test(event.sourceUrl);
 
     if (isEventbriteSource && event.fechaInicio && !event.fechaFin) {
       const start = new Date(event.fechaInicio);
@@ -267,7 +276,7 @@ export class ScrapingService {
     if (end.getTime() <= start.getTime()) {
       this.logger.debug(
         `Evento con fechas inválidas (fin <= inicio) detectado: ${event.title} ` +
-        `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
+          `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
       );
       return {
         ...event,
@@ -296,7 +305,7 @@ export class ScrapingService {
       if (startsEarly && endsLate) {
         this.logger.debug(
           `Evento detectado como de duración indefinida (cubre casi todo el día): ${event.title} ` +
-          `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
+            `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
         );
         return {
           ...event,
@@ -353,7 +362,9 @@ export class ScrapingService {
 
   private async resolveCategory(scrapedEvent: ScrapedEvent): Promise<Categoria> {
     if (scrapedEvent.categoriaId) {
-      const existingById = await this.categoriaRepo.findOne({ where: { id: scrapedEvent.categoriaId } });
+      const existingById = await this.categoriaRepo.findOne({
+        where: { id: scrapedEvent.categoriaId },
+      });
       if (existingById) return existingById;
     }
 
@@ -368,27 +379,49 @@ export class ScrapingService {
   private inferCategoryName(scrapedEvent: ScrapedEvent): string {
     const text = `${scrapedEvent.title} ${scrapedEvent.description}`.toLowerCase();
 
-    if (/(concierto|music|musica|flamenco|dj|festival|banda|orquesta|electr[oó]nica|jazz|rock|pop|ticketmaster)/.test(text)) {
+    if (
+      /(concierto|music|musica|flamenco|dj|festival|banda|orquesta|electr[oó]nica|jazz|rock|pop|ticketmaster)/.test(
+        text
+      )
+    ) {
       return 'Conciertos';
     }
 
-    if (/(tapa|gastron|food|cena|almuerzo|degustaci|vino|cerveza|restaurante|brunch|cocktail)/.test(text)) {
+    if (
+      /(tapa|gastron|food|cena|almuerzo|degustaci|vino|cerveza|restaurante|brunch|cocktail)/.test(
+        text
+      )
+    ) {
       return 'Gastronomía';
     }
 
-    if (/(teatro|museo|arte|exposici|cine|documental|cultural|poes|literatura|opera|danza|baile)/.test(text)) {
+    if (
+      /(teatro|museo|arte|exposici|cine|documental|cultural|poes|literatura|opera|danza|baile)/.test(
+        text
+      )
+    ) {
       return 'Cultura';
     }
 
-    if (/(running|futbol|baloncesto|deporte|yoga|pilates|fitness|carrera|bike|crossfit|wellness)/.test(text)) {
+    if (
+      /(running|futbol|baloncesto|deporte|yoga|pilates|fitness|carrera|bike|crossfit|wellness)/.test(
+        text
+      )
+    ) {
       return 'Deportes';
     }
 
-    if (/(networking|startup|emprend|tech|tecnolog|business|career|job|feria de empleo|conferencia|summit|meetup)/.test(text)) {
+    if (
+      /(networking|startup|emprend|tech|tecnolog|business|career|job|feria de empleo|conferencia|summit|meetup)/.test(
+        text
+      )
+    ) {
       return 'Networking';
     }
 
-    if (/(congreso|seminar|ponencia|jornada t[eé]cnica|simposio|research|investigaci[oó]n)/.test(text)) {
+    if (
+      /(congreso|seminar|ponencia|jornada t[eé]cnica|simposio|research|investigaci[oó]n)/.test(text)
+    ) {
       return 'Conferencias';
     }
 
@@ -436,7 +469,7 @@ export class ScrapingService {
       fiestas: 'Fiestas populares, ferias y celebraciones.',
       concursos: 'Concursos, certámenes y competiciones.',
       conciertos: 'Música en vivo, recitales y festivales.',
-      'gastronomía': 'Rutas, catas y experiencias gastronómicas.',
+      gastronomía: 'Rutas, catas y experiencias gastronómicas.',
       cultura: 'Teatro, arte, cine y actividades culturales.',
       deportes: 'Eventos deportivos y actividades de bienestar.',
       networking: 'Encuentros profesionales, negocios y tecnología.',
@@ -463,20 +496,51 @@ export class ScrapingService {
     const text = value.trim().toLowerCase();
     if (!text) return 'Otros';
 
-    if (/(concert|music|musica|concierto(s)?|tributo|banda|orquesta|flamenco(s)?|festival(es)?|show|espect[aá]culo|directo|live|ac[uú]stic[oa]|jazz|rock|pop|dj|electr[oó]nica|indie|folk|blues|reggae|metal|punk|soul|gospel|trap|rap|hip hop|hip-hop|r&b|country|cantautor|recital|performing)/.test(text)) return 'Conciertos';
-    if (/(food|drink|gastronom(ía|ia)?|restaurante(s)?|tapa(s)?|vino(s)?|culinary)/.test(text)) return 'Gastronomía';
-    if (/(art(e)?|culture|cultura(s)?|theatre|teatro(s)?|cine|museum|museo(s)?|exposici[oó]n(es)?)/.test(text)) return 'Cultura';
-    if (/(sport(s)?|deporte(s)?|fitness|wellness|running|yoga|pilates|mundial|remo|baloncesto|fútbol|futbol|tenis|padel|natación|natacion|ciclismo|atletismo|voleibol|hockey|rugby|golf|boxeo|karate|judo|taekwondo|motociclismo|automovilismo|escalada|surf|skate|bmx|triatlón|triatlon|maratón|maraton|senderismo|montañismo|esquí|esqui|snowboard|patinaje|ajedrez|ping pong|tenis de mesa|bádminton|badminton|esgrima|lucha|halterofilia|gimnasia|parkour|parkur)/.test(text)) return 'Deportes';
-    if (/(network(ing)?|startup(s)?|business|career|tech|empleo(s)?|job(s)?)/.test(text)) return 'Networking';
-    if (/(conference(s)?|congreso(s)?|seminar(io|ios)?|ponencia(s)?|summit(s)?)/.test(text)) return 'Conferencias';
-    if (/(workshop(s)?|taller(es)?|curso(s)?|class(es)?|formaci[oó]n(es)?)/.test(text)) return 'Talleres';
+    if (
+      /(concert|music|musica|concierto(s)?|tributo|banda|orquesta|flamenco(s)?|festival(es)?|show|espect[aá]culo|directo|live|ac[uú]stic[oa]|jazz|rock|pop|dj|electr[oó]nica|indie|folk|blues|reggae|metal|punk|soul|gospel|trap|rap|hip hop|hip-hop|r&b|country|cantautor|recital|performing)/.test(
+        text
+      )
+    )
+      return 'Conciertos';
+    if (/(food|drink|gastronom(ía|ia)?|restaurante(s)?|tapa(s)?|vino(s)?|culinary)/.test(text))
+      return 'Gastronomía';
+    if (
+      /(art(e)?|culture|cultura(s)?|theatre|teatro(s)?|cine|museum|museo(s)?|exposici[oó]n(es)?)/.test(
+        text
+      )
+    )
+      return 'Cultura';
+    if (
+      /(sport(s)?|deporte(s)?|fitness|wellness|running|yoga|pilates|mundial|remo|baloncesto|fútbol|futbol|tenis|padel|natación|natacion|ciclismo|atletismo|voleibol|hockey|rugby|golf|boxeo|karate|judo|taekwondo|motociclismo|automovilismo|escalada|surf|skate|bmx|triatlón|triatlon|maratón|maraton|senderismo|montañismo|esquí|esqui|snowboard|patinaje|ajedrez|ping pong|tenis de mesa|bádminton|badminton|esgrima|lucha|halterofilia|gimnasia|parkour|parkur)/.test(
+        text
+      )
+    )
+      return 'Deportes';
+    if (/(network(ing)?|startup(s)?|business|career|tech|empleo(s)?|job(s)?)/.test(text))
+      return 'Networking';
+    if (/(conference(s)?|congreso(s)?|seminar(io|ios)?|ponencia(s)?|summit(s)?)/.test(text))
+      return 'Conferencias';
+    if (/(workshop(s)?|taller(es)?|curso(s)?|class(es)?|formaci[oó]n(es)?)/.test(text))
+      return 'Talleres';
     if (/(kids?|children|infantil(es)?|familia(s)?|family)/.test(text)) return 'Infantil';
     if (/(tour(s)?|ruta(s)?|visita(s)?|turismo|travel)/.test(text)) return 'Turismo';
-    if (/(charity|solidari(o|os|a|as)?|ong|voluntari(o|os|a|as)?|benefic(o|os|a|as)?)/.test(text)) return 'Solidario';
+    if (/(charity|solidari(o|os|a|as)?|ong|voluntari(o|os|a|as)?|benefic(o|os|a|as)?)/.test(text))
+      return 'Solidario';
     if (/(party|nightlife|ocio(s)?|escape room|leisure)/.test(text)) return 'Ocio';
-    if (/(mercadillo(s)?|mercado(s)?|rastrillo(s)?|flea market|market)/.test(text)) return 'Mercadillo';
-    if (/(concurso(s)?|competici[oó]n(es)?|torneo(s)?|certamen(es)?|challenge(s)?|contest(s)?)/.test(text)) return 'Concursos';
-    if (/(fiesta(s)?|feria(s)?|verbena(s)?|romería(s)?|romeria(s)?|carnaval(es)?|san fermín|sanfermin|san juan|sanjuan|navidad|halloween|nochevieja|noche buena|nochebuena|fin de año|findeaño|findeano|reyes magos|reyesmagos|cabalgata|procesi[oó]n(es)?|semana santa|semana-santa|fallas|hogueras|magosto|magosta|fiestas patronales|patronal(es)?|patr[oó]n(es)?)/.test(text)) return 'Fiestas';
+    if (/(mercadillo(s)?|mercado(s)?|rastrillo(s)?|flea market|market)/.test(text))
+      return 'Mercadillo';
+    if (
+      /(concurso(s)?|competici[oó]n(es)?|torneo(s)?|certamen(es)?|challenge(s)?|contest(s)?)/.test(
+        text
+      )
+    )
+      return 'Concursos';
+    if (
+      /(fiesta(s)?|feria(s)?|verbena(s)?|romería(s)?|romeria(s)?|carnaval(es)?|san fermín|sanfermin|san juan|sanjuan|navidad|halloween|nochevieja|noche buena|nochebuena|fin de año|findeaño|findeano|reyes magos|reyesmagos|cabalgata|procesi[oó]n(es)?|semana santa|semana-santa|fallas|hogueras|magosto|magosta|fiestas patronales|patronal(es)?|patr[oó]n(es)?)/.test(
+        text
+      )
+    )
+      return 'Fiestas';
 
     return 'Otros';
   }

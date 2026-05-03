@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { Event } from './event.entity';
@@ -34,9 +39,8 @@ export class EventsService {
     @InjectRepository(Mensaje)
     private readonly mensajeRepo: Repository<Mensaje>,
     @InjectRepository(Resena)
-    private readonly resenaRepo: Repository<Resena>,
-
-  ) { }
+    private readonly resenaRepo: Repository<Resena>
+  ) {}
 
   private parseOptionalDate(value?: string | null): Date | null {
     if (value === undefined || value === null || value === '') {
@@ -67,9 +71,8 @@ export class EventsService {
     return event;
   }
 
-
   private processEventArray(events: Event[]): Event[] {
-    events.forEach(event => this.ensureImagenesCorrectFormat(event));
+    events.forEach((event) => this.ensureImagenesCorrectFormat(event));
     return events;
   }
 
@@ -125,7 +128,9 @@ export class EventsService {
     return event.linkAcceso;
   }
 
-  async findAll(query: FindEventsQueryDto = {}): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
+  async findAll(
+    query: FindEventsQueryDto = {}
+  ): Promise<{ events: (Event & { distanceKm?: number })[]; hasMore: boolean }> {
     const { userId, lat, lng, radiusKm, limit, offset = 0 } = query;
     const hasLocation = lat != null && lng != null;
 
@@ -136,23 +141,25 @@ export class EventsService {
       .addSelect(['creador.id', 'creador.nombre', 'creador.fotoPerfil'])
       .where(
         new Brackets((qb2) => {
-          qb2.where('event.privado = false AND event.estado = :aprobado', { aprobado: EstadoEnum.Aprobado });
+          qb2.where('event.privado = false AND event.estado = :aprobado', {
+            aprobado: EstadoEnum.Aprobado,
+          });
           if (userId) {
             qb2.orWhere('event.privado = true AND creador.id = :userId', { userId });
           }
-        }),
+        })
       );
 
     if (hasLocation) {
       qb.addSelect(
         'ST_Distance(event.location::geography, ST_MakePoint(:lng, :lat)::geography) / 1000',
-        'distanceKm',
+        'distanceKm'
       ).setParameters({ lat, lng });
 
       if (radiusKm != null) {
         qb.andWhere(
           'ST_DWithin(event.location::geography, ST_MakePoint(:lng, :lat)::geography, :radiusMeters)',
-          { radiusMeters: radiusKm * 1000 },
+          { radiusMeters: radiusKm * 1000 }
         );
       }
 
@@ -186,7 +193,9 @@ export class EventsService {
       .leftJoinAndSelect('event.categoria', 'categoria')
       .leftJoinAndSelect('event.creador', 'creador')
       .leftJoinAndSelect('event.asistentes', 'asistentes')
-      .where('event.privado = false AND event.estado = :aprobado', { aprobado: EstadoEnum.Aprobado })
+      .where('event.privado = false AND event.estado = :aprobado', {
+        aprobado: EstadoEnum.Aprobado,
+      })
       .getMany()
       .then((events) => this.processEventArray(events));
   }
@@ -220,9 +229,8 @@ export class EventsService {
       .getRawOne<{ avgRating: string | null; ratingsCount: string }>();
 
     const ratingsCount = Number(raw?.ratingsCount ?? 0);
-    const avgRating = raw?.avgRating !== null && raw?.avgRating !== undefined
-      ? Number(raw.avgRating)
-      : null;
+    const avgRating =
+      raw?.avgRating !== null && raw?.avgRating !== undefined ? Number(raw.avgRating) : null;
     const eventWithSummary = event as EventWithRatingsSummary;
 
     eventWithSummary.ratingAverage = Number.isFinite(avgRating as number)
@@ -272,9 +280,7 @@ export class EventsService {
     if (!base.recurrencia || !base.fechaInicio || !base.recurrenciaFin) return [];
 
     const intervaloDias = this.getRecurrenciaDias(base.recurrencia);
-    const duracionMs = base.fechaFin
-      ? base.fechaFin.getTime() - base.fechaInicio.getTime()
-      : 0;
+    const duracionMs = base.fechaFin ? base.fechaFin.getTime() - base.fechaInicio.getTime() : 0;
     const instancias: Partial<Event>[] = [];
     const cursor = new Date(base.fechaInicio);
     cursor.setDate(cursor.getDate() + intervaloDias);
@@ -319,7 +325,11 @@ export class EventsService {
     event.privado = willBePrivado;
     event.asistentes = event.asistentes ?? [];
 
-    const visibilityState = this.resolveVisibilityState(wasPrivado, willBePrivado, event.linkAcceso ?? null);
+    const visibilityState = this.resolveVisibilityState(
+      wasPrivado,
+      willBePrivado,
+      event.linkAcceso ?? null
+    );
     event.estado = visibilityState.estado;
     event.linkAcceso = visibilityState.linkAcceso;
 
@@ -352,16 +362,19 @@ export class EventsService {
       event.imagenes = normalized.length > 0 ? normalized : undefined;
     }
 
-    event.fechaInicio = dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;
-    event.fechaFin = dto.fechaFin !== undefined ? this.parseOptionalDate(dto.fechaFin) : event.fechaFin;
+    event.fechaInicio =
+      dto.fechaInicio !== undefined ? this.parseOptionalDate(dto.fechaInicio) : event.fechaInicio;
+    event.fechaFin =
+      dto.fechaFin !== undefined ? this.parseOptionalDate(dto.fechaFin) : event.fechaFin;
     if (dto.recurrencia !== undefined) event.recurrencia = dto.recurrencia ?? null;
-    if (dto.recurrenciaFin !== undefined) event.recurrenciaFin = dto.recurrenciaFin ? new Date(dto.recurrenciaFin) : null;
+    if (dto.recurrenciaFin !== undefined)
+      event.recurrenciaFin = dto.recurrenciaFin ? new Date(dto.recurrenciaFin) : null;
   }
 
   private resolveVisibilityState(
     wasPrivado: boolean | null | undefined,
     willBePrivado: boolean | null | undefined,
-    currentLinkAcceso: string | null,
+    currentLinkAcceso: string | null
   ): EventVisibilityState {
     if (wasPrivado && !willBePrivado) {
       return { estado: EstadoEnum.Pendiente, linkAcceso: null };
@@ -443,7 +456,7 @@ export class EventsService {
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     event.asistentes = event.asistentes ?? [];
-    if (!event.asistentes.some(att => att.id === userId)) {
+    if (!event.asistentes.some((att) => att.id === userId)) {
       event.asistentes.push(user);
       await this.eventRepo.save(event);
     }
@@ -455,8 +468,24 @@ export class EventsService {
       where: { id: eventId },
       relations: ['asistentes', 'categoria', 'creador'],
       select: [
-        'id', 'title', 'description', 'address', 'location', 'fechaInicio', 'fechaFin',
-        'precio', 'linkAcceso', 'precioMin', 'precioMax', 'privado', 'categoria', 'estado', 'creador', 'imagen', 'imagenes', 'asistentes'
+        'id',
+        'title',
+        'description',
+        'address',
+        'location',
+        'fechaInicio',
+        'fechaFin',
+        'precio',
+        'linkAcceso',
+        'precioMin',
+        'precioMax',
+        'privado',
+        'categoria',
+        'estado',
+        'creador',
+        'imagen',
+        'imagenes',
+        'asistentes',
       ],
     });
     if (!event) throw new NotFoundException('Evento no encontrado');
@@ -467,44 +496,48 @@ export class EventsService {
     return event.asistentes;
   }
 
-    async findEventsAttending(userId: string): Promise<Event[]> {
-      const events = await this.eventRepo
-        .createQueryBuilder('event')
-        .leftJoinAndSelect('event.categoria', 'categoria')
-        .leftJoinAndSelect('event.creador', 'creador')
-        .leftJoinAndSelect('event.asistentes', 'asistentes')
-        .innerJoin('event.asistentes', 'user', 'user.id = :userId', { userId })
-        .getMany();
-      return this.processEventArray(events);
-    }
+  async findEventsAttending(userId: string): Promise<Event[]> {
+    const events = await this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoinAndSelect('event.creador', 'creador')
+      .leftJoinAndSelect('event.asistentes', 'asistentes')
+      .innerJoin('event.asistentes', 'user', 'user.id = :userId', { userId })
+      .getMany();
+    return this.processEventArray(events);
+  }
 
-    async findEventsByUser(userId: string): Promise<Event[]> {
-      const events = await this.eventRepo.createQueryBuilder('event')
-        .leftJoinAndSelect('event.categoria', 'categoria')
-        .leftJoinAndSelect('event.creador', 'creador')
-        .where('event.creador = :userId', { userId })
-        .andWhere('event.estado != :pendiente', { pendiente: EstadoEnum.Pendiente })
-        .orderBy('event.fechaInicio', 'DESC')
-        .getMany();
-      return this.processEventArray(events);
-    }
+  async findEventsByUser(userId: string): Promise<Event[]> {
+    const events = await this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoinAndSelect('event.creador', 'creador')
+      .where('event.creador = :userId', { userId })
+      .andWhere('event.estado != :pendiente', { pendiente: EstadoEnum.Pendiente })
+      .orderBy('event.fechaInicio', 'DESC')
+      .getMany();
+    return this.processEventArray(events);
+  }
 
-    async findEventsToModerate(): Promise<Event[]> {
-      const events = await this.eventRepo.createQueryBuilder('event')
-        .leftJoinAndSelect('event.categoria', 'categoria')
-        .leftJoinAndSelect('event.creador', 'creador')
-        .where('event.privado = false AND event.estado = :pendiente', { pendiente: EstadoEnum.Pendiente })
-        .orderBy('event.fechaInicio', 'DESC')
-        .getMany();
-      return this.processEventArray(events);
-    }
+  async findEventsToModerate(): Promise<Event[]> {
+    const events = await this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoinAndSelect('event.creador', 'creador')
+      .where('event.privado = false AND event.estado = :pendiente', {
+        pendiente: EstadoEnum.Pendiente,
+      })
+      .orderBy('event.fechaInicio', 'DESC')
+      .getMany();
+    return this.processEventArray(events);
+  }
 
-    async getEventReviews(eventId: string): Promise<Resena[]> {
-      const reviews = await this.resenaRepo.find({
-        where: { evento: { id: eventId } },
-        relations: ['autor'],
-        order: { fecha: 'DESC' },
-      });
-      return reviews;
-    }
+  async getEventReviews(eventId: string): Promise<Resena[]> {
+    const reviews = await this.resenaRepo.find({
+      where: { evento: { id: eventId } },
+      relations: ['autor'],
+      order: { fecha: 'DESC' },
+    });
+    return reviews;
+  }
 }

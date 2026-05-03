@@ -6,7 +6,7 @@ import { Mensaje } from './mensaje.entity';
 import { MensajePrivado } from './mensaje-privado.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Mensaje, MensajePrivado]), AuthModule],
-    controllers: [ChatController],
+  imports: [TypeOrmModule.forFeature([Mensaje, MensajePrivado]), AuthModule],
+  controllers: [ChatController],
 })
-export class ChatModule { }
+export class ChatModule {}

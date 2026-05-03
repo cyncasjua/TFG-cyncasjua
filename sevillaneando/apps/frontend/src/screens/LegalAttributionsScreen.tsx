@@ -17,26 +17,37 @@ export const LegalAttributionsScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedTitle style={styles.title}>Licencias y atribuciones</ThemedTitle>
 
-        <ThemedView style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <ThemedView
+          style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <ThemedText style={styles.sectionTitle}>OpenStreetMap</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
             Map data © OpenStreetMap contributors, ODbL 1.0.
           </ThemedTextSecondary>
           <ThemedTextSecondary style={styles.bodyText}>
-            Esta app usa datos de OpenStreetMap y debe mantener atribución visible en pantallas de mapa.
+            Esta app usa datos de OpenStreetMap y debe mantener atribución visible en pantallas de
+            mapa.
           </ThemedTextSecondary>
           <TouchableOpacity onPress={() => openUrl('https://www.openstreetmap.org/copyright')}>
-            <ThemedText style={[styles.link, { color: colors.primary }]}>Ver aviso oficial de copyright</ThemedText>
+            <ThemedText style={[styles.link, { color: colors.primary }]}>
+              Ver aviso oficial de copyright
+            </ThemedText>
           </TouchableOpacity>
         </ThemedView>
 
-        <ThemedView style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <ThemedView
+          style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <ThemedText style={styles.sectionTitle}>Nominatim (geocodificación)</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
             Se usa Nominatim para búsquedas de direcciones y geocodificación inversa.
           </ThemedTextSecondary>
-          <TouchableOpacity onPress={() => openUrl('https://operations.osmfoundation.org/policies/nominatim/')}>
-            <ThemedText style={[styles.link, { color: colors.primary }]}>Política de uso de Nominatim</ThemedText>
+          <TouchableOpacity
+            onPress={() => openUrl('https://operations.osmfoundation.org/policies/nominatim/')}
+          >
+            <ThemedText style={[styles.link, { color: colors.primary }]}>
+              Política de uso de Nominatim
+            </ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ScrollView>

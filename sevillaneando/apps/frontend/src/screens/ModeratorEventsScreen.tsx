@@ -107,7 +107,11 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               ]}
             >
               <Image
-                source={getFullImageUrl(item.imagen) ? { uri: getFullImageUrl(item.imagen)! } : require('../../assets/splash.png')}
+                source={
+                  getFullImageUrl(item.imagen)
+                    ? { uri: getFullImageUrl(item.imagen)! }
+                    : require('../../assets/splash.png')
+                }
                 style={styles.image}
                 resizeMode="cover"
               />

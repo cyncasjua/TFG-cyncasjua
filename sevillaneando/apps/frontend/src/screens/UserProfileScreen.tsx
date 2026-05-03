@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ActivityIndicator, FlatList, Image } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  FlatList,
+  Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { getUserProfile, seguirUsuario, dejarDeSeguirUsuario, checkSiguiendo, getSeguidos, getSeguidores } from '../services/users';
+import {
+  getUserProfile,
+  seguirUsuario,
+  dejarDeSeguirUsuario,
+  checkSiguiendo,
+  getSeguidos,
+  getSeguidores,
+} from '../services/users';
 import { getEventAttendees } from '../services/events';
 import { Avatar, ThemedButton, ThemedText, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
@@ -34,28 +48,43 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     let mounted = true;
 
     getUserProfile(userId)
-      .then((data) => { if (mounted) setProfile(data); })
-      .catch(() => { if (mounted) setProfile(null); });
+      .then((data) => {
+        if (mounted) setProfile(data);
+      })
+      .catch(() => {
+        if (mounted) setProfile(null);
+      });
 
     getSeguidores(userId)
-      .then((list) => { if (mounted) setNumSeguidores(list.length); })
+      .then((list) => {
+        if (mounted) setNumSeguidores(list.length);
+      })
       .catch(() => {});
 
     getSeguidos(userId)
-      .then((list) => { if (mounted) setNumSeguidos(list.length); })
+      .then((list) => {
+        if (mounted) setNumSeguidos(list.length);
+      })
       .catch(() => {});
 
-    api.get(`/events/attending/${userId}`)
-      .then((res) => { if (mounted) setEventosAsistidos(res.data as Event[]); })
+    api
+      .get(`/events/attending/${userId}`)
+      .then((res) => {
+        if (mounted) setEventosAsistidos(res.data as Event[]);
+      })
       .catch(() => {});
 
     if (!esPropioPerfil) {
       checkSiguiendo(userId)
-        .then((val) => { if (mounted) setSiguiendo(val); })
+        .then((val) => {
+          if (mounted) setSiguiendo(val);
+        })
         .catch(() => {});
     }
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [userId, esPropioPerfil]);
 
   const toggleSeguir = async () => {
@@ -84,9 +113,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         ListHeaderComponent={
           <ThemedView style={[styles.card, { backgroundColor: colors.card }]}>
             <Avatar photoUrl={profile?.fotoPerfil} size={96} style={styles.avatar} />
-            <ThemedTitle style={{ marginTop: 8 }}>
-              {profile?.nombre ?? 'Usuario'}
-            </ThemedTitle>
+            <ThemedTitle style={{ marginTop: 8 }}>{profile?.nombre ?? 'Usuario'}</ThemedTitle>
 
             <View style={styles.statsRow}>
               <View style={styles.stat}>
@@ -110,13 +137,13 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <View style={styles.actions}>
                 <ThemedButton
                   title={loadingFollow ? '' : siguiendo ? 'Dejar de seguir' : 'Seguir'}
-                  icon={(
+                  icon={
                     <Icon
                       name={siguiendo ? 'account-check' : 'account-plus'}
                       size={18}
                       color="#FFFFFF"
                     />
-                  )}
+                  }
                   style={styles.primaryActionButton}
                   onPress={toggleSeguir}
                   disabled={loadingFollow}
@@ -125,9 +152,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 <ThemedButton
                   title="Enviar mensaje privado"
                   variant="secondary"
-                  icon={(
-                    <Icon name="message-text-outline" size={18} color={colors.primary} />
-                  )}
+                  icon={<Icon name="message-text-outline" size={18} color={colors.primary} />}
                   style={[styles.secondaryActionButton, { borderColor: colors.primary }]}
                   onPress={() =>
                     navigation.navigate('DirectMessage', {
@@ -160,13 +185,17 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <View style={[styles.eventImage, { backgroundColor: colors.primary + '33' }]} />
             )}
             <View style={styles.eventInfo}>
-              <ThemedText style={styles.eventTitle} numberOfLines={1}>{item.title}</ThemedText>
+              <ThemedText style={styles.eventTitle} numberOfLines={1}>
+                {item.title}
+              </ThemedText>
               {item.fechaInicio && (
                 <ThemedText style={styles.eventDate}>
                   {dayjs(item.fechaInicio).format('DD MMM YYYY, HH:mm')}
                 </ThemedText>
               )}
-              <ThemedText style={styles.eventAddress} numberOfLines={1}>{item.address}</ThemedText>
+              <ThemedText style={styles.eventAddress} numberOfLines={1}>
+                {item.address}
+              </ThemedText>
             </View>
           </TouchableOpacity>
         )}

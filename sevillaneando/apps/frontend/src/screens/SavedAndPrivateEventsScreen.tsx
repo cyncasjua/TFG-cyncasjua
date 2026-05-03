@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,7 +24,13 @@ import {
 import { formatEventDateRange } from '../utils/sevillaTime';
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { Event } from '../types/event';
-import { ThemedCard, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
+import {
+  ThemedCard,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedView,
+} from '../components';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SavedAndPrivateEvents'>;
 
@@ -42,21 +55,27 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
         getSavedRecommendedEvents(),
         user?.id ? api.get(`/events/user/${user.id}`) : Promise.resolve({ data: [] as Event[] }),
         AsyncStorage.getItem(ACCESSED_PRIVATE_LINKS_KEY),
-        user?.id ? api.get(`/events/attending/${user.id}`) : Promise.resolve({ data: [] as Event[] }),
+        user?.id
+          ? api.get(`/events/attending/${user.id}`)
+          : Promise.resolve({ data: [] as Event[] }),
       ]);
 
       const links: string[] = rawPrivateLinks ? JSON.parse(rawPrivateLinks) : [];
-      const privateResults = await Promise.allSettled(links.map((link) => getEventByAccessLink(link)));
+      const privateResults = await Promise.allSettled(
+        links.map((link) => getEventByAccessLink(link))
+      );
 
       const linkedPrivate = privateResults
         .filter((item): item is PromiseFulfilledResult<Event> => item.status === 'fulfilled')
         .map((item) => item.value);
 
-      const mergedPrivate = [...(createdRes.data as Event[]), ...linkedPrivate]
-        .filter((event, index, arr) => event?.privado && index === arr.findIndex((e) => e.id === event.id));
+      const mergedPrivate = [...(createdRes.data as Event[]), ...linkedPrivate].filter(
+        (event, index, arr) => event?.privado && index === arr.findIndex((e) => e.id === event.id)
+      );
 
-      const mergedJoined = (joinedRes.data as Event[])
-        .filter((event, index, arr) => event && index === arr.findIndex((e) => e.id === event.id));
+      const mergedJoined = (joinedRes.data as Event[]).filter(
+        (event, index, arr) => event && index === arr.findIndex((e) => e.id === event.id)
+      );
 
       setSavedEvents(savedRes.eventos ?? []);
       setPrivateEvents(mergedPrivate);
@@ -71,7 +90,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData]),
+    }, [loadData])
   );
 
   const mapSavedToEvent = (event: RecommendedEvent): Event => ({
@@ -131,15 +150,22 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
           const nowMs = Date.now();
           const startMs = event.fechaInicio ? new Date(event.fechaInicio).getTime() : NaN;
           const endMs = event.fechaFin ? new Date(event.fechaFin).getTime() : NaN;
-          const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
-            ? nowMs >= startMs && nowMs <= endMs
-            : false;
+          const isOngoing =
+            Number.isFinite(startMs) && Number.isFinite(endMs)
+              ? nowMs >= startMs && nowMs <= endMs
+              : false;
           const isWithinWeek = Number.isFinite(startMs)
             ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
             : false;
 
           return (
-            <TouchableOpacity key={`${title}-${event.id}`} onPress={() => { openPrivateEvent(event); }} activeOpacity={0.86}>
+            <TouchableOpacity
+              key={`${title}-${event.id}`}
+              onPress={() => {
+                openPrivateEvent(event);
+              }}
+              activeOpacity={0.86}
+            >
               <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
                 {isOngoing && (
                   <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
@@ -153,7 +179,11 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                 )}
 
                 <ImageBackground
-                  source={getFullImageUrl(event.imagen) ? { uri: getFullImageUrl(event.imagen)! } : require('../../assets/splash.png')}
+                  source={
+                    getFullImageUrl(event.imagen)
+                      ? { uri: getFullImageUrl(event.imagen)! }
+                      : require('../../assets/splash.png')
+                  }
                   style={{ height: 120, justifyContent: 'flex-end' }}
                   imageStyle={{ opacity: 0.2 }}
                   resizeMode="cover"
@@ -200,7 +230,9 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                     </ThemedTextSecondary>
                   </ThemedView>
                   <ThemedView style={styles.detailRow}>
-                    <ThemedTextSecondary>{event.categoria?.nombre || 'General'}</ThemedTextSecondary>
+                    <ThemedTextSecondary>
+                      {event.categoria?.nombre || 'General'}
+                    </ThemedTextSecondary>
                   </ThemedView>
                 </ThemedView>
               </ThemedCard>
@@ -221,15 +253,22 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
           const nowMs = Date.now();
           const startMs = event.fechaInicio ? new Date(event.fechaInicio).getTime() : NaN;
           const endMs = event.fechaFin ? new Date(event.fechaFin).getTime() : NaN;
-          const isOngoing = Number.isFinite(startMs) && Number.isFinite(endMs)
-            ? nowMs >= startMs && nowMs <= endMs
-            : false;
+          const isOngoing =
+            Number.isFinite(startMs) && Number.isFinite(endMs)
+              ? nowMs >= startMs && nowMs <= endMs
+              : false;
           const isWithinWeek = Number.isFinite(startMs)
             ? startMs > nowMs && startMs - nowMs <= 7 * 24 * 60 * 60 * 1000
             : false;
 
           return (
-            <TouchableOpacity key={`${title}-${event.id}`} onPress={() => { openEvent(event); }} activeOpacity={0.86}>
+            <TouchableOpacity
+              key={`${title}-${event.id}`}
+              onPress={() => {
+                openEvent(event);
+              }}
+              activeOpacity={0.86}
+            >
               <ThemedCard style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
                 {isOngoing && (
                   <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
@@ -243,7 +282,11 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
                 )}
 
                 <ImageBackground
-                  source={getFullImageUrl(event.imagen) ? { uri: getFullImageUrl(event.imagen)! } : require('../../assets/splash.png')}
+                  source={
+                    getFullImageUrl(event.imagen)
+                      ? { uri: getFullImageUrl(event.imagen)! }
+                      : require('../../assets/splash.png')
+                  }
                   style={{ height: 120, justifyContent: 'flex-end' }}
                   imageStyle={{ opacity: 0.2 }}
                   resizeMode="cover"
@@ -310,10 +353,16 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.container}>
-      {!!error && <ThemedText style={{ color: colors.error, marginBottom: 12 }}>{error}</ThemedText>}
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={styles.container}
+    >
+      {!!error && (
+        <ThemedText style={{ color: colors.error, marginBottom: 12 }}>{error}</ThemedText>
+      )}
       {(mode === 'both' || mode === 'saved') && renderList('Eventos guardados', savedEvents)}
-      {(mode === 'both' || mode === 'private') && renderPrivateList('Eventos privados', privateEvents)}
+      {(mode === 'both' || mode === 'private') &&
+        renderPrivateList('Eventos privados', privateEvents)}
       {mode === 'joined' && renderPrivateList('Eventos a los que estas apuntado', joinedEvents)}
     </ScrollView>
   );

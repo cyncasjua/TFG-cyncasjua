@@ -50,40 +50,38 @@ export const PrivateEventLinkModal: React.FC<PrivateEventLinkModalProps> = ({
   };
 
   return (
-    <Modal visible= {visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="fade">
       <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.7)' }]}>
-        <ThemedView style= {[styles.modal, {backgroundColor: colors.card}]}>
+        <ThemedView style={[styles.modal, { backgroundColor: colors.card }]}>
           <Icon
             name="lock-outline"
             size={48}
-            color= {colors.primary}
+            color={colors.primary}
             style={{ alignSelf: 'center', marginBottom: 16 }}
           />
-          <ThemedText style= {styles.title}>Evento Privado Creado</ThemedText>
-          <ThemedText style= {styles.subtitle}>Comparte el siguiente enlace para que otros puedan unirse al evento:</ThemedText>
+          <ThemedText style={styles.title}>Evento Privado Creado</ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Comparte el siguiente enlace para que otros puedan unirse al evento:
+          </ThemedText>
 
-          <View style= {[styles.linkContainer, {borderColor: colors.primary}]}>
-            <ThemedText style= {styles.linkText}>{fullLink}</ThemedText>
+          <View style={[styles.linkContainer, { borderColor: colors.primary }]}>
+            <ThemedText style={styles.linkText}>{fullLink}</ThemedText>
           </View>
 
-          <View style= {styles.buttonContainer}>
+          <View style={styles.buttonContainer}>
             <ThemedButton
-              style={{flex:1, marginRight: 8}}
+              style={{ flex: 1, marginRight: 8 }}
               onPress={handleCopyLink}
               title="Copiar"
             />
             <ThemedButton
-              style={{flex:1, marginLeft: 8}}
+              style={{ flex: 1, marginLeft: 8 }}
               onPress={handleShareLink}
               title="Compartir"
             />
           </View>
 
-          <ThemedButton
-            style={{marginTop: 16}}
-            onPress={onClose}
-            title="Continuar"
-          />
+          <ThemedButton style={{ marginTop: 16 }} onPress={onClose} title="Continuar" />
         </ThemedView>
       </View>
     </Modal>

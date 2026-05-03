@@ -54,14 +54,11 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/categorias`,
-          {
-            headers: {
-              Authorization: `Bearer ${token || ''}`,
-            },
+        const res = await fetch(`${API_BASE_URL}/categorias`, {
+          headers: {
+            Authorization: `Bearer ${token || ''}`,
           },
-        );
+        });
         if (!res.ok) return;
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -94,17 +91,14 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
       } as any);
 
       try {
-        const res = await fetch(
-          `${API_BASE_URL}${endpointFoto}`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-            body: formData,
-          }
-        );
+        const res = await fetch(`${API_BASE_URL}${endpointFoto}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
         const data = await res.json();
         const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
         setFotoPerfil(url);
@@ -124,23 +118,20 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           ? { type: 'Point', coordinates: [Number(longitud), Number(latitud)] }
           : null;
 
-      const res = await fetch(
-        `${API_BASE_URL}${endpointPerfil}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token || ''}`,
-          },
-          body: JSON.stringify({
-            nombre,
-            email,
-            ubicacion: ubicacionData,
-            fotoPerfil,
-            intereses,
-          }),
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}${endpointPerfil}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify({
+          nombre,
+          email,
+          ubicacion: ubicacionData,
+          fotoPerfil,
+          intereses,
+        }),
+      });
       if (!res.ok) throw new Error('Error al actualizar');
       const updated = await res.json();
       setUser(updated);
@@ -177,15 +168,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           onPress: async () => {
             try {
               const endpoint = '/users/me/firebase';
-              const res = await fetch(
-                `${API_BASE_URL}${endpoint}`,
-                {
-                  method: 'DELETE',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
+              const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'DELETE',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
               if (!res.ok) throw new Error('No se pudo eliminar la cuenta en el servidor');
 
               const auth = getAuth();
@@ -220,241 +208,257 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-      <ThemedTitle style={styles.title}>Editar perfil</ThemedTitle>
-      <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-        {resolvedFotoPerfil ? (
-          <>
-            <Image source={{ uri: resolvedFotoPerfil }} style={styles.profileImage} />
-            <Button title="Quitar foto" onPress={quitarFotoPerfil} color="red" />
-          </>
-        ) : (
-          <View
-            style={[
-              styles.profileImage,
-              { backgroundColor: colors.card, justifyContent: 'center', alignItems: 'center' },
-            ]}
-          >
-            <ThemedText style={{ color: colors.text + '99' }}>Subir foto</ThemedText>
-          </View>
-        )}
-      </TouchableOpacity>
-      <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        placeholder="Nombre"
-        placeholderTextColor={colors.text + '99'}
-        value={nombre}
-        onChangeText={setNombre}
-      />
-      <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        placeholder="Correo electrónico"
-        placeholderTextColor={colors.text + '99'}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <View style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Buscar dirección o lugar..."
-            placeholderTextColor={colors.text + '99'}
-            style={[
-              styles.mapSearchInput,
-              {
-                flex: 1,
-                color: colors.text,
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-              },
-            ]}
-            returnKeyType="search"
-            onSubmitEditing={async () => {
-              if (!searchQuery) return;
-              setSearchLoading(true);
-              try {
-                const response = await fetch(
-                  `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`
-                );
-                const data = await response.json();
-                if (data && data.length > 0) {
-                  const lat = parseFloat(data[0].lat);
-                  const lon = parseFloat(data[0].lon);
-                  setLatitud(lat);
-                  setLongitud(lon);
-                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
-                } else {
-                  setError('No se ha encontrado la dirección o lugar especificado.');
-                }
-              } catch (err) {
-                reportWarning('edit-profile.search-submit', 'Error buscando dirección por submit', err);
-                setError('No se pudo buscar la dirección o lugar.');
-              } finally {
-                setSearchLoading(false);
-              }
-            }}
-            editable={!searchLoading}
-          />
-          <TouchableOpacity
-            onPress={async () => {
-              if (!searchQuery) return;
-              setSearchLoading(true);
-              try {
-                const response = await fetch(
-                  `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`
-                );
-                const data = await response.json();
-                if (data && data.length > 0) {
-                  const lat = parseFloat(data[0].lat);
-                  const lon = parseFloat(data[0].lon);
-                  setLatitud(lat);
-                  setLongitud(lon);
-                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
-                } else {
-                  setError('No se ha encontrado la dirección o lugar especificado.');
-                }
-              } catch (err) {
-                reportWarning('edit-profile.search-button', 'Error buscando dirección por botón', err);
-                setError('No se pudo buscar la dirección o lugar.');
-              } finally {
-                setSearchLoading(false);
-              }
-            }}
-            style={styles.mapSearchButton}
-            disabled={searchLoading}
-          >
-            {searchLoading ? (
-              <ActivityIndicator color={colors.primary} size={20} />
-            ) : (
-              <Icon name="magnify" size={24} color={colors.primary} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            height: 180,
-            borderRadius: 30,
-            overflow: 'hidden',
-            marginBottom: 10,
-            borderWidth: 1,
-            borderColor: colors.primary,
-            position: 'relative',
-          }}
-        >
-          <MapView
-            style={StyleSheet.absoluteFillObject}
-            region={{
-              latitude: latitud ?? SEVILLE_COORDINATES.latitude,
-              longitude: longitud ?? SEVILLE_COORDINATES.longitude,
-              latitudeDelta: mapDelta.latitudeDelta,
-              longitudeDelta: mapDelta.longitudeDelta,
-            }}
-            onPress={(e) => {
-              const lat = e.nativeEvent.coordinate.latitude;
-              const lon = e.nativeEvent.coordinate.longitude;
-              setLatitud(lat);
-              setLongitud(lon);
-              setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
-            }}
-          >
-            {latitud && longitud && (
-              <Marker coordinate={{ latitude: latitud, longitude: longitud }} />
-            )}
-            <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-          </MapView>
-        </View>
-        <View style={{ marginBottom: 8 }}>
-          <OsmAttribution compact />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 8,
-          }}
-        >
-          <ThemedText style={{ color: colors.text + '99' }}>
-            {latitud !== null && longitud !== null
-              ? `Lat: ${latitud.toFixed(6)}, Lng: ${longitud.toFixed(6)}`
-              : 'Toca el mapa para seleccionar la ubicación'}
-          </ThemedText>
-          {latitud !== null && longitud !== null && (
-            <TouchableOpacity
-              onPress={() => {
-                setLatitud(null);
-                setLongitud(null);
-                setSearchQuery('');
-              }}
-              style={{ padding: 4 }}
+        <ThemedTitle style={styles.title}>Editar perfil</ThemedTitle>
+        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+          {resolvedFotoPerfil ? (
+            <>
+              <Image source={{ uri: resolvedFotoPerfil }} style={styles.profileImage} />
+              <Button title="Quitar foto" onPress={quitarFotoPerfil} color="red" />
+            </>
+          ) : (
+            <View
+              style={[
+                styles.profileImage,
+                { backgroundColor: colors.card, justifyContent: 'center', alignItems: 'center' },
+              ]}
             >
-              <Icon name="close-circle" size={20} color={colors.error} />
+              <ThemedText style={{ color: colors.text + '99' }}>Subir foto</ThemedText>
+            </View>
+          )}
+        </TouchableOpacity>
+        <TextInput
+          style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+          placeholder="Nombre"
+          placeholderTextColor={colors.text + '99'}
+          value={nombre}
+          onChangeText={setNombre}
+        />
+        <TextInput
+          style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+          placeholder="Correo electrónico"
+          placeholderTextColor={colors.text + '99'}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <View style={{ marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Buscar dirección o lugar..."
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.mapSearchInput,
+                {
+                  flex: 1,
+                  color: colors.text,
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                },
+              ]}
+              returnKeyType="search"
+              onSubmitEditing={async () => {
+                if (!searchQuery) return;
+                setSearchLoading(true);
+                try {
+                  const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                      searchQuery
+                    )}`
+                  );
+                  const data = await response.json();
+                  if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    setLatitud(lat);
+                    setLongitud(lon);
+                    setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+                  } else {
+                    setError('No se ha encontrado la dirección o lugar especificado.');
+                  }
+                } catch (err) {
+                  reportWarning(
+                    'edit-profile.search-submit',
+                    'Error buscando dirección por submit',
+                    err
+                  );
+                  setError('No se pudo buscar la dirección o lugar.');
+                } finally {
+                  setSearchLoading(false);
+                }
+              }}
+              editable={!searchLoading}
+            />
+            <TouchableOpacity
+              onPress={async () => {
+                if (!searchQuery) return;
+                setSearchLoading(true);
+                try {
+                  const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                      searchQuery
+                    )}`
+                  );
+                  const data = await response.json();
+                  if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    setLatitud(lat);
+                    setLongitud(lon);
+                    setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+                  } else {
+                    setError('No se ha encontrado la dirección o lugar especificado.');
+                  }
+                } catch (err) {
+                  reportWarning(
+                    'edit-profile.search-button',
+                    'Error buscando dirección por botón',
+                    err
+                  );
+                  setError('No se pudo buscar la dirección o lugar.');
+                } finally {
+                  setSearchLoading(false);
+                }
+              }}
+              style={styles.mapSearchButton}
+              disabled={searchLoading}
+            >
+              {searchLoading ? (
+                <ActivityIndicator color={colors.primary} size={20} />
+              ) : (
+                <Icon name="magnify" size={24} color={colors.primary} />
+              )}
             </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              height: 180,
+              borderRadius: 30,
+              overflow: 'hidden',
+              marginBottom: 10,
+              borderWidth: 1,
+              borderColor: colors.primary,
+              position: 'relative',
+            }}
+          >
+            <MapView
+              style={StyleSheet.absoluteFillObject}
+              region={{
+                latitude: latitud ?? SEVILLE_COORDINATES.latitude,
+                longitude: longitud ?? SEVILLE_COORDINATES.longitude,
+                latitudeDelta: mapDelta.latitudeDelta,
+                longitudeDelta: mapDelta.longitudeDelta,
+              }}
+              onPress={(e) => {
+                const lat = e.nativeEvent.coordinate.latitude;
+                const lon = e.nativeEvent.coordinate.longitude;
+                setLatitud(lat);
+                setLongitud(lon);
+                setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+              }}
+            >
+              {latitud && longitud && (
+                <Marker coordinate={{ latitude: latitud, longitude: longitud }} />
+              )}
+              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
+            </MapView>
+          </View>
+          <View style={{ marginBottom: 8 }}>
+            <OsmAttribution compact />
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}
+          >
+            <ThemedText style={{ color: colors.text + '99' }}>
+              {latitud !== null && longitud !== null
+                ? `Lat: ${latitud.toFixed(6)}, Lng: ${longitud.toFixed(6)}`
+                : 'Toca el mapa para seleccionar la ubicación'}
+            </ThemedText>
+            {latitud !== null && longitud !== null && (
+              <TouchableOpacity
+                onPress={() => {
+                  setLatitud(null);
+                  setLongitud(null);
+                  setSearchQuery('');
+                }}
+                style={{ padding: 4 }}
+              >
+                <Icon name="close-circle" size={20} color={colors.error} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        <View style={styles.interestsContainer}>
+          <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>Intereses</ThemedText>
+          {categorias.length === 0 ? (
+            <ThemedText style={{ color: colors.text + '99', marginBottom: 12 }}>
+              No se pudieron cargar categorías.
+            </ThemedText>
+          ) : (
+            <View style={styles.interestsChipsWrap}>
+              {categorias.map((categoria) => {
+                const selected = intereses.includes(categoria.nombre);
+                return (
+                  <TouchableOpacity
+                    key={categoria.id}
+                    style={[
+                      styles.interestChip,
+                      {
+                        backgroundColor: selected ? colors.primary : colors.card,
+                        borderColor: colors.primary,
+                      },
+                    ]}
+                    onPress={() => {
+                      setIntereses((prev) =>
+                        selected
+                          ? prev.filter((item) => item !== categoria.nombre)
+                          : [...prev, categoria.nombre]
+                      );
+                    }}
+                  >
+                    <ThemedText style={{ color: selected ? '#fff' : colors.primary, fontSize: 13 }}>
+                      {categoria.nombre}
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           )}
         </View>
-      </View>
-      <View style={styles.interestsContainer}>
-        <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>Intereses</ThemedText>
-        {categorias.length === 0 ? (
-          <ThemedText style={{ color: colors.text + '99', marginBottom: 12 }}>
-            No se pudieron cargar categorías.
-          </ThemedText>
-        ) : (
-          <View style={styles.interestsChipsWrap}>
-            {categorias.map((categoria) => {
-              const selected = intereses.includes(categoria.nombre);
-              return (
-                <TouchableOpacity
-                  key={categoria.id}
-                  style={[
-                    styles.interestChip,
-                    {
-                      backgroundColor: selected ? colors.primary : colors.card,
-                      borderColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setIntereses((prev) =>
-                      selected
-                        ? prev.filter((item) => item !== categoria.nombre)
-                        : [...prev, categoria.nombre],
-                    );
-                  }}
-                >
-                  <ThemedText style={{ color: selected ? '#fff' : colors.primary, fontSize: 13 }}>
-                    {categoria.nombre}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-      </View>
-      {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
-      <View style={styles.actionsGroup}>
-        <ThemedButton
-          title={saving ? 'Guardando...' : 'Guardar'}
-          onPress={handleSave}
-          disabled={saving}
-          style={styles.primaryAction}
-        />
-        <ThemedButton
-          title="Cambiar contraseña"
-          variant="secondary"
-          onPress={() => navigation.navigate('EditPassword')}
-          style={[styles.secondaryAction, styles.outlinePrimaryAction, { borderColor: colors.primary }]}
-          textStyle={{ color: colors.primary }}
-        />
-        <ThemedButton
-          title="Eliminar cuenta"
-          variant="secondary"
-          onPress={handleDeleteAccount}
-          style={[styles.secondaryAction, { backgroundColor: colors.error }]}
-          textStyle={{ color: '#fff' }}
-        />
-      </View>
+        {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
+        <View style={styles.actionsGroup}>
+          <ThemedButton
+            title={saving ? 'Guardando...' : 'Guardar'}
+            onPress={handleSave}
+            disabled={saving}
+            style={styles.primaryAction}
+          />
+          <ThemedButton
+            title="Cambiar contraseña"
+            variant="secondary"
+            onPress={() => navigation.navigate('EditPassword')}
+            style={[
+              styles.secondaryAction,
+              styles.outlinePrimaryAction,
+              { borderColor: colors.primary },
+            ]}
+            textStyle={{ color: colors.primary }}
+          />
+          <ThemedButton
+            title="Eliminar cuenta"
+            variant="secondary"
+            onPress={handleDeleteAccount}
+            style={[styles.secondaryAction, { backgroundColor: colors.error }]}
+            textStyle={{ color: '#fff' }}
+          />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

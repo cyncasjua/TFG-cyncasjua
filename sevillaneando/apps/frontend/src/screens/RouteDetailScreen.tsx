@@ -13,10 +13,23 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle, ThemedButton } from '../components';
+import {
+  ThemedView,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedTitle,
+  ThemedButton,
+} from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
-import { getRouteById, deleteRoute, rateRoute, getErrorMessage, api, type UserRoute } from '../services';
+import {
+  getRouteById,
+  deleteRoute,
+  rateRoute,
+  getErrorMessage,
+  api,
+  type UserRoute,
+} from '../services';
 import type { RootStackParamList } from '../navigation/types';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
@@ -45,10 +58,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
         fontSize: 18,
       },
       headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ paddingHorizontal: 8 }}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingHorizontal: 8 }}>
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
       ),
@@ -118,34 +128,30 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
   }, [coordinates]);
 
   const handleDeleteRoute = () => {
-    Alert.alert(
-      'Eliminar ruta',
-      '¿Estás seguro de que deseas eliminar esta ruta?',
-      [
-        {
-          text: 'Cancelar',
-          onPress: () => {},
-          style: 'cancel',
+    Alert.alert('Eliminar ruta', '¿Estás seguro de que deseas eliminar esta ruta?', [
+      {
+        text: 'Cancelar',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Eliminar',
+        onPress: async () => {
+          setDeleting(true);
+          try {
+            await deleteRoute(routeId);
+            Alert.alert('Éxito', 'Ruta eliminada correctamente');
+            navigation.goBack();
+          } catch (error) {
+            reportError('route-detail.delete', getErrorMessage(error), error);
+            Alert.alert('Error', getErrorMessage(error));
+          } finally {
+            setDeleting(false);
+          }
         },
-        {
-          text: 'Eliminar',
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              await deleteRoute(routeId);
-              Alert.alert('Éxito', 'Ruta eliminada correctamente');
-              navigation.goBack();
-            } catch (error) {
-              reportError('route-detail.delete', getErrorMessage(error), error);
-              Alert.alert('Error', getErrorMessage(error));
-            } finally {
-              setDeleting(false);
-            }
-          },
-          style: 'destructive',
-        },
-      ],
-    );
+        style: 'destructive',
+      },
+    ]);
   };
 
   const handleRateRoute = async (stars: number) => {
@@ -209,10 +215,17 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             )}
           </View>
 
-          {route.descripcion && <ThemedTextSecondary style={{ marginTop: 12 }}>{route.descripcion}</ThemedTextSecondary>}
+          {route.descripcion && (
+            <ThemedTextSecondary style={{ marginTop: 12 }}>{route.descripcion}</ThemedTextSecondary>
+          )}
 
           {/* Creador */}
-          <View style={[styles.creadorRow, { marginTop: 12, paddingTop: 12, borderTopColor: colors.border }]}>
+          <View
+            style={[
+              styles.creadorRow,
+              { marginTop: 12, paddingTop: 12, borderTopColor: colors.border },
+            ]}
+          >
             <View style={{ flex: 1 }}>
               <ThemedTextSecondary style={{ fontSize: 12 }}>Creado por</ThemedTextSecondary>
               <ThemedText>{route.creador.nombre}</ThemedText>
@@ -235,7 +248,12 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             },
           ]}
         >
-          <MapView style={styles.map} initialRegion={initialRegion} scrollEnabled={true} zoomEnabled={true}>
+          <MapView
+            style={styles.map}
+            initialRegion={initialRegion}
+            scrollEnabled={true}
+            zoomEnabled={true}
+          >
             <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
             {coordinates.length >= 2 && (
               <Polyline
@@ -288,16 +306,10 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
                       style={{ padding: 4 }}
                     >
                       <MaterialIcons
-                        name={
-                          star <= (tempRating || userRating || 0)
-                            ? 'star'
-                            : 'star-outline'
-                        }
+                        name={star <= (tempRating || userRating || 0) ? 'star' : 'star-outline'}
                         size={32}
                         color={
-                          star <= (tempRating || userRating || 0)
-                            ? '#f39c12'
-                            : colors.textSecondary
+                          star <= (tempRating || userRating || 0) ? '#f39c12' : colors.textSecondary
                         }
                       />
                     </TouchableOpacity>
@@ -323,7 +335,9 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             },
           ]}
         >
-          <ThemedTitle style={{ marginBottom: 12 }}>Paradas ({route.secuenciaEventos.length})</ThemedTitle>
+          <ThemedTitle style={{ marginBottom: 12 }}>
+            Paradas ({route.secuenciaEventos.length})
+          </ThemedTitle>
           <FlatList
             data={route.secuenciaEventos}
             keyExtractor={(item) => item.id}
@@ -331,7 +345,9 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             renderItem={({ item, index }) => (
               <View key={item.id} style={styles.eventItemInRoute}>
                 <View style={[styles.stepNumber, { backgroundColor: colors.primary }]}>
-                  <ThemedText style={{ color: 'white', fontWeight: 'bold' }}>{index + 1}</ThemedText>
+                  <ThemedText style={{ color: 'white', fontWeight: 'bold' }}>
+                    {index + 1}
+                  </ThemedText>
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <ThemedText numberOfLines={1} style={{ fontWeight: '600' }}>
