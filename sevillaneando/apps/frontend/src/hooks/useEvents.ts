@@ -66,6 +66,10 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
   const fetchingRef = useRef(false);
   const lastRevalidateRef = useRef(0);
 
+  const userId = user?.id;
+  const userLat = user?.ubicacion?.coordinates?.[1];
+  const userLon = user?.ubicacion?.coordinates?.[0];
+
   const doFetch = useCallback(
     async (opts: { forceRefresh?: boolean; showLoadingSpinner?: boolean } = {}) => {
       if (fetchingRef.current) return;
@@ -73,10 +77,8 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
 
       const { forceRefresh = false, showLoadingSpinner = true } = opts;
 
-      const userLat = user?.ubicacion?.coordinates?.[1];
-      const userLon = user?.ubicacion?.coordinates?.[0];
       const hasLocation = userLat != null && userLon != null;
-      const cacheKey = buildCacheKey(user?.id, userLat, userLon);
+      const cacheKey = buildCacheKey(userId, userLat, userLon);
 
       if (!forceRefresh) {
         const cached = await readCache(cacheKey);
@@ -99,7 +101,7 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
 
       try {
         const { events: publicEvents } = await getEvents(
-          user?.id,
+          userId,
           hasLocation ? { lat: userLat, lng: userLon } : undefined
         );
 
@@ -152,7 +154,7 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
         fetchingRef.current = false;
       }
     },
-    [user]
+    [userId, userLat, userLon]
   );
 
   const fetchEvents = useCallback(
