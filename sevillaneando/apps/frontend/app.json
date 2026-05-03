@@ -1,9 +1,10 @@
 {
   "expo": {
-    "name": "",
+    "name": "Sevillaneando",
     "slug": "sevillaneando",
     "scheme": "sevillaneando",
-    "version": "0.1.0",
+    "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,19 +18,31 @@
       }
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sevillaneando.app"
     },
     "android": {
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.anonymous.sevillaneando"
+      "package": "com.sevillaneando.app"
     },
     "platforms": [
       "ios",
       "android",
       "web"
-    ]
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/fc31833c-1165-492c-b635-129a38215d51",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fc31833c-1165-492c-b635-129a38215d51"
+      }
+    },
+    "owner": "cyncasjua1"
   }
 }

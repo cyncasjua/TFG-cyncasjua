@@ -770,9 +770,10 @@ const {
                     <ThemedView style={{ alignItems: 'flex-end', marginTop: 8 }}>
                       <ThemedText style={{ fontSize: 18, fontWeight: 'bold', color: '#fff', backgroundColor: '#6c2eb7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: UNIFIED_BORDER_RADIUS, overflow: 'hidden', alignSelf: 'flex-end' }}>
                         {(() => {
-                          if (item.precio != null && item.precio !== 0) return `${item.precio} €`;
+                          if (item.precio === 0) return 'Gratis';
+                          if (item.precio != null) return `${item.precio} €`;
                           if (item.precioMin != null && item.precioMax != null) return `${item.precioMin}€ - ${item.precioMax}€`;
-                          return 'Gratis';
+                          return 'Precio variable';
                         })()}
                       </ThemedText>
                     </ThemedView>

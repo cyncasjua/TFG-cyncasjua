@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ImageBackground, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import { auth } from '../firebase/config';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -49,14 +50,14 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       // Actualiza el nombre de usuario en Firebase
       await updateProfile(userCredential.user, { displayName: nombre });
-    } catch (err: any) {
-      const message = err?.message ?? 'Error al crear la cuenta.';
-      setError(message);
+    } catch (err: unknown) {
+      setError(getFirebaseErrorMessage(err));
       setLoading(false);
     }
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <ImageBackground
       source={require('../../assets/icon.png')}
       style={[styles.background, { backgroundColor: colors.background }]}
@@ -130,6 +131,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>
+    </TouchableWithoutFeedback>
   );
 };
 

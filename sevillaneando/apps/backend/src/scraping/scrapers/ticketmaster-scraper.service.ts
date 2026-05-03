@@ -51,7 +51,7 @@ export class TicketmasterScraperService implements IScraper {
             apikey: apiKey,
             countryCode: 'ES',
             latlong: '37.3891,-5.9845',
-            radius: 80,
+            radius: 20,
             unit: 'km',
             size: pageSize,
             page,
@@ -146,6 +146,8 @@ export class TicketmasterScraperService implements IScraper {
       }
 
       const venue = tmEvent._embedded?.venues?.[0];
+      const city = venue?.city?.name || '';
+      const stateCode = venue?.state?.stateCode || '';
       const address = venue?.address?.line1 || 'Sevilla, España';
       const lat = venue?.location?.latitude ? parseFloat(venue.location.latitude) : null;
       const lng = venue?.location?.longitude ? parseFloat(venue.location.longitude) : null;
@@ -153,6 +155,14 @@ export class TicketmasterScraperService implements IScraper {
       // Si no hay coordenadas exactas, descartar evento
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
         this.logger.debug(`Evento descartado por falta de coordenadas exactas: ${title}`);
+        return null;
+      }
+
+      // Filtrar eventos que no sean de Sevilla ciudad
+      const cityLower = city.toLowerCase();
+      const isSevillaCity = cityLower.includes('sevilla') || cityLower.includes('seville');
+      if (!isSevillaCity) {
+        this.logger.debug(`Evento descartado por ciudad fuera de Sevilla: ${title} (${city}, ${stateCode})`);
         return null;
       }
 

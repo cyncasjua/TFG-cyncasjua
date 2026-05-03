@@ -179,6 +179,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     };
   }, [event.id, token]);
 
+  const refreshReviews = useCallback(async () => {
+    try {
+      const eventReviews = await getEventReviews(event.id);
+      setReviews(eventReviews);
+    } catch {
+      setReviews([]);
+    }
+  }, [event.id]);
+
   useEffect(() => {
     let mounted = true;
     const loadReviews = async () => {
@@ -361,9 +370,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const eventLink = webLink || deepLink;
     const startText = formatEventDateRange(event.fechaInicio, event.fechaFin);
     const priceText = (() => {
-      if (event.precio != null && event.precio !== 0) return `${event.precio} EUR`;
+      if (event.precio === 0) return 'Gratis';
+      if (event.precio != null) return `${event.precio} EUR`;
       if (event.precioMin != null && event.precioMax != null) return `${event.precioMin} - ${event.precioMax} EUR`;
-      return 'Gratis';
+      return 'Precio variable';
     })();
 
     const shareMessage = [
@@ -414,7 +424,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           ? { puntuacion: ratingValue, comentario }
           : { puntuacion: ratingValue },
       );
-      await refreshEventDetails();
+      await Promise.all([refreshEventDetails(), refreshReviews()]);
       setHasExistingRating(true);
       setRatingModalVisible(false);
       Alert.alert('Gracias', 'Tu valoración se ha guardado correctamente.');
@@ -865,11 +875,11 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               >
                 {
                   (() => {
-                    if (event.precio != null && event.precio !== 0)
-                      return `${event.precio} €`;
+                    if (event.precio === 0) return 'Gratis';
+                    if (event.precio != null) return `${event.precio} €`;
                     if (event.precioMin != null && event.precioMax != null)
                       return `${event.precioMin}€ - ${event.precioMax}€`;
-                    return 'Gratis';
+                    return 'Precio variable';
                   })()
                 }
               </ThemedText>
