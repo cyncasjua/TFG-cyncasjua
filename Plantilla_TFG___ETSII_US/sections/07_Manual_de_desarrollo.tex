@@ -1,0 +1,439 @@
+\chapter{Manual de Desarrollo}
+
+%--------------------------------------------------
+\section{Objetivo}
+
+El presente documento describe el entorno de desarrollo del sistema \textbf{Sevillaneando}, proporcionando la información necesaria para instalar, ejecutar y mantener el proyecto en un entorno local. Se detallan los componentes del sistema, la arquitectura adoptada, la configuración del entorno, la estructura del proyecto y las convenciones seguidas durante el desarrollo. El objetivo es facilitar tanto la comprensión del sistema como su evolución futura por parte de cualquier desarrollador que se incorpore al proyecto.
+
+%--------------------------------------------------
+\section{Arquitectura del sistema}
+
+El sistema \textbf{Sevillaneando} sigue una arquitectura cliente-servidor distribuida, estructurada en tres capas principales: cliente móvil, servidor backend y sistema de persistencia de datos. Esta separación permite desacoplar responsabilidades, mejorar la mantenibilidad y facilitar la escalabilidad.
+
+\subsection{Visión general}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.8cm,
+        box/.style={
+            rectangle,
+            rounded corners,
+            draw=black,
+            thick,
+            minimum width=8.5cm,
+            minimum height=1.2cm,
+            align=center,
+            fill=gray!10
+        },
+        arrow/.style={
+            -{Latex[length=3mm]},
+            thick
+        }
+    ]
+
+    \node[box] (client) {Cliente móvil\\React Native 0.81 + Expo 54};
+    \node[box, below=of client] (backend) {Backend\\NestJS 11 + API REST + WebSockets (Socket.IO)};
+    \node[box, below=of backend] (db) {Base de datos\\PostgreSQL 15 + PostGIS 3.3};
+
+    \draw[arrow] (client) -- node[right]{HTTPS / WebSockets} (backend);
+    \draw[arrow] (backend) -- node[right]{TypeORM / SQL} (db);
+
+    \end{tikzpicture}
+    \caption{Visión general de la arquitectura del sistema}
+    \label{fig:arquitectura_general}
+\end{figure}
+
+El flujo principal de comunicación se realiza mediante peticiones HTTP a la API REST. Para funcionalidades en tiempo real (chat y notificaciones) se utilizan WebSockets mediante Socket.IO.
+
+\subsection{Cliente móvil}
+
+El cliente ha sido desarrollado con \textbf{React Native 0.81} y \textbf{Expo SDK 54}, lo que permite crear una aplicación multiplataforma (iOS y Android) con una única base de código en TypeScript.
+
+Sus responsabilidades principales son:
+\begin{itemize}
+    \item Interacción con el usuario final.
+    \item Visualización de eventos, mapas y rutas turísticas.
+    \item Gestión del estado global mediante Context API.
+    \item Comunicación con el backend mediante la librería \texttt{axios}.
+    \item Conexión en tiempo real con el servidor mediante \texttt{socket.io-client}.
+\end{itemize}
+
+El cliente se organiza en pantallas (\texttt{screens/}), componentes reutilizables (\texttt{components/}), servicios de API (\texttt{services/}), contextos de estado global (\texttt{context/}), hooks personalizados (\texttt{hooks/}) y utilidades (\texttt{utils/}).
+
+\subsection{Servidor backend}
+
+El backend se ha implementado con \textbf{NestJS 11}, que proporciona una arquitectura modular basada en controladores, servicios y módulos. La comunicación se expone como API REST, con soporte adicional de WebSockets para la mensajería en tiempo real.
+
+Sus responsabilidades son:
+\begin{itemize}
+    \item Gestión de la lógica de negocio.
+    \item Exposición de la API REST.
+    \item Autenticación delegada en Firebase Authentication.
+    \item Control de roles (usuario, moderador y administrador).
+    \item Gestión de comunicación en tiempo real con Socket.IO.
+    \item Web scraping de eventos externos (Ticketmaster, Gemini AI).
+    \item Ejecución de tareas programadas (cron jobs) para scraping y notificaciones.
+\end{itemize}
+
+El backend se organiza en módulos funcionales independientes: \texttt{auth}, \texttt{events}, \texttt{users}, \texttt{rutas}, \texttt{chat}, \texttt{notificaciones}, \texttt{recomendaciones}, \texttt{categorias}, \texttt{scraping}, \texttt{scheduler} y \texttt{health}.
+
+\subsection{Base de datos}
+
+La persistencia de datos se realiza mediante \textbf{PostgreSQL 15} con la extensión \textbf{PostGIS 3.3}, que añade soporte para operaciones geoespaciales. El acceso desde el backend se realiza mediante \textbf{TypeORM}.
+
+Las funcionalidades geoespaciales permiten:
+\begin{itemize}
+    \item Búsqueda de eventos cercanos a una ubicación.
+    \item Filtrado por radio de distancia.
+    \item Almacenamiento y consulta de coordenadas en formato GeoJSON.
+\end{itemize}
+
+\subsection{Servicios externos}
+
+El sistema integra los siguientes servicios externos:
+
+\begin{itemize}
+    \item \textbf{Firebase Authentication}: autenticación de usuarios (login, registro, gestión de sesión).
+    \item \textbf{Firebase Storage}: almacenamiento de imágenes de usuarios.
+    \item \textbf{Cloudinary}: almacenamiento y transformación de imágenes de eventos.
+    \item \textbf{OpenStreetMap + react-native-maps}: visualización de mapas interactivos.
+    \item \textbf{Google Gemini AI}: extracción inteligente de eventos mediante IA.
+    \item \textbf{Ticketmaster API}: importación de eventos desde la plataforma Ticketmaster.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Tecnologías y versiones}
+
+Las tecnologías utilizadas y sus versiones exactas son las siguientes:
+
+\begin{longtable}{|l|l|}
+\hline
+\textbf{Componente} & \textbf{Versión} \\
+\hline
+Node.js & 20.x LTS \\
+npm & 10.x \\
+TypeScript & 5.3.x (backend) / 5.9.x (frontend) \\
+NestJS & 11.x \\
+TypeORM & 0.3.20 \\
+Socket.IO & 4.8.3 \\
+Expo SDK & 54.x \\
+React Native & 0.81.5 \\
+React & 19.1.0 \\
+PostgreSQL & 15 \\
+PostGIS & 3.3 \\
+Docker & 4.x \\
+Firebase Admin SDK & 12.7.0 \\
+Cloudinary & 2.9.0 \\
+\hline
+\end{longtable}
+
+%--------------------------------------------------
+\section{Prerrequisitos}
+
+Para trabajar con el proyecto en local es necesario tener instalado:
+
+\begin{itemize}
+    \item \textbf{Node.js 20 LTS} y \textbf{npm 10}: gestión de dependencias y ejecución del backend.
+    \item \textbf{Docker}: para levantar la base de datos PostgreSQL con PostGIS en un contenedor.
+    \item \textbf{Expo Go} (en dispositivo físico) o un emulador Android/iOS para ejecutar la aplicación móvil.
+    \item Credenciales de los servicios externos: Firebase, Cloudinary, Ticketmaster API y Gemini API.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Obtención del código fuente}
+
+El repositorio del proyecto está alojado en GitHub. Para obtener el código fuente:
+
+\begin{lstlisting}
+git clone https://github.com/cyncasjua/sevillaneando.git
+cd sevillaneando
+\end{lstlisting}
+
+%--------------------------------------------------
+\section{Instalación de dependencias}
+
+El proyecto está organizado como un monorepo con dos aplicaciones. Para instalar las dependencias de cada una:
+
+\begin{lstlisting}
+# Backend
+cd apps/backend
+npm install
+
+# Frontend
+cd apps/frontend
+npm install
+\end{lstlisting}
+
+%--------------------------------------------------
+\section{Variables de entorno}
+
+El sistema requiere variables de entorno para conectar con los servicios externos y la base de datos. Deben crearse los archivos \texttt{.env} correspondientes antes de arrancar el sistema.
+
+\subsection{Backend (\texttt{apps/backend/.env})}
+
+\begin{lstlisting}
+NODE_ENV=development
+PORT=3000
+
+# Base de datos
+DATABASE_HOST=localhost
+DATABASE_PORT=5433
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=sevillaneando
+
+# CORS (origenes permitidos)
+ALLOWED_ORIGINS=http://localhost:8081,http://localhost:19006
+
+# Firebase Authentication (Admin SDK)
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=...
+
+# Cloudinary (imagenes de eventos)
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+
+# APIs externas
+TICKETMASTER_API_KEY=...
+GEMINI_API_KEY=...
+\end{lstlisting}
+
+\subsection{Frontend (\texttt{apps/frontend/.env})}
+
+\begin{lstlisting}
+EXPO_PUBLIC_API_URL=http://localhost:3000
+EXPO_PUBLIC_SHARE_BASE_URL=http://localhost:3000/events
+
+# Firebase (cliente web)
+EXPO_PUBLIC_FIREBASE_API_KEY=...
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+EXPO_PUBLIC_FIREBASE_APP_ID=...
+\end{lstlisting}
+
+%--------------------------------------------------
+\section{Ejecución local}
+
+Para ejecutar el sistema completo en local es necesario arrancar los componentes en el orden indicado.
+
+\subsection{1. Base de datos}
+
+La base de datos se levanta mediante Docker Compose. El archivo \texttt{docker-compose.yml} en la raíz del proyecto define un contenedor PostgreSQL 15 con PostGIS 3.3:
+
+\begin{lstlisting}
+docker compose up -d db
+\end{lstlisting}
+
+El contenedor queda disponible en \texttt{localhost:5433}. Si es la primera vez que se levanta, TypeORM creará automáticamente las tablas al arrancar el backend (opción \texttt{synchronize: true} en modo desarrollo).
+
+\subsection{2. Backend}
+
+\begin{lstlisting}
+cd apps/backend
+npm run start:dev
+\end{lstlisting}
+
+El servidor arranca en \texttt{http://localhost:3000}. El modo \texttt{start:dev} activa el hot-reload mediante \texttt{ts-node-dev}.
+
+\subsection{3. Frontend}
+
+\begin{lstlisting}
+cd apps/frontend
+npx expo start
+\end{lstlisting}
+
+Expo levanta el servidor de desarrollo y muestra un código QR. La aplicación puede ejecutarse en:
+\begin{itemize}
+    \item Dispositivo físico: escaneando el QR con la aplicación \textbf{Expo Go}.
+    \item Emulador Android: pulsando \texttt{a} en la terminal.
+    \item Simulador iOS (solo macOS): pulsando \texttt{i}.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Estructura del proyecto}
+
+El proyecto sigue una arquitectura monorepo con dos aplicaciones principales:
+
+\begin{verbatim}
+sevillaneando/
+|-- apps/
+|   |-- backend/
+|   |   |-- src/
+|   |   |   |-- app.module.ts
+|   |   |   |-- main.ts
+|   |   |   |-- auth/           (Firebase Auth + guards + roles)
+|   |   |   |-- events/         (CRUD eventos + resenas + moderacion)
+|   |   |   |-- users/          (gestion de usuarios y perfiles)
+|   |   |   |-- rutas/          (rutas turisticas y calificaciones)
+|   |   |   |-- chat/           (mensajeria publica y privada)
+|   |   |   |-- notificaciones/ (sistema de notificaciones)
+|   |   |   |-- recomendaciones/(motor de recomendaciones)
+|   |   |   |-- categorias/     (categorias de eventos)
+|   |   |   |-- scraping/       (scrapers Ticketmaster, Gemini)
+|   |   |   |-- scheduler/      (cron jobs scraping/notificaciones)
+|   |   |   |-- database/       (configuracion y seed de datos)
+|   |   |   |-- common/         (utilidades, filtros, cloudinary)
+|   |   |   |-- health/         (endpoint de health check)
+|   |   |   `-- config/         (gestion de variables de entorno)
+|   |   |-- Dockerfile
+|   |   `-- package.json
+|   `-- frontend/
+|       |-- src/
+|       |   |-- screens/        (24 pantallas de la aplicacion)
+|       |   |-- components/     (componentes reutilizables)
+|       |   |-- navigation/     (navegacion + deep linking)
+|       |   |-- context/        (AuthContext, SocketContext, ThemeContext)
+|       |   |-- hooks/          (useAuth, useTheme, useEvents)
+|       |   |-- services/       (llamadas a la API REST)
+|       |   |-- types/          (tipos TypeScript compartidos)
+|       |   |-- utils/          (utilidades de fecha, mapa, imagenes)
+|       |   `-- firebase/       (configuracion Firebase cliente)
+|       `-- package.json
+|-- docker-compose.yml
+`-- package.json
+\end{verbatim}
+
+\subsection{Módulos del backend}
+
+El backend sigue la convención de módulos de NestJS. Cada módulo contiene su controlador, servicio, entidades y DTOs:
+
+\begin{itemize}
+    \item \textbf{auth}: integración con Firebase Admin SDK para validar tokens JWT. Incluye \texttt{FirebaseGuard} y \texttt{RolesGuard} aplicados globalmente.
+    \item \textbf{events}: módulo principal. Gestiona el ciclo de vida de eventos (creación, aprobación por moderadores, edición, eliminación), reseñas y solicitudes de edición.
+    \item \textbf{users}: gestión de perfiles, cambio de contraseña, asignación de roles y lista de amigos.
+    \item \textbf{rutas}: rutas turísticas con puntos de interés y sistema de calificación.
+    \item \textbf{chat}: mensajería en tiempo real implementada con Socket.IO. Incluye mensajes públicos en eventos y mensajes privados entre usuarios.
+    \item \textbf{notificaciones}: generación y entrega de notificaciones en tiempo real mediante WebSockets.
+    \item \textbf{recomendaciones}: motor de recomendaciones basado en preferencias de categoría y valoraciones previas.
+    \item \textbf{scraping}: scrapers para importar eventos de Ticketmaster y mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
+    \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente y envía recordatorios de eventos próximos.
+\end{itemize}
+
+\subsection{Pantallas del frontend}
+
+El frontend organiza las vistas en grupos funcionales:
+
+\begin{itemize}
+    \item \textbf{Autenticación}: \texttt{LoginScreen}, \texttt{SignUpScreen}, \texttt{EditPasswordScreen}.
+    \item \textbf{Principal}: \texttt{HomeScreen}, \texttt{CategoriesScreen}.
+    \item \textbf{Eventos}: \texttt{EventsMapScreen}, \texttt{EventDetailScreen}, \texttt{CreateEventScreen}, \texttt{UserEditEventScreen}, \texttt{ModeratorEventsScreen}, \texttt{CalendarEventsScreen}, \texttt{SavedAndPrivateEventsScreen}, \texttt{AccessPrivateEventScreen}.
+    \item \textbf{Rutas}: \texttt{RoutesListScreen}, \texttt{RouteDetailScreen}, \texttt{RoutePreviewScreen}, \texttt{CreateRouteScreen}.
+    \item \textbf{Social}: \texttt{FriendsScreen}, \texttt{MessagesScreen}, \texttt{DirectMessageScreen}, \texttt{NotificacionesScreen}.
+    \item \textbf{Perfil}: \texttt{UserProfileScreen}, \texttt{EditProfileScreen}, \texttt{AdminScreen}.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Ecosistema de desarrollo}
+
+\subsection{Herramientas de implementación}
+
+\begin{itemize}
+    \item \textbf{Visual Studio Code}: editor principal de código.
+    \item \textbf{NestJS CLI}: scaffolding y gestión del backend (\texttt{nest generate module/controller/service}).
+    \item \textbf{Expo CLI / EAS CLI}: desarrollo y construcción de la aplicación móvil.
+    \item \textbf{Docker Desktop}: contenedores para la base de datos en local.
+    \item \textbf{Postman}: pruebas manuales de la API REST.
+    \item \textbf{TablePlus / pgAdmin}: administración visual de la base de datos.
+    \item \textbf{React Native Debugger}: depuración del cliente móvil.
+\end{itemize}
+
+\subsection{Herramientas de documentación}
+
+\begin{itemize}
+    \item \textbf{Overleaf / LaTeX}: redacción de la memoria del TFG.
+    \item \textbf{draw.io}: diagramas de arquitectura y flujos.
+\end{itemize}
+
+\subsection{Herramientas de gestión del proyecto}
+
+\begin{itemize}
+    \item \textbf{GitHub}: alojamiento del repositorio y revisión de código.
+    \item \textbf{GitHub Projects}: seguimiento del backlog y planificación de sprints.
+    \item \textbf{GitHub Actions}: integración continua (linting y formateo automático).
+\end{itemize}
+
+\subsection{Asistentes de IA}
+
+Durante el desarrollo se ha utilizado \textbf{Claude Code} (Anthropic) como asistente de programación para la generación de código, refactorización y resolución de problemas técnicos. El uso de IA se ha limitado a tareas de apoyo; toda decisión de diseño y arquitectura ha sido tomada por la autora del proyecto.
+
+%--------------------------------------------------
+\section{Política de gestión del código fuente}
+
+El control de versiones se gestiona con \textbf{Git} y el repositorio está alojado en \textbf{GitHub}.
+
+\subsection{Estrategia de ramas}
+
+\begin{itemize}
+    \item \textbf{main}: rama de producción. Solo recibe merges desde \texttt{develop} cuando el sistema está estable.
+    \item \textbf{develop}: rama de integración. Las features se integran aquí antes de pasar a producción.
+    \item \textbf{feature/\textit{nombre}}: ramas de desarrollo de funcionalidades individuales.
+\end{itemize}
+
+\subsection{Convención de commits}
+
+El proyecto sigue el estándar \textbf{Conventional Commits}, lo que permite identificar fácilmente el tipo de cambio en cada commit:
+
+\begin{lstlisting}
+feat: nueva funcionalidad
+fix:  correccion de error
+style: cambios de formato o estilo
+refactor: refactorizacion sin cambio de funcionalidad
+docs: cambios en documentacion
+test: adicion o modificacion de pruebas
+chore: tareas de mantenimiento (dependencias, configuracion)
+\end{lstlisting}
+
+%--------------------------------------------------
+\section{Integración continua}
+
+El proyecto utiliza \textbf{GitHub Actions} para automatizar tareas de calidad en cada push o pull request:
+
+\begin{itemize}
+    \item \textbf{Linting}: análisis estático del código con ESLint (configurado para TypeScript).
+    \item \textbf{Formateo}: verificación del estilo de código con Prettier.
+\end{itemize}
+
+El workflow se ejecuta automáticamente sobre las ramas \texttt{main} y \texttt{develop}, garantizando que el código integrado cumple los estándares de calidad definidos.
+
+%--------------------------------------------------
+\section{Resolución de problemas comunes}
+
+\subsection{Base de datos}
+
+\begin{itemize}
+    \item \textbf{Error de conexión}: verificar que el contenedor Docker está activo con \texttt{docker ps}. El puerto utilizado es el \texttt{5433} (no el estándar 5432) para evitar conflictos con instalaciones locales de PostgreSQL.
+    \item \textbf{Extensión PostGIS no encontrada}: conectarse al contenedor y ejecutar \texttt{CREATE EXTENSION postgis;} en la base de datos \texttt{sevillaneando}.
+    \item \textbf{Tablas no creadas}: asegurarse de que \texttt{NODE\_ENV=development} está definido en el \texttt{.env} del backend, ya que en ese modo TypeORM sincroniza el esquema automáticamente.
+\end{itemize}
+
+\subsection{Backend}
+
+\begin{itemize}
+    \item \textbf{Error de Firebase}: verificar que \texttt{FIREBASE\_PRIVATE\_KEY} está correctamente entrecomillado en el \texttt{.env} (debe incluir los saltos de línea \texttt{\textbackslash n}).
+    \item \textbf{Rate limiting (429 Too Many Requests)}: el backend aplica un límite de 60 peticiones por minuto por IP. En desarrollo, este límite puede aumentarse modificando la configuración de \texttt{ThrottlerModule} en \texttt{app.module.ts}.
+\end{itemize}
+
+\subsection{Frontend}
+
+\begin{itemize}
+    \item \textbf{No conecta con el backend}: verificar que \texttt{EXPO\_PUBLIC\_API\_URL} apunta a la IP de la máquina de desarrollo (no \texttt{localhost}) cuando se ejecuta en dispositivo físico.
+    \item \textbf{Mapas no visibles}: comprobar que el paquete \texttt{react-native-maps} está correctamente enlazado. En Expo managed workflow esto se gestiona automáticamente.
+    \item \textbf{Error de Metro bundler}: limpiar la caché con \texttt{npx expo start --clear}.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Referencias}
+
+\begin{itemize}
+    \item NestJS Documentation: \texttt{https://docs.nestjs.com}
+    \item React Native Documentation: \texttt{https://reactnative.dev}
+    \item Expo Documentation: \texttt{https://docs.expo.dev}
+    \item TypeORM Documentation: \texttt{https://typeorm.io}
+    \item PostGIS Documentation: \texttt{https://postgis.net/documentation}
+    \item Firebase Admin SDK: \texttt{https://firebase.google.com/docs/admin/setup}
+    \item Conventional Commits: \texttt{https://www.conventionalcommits.org}
+\end{itemize}

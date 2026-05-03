@@ -1,0 +1,60 @@
+\section{Metodología}
+
+\subsection{Gestión del código fuente}
+El código fuente del proyecto se gestionará usando un sistema de control de versiones Git, permitiendo mantener el historial de cambios y asegurar el orden y la claridad en el desarrollo.
+
+\subsection{Política de ramas}
+Se seguirá un flujo de trabajo sencillo:
+
+\begin{itemize}
+    \item \textbf{main}: versión estable del proyecto.
+    \item \textbf{develop}: rama de integración de nuevas funcionalidades antes de su fusión en \textit{main}.
+    \item \textbf{feature/}: ramas derivadas de \textit{develop}, donde se desarrollará cada nueva funcionalidad de forma aislada.
+    \item \textbf{hotfix/}: ramas destinadas a la corrección de errores críticos directamente sobre \textit{main}.
+\end{itemize}
+
+\subsection{Política de versiones del software a desarrollar}
+El software seguirá un esquema de versionado semántico de tres niveles (X.Y.Z):
+
+\begin{itemize}
+    \item \textbf{X}: versión mayor, aplicada ante cambios incompatibles o rediseños importantes del sistema.
+    \item \textbf{Y}: versión menor, correspondiente a la incorporación de nuevas funcionalidades.
+    \item \textbf{Z}: versión de parche, destinada a la corrección de errores o problemas menores.
+\end{itemize}
+
+\subsection{Política de mensajes de commit}
+Se seguirá el estándar de \textit{Conventional Commits} para mantener un historial claro y estructurado:
+
+\begin{center}
+\texttt{<tipo>[alcance opcional]: <descripción corta>}
+\end{center}
+
+Tipos de commits:
+
+\begin{itemize}
+    \item \textbf{feat}: nueva funcionalidad.
+    \item \textbf{fix}: corrección de errores.
+    \item \textbf{docs}: cambios en la documentación.
+    \item \textbf{style}: cambios de formato que no afectan a la funcionalidad.
+    \item \textbf{refactor}: cambios en el código que no alteran el comportamiento.
+    \item \textbf{test}: adición o modificación de pruebas.
+    \item \textbf{chore}: tareas de mantenimiento o configuración.
+\end{itemize}
+
+\subsection{Estimación de historias de usuario: tallas de camiseta}
+Para estimar el esfuerzo de las historias de usuario se utiliza la técnica de tallas de camiseta (\textit{T-shirt sizing}), que asigna un tamaño relativo a cada historia: XS (extra pequeña), S (pequeña), M (mediana), L (grande) y XL (extra grande).
+
+La talla se define en función de la complejidad, el riesgo y la cantidad de trabajo, comparando cada historia con otras ya conocidas. En sesiones de refinamiento, el equipo acuerda la talla por consenso, sin necesidad de estimaciones en horas exactas.
+
+Esta técnica permite priorizar el backlog combinando valor (prioridad) y esfuerzo (talla), facilitando la planificación ágil y la selección de historias por sprint.
+
+\subsection{Gestión del proyecto}
+El proyecto se gestionará con una adaptación ligera de Scrum, ajustada al contexto de un Trabajo de Fin de Grado (TFG), donde el equipo es reducido y el ritmo de trabajo es más flexible que en un entorno profesional.
+
+\begin{itemize}
+    \item \textbf{No se realizan daily standups}: debido al tamaño del equipo y la naturaleza del TFG, no se llevan a cabo reuniones diarias de 15 minutos. En su lugar, la comunicación se mantiene de forma continua.
+    
+    \item \textbf{Review y planning fusionados}: las reuniones de revisión (\textit{review}) y planificación (\textit{sprint planning}) se combinan en una única sesión por sprint. En esta sesión se revisa lo completado, se evalúa el avance respecto a los objetivos del sprint y se planifica el siguiente.
+
+    \item \textbf{Sprints con objetivos definidos}: se mantiene la estructura de sprints, cada uno con un objetivo claro y un conjunto de historias de usuario o tareas a completar.
+\end{itemize}

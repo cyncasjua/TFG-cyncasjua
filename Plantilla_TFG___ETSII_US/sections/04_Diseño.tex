@@ -1,0 +1,401 @@
+\chapter{Diseño de la solución}\label{cap:diseño}
+
+\section{Introducción}
+
+En este capítulo se describe el diseño de la solución adoptada para el sistema \textbf{Sevillaneando}. El diseño parte de los requisitos identificados en el capítulo anterior y define la arquitectura general del sistema, el modelo de datos, la interfaz de usuario y el flujo de navegación de la aplicación.
+
+El objetivo de este capítulo es explicar las decisiones estructurales tomadas antes y durante la implementación, justificando por qué se han elegido determinados patrones y organizaciones frente a otras alternativas posibles.
+
+\section{Arquitectura del sistema}
+
+El sistema \textbf{Sevillaneando} sigue una arquitectura cliente-servidor distribuida en dos capas principales: una aplicación móvil que actúa como cliente y un servidor backend que expone una API REST. Además, el sistema se apoya en servicios externos para cubrir necesidades específicas como autenticación, almacenamiento de imágenes y obtención de datos de fuentes externas.
+
+\subsection{Aplicación móvil (frontend)}
+
+La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native} y \textbf{Expo}, lo que permite generar una única base de código compatible con Android e iOS. La arquitectura interna del frontend se estructura en cuatro niveles:
+
+\begin{itemize}
+    \item \textbf{Pantallas}: componentes que representan vistas completas navegables.
+    \item \textbf{Componentes}: elementos reutilizables que componen la interfaz.
+    \item \textbf{Servicios}: capa de comunicación con el backend mediante Axios.
+    \item \textbf{Contextos}: gestión del estado global compartido entre pantallas (autenticación, socket, tema, notificaciones).
+\end{itemize}
+
+La navegación entre pantallas se implementa con \textbf{React Navigation} mediante una navegación en pila (\textit{stack navigator}), separando las rutas autenticadas de las públicas.
+
+\subsection{Servidor backend}
+
+El backend es una API REST desarrollada con \textbf{NestJS} sobre \textbf{Node.js}. NestJS organiza el servidor en módulos independientes, cada uno con sus controladores, servicios y entidades. Esta separación facilita el mantenimiento y permite extender el sistema sin afectar al resto de componentes.
+
+Además de la API REST, el backend integra un servidor \textbf{Socket.IO} para la comunicación en tiempo real del chat. Ambos protocolos comparten la misma autenticación basada en tokens de Firebase.
+
+\subsection{Base de datos}
+
+La persistencia de datos se gestiona con \textbf{PostgreSQL 15} junto con la extensión \textbf{PostGIS}. PostgreSQL cubre el modelo relacional general del sistema, mientras que PostGIS añade soporte para datos geográficos, permitiendo almacenar coordenadas y ejecutar consultas espaciales eficientes como el filtrado por radio o el cálculo de distancias. La comunicación entre el backend y la base de datos se realiza a través de \textbf{TypeORM}.
+
+\subsection{Servicios externos}
+
+El sistema delega en servicios externos las siguientes responsabilidades:
+
+\begin{itemize}
+    \item \textbf{Firebase Authentication}: gestión del ciclo de vida de la sesión del usuario (registro, inicio de sesión y tokens JWT).
+    \item \textbf{Cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats.
+    \item \textbf{OpenStreetMap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}.
+    \item \textbf{Eventbrite / Ticketmaster}: fuentes externas de eventos consultadas automáticamente mediante scraping.
+\end{itemize}
+
+\section{Modelo de datos}
+
+El modelo de datos del sistema refleja las entidades identificadas en el análisis y las relaciones entre ellas. A continuación se describen las entidades principales y sus atributos más relevantes.
+
+\subsection{Usuario (\texttt{User})}
+
+Representa a cada persona registrada en el sistema. Sus atributos principales son el identificador UUID, el UID de Firebase, el correo electrónico, el nombre, la foto de perfil, la ubicación geográfica (punto PostGIS en SRID 4326), el rol (\texttt{user}, \texttt{moderator} o \texttt{admin}) y el array de intereses por categoría (\texttt{intereses}). Adicionalmente, almacena preferencias de personalización como el orden de categorías (\texttt{categoryOrder}) y los radios de búsqueda configurados (\texttt{radiusOptions}).
+
+\subsection{Evento (\texttt{Event})}
+
+Representa un evento cultural o de ocio. Sus atributos incluyen título, descripción, dirección, ubicación geográfica (punto PostGIS en SRID 4326), fechas de inicio y fin, precio (fijo o en rango), imágenes, estado de moderación (\texttt{Pendiente}, \texttt{Aprobado} o \texttt{Rechazado}), visibilidad (\texttt{privado}), enlace de acceso (\texttt{linkAcceso}) para eventos privados y recurrencia (\texttt{diario}, \texttt{semanal}, \texttt{quincenal} o \texttt{mensual}).
+
+\subsection{Categoría (\texttt{Categoria})}
+
+Clasifica los eventos por temática. Contiene nombre y descripción y es gestionada exclusivamente por los administradores.
+
+\subsection{Reseña (\texttt{Resena})}
+
+Permite a los usuarios valorar eventos. Incluye puntuación de 1 a 5 estrellas y comentario opcional, referenciando al usuario autor y al evento valorado.
+
+\subsection{Mensaje de evento (\texttt{Mensaje})}
+
+Almacena los mensajes del chat grupal asociado a cada evento. Incluye el contenido de texto, una URL de imagen opcional, el usuario emisor y la referencia al evento.
+
+\subsection{Mensaje privado (\texttt{MensajePrivado})}
+
+Representa las conversaciones directas entre dos usuarios. Contiene el contenido, imagen opcional, referencias a emisor y receptor, y un indicador de lectura (\texttt{leido}).
+
+\subsection{Notificación (\texttt{Notificacion})}
+
+Registra los avisos enviados a cada usuario. Incluye el tipo de notificación (aprobación, rechazo, evento cercano, evento próximo, mensaje privado, nuevo seguidor o recomendación), el mensaje y el estado de lectura.
+
+\subsection{Ruta (\texttt{Ruta})}
+
+Agrupa una secuencia ordenada de eventos formando un itinerario. Almacena el título, la descripción, la secuencia de eventos, el trayecto geográfico (array de puntos), la temporización estimada en minutos, el creador y la puntuación promedio obtenida de las valoraciones de otros usuarios.
+
+\subsection{Recomendación (\texttt{Recomendacion})}
+
+Almacena las sugerencias personalizadas generadas por el motor de recomendaciones para cada usuario, incluyendo los eventos recomendados, los criterios aplicados y si ya han sido visualizadas.
+
+\subsection{Solicitud de edición (\texttt{EventEditRequest})}
+
+Permite a los moderadores proponer cambios sobre un evento sin aplicarlos directamente. Incluye los campos modificados, el estado de la solicitud (\texttt{pendiente}, \texttt{aprobada} o \texttt{rechazada}) y, en caso de rechazo, el motivo.
+
+\subsection{Relaciones entre entidades}
+
+Las relaciones principales entre entidades son las siguientes:
+
+\begin{itemize}
+    \item Un usuario puede crear múltiples eventos (1:N).
+    \item Un usuario puede asistir, guardar, compartir o visitar múltiples eventos (M:N).
+    \item Un evento pertenece a una categoría (N:1).
+    \item Un evento puede tener múltiples reseñas y mensajes (1:N).
+    \item Un usuario puede seguir a otros usuarios (M:N reflexiva).
+    \item Una ruta contiene una secuencia de eventos (M:N).
+    \item Una recomendación agrupa múltiples eventos para un usuario concreto (M:N).
+\end{itemize}
+
+\section{Diseño de la API REST}
+
+El backend expone una API REST cuya organización sigue la estructura modular de NestJS. Cada módulo define un conjunto de endpoints agrupados por recurso. La tabla~\ref{tab:api} muestra los módulos principales y sus operaciones más relevantes.
+
+\begin{table}[H]
+\centering
+\caption{Módulos y operaciones principales de la API REST}
+\label{tab:api}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Módulo} & \textbf{Método / Ruta} & \textbf{Descripción} \\
+\hline
+\multirow{8}{*}{Eventos} & POST /events & Crear evento \\
+ & GET /events & Listar eventos (con filtros) \\
+ & GET /events/:id & Detalle de evento \\
+ & PUT /events/:id & Editar evento \\
+ & DELETE /events/:id & Eliminar evento \\
+ & PATCH /events/:id/aprobar & Aprobar evento (moderador/admin) \\
+ & GET /events/acceso/:linkAcceso & Acceder a evento privado por enlace \\
+ & GET /events/:id/private-share-link & Generar enlace de acceso privado \\
+\hline
+\multirow{4}{*}{Usuarios} & GET /users/me & Perfil del usuario autenticado \\
+ & GET /users/search & Buscar usuarios \\
+ & PATCH /users/:id & Actualizar perfil \\
+ & PATCH /users/:id/role & Cambiar rol (admin) \\
+\hline
+\multirow{2}{*}{Categorías} & GET /categorias & Listar categorías \\
+ & POST /categorias & Crear categoría (admin) \\
+\hline
+\multirow{2}{*}{Rutas} & GET /rutas & Listar rutas \\
+ & POST /rutas & Crear ruta \\
+\hline
+Recomendaciones & GET /recomendaciones & Obtener recomendaciones personalizadas \\
+\hline
+Notificaciones & GET /notificaciones & Listar notificaciones del usuario \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+Todos los endpoints que requieren autenticación reciben el token de Firebase en la cabecera \texttt{Authorization: Bearer <token>}. Los endpoints que exigen rol de moderador o administrador aplican un guard adicional de roles.
+
+La API aplica limitación de velocidad (\textit{throttling}) mediante \texttt{@nestjs/throttler} con tres niveles configurables:
+
+\begin{itemize}
+    \item \textbf{Estricto} (5 req/min): operaciones sensibles como registro de cuenta.
+    \item \textbf{Moderado} (20 req/min): escrituras habituales.
+    \item \textbf{Subida} (10 req/min): carga de imágenes.
+\end{itemize}
+
+\section{Diseño del sistema de moderación}
+
+La moderación de eventos públicos es una de las piezas centrales del sistema. El flujo de estados de un evento sigue las siguientes reglas de negocio:
+
+\begin{itemize}
+    \item Al crear un evento público, su estado inicial es \textbf{Pendiente}.
+    \item Un evento privado se aprueba automáticamente y es accesible solo mediante enlace.
+    \item Un moderador puede aprobar (\textbf{Aprobado}) o rechazar (\textbf{Rechazado}) un evento pendiente.
+    \item Al editar un evento público ya aprobado, este vuelve a estado \textbf{Pendiente} y desaparece del listado público hasta ser revisado de nuevo.
+    \item Si un evento privado se cambia a público, pasa a \textbf{Pendiente} y entra en el flujo de moderación.
+    \item Si un evento público se cambia a privado, se aprueba automáticamente y se genera un enlace de acceso.
+    \item Los eventos privados que se editan sin cambiar de visibilidad se actualizan directamente sin pasar por moderación.
+\end{itemize}
+
+El listado general de eventos solo muestra eventos públicos aprobados y eventos privados únicamente al creador o a quien disponga del enlace. El listado de edición del usuario muestra sus eventos creados que no están en moderación. El listado de moderación muestra los eventos públicos pendientes.
+
+Adicionalmente, los moderadores pueden crear solicitudes de edición (\texttt{EventEditRequest}) proponiendo cambios al creador del evento. El creador recibe una notificación y puede aceptar o rechazar la propuesta. Al aprobar o rechazar un evento, el moderador desaparece del listado de moderación.
+
+En cuanto al comportamiento del botón de compartir, en eventos públicos cualquier usuario puede compartirlo. En eventos privados, el botón de compartir se sustituye por uno de \textit{invitar}, que solo está activo para el creador del evento; el resto de usuarios lo ven desactivado.
+
+\section{Diseño de la interfaz de usuario}
+
+\subsection{Principios de diseño}
+
+La interfaz de usuario ha sido diseñada siguiendo los principios de usabilidad para aplicaciones móviles:
+
+\begin{itemize}
+    \item \textbf{Consistencia visual}: se utiliza un sistema de componentes temáticos (\texttt{ThemedView}, \texttt{ThemedCard}, \texttt{ThemedButton}, \texttt{ThemedText}) que garantizan una apariencia coherente en todas las pantallas, tanto en modo claro como en modo oscuro.
+    \item \textbf{Adaptabilidad}: la aplicación soporta modo claro y modo oscuro, adaptándose automáticamente a la preferencia del sistema o permitiendo el cambio manual desde el perfil.
+    \item \textbf{Jerarquía de información}: cada pantalla prioriza la información más relevante para el usuario, ocultando las opciones avanzadas o de administración según el rol.
+    \item \textbf{Accesibilidad de acciones}: las acciones principales (apuntarse, guardar, compartir) están siempre visibles en el detalle de evento sin necesidad de desplazarse.
+\end{itemize}
+
+\subsection{Grafo de navegación}
+
+La aplicación se divide en dos grupos de pantallas según el estado de autenticación del usuario. La figura~\ref{fig:grafo_navegacion} muestra el grafo de navegación completo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/grafo_navegacion.png}
+    \caption{Grafo de navegación de la aplicación}
+    \label{fig:grafo_navegacion}
+\end{figure}
+
+El grupo de pantallas no autenticadas comprende únicamente las pantallas de inicio de sesión y registro. El grupo de pantallas autenticadas incluye todas las funcionalidades de la aplicación, organizadas alrededor de la pantalla principal.
+
+Las pantallas exclusivas de moderador y administrador solo son accesibles si el usuario dispone del rol correspondiente; de lo contrario, no aparecen en el menú lateral ni en ningún punto de entrada de la navegación.
+
+\subsection{Pantallas principales}
+
+La tabla~\ref{tab:pantallas} describe las pantallas del sistema y su accesibilidad según el rol del usuario.
+
+\begin{table}[H]
+\centering
+\caption{Pantallas del sistema y roles que pueden acceder}
+\label{tab:pantallas}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Pantalla} & \textbf{Descripción} & \textbf{Rol mínimo} \\
+\hline
+Inicio de sesión & Autenticación con correo y contraseña & No autenticado \\
+Registro & Creación de cuenta nueva & No autenticado \\
+Pantalla principal & Listado de eventos con filtros y recomendaciones & Todos \\
+Detalle de evento & Información completa, chat, reseñas y asistencia & Todos \\
+Mapa de eventos & Vista cartográfica de los eventos cercanos & Todos \\
+Calendario & Eventos con fecha a los que está apuntado el usuario & Todos \\
+Acceso a evento privado & Acceso a evento privado mediante enlace de invitación & Todos \\
+Crear evento & Formulario de creación de evento público o privado & Usuario \\
+Editar evento & Modificación de un evento propio & Usuario \\
+Mis eventos & Listado de eventos creados por el usuario & Usuario \\
+Guardados y privados & Eventos guardados y eventos privados del usuario & Usuario \\
+Rutas & Listado de rutas públicas & Todos \\
+Detalle de ruta & Información de la ruta y secuencia de eventos & Todos \\
+Rutas recomendadas & Itinerarios generados automáticamente para el usuario & Usuario \\
+Crear ruta & Formulario para crear una ruta propia & Usuario \\
+Notificaciones & Listado de notificaciones del usuario & Usuario \\
+Mensajes & Lista de conversaciones privadas & Usuario \\
+Mensaje directo & Chat privado entre dos usuarios & Usuario \\
+Perfil de usuario & Vista del perfil de otro usuario & Usuario \\
+Amigos & Seguidores y seguidos del usuario & Usuario \\
+Editar perfil & Modificación de datos personales e intereses & Usuario \\
+Cambiar contraseña & Modificación de la contraseña de la cuenta & Usuario \\
+Panel de administración & Gestión de usuarios y roles & Administrador \\
+Gestión de categorías & Creación, edición y eliminación de categorías & Administrador \\
+Moderación de eventos & Revisión y aprobación de eventos pendientes & Moderador \\
+Edición moderada & Propuesta de cambios sobre un evento pendiente & Moderador \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Capturas de pantalla}
+
+Las siguientes figuras muestran las pantallas más representativas de la aplicación.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/home_screen.png}
+        \caption{Pantalla principal}
+        \label{fig:home}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/lateral_menu.png}
+        \caption{Menú lateral}
+        \label{fig:lateral_menu}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso5/event_detail.png}
+        \caption{Detalle de evento}
+        \label{fig:event_detail}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso3/mapa1.png}
+        \caption{Mapa de eventos}
+        \label{fig:mapa}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso8/recomendados.png}
+        \caption{Eventos recomendados}
+        \label{fig:recomendados}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso8/rutas_recomendadas.png}
+        \caption{Rutas recomendadas}
+        \label{fig:rutas_rec}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso10/crear_evento.png}
+        \caption{Formulario de creación de evento}
+        \label{fig:crear_evento}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso14/moderacion.png}
+        \caption{Panel de moderación}
+        \label{fig:moderacion}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso7/panel_admin.png}
+        \caption{Panel de administración}
+        \label{fig:admin}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso16/chat_evento.png}
+        \caption{Chat de evento}
+        \label{fig:chat_evento}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso16/chat_priv.png}
+        \caption{Mensaje directo}
+        \label{fig:chat_priv}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso15/notificaciones.png}
+        \caption{Notificaciones}
+        \label{fig:notificaciones}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso11/evento_privado.png}
+        \caption{Evento privado en listado}
+        \label{fig:evento_priv_listado}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso11/detalles_event_priv.png}
+        \caption{Detalle de evento privado}
+        \label{fig:evento_priv_detalle}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/paso9/crear_ruta.png}
+        \caption{Creación de ruta}
+        \label{fig:crear_ruta}
+    \end{minipage}
+\end{figure}
+
+\section{Diseño del sistema de comunicación en tiempo real}
+
+El chat de la aplicación está implementado sobre \textbf{Socket.IO}, integrado en el mismo servidor NestJS que la API REST. Se definen dos canales de comunicación independientes:
+
+\begin{itemize}
+    \item \textbf{Chat de evento}: sala identificada por \texttt{event:\{eventId\}} en la que todos los asistentes pueden leer y enviar mensajes.
+    \item \textbf{Mensajes privados}: sala personal identificada por \texttt{user:\{userId\}} que enruta los mensajes directos entre dos usuarios.
+\end{itemize}
+
+La conexión WebSocket se autentica con el mismo token de Firebase que los endpoints REST, verificado en el middleware del socket antes de aceptar la conexión. Para prevenir el abuso, el servidor aplica un límite de 10 mensajes por ventana de 10 segundos por conexión.
+
+\section{Diseño del sistema de recomendaciones}
+
+El motor de recomendaciones es un componente del backend que genera listas de eventos personalizadas para cada usuario. Su diseño se basa en un algoritmo de puntuación multifactorial: cada evento candidato recibe una puntuación calculada como suma ponderada de varios factores relacionados con el comportamiento del usuario, sus intereses declarados, la proximidad temporal y la proximidad geográfica.
+
+Los factores con mayor peso en el diseño son la afinidad por categoría (hasta 12 puntos), el haber guardado previamente el evento (+10) y la proximidad temporal al evento (hasta 8 puntos). Los eventos se ordenan de mayor a menor puntuación y se devuelven los más relevantes.
+
+El mismo motor puede generar rutas recomendadas aplicando tres estrategias seleccionables:
+
+\begin{itemize}
+    \item \textbf{balanced}: equilibra puntuación y distancia recorrida entre eventos.
+    \item \textbf{walkable}: minimiza la distancia total del itinerario.
+    \item \textbf{score}: maximiza la puntuación agregada de los eventos incluidos.
+\end{itemize}
+
+\section{Conclusiones}
+
+En este capítulo se ha presentado el diseño de la solución adoptada para el sistema \textbf{Sevillaneando}. Se ha descrito la arquitectura cliente-servidor, el modelo de datos con sus entidades y relaciones, el diseño de la API REST, el flujo de moderación de eventos, el diseño de la interfaz de usuario con el grafo de navegación, y los sistemas de comunicación en tiempo real y de recomendaciones.
+
+Las decisiones de diseño adoptadas responden directamente a los requisitos funcionales y no funcionales identificados en el análisis: la separación en cliente y servidor facilita la escalabilidad, el uso de PostGIS permite cubrir los requisitos de geolocalización, el sistema de roles garantiza el control de acceso, y la arquitectura modular de NestJS simplifica el mantenimiento y la extensión del sistema.

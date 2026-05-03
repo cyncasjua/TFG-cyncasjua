@@ -1,0 +1,325 @@
+\chapter{Estudio previo}\label{cap:planificación}
+
+\section{Introducción}
+
+En este capítulo se presenta el estudio previo realizado para el desarrollo del sistema \textbf{Sevillaneando}. Este análisis tiene como finalidad definir el contexto del proyecto, establecer los objetivos principales, seleccionar la metodología de trabajo más adecuada junto la planificación de las distintas fases del proyecto.
+
+El estudio previo constituye una base fundamental para el resto del proyecto, ya que permite organizar el trabajo de manera estructurada, analizar las tecnologías más apropiadas y estimar los recursos necesarios. Asimismo, facilita la toma de decisiones durante el desarrollo y asegura la coherencia entre los requisitos iniciales y la solución final implementada.
+
+\section{Objetivos}
+
+El objetivo principal del proyecto es el desarrollo de una aplicación móvil orientada al descubrimiento de eventos y actividades en Sevilla, con especial énfasis en dar visibilidad a eventos emergentes o poco conocidos.
+
+A partir de este objetivo general, se definen los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item Diseñar e implementar un sistema que permita listar eventos con información detallada (descripción, ubicación, imágenes, precio, etc.) y filtrado de eventos.
+    
+    \item Permitir a los usuarios crear nuevos eventos, diferenciando entre eventos públicos y privados, e incorporando un sistema de moderación para garantizar la fiabilidad  de los eventos públicos. 
+
+    \item Permitir a los usuarios editar los eventos creados por si mismo.
+    
+    \item Integrar funcionalidades de geolocalización para mostrar eventos cercanos y permitir su visualización en un mapa interactivo para un acceso más cómodo.
+    
+    \item Promover la interacción social entre usuarios mediante chat en eventos, mensajería privada y opiniones en las valoraciones.
+    
+    \item Implementar un sistema de recomendaciones personalizado basado en la actividad del usuario (guardar a un evento, apuntarse a un evento, compartir un evento, ver un evento, valorar un evento, etc), sus intereses y su ubicación.
+    
+    \item Desarrollar un sistema de rutas recomendadas de eventos que permita agrupar actividades según gustos y criterios de proximidad y horario.
+
+    \item Permitir a los usuarios crear rutas de eventos que sean visibles para el resto y que puedan valorarlas.
+    
+    \item Incluir notificaciones para informar al usuario sobre eventos relevantes, recordatorios y estado de los eventos.
+\end{itemize}
+
+\section{Metodología}
+
+El desarrollo del proyecto se ha llevado a cabo mediante una adaptación de la metodología ágil Scrum, ajustada al contexto de un Trabajo de Fin de Grado.
+
+Dado que el proyecto ha sido desarrollado por un único miembro, no se han realizado reuniones diarias (\textit{daily stand-ups}). En su lugar, la comunicación se ha mantenido de forma continua mediante tutorías periódicas, en las que se han revisado los avances y se han definido los siguientes pasos del desarrollo (\textit{review} + \textit{sprint planning}).
+
+Al tratarse de un equipo unipersonal, la desarrolladora ha asumido simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora. Esto ha permitido una toma de decisiones ágil, aunque también ha requerido una mayor disciplina en la autogestión del tiempo y las prioridades.
+
+El trabajo se ha organizado en sprints con objetivos concretos, combinando en una única sesión la revisión del trabajo realizado y la planificación del siguiente sprint. Este enfoque ha permitido mantener una evolución iterativa del sistema, adaptando el alcance en función del tiempo disponible y de las prioridades del proyecto.
+
+Para la gestión del backlog y el seguimiento de tareas se han utilizado \textbf{GitHub Projects} como tablero Kanban, complementado con un documento Word donde se ha mantenido el backlog detallado junto con las actas de reunión de cada tutoría, en las que se recogen las tareas completadas en el sprint anterior y los objetivos definidos para el siguiente.
+
+El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en cada fase y compararlo con la estimación inicial.
+
+Para la gestión del código fuente se ha utilizado un sistema de control de versiones Git, permitiendo mantener el historial de cambios y asegurando el orden y la claridad en el desarrollo.
+
+Se ha seguido una política de ramas sencilla basada en \textit{main}, para la versión estable; \textit{develop}, para la integración de nuevas funcionalidades antes de fusionarlas en \textit{main}; y ramas de funcionalidad (\textit{feature/*}), derivadas de \textit{develop}.
+
+Además, se ha aplicado el estándar \textit{Conventional Commits} para mantener un historial de cambios claro y estructurado, siguiendo la siguiente convención:
+
+\begin{center}
+\texttt{<tipo> [alcance opcional]: <descripción corta>}
+\end{center}
+
+Los tipos utilizados han sido:
+
+\begin{itemize}
+    \item feat: Nueva funcionalidad.
+    \item fix: Corrección de errores.
+    \item docs: Cambios en la documentación.
+    \item style: Ajustes de formato sin afectar a la funcionalidad.
+    \item refactor: Cambios en el código sin alterar la funcionalidad.
+    \item test: Añadir o modificar pruebas.
+    \item chore: Tareas de mantenimiento o configuración.
+\end{itemize}
+
+También se ha seguido un versionado semántico de tres niveles (X.Y.Z) para la política de versiones del software:
+
+\begin{itemize}
+    \item X: Versión mayor, ante cambios incompatibles o rediseños importantes.
+    \item Y: Versión menor, al añadir nuevas funcionalidades.
+    \item Z: Versión de parche, para corregir errores o problemas menores.
+\end{itemize}
+
+Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}, que automatiza la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
+
+La estimación de tareas se ha realizado mediante la técnica de tallas de camiseta (\textit{T-shirt sizing}), que asigna un tamaño relativo a cada historia: XS (extra pequeña), S (pequeña), M (mediana), L (grande) y XL (extra grande). La talla se define en función de la complejidad, el riesgo y la cantidad de trabajo, comparando cada historia con otras ya conocidas. Esta estimación permite priorizar el backlog combinando valor (prioridad) y esfuerzo (talla), facilitando la planificación ágil y la selección de historias por sprint.
+
+\section{Planificación}
+
+La planificación del proyecto se ha estructurado en varias fases, siguiendo un enfoque incremental:
+
+\begin{itemize}
+    \item \textbf{Fase 1 – Análisis y planificación}: definición de requisitos y alcance, elaboración del backlog inicial, planificación temporal y de recursos (cronograma inicial) y diseño del modelo conceptual del sistema.
+    
+    \item \textbf{Fase 2 – Diseño}: diseño de la arquitectura técnica, de la interfaz de usuario, de la base de datos, de la API REST y planificación de la gestión de usuarios y permisos.
+    
+    \item \textbf{Fase 3 – Desarrollo}: implementación del sistema, incluyendo el frontend móvil (React Native + Expo) y el backend (NestJS), así como funcionalidades como eventos, chat, mapa, notificaciones y recomendaciones.
+    
+    \item \textbf{Fase 4 – Pruebas y validación}: ejecución de pruebas funcionales, de integración y de usabilidad, así como la corrección de errores.
+    
+    \item \textbf{Fase 5 – Despliegue y documentación}: despliegue del sistema y elaboración de la memoria y manuales.
+\end{itemize}
+
+Durante el desarrollo se ha definido un último sprint centrado en la implementación de rutas de eventos, considerado como uno de los objetivos principales del sistema. Paralelamente, se ha iniciado la redacción de la memoria y la ejecución del plan de pruebas, tal y como se estableció en las reuniones de seguimiento.
+
+\subsection{Desviaciones respecto a la planificación inicial}
+
+A lo largo del proyecto se han producido algunas desviaciones respecto a la planificación inicial, motivadas principalmente por la aparición de nuevas necesidades técnicas y por el ajuste del alcance en función del tiempo disponible.
+
+\begin{itemize}
+    \item \textbf{Incorporación de flujos de CI/CD}: inicialmente no estaba prevista la configuración de pipelines de integración continua. Sin embargo, durante el desarrollo se consideró conveniente automatizar las comprobaciones de calidad del código mediante GitHub Actions, lo que supuso una dedicación adicional no contemplada en la estimación original.
+
+    \item \textbf{No implementación de funcionalidades opcionales}: la Fase 5 del proyecto (ampliaciones y extras) estaba condicionada a la disponibilidad de tiempo una vez completadas las fases principales. Finalmente, la generación de carteles con IA y la moderación automática de imágenes mediante NSFWJS no pudieron implementarse, ya que el desarrollo de las funcionalidades core del sistema (especialmente rutas de eventos, sistema de recomendaciones y scraping) requirió más esfuerzo del estimado inicialmente.
+
+    \item \textbf{Mayor complejidad en el scraping}: la integración del motor de scraping implicó una complejidad técnica superior a la prevista, principalmente por la gestión de errores 429 (límite de peticiones) y la variabilidad en la estructura de las fuentes externas, lo que requirió iteraciones adicionales de corrección y ajuste.
+\end{itemize}
+
+En términos generales, el proyecto se ha completado dentro del plazo establecido y con el alcance funcional definido como prioritario, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance.
+
+\subsection{Estructura de Desglose del Trabajo inicial}
+
+La planificación inicial del proyecto se ha definido mediante una Estructura de Desglose del Trabajo (EDT), organizando el proyecto en fases, tareas y subtareas principales.
+
+\begin{itemize}
+    \item \textbf{Nivel 1: Proyecto ``Sevillaneando''}
+
+    \item \textbf{Fase 1 -- Análisis y planificación}
+    \begin{itemize}
+        \item \textbf{1.1} Revisión de requisitos y alcance.
+        \item \textbf{1.2} Elaboración del backlog inicial.
+        \item \textbf{1.3} Planificación temporal y de recursos (cronograma inicial).
+        \item \textbf{1.4} Creación del modelo conceptual.
+    \end{itemize}
+
+    \item \textbf{Fase 2 -- Diseño}
+    \begin{itemize}
+        \item \textbf{2.1} Diseño de arquitectura técnica.
+        \item \textbf{2.2} Diseño de la interfaz (navegación, usabilidad).
+        \item \textbf{2.3} Diseño de la base de datos (PostgreSQL + PostGIS).
+        \item \textbf{2.4} Diseño de la API REST (endpoints principales).
+        \item \textbf{2.5} Planificación de la gestión de usuarios y permisos.
+    \end{itemize}
+
+    \item \textbf{Fase 3 -- Desarrollo paralelo (Frontend y Backend)}
+
+    \begin{itemize}
+        \item \textbf{Fase 3A -- Desarrollo del frontend (React Native)}
+        \begin{itemize}
+            \item \textbf{3A.1} Configuración del entorno móvil (dependencias, entornos, etc.).
+            \item \textbf{3A.2} Implementación del listado y detalle de eventos.
+            \item \textbf{3A.3} Creación y moderación de eventos, categorías y usuarios.
+            \item \textbf{3A.4} Integración del mapa (OpenStreetMap).
+            \item \textbf{3A.5} Integración de búsqueda.
+            \item \textbf{3A.6} Sistema de notificaciones.
+            \item \textbf{3A.7} Integración de chat.
+            \item \textbf{3A.8} Módulo de subida de fotos.
+            \item \textbf{3A.9} Implementación de reseñas y valoraciones.
+            \item \textbf{3A.10} Personalización de recomendaciones.
+        \end{itemize}
+
+        \item \textbf{Fase 3B -- Desarrollo del backend (Node.js + NestJS)}
+        \begin{itemize}
+            \item \textbf{3B.1} Configuración del servidor, base de datos e integración de autenticación.
+            \item \textbf{3B.2} Implementación de endpoints de eventos, usuarios y categorías (CRUD, lógica de eventos privados y sistema de moderación).
+            \item \textbf{3B.3} Sistema de notificaciones.
+            \item \textbf{3B.4} Infraestructura de chat: WebSockets para chat.
+            \item \textbf{3B.5} Integración de imágenes mediante Cloudinary.
+            \item \textbf{3B.6} Motor de scraping: implementación de scrapers para captura periódica de eventos externos.
+            \item \textbf{3B.7} Algoritmo de recomendaciones: lógica de filtrado colaborativo o basado en etiquetas para rutas e intereses.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Fase 4 -- Pruebas y validación}
+    \begin{itemize}
+        \item \textbf{4.1} Pruebas unitarias (de backend).
+        \item \textbf{4.2} Pruebas de integración (API + app).
+        \item \textbf{4.3} Pruebas de usabilidad con usuarios reales.
+        \item \textbf{4.4} Corrección de errores y mejoras.
+    \end{itemize}
+
+    \item \textbf{Fase 5 -- Ampliaciones y extras}
+
+    Esta fase se ejecutará únicamente si el cronograma de las fases anteriores lo permite.
+
+    \begin{itemize}
+        \item \textbf{5.1} Generación de carteles con IA.
+        \item \textbf{5.2} Gestión de calendarios.
+    \end{itemize}
+
+    \item \textbf{Fase 6 -- Despliegue y documentación}
+    \begin{itemize}
+        \item \textbf{6.1} Despliegue del backend.
+        \item \textbf{6.2} Publicación de la app.
+        \item \textbf{6.3} Elaboración de la memoria técnica y manuales de usuario, de despliegue y de desarrollo.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.1\textwidth]{figures/edt.png}
+    \caption{Estructura de Desglose del Trabajo del proyecto}
+    \label{fig:edt}
+\end{figure}
+
+\subsection{Planificación por sprints}
+
+El desarrollo del proyecto se ha organizado en sprints de duración variable, adaptados a las necesidades del proyecto y a la disponibilidad temporal. En general, los sprints han tenido una duración aproximada de 4 semanas, ajustándose a 3 semanas en la fase final del proyecto.
+
+\begin{longtable}{|p{2cm}|p{3cm}|p{4cm}|p{7cm}|}
+\hline
+\textbf{Sprint} & \textbf{Duración} & \textbf{Objetivo} & \textbf{Funcionalidades principales} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Sprint} & \textbf{Duración} & \textbf{Objetivo} & \textbf{Funcionalidades principales} \\
+\hline
+\endhead
+
+Sprint 1 & 4 semanas & MVP inicial & Sistema de autenticación, modelo conceptual, visualización básica de mapa \\
+\hline
+
+Sprint 2 & 4 semanas & Gestión de eventos & Creación y moderación de eventos, categorías, visualización en mapa, notificaciones \\
+\hline
+
+Sprint 3 & 4 semanas & Funcionalidades sociales & Chat en tiempo real (WebSockets), subida de imágenes, mejoras en búsqueda y filtrado geográfico \\
+\hline
+
+Sprint 4 & 4 semanas & Ampliación funcional & Scraping de eventos externos, gestión avanzada de imágenes, sistema de precios, optimización de chat \\
+\hline
+
+Sprint 5 & 3 semanas & Funcionalidad principal & Implementación del sistema de rutas de eventos y mejoras finales \\
+\hline
+
+Sprint 6 & 3 semanas & Cierre del proyecto & Refactorización, testing, validación, documentación y elaboración de la memoria \\
+\hline
+
+\end{longtable}
+
+\subsection{Diagrama de planificación}
+
+A continuación, se presenta un diagrama de Gantt simplificado que refleja la planificación temporal del proyecto, ajustada a la duración real de los sprints:
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    y unit title=0.5cm,
+    y unit chart=0.6cm,
+    vgrid,
+    hgrid,
+    bar height=0.35,
+    title height=1,
+    group right shift=0,
+    group top shift=0.7
+]{1}{29}
+
+\gantttitle{Planificación del proyecto (semanas)}{29} \\
+\gantttitlelist{1,...,29}{1} \\
+
+\ganttbar{Análisis y planificación}{1}{3} \\
+\ganttbar{Diseño}{4}{6} \\
+\ganttbar{Sprint 1 (MVP)}{7}{10} \\
+\ganttbar{Sprint 2 (Eventos)}{11}{14} \\
+\ganttbar{Sprint 3 (Social)}{15}{18} \\
+\ganttbar{Sprint 4 (Ampliaciones)}{19}{22} \\
+\ganttbar{Sprint 5 (Rutas)}{23}{25} \\
+\ganttbar{Sprint 6 (Cierre)}{26}{28} \\
+
+\end{ganttchart}%
+}
+\end{center}
+
+\section{Presupuesto}
+
+El proyecto ha sido desarrollado en un contexto académico, por lo que no ha requerido una inversión económica directa significativa. No obstante, es posible realizar una estimación aproximada del coste teniendo en cuenta los recursos empleados.
+
+\subsection{Recursos humanos}
+
+El desarrollo ha sido llevado a cabo por una única persona, con una estimación total aproximada de 300 horas de trabajo. Considerando un coste medio de 15 €/hora para un perfil junior:
+
+\begin{itemize}
+    \item Coste estimado: 300 h $\times$ 15 €/h = 4500 €
+\end{itemize}
+
+\subsection{Distribución del esfuerzo}
+
+El esfuerzo total del proyecto se ha estimado en aproximadamente 300 horas de trabajo. Esta distribución no es uniforme, ya que la mayor parte del esfuerzo se ha concentrado en el desarrollo frontend y backend, mientras que las fases finales se destinan principalmente a documentación, validación, despliegue y pequeñas tareas de refactorización.
+
+A continuación, se muestra una distribución aproximada del tiempo dedicado a cada fase:
+
+\begin{longtable}{|p{6cm}|p{4cm}|}
+\hline
+\textbf{Fase} & \textbf{Horas estimadas} \\
+\hline
+Análisis y planificación & 25 h \\
+\hline
+Diseño del sistema & 30 h \\
+\hline
+Desarrollo frontend & 65 h \\
+\hline
+Desarrollo backend & 80 h \\
+\hline
+Refactorización y ajustes finales & 20 h \\
+\hline
+Testing y validación & 25 h \\
+\hline
+Despliegue & 15 h \\
+\hline
+Documentación y memoria & 60 h \\
+\hline
+\textbf{Total} & \textbf{300 h} \\
+\hline
+\end{longtable}
+
+\subsection{Infraestructura}
+
+\begin{itemize}
+    \item Uso de herramientas gratuitas o con plan educativo (GitHub, Expo, Firebase).
+    \item Base de datos PostgreSQL con extensión PostGIS (entorno local o servicios gratuitos).
+    \item Almacenamiento de imágenes mediante Cloudinary (plan gratuito).
+    \item Despliegue del backend en Google Cloud Run.
+\end{itemize}
+
+\subsection{Coste total estimado}
+
+\begin{itemize}
+    \item Coste total aproximado: 4500 €
+\end{itemize}
+
+Este coste es orientativo y representa el valor del trabajo realizado, aunque en el contexto del TFG no ha supuesto un gasto económico real.

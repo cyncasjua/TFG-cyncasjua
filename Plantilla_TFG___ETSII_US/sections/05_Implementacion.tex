@@ -1,0 +1,450 @@
+\chapter{Implementación}\label{cap:implementacion}
+
+\section{Introducción}
+
+En este capítulo se describe la implementación del sistema \textbf{Sevillaneando}, detallando las herramientas utilizadas, la organización del proyecto y la forma en la que se han desarrollado las principales funcionalidades de la aplicación.
+
+La implementación se ha organizado siguiendo una arquitectura cliente-servidor. Por un lado, la aplicación móvil actúa como cliente y permite al usuario interactuar con los eventos, mapas, recomendaciones, chats y demás funcionalidades. Por otro lado, el backend expone una API REST encargada de procesar las peticiones, aplicar la lógica de negocio y acceder a la base de datos.
+
+Además, el sistema integra servicios externos para resolver necesidades concretas como la autenticación, el almacenamiento de imágenes, la geolocalización y la gestión de la infraestructura local.
+
+\section{Herramientas}
+
+\subsection{Lenguaje de programación}
+
+El desarrollo se ha realizado principalmente en \textbf{TypeScript}, tanto en el frontend como en el backend. El uso de TypeScript permite añadir tipado estático sobre JavaScript, reduciendo errores durante el desarrollo y facilitando el mantenimiento del código.
+
+\subsection{Frontend móvil}
+
+El frontend se ha desarrollado con \textbf{React Native} y \textbf{Expo}. React Native permite construir aplicaciones móviles multiplataforma a partir de una única base de código, mientras que Expo simplifica la configuración del entorno, la ejecución de la aplicación y el acceso a módulos nativos.
+
+Para la navegación entre pantallas se ha utilizado \textbf{React Navigation}, concretamente una navegación basada en pila. Esto permite estructurar el flujo entre vistas como la pantalla principal, el detalle de eventos, el mapa, la autenticación, la gestión de perfil o las secciones privadas del usuario.
+
+La comunicación con el backend se realiza mediante \textbf{Axios}, centralizando las peticiones HTTP en una capa de servicios. Esta capa permite configurar la URL base de la API, añadir cabeceras de autenticación y transformar los datos recibidos antes de mostrarlos en la interfaz.
+
+\subsection{Backend}
+
+El backend se ha implementado con \textbf{Node.js} y el framework \textbf{NestJS}. NestJS permite organizar el servidor en módulos, controladores y servicios, separando claramente las responsabilidades de cada parte de la aplicación.
+
+Los controladores se encargan de definir los endpoints de la API REST, mientras que los servicios contienen la lógica de negocio. Esta estructura facilita la mantenibilidad del sistema y permite ampliar nuevas funcionalidades sin afectar al resto de módulos.
+
+Para la validación de datos recibidos en las peticiones se han utilizado \textbf{DTOs} junto con las librerías \textbf{class-validator} y \textbf{class-transformer}. De esta forma, el backend puede comprobar que los datos enviados por el frontend cumplen el formato esperado antes de procesarlos.
+
+\subsection{Base de datos}
+
+La base de datos utilizada es \textbf{PostgreSQL}, junto con la extensión \textbf{PostGIS}. PostgreSQL permite modelar las entidades principales del sistema de forma relacional, mientras que PostGIS añade soporte para datos geográficos.
+
+Esta elección es especialmente importante en \textbf{Sevillaneando}, ya que muchos casos de uso dependen de la ubicación de los usuarios y de los eventos. Gracias a PostGIS, el sistema puede almacenar coordenadas, calcular distancias, filtrar eventos por cercanía y representar eventos sobre un mapa.
+
+\subsection{ORM}
+
+Para la comunicación entre el backend y la base de datos se ha utilizado \textbf{TypeORM}. Esta herramienta permite definir entidades en TypeScript y mapearlas con tablas de la base de datos.
+
+En el caso de los eventos, la entidad correspondiente incluye campos como identificador, título, descripción, dirección y ubicación geográfica. La ubicación se almacena como un punto geográfico compatible con PostGIS, utilizando el sistema de referencia SRID 4326.
+
+\begin{lstlisting}[language=JavaScript, caption={Definición del campo geográfico en la entidad Event con TypeORM}]
+@Entity({ name: 'events' })
+export class Event {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
+  @Column({ length: 100, nullable: true })
+  title!: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: false })
+  address!: string;
+
+  @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
+  location!: GeoJsonPoint;
+
+  @Column({ type: 'enum', enum: RecurrenciaEnum, nullable: true })
+  recurrencia?: RecurrenciaEnum | null;
+
+  @Column({ type: 'enum', enum: EstadoEnum, default: EstadoEnum.Pendiente })
+  estado!: EstadoEnum;
+}
+\end{lstlisting}
+
+\subsection{Docker}
+
+Para facilitar la configuración del entorno local se ha utilizado \textbf{Docker} junto con \textbf{Docker Compose}. En concreto, la base de datos se ejecuta en un contenedor basado en la imagen \texttt{postgis/postgis:15-3.3}.
+
+El uso de Docker permite disponer de una base de datos PostgreSQL con PostGIS sin necesidad de instalarla manualmente en el sistema operativo. Además, garantiza que el entorno de desarrollo sea reproducible y evita diferencias de configuración entre equipos.
+
+\subsection{Autenticación}
+
+La autenticación se ha implementado mediante \textbf{Firebase Authentication}. En el frontend se obtiene el token de autenticación del usuario y se envía al backend mediante la cabecera \texttt{Authorization} con el formato \texttt{Bearer token}.
+
+En el backend se utiliza \textbf{Firebase Admin SDK} para verificar dicho token. Esta comprobación se encapsula en un guard de NestJS, de forma que los endpoints protegidos solo puedan ejecutarse cuando el usuario está autenticado correctamente.
+
+\subsection{Almacenamiento de imágenes}
+
+La gestión de imágenes se realiza mediante el servicio externo \textbf{Cloudinary}.
+
+Todas las imágenes relevantes del sistema, como las asociadas a eventos, perfiles de usuario o chats, son enviadas al backend, donde se procesan y se almacenan en Cloudinary. Este servicio permite gestionar los recursos multimedia de forma eficiente, proporcionando URLs de acceso a las imágenes y ofreciendo funcionalidades adicionales como optimización y transformación automática.
+
+Por otro lado, \textbf{Firebase} se utiliza exclusivamente para la gestión de la autenticación de usuarios mediante \textbf{Firebase Authentication}. Aunque Firebase ofrece capacidades de almacenamiento mediante Firebase Storage, estas no se emplean en el flujo principal de la aplicación.
+
+Esta decisión permite centralizar la gestión de imágenes en Cloudinary, simplificando la arquitectura del sistema y aprovechando sus capacidades específicas para el manejo eficiente de contenido multimedia.
+
+\subsection{Mapas y geolocalización}
+
+La visualización de mapas se ha implementado mediante \textbf{react-native-maps}, utilizando \textbf{OpenStreetMap}. Esta solución permite mostrar mapas interactivos dentro de la aplicación móvil, ubicar eventos mediante marcadores y representar visualmente la cercanía de los eventos al usuario.
+
+La información geográfica se almacena en la base de datos mediante PostGIS y se transforma en el frontend para obtener valores de latitud y longitud que puedan ser utilizados por los componentes de mapa.
+
+\subsection{Scraping}
+
+El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado dos fuentes concretas:
+
+\begin{itemize}
+    \item \textbf{Eventbrite Sevilla}: el scraper descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD embebidos en la página.
+    \item \textbf{Ticketmaster API}: el scraper consume la API oficial de Ticketmaster Discovery paginando los resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha de inicio.
+\end{itemize}
+
+Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida, descartando aquellos sin coordenadas o con datos incompletos.
+
+Esta funcionalidad permite mantener actualizado el catálogo de eventos sin depender únicamente de los eventos creados manualmente por los usuarios.
+
+\section{Estructura del proyecto}
+
+El proyecto se organiza como un monorepositorio, separando el código del frontend y del backend dentro de una misma estructura.
+
+\begin{itemize}
+    \item \textbf{apps/frontend}: contiene la aplicación móvil desarrollada con React Native y Expo.
+    \item \textbf{apps/backend}: contiene la API REST desarrollada con NestJS.
+    \item \textbf{docker-compose.yml}: define los servicios necesarios para el entorno local, especialmente la base de datos PostgreSQL con PostGIS.
+\end{itemize}
+
+Esta estructura permite mantener en un único repositorio todos los componentes principales del sistema, facilitando la instalación, el desarrollo y la coordinación entre frontend y backend.
+
+\section{Implementación del backend}
+
+\subsection{Organización modular}
+
+El backend se organiza en módulos de NestJS. Cada módulo agrupa controladores, servicios y entidades relacionadas con una parte concreta del dominio.
+
+La estructura básica sigue el siguiente patrón:
+
+\begin{itemize}
+    \item \textbf{Controladores}: reciben las peticiones HTTP y definen los endpoints.
+    \item \textbf{Servicios}: contienen la lógica de negocio.
+    \item \textbf{Entidades}: representan las tablas de la base de datos.
+    \item \textbf{DTOs}: definen y validan los datos recibidos desde el frontend.
+\end{itemize}
+
+Esta separación permite que la lógica de cada funcionalidad esté localizada y sea más sencilla de mantener.
+
+\subsection{API de eventos}
+
+La API de eventos permite crear, consultar y editar eventos. Las operaciones de escritura están protegidas mediante autenticación, mientras que la consulta de eventos puede utilizarse para mostrar el catálogo en la aplicación móvil.
+
+Durante la creación de un evento, el backend recibe campos como título, descripción, dirección, latitud y longitud. A partir de las coordenadas recibidas, el servicio construye un punto geográfico en formato compatible con PostGIS.
+
+\begin{lstlisting}[language=JavaScript, caption={Construcción conceptual de la ubicación geográfica de un evento}]
+SRID=4326;POINT(longitude latitude)
+\end{lstlisting}
+
+De esta forma, aunque el frontend trabaja con latitud y longitud por separado, la base de datos almacena la ubicación como un único campo geográfico.
+
+\subsection{Validación de datos}
+
+La validación de datos se realiza mediante DTOs. Por ejemplo, al crear un evento se exige que determinados campos estén presentes y tengan el tipo adecuado.
+
+Esto permite evitar que lleguen a la base de datos eventos incompletos o con coordenadas inválidas. Además, centralizar estas validaciones en el backend garantiza que las reglas se apliquen aunque la petición no provenga directamente de la interfaz móvil.
+
+\subsection{Actualización de eventos}
+
+En la edición de eventos se permite modificar solo los campos enviados por el usuario. Si se proporcionan nuevas coordenadas, el backend recalcula la ubicación geográfica. Si no se proporcionan, se mantiene la ubicación anterior.
+
+Este comportamiento evita sobrescribir información existente de forma accidental y permite implementar formularios de edición parciales.
+
+\subsection{Control de roles}
+
+El sistema distingue tres roles de usuario mediante el enum \texttt{RolEnum}: \texttt{user} (usuario estándar), \texttt{moderator} y \texttt{admin}. El rol se almacena en la entidad \texttt{User} y se comprueba en los endpoints que requieren privilegios elevados mediante un guard de roles adicional al de autenticación.
+
+Los administradores pueden cambiar el rol de cualquier usuario. Los moderadores acceden a funcionalidades de revisión de eventos que no están disponibles para usuarios estándar.
+
+\subsection{Limitación de velocidad}
+
+Para proteger la API frente a abusos, el backend aplica throttling HTTP mediante \textbf{@nestjs/throttler}. Se definen tres niveles configurables mediante decoradores personalizados:
+
+\begin{itemize}
+    \item \texttt{ThrottleStrict}: 5 peticiones por minuto (operaciones sensibles como creación de cuentas).
+    \item \texttt{ThrottleModerate}: 20 peticiones por minuto (operaciones de escritura habituales).
+    \item \texttt{ThrottleUpload}: 10 peticiones por minuto (subida de imágenes).
+\end{itemize}
+
+Los endpoints de solo lectura pueden omitir el throttling con el decorador \texttt{SkipThrottle}.
+
+\subsection{Autenticación en endpoints protegidos}
+
+Los endpoints que requieren autenticación utilizan un guard basado en Firebase. Este guard extrae el token de la cabecera \texttt{Authorization}, comprueba que tenga el formato correcto y lo valida mediante Firebase Admin.
+
+Si el token es válido, la petición continúa y se añade la información del usuario autenticado al contexto de la petición. Si el token no existe o no es válido, el backend rechaza la operación.
+
+\begin{lstlisting}[language=JavaScript, caption={Guard de autenticación Firebase en NestJS}]
+@Injectable()
+export class FirebaseAuthGuard implements CanActivate {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const header = request.headers['authorization'];
+    if (!header || !header.startsWith('Bearer '))
+      throw new UnauthorizedException('Token requerido');
+    const token = header.replace('Bearer ', '');
+    const decoded = await this.firebaseService.verifyToken(token);
+    if (!decoded) throw new UnauthorizedException('Token inválido');
+    request.user = decoded;
+    return true;
+  }
+}
+\end{lstlisting}
+
+\subsection{Eventos recurrentes}
+
+La entidad \texttt{Event} contempla eventos con fechas repetidas mediante el campo \texttt{recurrencia}, que puede tomar los valores \texttt{diario}, \texttt{semanal}, \texttt{quincenal} o \texttt{mensual}, junto con un campo \texttt{recurrenciaFin} que delimita hasta qué fecha se repite el evento.
+
+Adicionalmente, el campo booleano \texttt{hasMultipleDatesAvailable} permite indicar que un evento dispone de varias fechas posibles sin seguir un patrón de recurrencia fijo. Esta distinción es relevante en el sistema de recomendaciones, donde los eventos con fechas flexibles reciben un tratamiento diferente en el cálculo del factor de proximidad temporal.
+
+\section{Implementación del frontend}
+
+\subsection{Estructura de pantallas}
+
+La aplicación móvil se organiza en pantallas conectadas mediante navegación. Entre las pantallas principales se encuentran:
+
+\begin{itemize}
+    \item pantalla principal con listado de eventos;
+    \item pantalla de detalle de evento;
+    \item mapa de eventos;
+    \item formularios de creación y edición;
+    \item perfil de usuario;
+    \item secciones de eventos guardados, apuntados y privados;
+    \item paneles específicos para administradores y moderadores.
+\end{itemize}
+
+Esta organización permite separar la interfaz según los casos de uso principales de la aplicación.
+
+\subsection{Comunicación con la API}
+
+El frontend utiliza una capa de servicios para comunicarse con el backend. Esta capa centraliza la configuración de Axios, la URL base de la API y la inclusión del token de autenticación en las peticiones protegidas.
+
+Además, esta capa transforma los datos geográficos recibidos desde el backend. Como la ubicación puede llegar en formato WKT (\texttt{POINT(lon lat)}) o GeoJSON, el frontend extrae las coordenadas y las convierte en valores numéricos de latitud y longitud para poder mostrarlas en el mapa.
+
+\begin{lstlisting}[language=JavaScript, caption={Función de parseo de coordenadas geográficas en el frontend}]
+export const parseLocationPoint = (location?: string | any)
+    : { latitude: number; longitude: number } | null => {
+  if (!location) return null;
+
+  if (typeof location === 'object' && location.coordinates) {
+    const [lon, lat] = location.coordinates;
+    if (Number.isFinite(lat) && Number.isFinite(lon))
+      return { latitude: lat, longitude: lon };
+  }
+
+  if (typeof location === 'string') {
+    const match = location.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
+    if (!match) return null;
+    const lon = parseFloat(match[1]);
+    const lat = parseFloat(match[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lon))
+      return { latitude: lat, longitude: lon };
+  }
+
+  return null;
+};
+\end{lstlisting}
+
+\subsection{Gestión de mapas}
+
+Los eventos se representan en el mapa mediante marcadores. Cada marcador se posiciona utilizando las coordenadas del evento y permite al usuario acceder a información resumida o navegar hacia el detalle del evento.
+
+La ubicación del usuario también se utiliza para calcular cercanía y aplicar filtros por radio, siempre que el usuario haya definido una ubicación en su perfil.
+
+\subsection{Gestión de imágenes}
+
+La aplicación permite trabajar con imágenes asociadas a perfiles, eventos y chats. Estas imágenes no se almacenan directamente en la base de datos, sino que se suben a un servicio externo de almacenamiento.
+
+En la base de datos se almacena la referencia o URL de acceso a la imagen, lo que reduce la carga del backend y permite gestionar los archivos multimedia de forma más eficiente.
+
+\section{Implementación de funcionalidades principales}
+
+\subsection{Creación y edición de eventos}
+
+Los usuarios pueden crear eventos introduciendo datos como título, descripción, categoría, ubicación, fechas, precio e imágenes. El sistema distingue entre eventos públicos y privados.
+
+Los eventos públicos quedan pendientes de moderación antes de ser visibles para el resto de usuarios. En cambio, los eventos privados se gestionan mediante enlace de invitación y no aparecen en el listado general.
+
+En la edición de eventos se mantienen las reglas de negocio definidas en el análisis, como la coherencia de fechas, la coherencia de precios y la validez de la ubicación geográfica.
+
+\subsection{Moderación de eventos}
+
+Los moderadores pueden revisar eventos públicos pendientes. Durante este proceso pueden aprobarlos, rechazarlos o realizar modificaciones antes de su publicación.
+
+Esta funcionalidad permite controlar la calidad de la información publicada y evita que eventos incompletos o incorrectos aparezcan directamente en el sistema.
+
+\subsection{Eventos privados}
+
+Los eventos privados se implementan mediante un mecanismo de acceso restringido. El creador del evento puede compartir un enlace de invitación con otros usuarios. Solo los usuarios que acceden mediante dicho enlace pueden consultar el evento.
+
+Estos eventos no aparecen en el listado general y se mantienen separados de los eventos públicos.
+
+\subsection{Participación y organización de eventos}
+
+El sistema permite que los usuarios se apunten a eventos, los guarden y los consulten posteriormente. Además, los eventos con fecha definida pueden aparecer en el calendario del usuario.
+
+Estas acciones también sirven como información de entrada para el sistema de recomendaciones, ya que reflejan los intereses reales del usuario.
+
+\subsection{Recomendaciones}
+
+Las recomendaciones se generan mediante un algoritmo de puntuación que evalúa cada evento candidato en función de múltiples factores ponderados. La puntuación final de cada evento se calcula sumando las contribuciones de cada factor, y los eventos se ordenan de mayor a menor puntuación para devolver los más relevantes al usuario.
+
+Los factores considerados y sus pesos por defecto son los siguientes:
+
+\begin{itemize}
+    \item \textbf{Afinidad por categoría} (máx. 12 puntos): se acumula en función de si el usuario ha marcado interés en esa categoría, se ha apuntado o guardado eventos de ella, la ha visitado o la ha valorado positiva o negativamente.
+    \item \textbf{Evento guardado previamente} (+10): el usuario ya guardó ese evento.
+    \item \textbf{Evento compartido} (+8): el usuario lo compartió anteriormente.
+    \item \textbf{Evento al que está apuntado} (+6): el usuario ya asistirá.
+    \item \textbf{Evento visitado} (+4): el usuario accedió al detalle del evento.
+    \item \textbf{Valoración propia} (±2 por punto sobre 3): la puntuación que el propio usuario dio al evento.
+    \item \textbf{Valoración media de la comunidad} (+hasta 1,5 por punto sobre 3): media de reseñas del resto de usuarios.
+    \item \textbf{Popularidad} (máx. +3): función del número de asistentes apuntados.
+    \item \textbf{Proximidad temporal} (máx. +8, decae linealmente): mayor puntuación cuanto más próxima es la fecha de inicio. Los eventos con fechas flexibles reciben un boost reducido al 20\%.
+    \item \textbf{Proximidad geográfica} (máx. +6, decae linealmente): mayor puntuación cuanto más cerca esté el evento de la ubicación del usuario. Para eventos de fecha flexible el boost se amplifica un 35\%.
+\end{itemize}
+
+Todos los pesos son configurables mediante variables de entorno (por ejemplo, \texttt{RECO\_WEIGHT\_SAVED\_EVENT}), lo que permite ajustar el comportamiento del sistema sin modificar el código.
+
+\begin{lstlisting}[language=JavaScript, caption={Pesos del sistema de recomendaciones (valores por defecto)}]
+private readonly weights = {
+  categoryInterest: 5,   categoryAttend: 4,
+  categorySave: 3,       categoryShare: 3,
+  categoryVisit: 3,      categoryRatedHigh: 4,
+  categoryRatedNeutral: 1, categoryRatedLow: -2,
+  maxCategoryContribution: 12,
+  savedEvent: 10,        sharedEvent: 8,
+  attendingEvent: 6,     visitedEvent: 4,
+  myRatingFactor: 2,     globalRatingFactor: 1.5,
+  attendeesFactor: 5,    maxAttendeesBoost: 3,
+  maxDateBoost: 8,       daysDecayFactor: 3,
+  maxDistanceBoost: 6,   distanceDecayFactor: 2,
+};
+\end{lstlisting}
+
+\subsection{Rutas}
+
+El sistema permite trabajar con rutas de eventos. Estas rutas pueden ser generadas automáticamente a partir del motor de recomendaciones o creadas manualmente por los usuarios para compartir recorridos de interés.
+
+Cada ruta almacena una secuencia ordenada de eventos, un trayecto geográfico, una temporización estimada en minutos y una puntuación promedio calculada a partir de las calificaciones de otros usuarios. Los usuarios pueden calificar las rutas, lo que retroalimenta el ranking de rutas disponibles.
+
+La generación automática admite tres estrategias seleccionables:
+
+\begin{itemize}
+    \item \textbf{balanced}: equilibra puntuación y distancia recorrida.
+    \item \textbf{walkable}: minimiza la distancia total entre eventos consecutivos.
+    \item \textbf{score}: maximiza la puntuación agregada de los eventos de la ruta.
+\end{itemize}
+
+Para construir rutas coherentes se comprueban además restricciones de solapamiento temporal entre eventos y separaciones máximas entre ellos.
+
+\subsection{Gestión de perfiles de usuario}
+
+Al autenticarse por primera vez, el backend crea automáticamente el registro de usuario en la base de datos a partir de los datos del token de Firebase (UID, email y nombre). Si el usuario ya existe por email pero aún no tiene \texttt{firebaseUid} asignado, el sistema lo vincula automáticamente.
+
+El perfil almacena, además de los datos básicos, la ubicación geográfica del usuario (utilizada por las notificaciones de cercanía y las recomendaciones), una foto de perfil, un array de categorías de interés (\texttt{intereses}), un orden de categorías preferido (\texttt{categoryOrder}) y los radios de búsqueda configurados por el usuario (\texttt{radiusOptions}).
+
+\subsection{Sistema de seguidores}
+
+El sistema implementa una red social básica de seguidores. Un usuario puede seguir a otros usuarios y dejar de seguirlos. La relación se almacena en la tabla intermedia \texttt{user\_seguidores} como una relación muchos a muchos reflexiva sobre la entidad \texttt{User}, distinguiendo entre \texttt{seguidores} (quienes siguen al usuario) y \texttt{seguidos} (a quienes sigue el usuario).
+
+Cuando un usuario empieza a seguir a otro, el sistema genera automáticamente una notificación de tipo \textbf{NuevoSeguidor} para el destinatario.
+
+\subsection{Chat y mensajería}
+
+La aplicación incorpora dos tipos de comunicación distintos entre usuarios:
+
+\begin{itemize}
+    \item \textbf{Chat de evento}: canal de mensajes asociado a un evento concreto. Cualquier usuario con acceso al evento puede leer y enviar mensajes en ese hilo. Los mensajes se almacenan en la tabla \texttt{mensajes} con referencia al evento y al usuario emisor, y pueden incluir imagen adjunta.
+    \item \textbf{Mensajes privados}: conversaciones directas entre dos usuarios. Se almacenan en la tabla \texttt{mensajes\_privados} con los campos \texttt{emisor}, \texttt{receptor} y un indicador de lectura (\texttt{leido}), lo que permite implementar notificaciones de mensajes no leídos.
+\end{itemize}
+
+Esta distinción permite separar la comunicación pública ligada a un evento de la comunicación personal entre usuarios, reforzando el componente social del sistema.
+
+El chat se implementa en tiempo real mediante \textbf{Socket.IO}, integrado directamente en el servidor NestJS. La comunicación por WebSocket se autentica con el mismo token de Firebase que los endpoints REST: el middleware del socket verifica el token antes de permitir la conexión. Los eventos principales del protocolo son los siguientes:
+
+\begin{itemize}
+    \item \texttt{join\_room}: el cliente se une a la sala del evento y recibe el historial de los últimos 50 mensajes.
+    \item \texttt{chat\_message}: envío de mensaje al chat de un evento; se retransmite a todos los usuarios de la sala.
+    \item \texttt{dm\_history} / \texttt{dm\_message}: carga de historial y envío de mensajes privados entre dos usuarios.
+    \item \texttt{mark\_as\_read}: marca como leídos los mensajes privados de un remitente concreto.
+    \item \texttt{delete\_dm} / \texttt{delete\_event\_message}: borrado de mensajes, restringido al propio emisor.
+    \item \texttt{get\_conversations}: devuelve la lista de conversaciones privadas con el último mensaje y el contador de no leídos.
+\end{itemize}
+
+Para prevenir el abuso, el servidor aplica un límite de velocidad por socket: máximo 10 mensajes por ventana de 10 segundos. Si se supera, el servidor rechaza el mensaje con un error \texttt{rate\_limit} sin desconectar al usuario.
+
+\subsection{Notificaciones}
+
+El sistema implementa notificaciones persistentes almacenadas en base de datos. Cada notificación pertenece a uno de los siguientes tipos, definidos mediante un enumerado:
+
+\begin{itemize}
+    \item \textbf{Aprobacion} / \textbf{Rechazado}: informan al creador de un evento del resultado de la moderación.
+    \item \textbf{EventoProximo}: recuerda a los usuarios apuntados que el evento ocurre dentro de los próximos siete días o en menos de 24 horas.
+    \item \textbf{EventoCercano}: avisa al usuario cuando un evento aprobado se encuentra a menos de 1 km de su ubicación registrada.
+    \item \textbf{MensajePrivado}: notifica la recepción de un mensaje directo.
+    \item \textbf{NuevoSeguidor}: informa cuando otro usuario comienza a seguir al destinatario.
+    \item \textbf{Recomendacion}: reservado para notificaciones generadas por el motor de recomendaciones.
+\end{itemize}
+
+Las notificaciones de tipo \textbf{EventoProximo} y \textbf{EventoCercano} se generan automáticamente mediante tareas programadas que se ejecutan cada hora (véase la sección~\ref{sec:scheduler}). Las notificaciones de moderación se generan en el momento en que el moderador aprueba o rechaza el evento.
+
+Cada notificación tiene un campo \texttt{leida} que permite al usuario marcarla como leída y filtrar las pendientes.
+
+\subsection{Scraping de eventos externos}
+
+La funcionalidad de scraping permite incorporar eventos desde fuentes externas. Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida.
+
+Los eventos importados se consideran públicos y aprobados automáticamente, lo que permite ampliar el catálogo disponible dentro de la aplicación.
+
+\subsection{Tareas programadas}\label{sec:scheduler}
+
+El backend incorpora un módulo de tareas programadas (\texttt{SchedulerModule}) basado en \textbf{@nestjs/schedule}. Este módulo ejecuta de forma autónoma dos tipos de tareas:
+
+\begin{itemize}
+    \item \textbf{Scraping diario}: se ejecuta automáticamente todos los días a las 3:00 AM mediante la expresión cron \texttt{EVERY\_DAY\_AT\_3AM}. Además, al arrancar el servidor se lanza una primera ejecución inmediata para garantizar que el catálogo esté actualizado desde el inicio.
+    \item \textbf{Notificaciones automáticas}: se ejecutan cada hora y comprueban tres condiciones: eventos cercanos a la ubicación del usuario (radio de 1 km), eventos a los que el usuario está apuntado y que ocurren en los próximos siete días, y eventos que ocurren en menos de 24 horas. En cada caso, el sistema crea la notificación correspondiente solo si el usuario no ha sido notificado ya sobre ese evento, evitando duplicados.
+\end{itemize}
+
+El módulo también expone un controlador HTTP que permite lanzar las tareas manualmente durante el desarrollo o desde un sistema de orquestación externo.
+
+\section{Gestión de la base de datos}
+
+La base de datos almacena las entidades principales del sistema: usuarios, eventos, categorías, asistencia, eventos guardados, valoraciones, mensajes, rutas, notificaciones y datos geográficos.
+
+En el caso de los eventos, la ubicación se almacena mediante un campo geográfico de PostGIS. Esto permite realizar consultas espaciales de forma eficiente, especialmente para funcionalidades basadas en cercanía.
+
+Durante el arranque del backend se puede ejecutar un proceso de carga inicial de datos, evitando duplicados si ya existen registros. Esta carga facilita disponer de datos de prueba durante el desarrollo y validación de la aplicación.
+
+\section{Despliegue y entorno de desarrollo}
+
+El entorno de desarrollo requiere Node.js, un gestor de paquetes como npm, Docker y Expo. Docker se utiliza para levantar la base de datos PostGIS, mientras que el backend y el frontend se ejecutan como aplicaciones independientes.
+
+El flujo habitual de ejecución es el siguiente:
+
+\begin{enumerate}
+    \item levantar la base de datos mediante Docker Compose;
+    \item iniciar el backend NestJS;
+    \item iniciar la aplicación móvil con Expo;
+    \item conectar el frontend con la API mediante la variable de entorno correspondiente;
+    \item configurar las claves necesarias para Firebase y el servicio de almacenamiento de imágenes.
+\end{enumerate}
+
+Este enfoque permite desarrollar y probar el sistema de forma local, manteniendo separados los componentes principales.
+
+\section{Conclusiones}
+
+En este capítulo se ha descrito la implementación del sistema \textbf{Sevillaneando}, mostrando cómo las tecnologías seleccionadas permiten materializar los requisitos definidos en el análisis.
+
+La combinación de React Native y Expo en el frontend, NestJS en el backend y PostgreSQL con PostGIS en la capa de persistencia permite construir una aplicación móvil con soporte para geolocalización, mapas, eventos personalizados y funcionalidades sociales.
+
+Además, el uso de Docker facilita la reproducción del entorno de desarrollo, mientras que la integración con servicios externos como Firebase y el almacenamiento multimedia reduce la complejidad de la implementación y mejora la escalabilidad del sistema.
