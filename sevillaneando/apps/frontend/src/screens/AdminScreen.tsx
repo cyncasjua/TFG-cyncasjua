@@ -102,8 +102,10 @@ export const AdminScreen: React.FC<Props> = () => {
                 'Completado',
                 `${res.data.message}\nEliminados: ${res.data.deleted} | Guardados: ${res.data.saved}`
               );
-            } catch (err) {
-              Alert.alert('Error', getErrorMessage(err));
+            } catch (err: unknown) {
+              const status = (err as any)?.response?.status;
+              const data = (err as any)?.response?.data;
+              Alert.alert('Error', `HTTP ${status ?? 'N/A'}: ${JSON.stringify(data)}`);
               reportError('admin.reset-scraping', 'Error restableciendo eventos scrapeados', err);
             } finally {
               setResetting(false);

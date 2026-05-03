@@ -18,7 +18,7 @@ export class Resena {
   @ManyToOne(() => User, (user) => user.resenas)
   autor!: User;
 
-  @ManyToOne(() => Event)
+  @ManyToOne(() => Event, { onDelete: 'CASCADE' })
   evento!: Event;
 
   @MaxLength(500)

@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Event } from '../events/event.entity';
 import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
+import { Resena } from '../events/resena.entity';
+import { Mensaje } from '../chat/mensaje.entity';
 import { IScraper, ScrapedEvent } from './interfaces/scraper.interface';
 import { EstadoEnum } from '../events/enums/estado.enum';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
@@ -28,6 +30,10 @@ export class ScrapingService {
     private readonly categoriaRepo: Repository<Categoria>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Resena)
+    private readonly resenaRepo: Repository<Resena>,
+    @InjectRepository(Mensaje)
+    private readonly mensajeRepo: Repository<Mensaje>,
     private readonly moduleRef: ModuleRef
   ) {}
 
@@ -183,29 +189,67 @@ export class ScrapingService {
   }
 
   async resetScrapedEvents(): Promise<{ deleted: number; saved: number; errors: number }> {
-    const systemUser = await this.userRepo.findOne({
-      where: { firebaseUid: this.scraperSystemUid },
-    });
-    const legacyUser = await this.userRepo.findOne({ where: { email: this.legacyScraperEmail } });
+    try {
+      this.logger.log('resetScrapedEvents: buscando usuarios scraper...');
+      const systemUser = await this.userRepo.findOne({
+        where: { firebaseUid: this.scraperSystemUid },
+      });
+      const legacyUser = await this.userRepo.findOne({ where: { email: this.legacyScraperEmail } });
 
-    const scraperIds: string[] = [];
-    if (systemUser) scraperIds.push(systemUser.id);
-    if (legacyUser) scraperIds.push(legacyUser.id);
+      this.logger.log(
+        `resetScrapedEvents: systemUser=${systemUser?.id ?? 'no encontrado'}, legacyUser=${legacyUser?.id ?? 'no encontrado'}`
+      );
 
-    let deleted = 0;
-    if (scraperIds.length > 0) {
-      const { affected } = await this.eventRepo
-        .createQueryBuilder()
-        .delete()
-        .from(Event)
-        .where('creadorId IN (:...ids)', { ids: scraperIds })
-        .execute();
-      deleted = affected ?? 0;
+      const scraperUsers: User[] = [];
+      if (systemUser) scraperUsers.push(systemUser);
+      if (legacyUser) scraperUsers.push(legacyUser);
+
+      let deleted = 0;
+      if (scraperUsers.length > 0) {
+        const scraperIds = scraperUsers.map((u) => u.id);
+        this.logger.log(`resetScrapedEvents: eliminando eventos de IDs: ${scraperIds.join(', ')}`);
+
+        // Primero borrar registros dependientes para evitar FK constraint violations
+        const scraperEvents = await this.eventRepo
+          .createQueryBuilder('event')
+          .select('event.id')
+          .where('event.creador IN (:...ids)', { ids: scraperIds })
+          .getMany();
+
+        if (scraperEvents.length > 0) {
+          const eventIds = scraperEvents.map((e) => e.id);
+          await this.resenaRepo
+            .createQueryBuilder()
+            .delete()
+            .from(Resena)
+            .where('eventoId IN (:...ids)', { ids: eventIds })
+            .execute();
+          await this.mensajeRepo
+            .createQueryBuilder()
+            .delete()
+            .from(Mensaje)
+            .where('eventoId IN (:...ids)', { ids: eventIds })
+            .execute();
+        }
+
+        const { affected } = await this.eventRepo
+          .createQueryBuilder('event')
+          .delete()
+          .where('event.creador IN (:...ids)', { ids: scraperIds })
+          .execute();
+        deleted = affected ?? 0;
+      } else {
+        this.logger.warn('resetScrapedEvents: no se encontró ningún usuario scraper, no se elimina nada');
+      }
+
+      this.logger.log(`resetScrapedEvents: ${deleted} eventos eliminados. Iniciando scraping...`);
+      const result = await this.scrapeAll();
+      this.logger.log(`resetScrapedEvents: completado. saved=${result.saved}, errors=${result.errors}`);
+      return { deleted, saved: result.saved, errors: result.errors };
+    } catch (error) {
+      this.logger.error('resetScrapedEvents: error inesperado:', error);
+      throw error;
     }
-
-    this.logger.log(`Reset scraping: ${deleted} eventos eliminados. Iniciando nuevo scraping...`);
-    const result = await this.scrapeAll();
-    return { deleted, saved: result.saved, errors: result.errors };
   }
 
   private getConfiguredScrapers(): IScraper[] {

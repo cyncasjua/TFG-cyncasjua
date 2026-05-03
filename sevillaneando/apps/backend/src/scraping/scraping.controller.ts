@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Param, UseGuards, Logger } from '@nestjs/common';
 import { ScrapingService } from './scraping.service';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -8,6 +8,7 @@ import { ThrottleStrict } from '../common/decorators/throttle-custom.decorator';
 @Controller('scraping')
 @UseGuards(FirebaseAuthGuard, RolesGuard)
 export class ScrapingController {
+  private readonly logger = new Logger(ScrapingController.name);
   constructor(private readonly scrapingService: ScrapingService) {}
 
   @Post('run-all')
@@ -25,11 +26,18 @@ export class ScrapingController {
   @Roles('admin')
   @ThrottleStrict()
   async resetScrapedEvents() {
-    const result = await this.scrapingService.resetScrapedEvents();
-    return {
-      message: 'Reset completado: eventos scrapeados eliminados y regenerados',
-      ...result,
-    };
+    this.logger.log('POST /scraping/reset llamado');
+    try {
+      const result = await this.scrapingService.resetScrapedEvents();
+      this.logger.log(`POST /scraping/reset ok: ${JSON.stringify(result)}`);
+      return {
+        message: 'Reset completado: eventos scrapeados eliminados y regenerados',
+        ...result,
+      };
+    } catch (err) {
+      this.logger.error('POST /scraping/reset ERROR:', err);
+      throw err;
+    }
   }
 
   @Post('run/:scraperName')

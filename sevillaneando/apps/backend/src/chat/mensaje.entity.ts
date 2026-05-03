@@ -16,7 +16,7 @@ export class Mensaje {
   @ManyToOne(() => User)
   usuario!: User;
 
-  @ManyToOne(() => Event)
+  @ManyToOne(() => Event, { onDelete: 'CASCADE' })
   evento!: Event;
 
   @CreateDateColumn({ type: 'timestamptz' })

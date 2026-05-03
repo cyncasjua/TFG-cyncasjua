@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/all-exceptions.filter';
 import { DataSource } from 'typeorm';
 import { Event } from './events/event.entity';
 import { seedEvents } from './database/seed';
@@ -25,6 +26,7 @@ async function bootstrap() {
       credentials: true,
     },
   });
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
