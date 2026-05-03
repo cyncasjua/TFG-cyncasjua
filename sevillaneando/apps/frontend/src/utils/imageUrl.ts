@@ -10,10 +10,9 @@ function maybeEncodeUrl(rawUrl: string): string {
 function sanitizeRawUrl(raw: string): string {
   let value = raw.trim();
 
-  if (
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"))
-  ) {
+  const startsWithDouble = value[0] === '"' && value[value.length - 1] === '"';
+  const startsWithSingle = value[0] === "'" && value[value.length - 1] === "'";
+  if (startsWithDouble || startsWithSingle) {
     value = value.slice(1, -1).trim();
   }
 
