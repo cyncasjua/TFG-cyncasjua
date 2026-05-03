@@ -61,9 +61,7 @@ export async function rateRecommendedEvent(
   return res.data as { ok: boolean; action: string; resenaId: string };
 }
 
-export async function getMyRecommendedEventRating(
-  eventId: string
-): Promise<{
+export async function getMyRecommendedEventRating(eventId: string): Promise<{
   hasRating: boolean;
   puntuacion: number | null;
   comentario: string;
