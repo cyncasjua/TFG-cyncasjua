@@ -30,7 +30,7 @@ import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
-import { ThrottleStrict, ThrottleModerate, ThrottleUpload } from '../common/decorators/throttle-custom.decorator';
+import { ThrottleModerate, ThrottleUpload } from '../common/decorators/throttle-custom.decorator';
 
 @Controller('events')
 export class EventsController {

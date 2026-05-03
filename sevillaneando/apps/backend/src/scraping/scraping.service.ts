@@ -189,7 +189,7 @@ export class ScrapingService {
     let deleted = 0;
     if (conditions.length > 0) {
       const { affected } = await this.eventRepo.delete(
-        conditions.length === 1 ? conditions[0] : conditions as any,
+        conditions.length === 1 ? conditions[0] : (conditions as object),
       );
       deleted = affected ?? 0;
     }

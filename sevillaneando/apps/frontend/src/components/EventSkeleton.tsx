@@ -6,7 +6,7 @@ const SKELETON_HEIGHT = 180;
 const BORDER_RADIUS = 18;
 
 export const EventSkeleton: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { theme } = useTheme();
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export const EventSkeleton: React.FC = () => {
     outputRange: [0.3, 0.7],
   });
 
-  const backgroundColor = isDark ? '#2a2a2a' : '#e8e8e8';
+  const backgroundColor = theme === 'dark' ? '#2a2a2a' : '#e8e8e8';
 
   return (
     <View style={styles.container}>

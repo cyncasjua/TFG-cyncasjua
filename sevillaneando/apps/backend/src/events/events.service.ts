@@ -276,7 +276,7 @@ export class EventsService {
       ? base.fechaFin.getTime() - base.fechaInicio.getTime()
       : 0;
     const instancias: Partial<Event>[] = [];
-    let cursor = new Date(base.fechaInicio);
+    const cursor = new Date(base.fechaInicio);
     cursor.setDate(cursor.getDate() + intervaloDias);
 
     while (cursor <= base.recurrenciaFin) {
