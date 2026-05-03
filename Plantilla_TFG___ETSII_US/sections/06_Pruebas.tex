@@ -148,6 +148,35 @@ Time:        5.904 s
 \caption{Resumen de pruebas unitarias del backend}
 \end{table}
 
+\subsection{Cobertura de código}
+
+La cobertura de código se ha medido con el informe integrado de Jest (\texttt{npx jest --coverage}), ejecutado sobre el backend completo. Los resultados obtenidos son los siguientes:
+
+\begin{table}[H]
+\centering
+\caption{Métricas de cobertura de código del backend}
+\label{tab:cobertura}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Ámbito} & \textbf{Sentencias} & \textbf{Ramas} & \textbf{Funciones} & \textbf{Líneas} \\
+\hline
+Global (todos los archivos) & 9,91\% & 3,67\% & 7,00\% & 9,71\% \\
+\hline
+\texttt{EventsService} & 31,68\% & 14,20\% & 31,57\% & 29,34\% \\
+\hline
+\texttt{RecomendacionesService} & 70,58\% & 61,66\% & 61,11\% & 75,36\% \\
+\hline
+\texttt{UsersService} & 66,66\% & 25,00\% & 20,00\% & 72,00\% \\
+\hline
+\end{tabular}
+\end{table}
+
+La cobertura global del proyecto es baja (9,91\% de sentencias) porque la herramienta analiza la totalidad del código fuente del backend, incluyendo controladores, guards, scrapers, módulos de configuración y entidades TypeORM, ninguno de los cuales dispone de pruebas unitarias. Estos componentes son, por diseño, difíciles de aislar sin infraestructura real (base de datos, Firebase, Cloudinary), por lo que su validación se delega en las pruebas de aceptación sobre el entorno desplegado.
+
+En los tres servicios que sí disponen de pruebas unitarias, la cobertura oscila entre el 29\% y el 75\% de líneas, reflejando que los métodos de mayor complejidad lógica quedan cubiertos mientras que los métodos de acceso directo a datos (pasarela hacia TypeORM) quedan fuera del alcance de los mocks utilizados.
+
+La ampliación de la cobertura mediante pruebas de integración con base de datos real y la incorporación de pruebas para controladores y guards se identifican como trabajo futuro en el capítulo de conclusiones.
+
 \subsection{Pruebas de integración}
 
 Las pruebas de integración verifican que la comunicación entre los distintos componentes del sistema funciona correctamente de extremo a extremo. Dado que el sistema está formado por un frontend React Native, un backend NestJS y una base de datos PostgreSQL con PostGIS, se han identificado los siguientes escenarios de integración relevantes:

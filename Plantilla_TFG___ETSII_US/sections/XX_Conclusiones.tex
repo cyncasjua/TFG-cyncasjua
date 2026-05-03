@@ -1,2 +1,144 @@
 \chapter{Conclusiones}\label{cap:conclusiones}
 
+\section{Introducción}
+
+Este capítulo recoge las conclusiones obtenidas tras el desarrollo del sistema \textbf{Sevillaneando}. Se revisan los objetivos planteados al inicio del proyecto y el grado en que han sido alcanzados, se analizan las lecciones técnicas aprendidas durante el desarrollo, se cuantifican y justifican las desviaciones respecto a la planificación original y se proponen líneas de trabajo futuro que permitirían ampliar y mejorar el sistema.
+
+\section{Objetivos alcanzados}
+
+El objetivo principal del proyecto era desarrollar una aplicación móvil multiplataforma que centralizase la oferta de ocio y cultura de Sevilla, con especial énfasis en dar visibilidad a eventos emergentes. A continuación se revisa el grado de cumplimiento de cada uno de los objetivos específicos definidos en el capítulo de estudio previo.
+
+\begin{itemize}
+    \item \textbf{Listado y filtrado de eventos}: implementado completamente. La pantalla principal ofrece filtrado por categoría, precio, fecha y radio de distancia, con soporte para geolocalización en tiempo real.
+
+    \item \textbf{Creación de eventos públicos y privados con moderación}: implementado completamente. Los eventos públicos siguen un flujo de moderación con estados \textit{Pendiente}, \textit{Aprobado} y \textit{Rechazado}, y los moderadores pueden proponer ediciones mediante \texttt{EventEditRequest}. Los eventos privados se aprueban automáticamente y son accesibles mediante enlace de invitación.
+
+    \item \textbf{Edición de eventos propios}: implementado completamente, incluyendo la lógica de vuelta a estado \textit{Pendiente} al editar un evento público aprobado.
+
+    \item \textbf{Geolocalización y mapa interactivo}: implementado completamente mediante OpenStreetMap y \texttt{react-native-maps}, con filtrado por radio y visualización de marcadores en mapa.
+
+    \item \textbf{Interacción social}: implementado completamente. El sistema incluye chat de evento (sala grupal por evento), mensajería privada entre usuarios, valoraciones con puntuación y comentario, y sistema de seguidores.
+
+    \item \textbf{Sistema de recomendaciones personalizado}: implementado completamente. El motor aplica un algoritmo multifactorial ponderado que tiene en cuenta categorías de interés, historial de interacciones (guardar, asistir, compartir, ver, valorar), proximidad geográfica y temporal.
+
+    \item \textbf{Rutas de eventos recomendadas}: implementado completamente. El motor genera itinerarios automáticos con tres estrategias: \textit{balanced}, \textit{walkable} y \textit{score}.
+
+    \item \textbf{Creación de rutas propias}: implementado completamente. Los usuarios pueden crear rutas visibles para el resto de la comunidad, que pueden ser valoradas por otros usuarios.
+
+    \item \textbf{Notificaciones}: implementado completamente. El sistema envía notificaciones por aprobación o rechazo de eventos, eventos cercanos, eventos próximos, nuevos mensajes privados, nuevos seguidores y recomendaciones generadas.
+\end{itemize}
+
+En cuanto a los objetivos no alcanzados, la generación automática de carteles con IA y la moderación de imágenes mediante NSFWJS (detección de contenido inapropiado) quedaron fuera del alcance final del proyecto, tal como se detalló en el análisis de desviaciones del capítulo de estudio previo.
+
+\section{Lecciones aprendidas}
+
+El desarrollo de \textit{Sevillaneando} ha representado un recorrido técnico completo, desde el diseño de la arquitectura hasta el despliegue en producción. Las principales lecciones aprendidas se recogen a continuación.
+
+\subsection{Gestión de sistemas distribuidos}
+
+La integración de múltiples servicios externos (Firebase, Cloudinary, OpenStreetMap, Eventbrite, Ticketmaster) puso de manifiesto la importancia de diseñar capas de abstracción que aislen al sistema de las particularidades de cada proveedor. Los errores 429 (límite de peticiones) del scraping revelaron la necesidad de implementar políticas de reintento con retroceso exponencial desde el principio, en lugar de añadirlas como parche posterior.
+
+\subsection{Comunicación en tiempo real}
+
+La implementación del chat con Socket.IO en el mismo proceso que la API REST simplificó el despliegue pero introdujo un acoplamiento que, a escala, podría requerir separar ambos servicios. La autenticación compartida mediante tokens de Firebase resultó una decisión acertada que evitó duplicar la lógica de validación.
+
+\subsection{Consultas espaciales}
+
+El uso de PostGIS para las consultas geográficas demostró ser más eficiente que calcular distancias en memoria sobre coordenadas planas. La extensión SRID 4326 resultó natural para integrar con la API de OpenStreetMap, evitando conversiones de coordenadas en el frontend.
+
+\subsection{Desarrollo unipersonal con metodología ágil}
+
+Asumir simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora exigió una autodisciplina especial en la priorización del backlog. La técnica de tallas de camiseta para la estimación, combinada con el seguimiento real de horas mediante Clockify, permitió detectar a tiempo los desvíos de esfuerzo y ajustar el alcance de forma razonada.
+
+\subsection{Calidad del código}
+
+La configuración temprana del pipeline de CI/CD con GitHub Actions, aunque supuso un coste inicial no previsto, amortizó ese tiempo evitando regresiones en las últimas fases del proyecto, cuando la base de código era más grande y compleja.
+
+\section{Desviaciones respecto a la planificación}
+
+Las desviaciones respecto a la planificación inicial se describen a continuación, junto con su impacto cuantitativo estimado y la justificación de la decisión adoptada.
+
+\begin{itemize}
+    \item \textbf{Incorporación de CI/CD} (+10 h): la configuración de GitHub Actions no estaba prevista en la estimación original. Se decidió incorporarla al detectar que la base de código había alcanzado una complejidad suficiente como para justificar la automatización del linter y las comprobaciones de formato. El coste adicional se compensó con la reducción de tiempo dedicado a revisiones manuales en sprints posteriores.
+
+    \item \textbf{Mayor complejidad del scraping} (+15 h): la gestión de errores 429, la variabilidad en la estructura de las respuestas externas y la necesidad de implementar reintentos con retroceso exponencial superaron la estimación inicial. Esta desviación fue la principal causa de que las funcionalidades opcionales de la Fase 5 no pudieran completarse.
+
+    \item \textbf{No implementación de NSFWJS y generación de carteles con IA} ($-$20 h, reducción de alcance): ambas funcionalidades estaban condicionadas a la disponibilidad de tiempo al concluir las fases principales. El esfuerzo adicional absorbido por el scraping y el sistema de rutas hizo inviable abordarlas dentro del plazo del proyecto. Se documentan en la sección de trabajo futuro.
+\end{itemize}
+
+En conjunto, el proyecto se completó dentro del plazo establecido y con el alcance funcional prioritario cubierto al 100\%, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance.
+
+\section{Consideraciones de seguridad y privacidad}
+
+Durante el desarrollo se han aplicado medidas de seguridad a distintos niveles del sistema:
+
+\begin{itemize}
+    \item \textbf{Autenticación}: gestionada íntegramente por Firebase Authentication, que garantiza el almacenamiento seguro de credenciales y la emisión de tokens JWT de corta duración.
+    \item \textbf{Autorización}: todos los endpoints protegidos verifican el token en cada petición mediante un guard de Firebase. Los endpoints de moderación y administración aplican un guard adicional de roles.
+    \item \textbf{Limitación de velocidad}: se aplica \textit{throttling} en tres niveles (estricto, moderado y subida) mediante \texttt{@nestjs/throttler} para prevenir abusos y ataques de fuerza bruta.
+    \item \textbf{Validación de entrada}: los DTOs del backend utilizan \texttt{class-validator} para validar y sanear todos los datos recibidos del cliente antes de procesarlos.
+    \item \textbf{Privacidad de datos}: la aplicación no almacena contraseñas (delegadas en Firebase) ni datos de pago. Los datos de ubicación del usuario solo se utilizan para consultas espaciales y no se registran con seguimiento histórico.
+    \item \textbf{Eventos privados}: el acceso a eventos privados requiere un enlace de invitación único generado en el backend, que no es predecible ni enumerable.
+\end{itemize}
+
+Como limitación conocida, la moderación automática de imágenes mediante NSFWJS fue importada pero no completada, quedando el guardián (\texttt{useNsfwGuard}) como placeholder. Esta funcionalidad se identifica como prioritaria en el trabajo futuro.
+
+\section{Trabajo futuro}
+
+A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades que, por restricciones de tiempo o alcance, no han podido implementarse en esta versión del sistema. Se organizan a continuación en dos bloques: mejoras sobre funcionalidades existentes y nuevas funcionalidades.
+
+\subsection{Mejoras sobre funcionalidades existentes}
+
+\begin{itemize}
+    \item \textbf{Moderación de contenido inapropiado (NSFW)}: NSFWJS está importado en el proyecto pero \texttt{useNsfwGuard} es un placeholder sin implementar. Completar esta funcionalidad evitaría la subida de imágenes inapropiadas en eventos y chats, mejorando la seguridad del contenido sin requerir revisión manual para cada imagen.
+
+    \item \textbf{Cobertura de pruebas}: el plan de pruebas actual cubre los flujos principales pero deja fuera casos límite en el motor de recomendaciones, el scraping y la lógica de moderación. Ampliar la suite con pruebas de carga y pruebas de regresión automatizadas aumentaría la fiabilidad del sistema en producción.
+\end{itemize}
+
+\subsection{Nuevas funcionalidades}
+
+\begin{itemize}
+    \item \textbf{Generación de carteles con IA}: identificada desde el inicio como objetivo de la Fase 5, esta funcionalidad permitiría a los usuarios generar automáticamente un cartel visual para su evento a partir del título, la descripción y las imágenes proporcionadas, integrando un modelo generativo de imagen a través de una API externa.
+
+    \item \textbf{Modo sin conexión básico}: actualmente no existe detección de red ni caché local. Mediante \texttt{AsyncStorage} o React Query se podrían almacenar localmente los últimos eventos cargados y mostrarlos sin conexión, mejorando la experiencia de usuario en entornos con conectividad intermitente.
+
+    \item \textbf{Achievements y gamificación}: dado que el sistema ya registra visitas, asistencias, guardados y compartidos, sería natural introducir un sistema de insignias: \textit{Explorador} (10 eventos distintos visitados), \textit{Foodie} (5 eventos de gastronomía asistidos), \textit{Organizador} (3 eventos propios aprobados), entre otras. Este mecanismo aumentaría la retención y la participación activa de los usuarios.
+
+    \item \textbf{Integración con el calendario nativo del dispositivo}: la pantalla \texttt{CalendarEventsScreen} ya existe pero no hay integración con el calendario nativo del teléfono. Mediante \texttt{expo-calendar} sería posible añadir directamente los eventos a los que el usuario se apunta en Google Calendar o Apple Calendar, sin salir de la aplicación.
+
+    \item \textbf{Reseñas con fotos}: las reseñas (\texttt{Resena}) actualmente contienen puntuación y comentario de texto. Permitir adjuntar fotografías en las valoraciones aumentaría la credibilidad de las reseñas y la confianza de los usuarios a la hora de apuntarse a un evento.
+
+    \item \textbf{Documentación automática de la API con Swagger}: el backend no expone actualmente ningún contrato OpenAPI. Con \texttt{@nestjs/swagger} se generaría documentación interactiva automáticamente a partir de los decoradores ya existentes en los controladores y DTOs, facilitando la integración futura con otras aplicaciones o clientes.
+
+    \item \textbf{Asistencia mediante código QR}: integrar un sistema de códigos QR que el organizador pueda mostrar en el evento permitiría registrar la asistencia de forma sencilla. Combinado con un enlace de inscripción externo (Eventbrite, formularios propios), facilitaría la interoperabilidad con otras plataformas de gestión de eventos.
+
+    \item \textbf{Cuentas de empresa y promoción de eventos}: actualmente todos los usuarios tienen el mismo tipo de cuenta. Introducir un perfil de empresa o entidad permitiría a organizaciones y negocios registrarse con un perfil verificado y destacado, con la posibilidad de promocionar sus eventos dentro de la plataforma mediante un modelo de visibilidad preferente.
+\end{itemize}
+
+\section{Uso de herramientas de inteligencia artificial}
+
+Durante el desarrollo de este proyecto se han utilizado herramientas de inteligencia artificial como apoyo en determinadas tareas. A continuación se detalla el uso realizado, las herramientas empleadas y el proceso de verificación seguido en cada caso, en cumplimiento con los principios de transparencia exigidos por la Escuela Técnica Superior de Ingeniería Informática de la Universidad de Sevilla.
+
+\subsection{Herramientas utilizadas}
+
+\begin{itemize}
+    \item \textbf{GitHub Copilot}: asistente de autocompletado de código integrado en el entorno de desarrollo. Se ha utilizado para sugerir fragmentos de código repetitivo (DTOs, validadores, controladores NestJS con estructura similar) y para acelerar la escritura de código boilerplate en el frontend (componentes con estructura análoga a otros ya existentes).
+
+    \item \textbf{Claude (Anthropic)}: modelo de lenguaje utilizado puntualmente para resolver dudas técnicas concretas (p.ej., uso de funciones espaciales de PostGIS, configuración de guardias de autenticación en NestJS) y para revisar la redacción de fragmentos de la memoria.
+\end{itemize}
+
+\subsection{Alcance del uso}
+
+El uso de estas herramientas ha sido complementario y supervisado en todo momento. No se ha delegado en ellas la toma de decisiones de diseño, arquitectónicas ni funcionales; éstas han sido adoptadas íntegramente por la autora. El código generado automáticamente ha sido siempre revisado, comprendido y adaptado antes de integrarse en el proyecto, nunca copiado directamente sin verificación.
+
+La redacción de la memoria ha sido elaborada por la autora. Las herramientas de IA se han utilizado exclusivamente como apoyo puntual para mejorar la expresión de determinados párrafos o verificar la coherencia de alguna sección, pero el contenido, la estructura y las conclusiones son propios.
+
+\subsection{Verificación}
+
+Todo el código sugerido por herramientas de IA ha pasado por el mismo proceso de revisión que el código escrito manualmente: revisión de lógica, ejecución de pruebas unitarias y de integración, y comprobación del comportamiento en la aplicación. No se ha aceptado ningún fragmento cuyo funcionamiento no haya podido ser explicado y verificado por la autora.
+
+\section{Conclusión final}
+
+\textit{Sevillaneando} es el resultado de un proceso de ingeniería completo: desde la identificación de un problema real ---la fragmentación de la información sobre eventos en Sevilla--- hasta la entrega de un sistema funcional, desplegado y documentado. El proyecto ha cubierto todos los objetivos prioritarios definidos al inicio, integrando tecnologías actuales de desarrollo móvil, backend, geolocalización, comunicación en tiempo real y recomendaciones personalizadas.
+
+Más allá del resultado técnico, el desarrollo ha supuesto un aprendizaje profundo en la gestión de proyectos software en solitario: tomar decisiones de alcance bajo incertidumbre, priorizar con criterio y entregar algo que funciona sobre algo que es perfecto en papel. Las funcionalidades no implementadas no son fracasos sino decisiones conscientes de gestión del alcance, y quedan documentadas como trabajo futuro para una versión posterior del sistema.

@@ -10,6 +10,22 @@ El objetivo de este capítulo es explicar las decisiones estructurales tomadas a
 
 El sistema \textbf{Sevillaneando} sigue una arquitectura cliente-servidor distribuida en dos capas principales: una aplicación móvil que actúa como cliente y un servidor backend que expone una API REST. Además, el sistema se apoya en servicios externos para cubrir necesidades específicas como autenticación, almacenamiento de imágenes y obtención de datos de fuentes externas.
 
+La figura~\ref{fig:vista_logica} muestra la vista lógica del sistema con los componentes principales y sus relaciones, y la figura~\ref{fig:vista_despliegue} muestra la vista de despliegue con la infraestructura utilizada.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/vistas/vista_logica.png}
+    \caption{Vista lógica del sistema Sevillaneando}
+    \label{fig:vista_logica}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/vistas/vista_de_despligue.png}
+    \caption{Vista de despliegue del sistema Sevillaneando}
+    \label{fig:vista_despliegue}
+\end{figure}
+
 \subsection{Aplicación móvil (frontend)}
 
 La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native} y \textbf{Expo}, lo que permite generar una única base de código compatible con Android e iOS. La arquitectura interna del frontend se estructura en cuatro niveles:
@@ -88,7 +104,16 @@ Almacena las sugerencias personalizadas generadas por el motor de recomendacione
 
 Permite a los moderadores proponer cambios sobre un evento sin aplicarlos directamente. Incluye los campos modificados, el estado de la solicitud (\texttt{pendiente}, \texttt{aprobada} o \texttt{rechazada}) y, en caso de rechazo, el motivo.
 
-\subsection{Relaciones entre entidades}
+\subsection{Diagrama entidad-relación}
+
+La figura~\ref{fig:edt_modelo} muestra el diagrama entidad-relación del sistema con las relaciones principales entre entidades.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/vistas/vista_de_datos.png}
+    \caption{Diagrama entidad-relación del sistema}
+    \label{fig:edt_modelo}
+\end{figure}
 
 Las relaciones principales entre entidades son las siguientes:
 
@@ -155,7 +180,16 @@ La API aplica limitación de velocidad (\textit{throttling}) mediante \texttt{@n
 
 \section{Diseño del sistema de moderación}
 
-La moderación de eventos públicos es una de las piezas centrales del sistema. El flujo de estados de un evento sigue las siguientes reglas de negocio:
+La moderación de eventos públicos es una de las piezas centrales del sistema. La figura~\ref{fig:secuencias_moderacion} muestra el diagrama de secuencias del flujo de moderación de un evento público.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/vistas/vista_de_secuencias.png}
+    \caption{Diagrama de secuencias del flujo de moderación de un evento}
+    \label{fig:secuencias_moderacion}
+\end{figure}
+
+El flujo de estados de un evento sigue las siguientes reglas de negocio:
 
 \begin{itemize}
     \item Al crear un evento público, su estado inicial es \textbf{Pendiente}.
