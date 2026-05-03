@@ -93,12 +93,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [customRadiusInput, setCustomRadiusInput] = useState('');
   const [radiusOptions, setRadiusOptions] = useState([0.5, 1, 2, 5, 10]);
   const { role, logout, user } = useAuth();
-  const eventsUser = user
-    ? {
-        id: user.id,
-        ubicacion: user.ubicacion ?? undefined,
-      }
-    : null;
+  const eventsUser = useMemo(
+    () =>
+      user
+        ? {
+            id: user.id,
+            ubicacion: user.ubicacion ?? undefined,
+          }
+        : null,
+    [user?.id, user?.ubicacion]
+  );
 
   const { items, setItems, loading, refreshing, error, fetchEvents, onRefresh } =
     useEvents(eventsUser);
