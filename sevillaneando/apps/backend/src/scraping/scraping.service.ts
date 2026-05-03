@@ -178,6 +178,27 @@ export class ScrapingService {
     return this.getConfiguredScrapers().map((s) => s.name);
   }
 
+  async resetScrapedEvents(): Promise<{ deleted: number; saved: number; errors: number }> {
+    const systemUser = await this.userRepo.findOne({ where: { firebaseUid: this.scraperSystemUid } });
+    const legacyUser = await this.userRepo.findOne({ where: { email: this.legacyScraperEmail } });
+
+    const conditions: object[] = [];
+    if (systemUser) conditions.push({ creador: { id: systemUser.id } });
+    if (legacyUser) conditions.push({ creador: { id: legacyUser.id } });
+
+    let deleted = 0;
+    if (conditions.length > 0) {
+      const { affected } = await this.eventRepo.delete(
+        conditions.length === 1 ? conditions[0] : conditions as any,
+      );
+      deleted = affected ?? 0;
+    }
+
+    this.logger.log(`Reset scraping: ${deleted} eventos eliminados. Iniciando nuevo scraping...`);
+    const result = await this.scrapeAll();
+    return { deleted, saved: result.saved, errors: result.errors };
+  }
+
   private getConfiguredScrapers(): IScraper[] {
     const scrapers: IScraper[] = [];
 

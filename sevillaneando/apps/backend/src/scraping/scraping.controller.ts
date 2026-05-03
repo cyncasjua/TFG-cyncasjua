@@ -22,6 +22,17 @@ export class ScrapingController {
     };
   }
 
+  @Post('reset')
+  @Roles('admin')
+  @ThrottleStrict()
+  async resetScrapedEvents() {
+    const result = await this.scrapingService.resetScrapedEvents();
+    return {
+      message: 'Reset completado: eventos scrapeados eliminados y regenerados',
+      ...result,
+    };
+  }
+
   @Post('run/:scraperName')
   @Roles('admin')
   @ThrottleStrict()

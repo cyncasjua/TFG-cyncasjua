@@ -27,6 +27,7 @@ export const AdminScreen: React.FC<Props> = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [changingRole, setChangingRole] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -77,6 +78,31 @@ export const AdminScreen: React.FC<Props> = () => {
     }
   };
 
+  const resetScraping = () => {
+    Alert.alert(
+      'Restablecer eventos scrapeados',
+      'Se borrarán todos los eventos scrapeados automáticamente y se volverán a generar. Esto puede tardar varios minutos. ¿Continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Restablecer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setResetting(true);
+              const res = await api.post('/scraping/reset');
+              Alert.alert('Completado', `${res.data.message}\nEliminados: ${res.data.deleted} | Guardados: ${res.data.saved}`);
+            } catch (err) {
+              Alert.alert('Error', getErrorMessage(err));
+            } finally {
+              setResetting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const deleteUser = async (userId: string) => {
     Alert.alert(
       'Confirmar borrado',
@@ -124,6 +150,14 @@ export const AdminScreen: React.FC<Props> = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedTitle style={styles.title}>Gestión de Usuarios</ThemedTitle>
+
+      <ThemedButton
+        title={resetting ? 'Restableciendo...' : 'Restablecer eventos scrapeados'}
+        variant="secondary"
+        onPress={resetScraping}
+        disabled={resetting}
+        style={{ marginBottom: 16 }}
+      />
 
       <FlatList
         data={users}

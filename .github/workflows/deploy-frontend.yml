@@ -1,0 +1,36 @@
+name: Deploy Frontend (OTA)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sevillaneando/apps/frontend/**'
+
+jobs:
+  ota-update:
+    name: Publish EAS OTA update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: sevillaneando/apps/frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: sevillaneando/apps/frontend
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Publish OTA update
+        working-directory: sevillaneando/apps/frontend
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas update --channel production --message "Deploy from commit ${{ github.sha }}" --non-interactive
