@@ -188,15 +188,18 @@ export class ScrapingService {
     });
     const legacyUser = await this.userRepo.findOne({ where: { email: this.legacyScraperEmail } });
 
-    const conditions: object[] = [];
-    if (systemUser) conditions.push({ creador: { id: systemUser.id } });
-    if (legacyUser) conditions.push({ creador: { id: legacyUser.id } });
+    const scraperIds: string[] = [];
+    if (systemUser) scraperIds.push(systemUser.id);
+    if (legacyUser) scraperIds.push(legacyUser.id);
 
     let deleted = 0;
-    if (conditions.length > 0) {
-      const { affected } = await this.eventRepo.delete(
-        conditions.length === 1 ? conditions[0] : (conditions as object)
-      );
+    if (scraperIds.length > 0) {
+      const { affected } = await this.eventRepo
+        .createQueryBuilder()
+        .delete()
+        .from(Event)
+        .where('creadorId IN (:...ids)', { ids: scraperIds })
+        .execute();
       deleted = affected ?? 0;
     }
 

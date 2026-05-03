@@ -97,13 +97,14 @@ export const AdminScreen: React.FC<Props> = () => {
           onPress: async () => {
             try {
               setResetting(true);
-              const res = await api.post('/scraping/reset');
+              const res = await api.post('/scraping/reset', null, { timeout: 300000 });
               Alert.alert(
                 'Completado',
                 `${res.data.message}\nEliminados: ${res.data.deleted} | Guardados: ${res.data.saved}`
               );
             } catch (err) {
               Alert.alert('Error', getErrorMessage(err));
+              reportError('admin.reset-scraping', 'Error restableciendo eventos scrapeados', err);
             } finally {
               setResetting(false);
             }
