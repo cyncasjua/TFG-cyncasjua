@@ -33,4 +33,4 @@ jobs:
         working-directory: sevillaneando/apps/frontend
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas update --channel production --message "Deploy from commit ${{ github.sha }}" --non-interactive
+        run: eas update --channel production --message "Deploy from commit ${{ github.sha }}" --platform android,ios
