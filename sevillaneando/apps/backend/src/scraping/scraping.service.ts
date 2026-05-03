@@ -239,12 +239,16 @@ export class ScrapingService {
           .execute();
         deleted = affected ?? 0;
       } else {
-        this.logger.warn('resetScrapedEvents: no se encontró ningún usuario scraper, no se elimina nada');
+        this.logger.warn(
+          'resetScrapedEvents: no se encontró ningún usuario scraper, no se elimina nada'
+        );
       }
 
       this.logger.log(`resetScrapedEvents: ${deleted} eventos eliminados. Iniciando scraping...`);
       const result = await this.scrapeAll();
-      this.logger.log(`resetScrapedEvents: completado. saved=${result.saved}, errors=${result.errors}`);
+      this.logger.log(
+        `resetScrapedEvents: completado. saved=${result.saved}, errors=${result.errors}`
+      );
       return { deleted, saved: result.saved, errors: result.errors };
     } catch (error) {
       this.logger.error('resetScrapedEvents: error inesperado:', error);
