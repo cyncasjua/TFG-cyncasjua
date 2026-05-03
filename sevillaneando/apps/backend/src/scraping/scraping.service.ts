@@ -213,7 +213,7 @@ export class ScrapingService {
         const scraperEvents = await this.eventRepo
           .createQueryBuilder('event')
           .select('event.id')
-          .where('event.creador IN (:...ids)', { ids: scraperIds })
+          .where('"creadorId" IN (:...ids)', { ids: scraperIds })
           .getMany();
 
         if (scraperEvents.length > 0) {
@@ -222,20 +222,21 @@ export class ScrapingService {
             .createQueryBuilder()
             .delete()
             .from(Resena)
-            .where('eventoId IN (:...ids)', { ids: eventIds })
+            .where('"eventoId" IN (:...ids)', { ids: eventIds })
             .execute();
           await this.mensajeRepo
             .createQueryBuilder()
             .delete()
             .from(Mensaje)
-            .where('eventoId IN (:...ids)', { ids: eventIds })
+            .where('"eventoId" IN (:...ids)', { ids: eventIds })
             .execute();
         }
 
         const { affected } = await this.eventRepo
-          .createQueryBuilder('event')
+          .createQueryBuilder()
           .delete()
-          .where('event.creador IN (:...ids)', { ids: scraperIds })
+          .from(Event)
+          .where('"creadorId" IN (:...ids)', { ids: scraperIds })
           .execute();
         deleted = affected ?? 0;
       } else {
