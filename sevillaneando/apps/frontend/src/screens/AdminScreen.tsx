@@ -21,6 +21,7 @@ import {
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, getErrorMessage } from '../services';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/user';
 import type { RootStackParamList } from '../navigation/types';
 import { reportError } from '../utils/telemetry';
@@ -98,14 +99,13 @@ export const AdminScreen: React.FC<Props> = () => {
             try {
               setResetting(true);
               const res = await api.post('/scraping/reset', null, { timeout: 300000 });
+              await AsyncStorage.removeItem('events_cache_v1');
               Alert.alert(
                 'Completado',
                 `${res.data.message}\nEliminados: ${res.data.deleted} | Guardados: ${res.data.saved}`
               );
-            } catch (err: unknown) {
-              const status = (err as any)?.response?.status;
-              const data = (err as any)?.response?.data;
-              Alert.alert('Error', `HTTP ${status ?? 'N/A'}: ${JSON.stringify(data)}`);
+            } catch (err) {
+              Alert.alert('Error', getErrorMessage(err));
               reportError('admin.reset-scraping', 'Error restableciendo eventos scrapeados', err);
             } finally {
               setResetting(false);

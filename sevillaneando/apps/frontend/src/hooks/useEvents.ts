@@ -5,6 +5,8 @@ import type { Event } from '../types/event';
 import { reportError } from '../utils/telemetry';
 import { getErrorMessage } from '../services';
 
+const REVALIDATE_DEBOUNCE_MS = 30_000; // no revalidar en background más de 1 vez cada 30s
+
 type EventWithDistance = Event & { distance?: number };
 
 const CACHE_KEY = 'events_cache_v1';
@@ -62,6 +64,7 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fetchingRef = useRef(false);
+  const lastRevalidateRef = useRef(0);
 
   const doFetch = useCallback(
     async (opts: { forceRefresh?: boolean; showLoadingSpinner?: boolean } = {}) => {
@@ -80,9 +83,13 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
         if (cached) {
           setItems(cached);
           setLoading(false);
-          // Revalidar en background sin spinner (sin bloquear fetchingRef)
-          setTimeout(() => doFetch({ forceRefresh: true, showLoadingSpinner: false }), 0);
           fetchingRef.current = false;
+          // Revalidar en background solo si han pasado 30s desde la última vez
+          const now = Date.now();
+          if (now - lastRevalidateRef.current > REVALIDATE_DEBOUNCE_MS) {
+            lastRevalidateRef.current = now;
+            setTimeout(() => doFetch({ forceRefresh: true, showLoadingSpinner: false }), 0);
+          }
           return;
         }
       }
@@ -135,6 +142,7 @@ export function useEvents(user: { id?: string; ubicacion?: { coordinates?: numbe
 
         setItems(result);
         await writeCache(cacheKey, result);
+        lastRevalidateRef.current = Date.now();
       } catch (err) {
         reportError('useEvents.fetch', 'Error cargando eventos', err);
         setError(getErrorMessage(err));

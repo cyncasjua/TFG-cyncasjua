@@ -561,10 +561,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const max = maxPrice !== '' ? parseFloat(maxPrice) : null;
     if (min !== null) {
       filtered = filtered.filter((ev) => {
-        const isGratis =
-          (ev.precio == null && ev.precioMin == null && ev.precioMax == null) ||
-          ev.precio === 0 ||
-          (ev.precioMin === 0 && ev.precioMax === 0);
+        const isGratis = ev.precio === 0 || (ev.precioMin === 0 && ev.precioMax === 0);
+        const isPrecioVariable = ev.precio == null && ev.precioMin == null && ev.precioMax == null;
+        if (isPrecioVariable) return true;
         if (isGratis) return min === 0 || min === null;
         if (ev.precio != null) return ev.precio >= min;
         if (ev.precioMin != null) return ev.precioMin >= min;

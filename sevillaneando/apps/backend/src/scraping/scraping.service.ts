@@ -105,7 +105,12 @@ export class ScrapingService {
       }
 
       const normalizedDateEvent = this.normalizeLongEventDates(scrapedEvent);
-      const normalizedEvent = this.normalizePriceFields(normalizedDateEvent);
+      const normalizedEvent = {
+        ...this.normalizePriceFields(normalizedDateEvent),
+        precio: null,
+        precioMin: null,
+        precioMax: null,
+      };
 
       try {
         const batchKey = this.getDuplicateKey(normalizedEvent.title);
@@ -405,6 +410,7 @@ export class ScrapingService {
   }
 
   private toNonNegativeNumberOrNull(value: unknown): number | null {
+    if (value == null) return null;
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed < 0) {
       return null;

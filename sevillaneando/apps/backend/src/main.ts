@@ -26,6 +26,7 @@ async function bootstrap() {
       credentials: true,
     },
   });
+  app.set('trust proxy', 1);
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(
     new ValidationPipe({

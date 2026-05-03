@@ -289,6 +289,24 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
       Alert.alert('Error', 'Asegúrate de completar todos los campos obligatorios.');
       return;
     }
+    const precioVal = precio.trim() !== '' ? parseFloat(precio) : null;
+    const precioMinVal = precioMin.trim() !== '' ? parseFloat(precioMin) : null;
+    const precioMaxVal = precioMax.trim() !== '' ? parseFloat(precioMax) : null;
+    const noPrecio = precioVal === null && precioMinVal === null && precioMaxVal === null;
+    const rangoIncompleto = (precioMinVal !== null) !== (precioMaxVal !== null);
+    const conflicto = precioVal !== null && (precioMinVal !== null || precioMaxVal !== null);
+    if (noPrecio) {
+      Alert.alert('Error', 'Indica un precio fijo o un rango de precio (mín y máx).');
+      return;
+    }
+    if (rangoIncompleto) {
+      Alert.alert('Error', 'Si usas rango de precio, rellena tanto el mínimo como el máximo.');
+      return;
+    }
+    if (conflicto) {
+      Alert.alert('Error', 'Usa solo precio fijo o rango (mín-máx), no ambos a la vez.');
+      return;
+    }
     setLoading(true);
     let payload: any;
     try {
@@ -565,7 +583,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
 
             <ThemedText style={styles.label}>Precio: Fijo o Intervalo</ThemedText>
             <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
-              Elige UNO: o un precio fijo, o un rango (mín-máx), o déjalo vacío para gratis
+              Elige UNO: precio fijo (0 € = gratis) o un rango mín-máx. Campo obligatorio.
             </ThemedText>
 
             <ThemedText style={styles.label}>Precio Fijo (€) </ThemedText>
