@@ -663,64 +663,58 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             />
 
             <ThemedText style={styles.label}>Estado</ThemedText>
-            <View style={{ zIndex: 900, elevation: 900, overflow: 'visible' }}>
-              <DropDownPicker
-                open={openEstado}
-                value={estado}
-                items={estadoItems}
-                setOpen={setOpenEstado}
-                setValue={setEstado}
-                setItems={setEstadoItems}
-                style={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.primary,
-                  minHeight: 40,
-                  borderRadius: 16,
-                  marginBottom: 10,
-                }}
-                dropDownContainerStyle={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.primary,
-                }}
-                textStyle={{ color: colors.text }}
-                placeholder="Pendiente"
-                placeholderStyle={{ color: colors.text + '99' }}
-                zIndex={900}
-                listMode="SCROLLVIEW"
-                ArrowUpIconComponent={ArrowUpIcon}
-                ArrowDownIconComponent={ArrowDownIcon}
-              />
-            </View>
+            <DropDownPicker
+              open={openEstado}
+              value={estado}
+              items={estadoItems}
+              setOpen={setOpenEstado}
+              setValue={setEstado}
+              setItems={setEstadoItems}
+              style={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                minHeight: 40,
+                borderRadius: 16,
+                marginBottom: 10,
+              }}
+              dropDownContainerStyle={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+              }}
+              textStyle={{ color: colors.text }}
+              placeholder="Pendiente"
+              placeholderStyle={{ color: colors.text + '99' }}
+              listMode="MODAL"
+              ArrowUpIconComponent={ArrowUpIcon}
+              ArrowDownIconComponent={ArrowDownIcon}
+            />
 
             <ThemedText style={styles.label}>Recurrencia</ThemedText>
-            <View style={{ zIndex: 850, elevation: 850, overflow: 'visible' }}>
-              <DropDownPicker
-                open={openRecurrencia}
-                value={recurrencia}
-                items={recurrenciaItems}
-                setOpen={setOpenRecurrencia}
-                setValue={setRecurrencia}
-                setItems={() => {}}
-                placeholder="Sin recurrencia"
-                style={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.primary,
-                  minHeight: 40,
-                  borderRadius: 16,
-                  marginBottom: 10,
-                }}
-                dropDownContainerStyle={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.primary,
-                }}
-                textStyle={{ color: colors.text }}
-                placeholderStyle={{ color: colors.text + '99' }}
-                zIndex={950}
-                listMode="SCROLLVIEW"
-                ArrowUpIconComponent={ArrowUpIcon}
-                ArrowDownIconComponent={ArrowDownIcon}
-              />
-            </View>
+            <DropDownPicker
+              open={openRecurrencia}
+              value={recurrencia}
+              items={recurrenciaItems}
+              setOpen={setOpenRecurrencia}
+              setValue={setRecurrencia}
+              setItems={() => {}}
+              placeholder="Sin recurrencia"
+              style={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                minHeight: 40,
+                borderRadius: 16,
+                marginBottom: 10,
+              }}
+              dropDownContainerStyle={{
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+              }}
+              textStyle={{ color: colors.text }}
+              placeholderStyle={{ color: colors.text + '99' }}
+              listMode="MODAL"
+              ArrowUpIconComponent={ArrowUpIcon}
+              ArrowDownIconComponent={ArrowDownIcon}
+            />
             {!!recurrencia && (
               <>
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
@@ -758,34 +752,31 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (
-              <View style={{ zIndex: 1000, elevation: 1000, overflow: 'visible' }}>
-                <DropDownPicker
-                  open={openCategoria}
-                  value={categoriaId}
-                  items={dropdownItems}
-                  setOpen={setOpenCategoria}
-                  setValue={setCategoriaId}
-                  setItems={setDropdownItems}
-                  placeholder="Selecciona una categoría..."
-                  style={{
-                    backgroundColor: colors.card,
-                    borderColor: colors.primary,
-                    minHeight: 40,
-                    borderRadius: 16,
-                    marginBottom: 10,
-                  }}
-                  dropDownContainerStyle={{
-                    backgroundColor: colors.card,
-                    borderColor: colors.primary,
-                  }}
-                  textStyle={{ color: colors.text }}
-                  placeholderStyle={{ color: colors.text + '99' }}
-                  zIndex={1000}
-                  listMode="SCROLLVIEW"
-                  ArrowUpIconComponent={ArrowUpIcon}
-                  ArrowDownIconComponent={ArrowDownIcon}
-                />
-              </View>
+              <DropDownPicker
+                open={openCategoria}
+                value={categoriaId}
+                items={dropdownItems}
+                setOpen={setOpenCategoria}
+                setValue={setCategoriaId}
+                setItems={setDropdownItems}
+                placeholder="Selecciona una categoría..."
+                style={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  minHeight: 40,
+                  borderRadius: 16,
+                  marginBottom: 10,
+                }}
+                dropDownContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                }}
+                textStyle={{ color: colors.text }}
+                placeholderStyle={{ color: colors.text + '99' }}
+                listMode="MODAL"
+                ArrowUpIconComponent={ArrowUpIcon}
+                ArrowDownIconComponent={ArrowDownIcon}
+              />
             )}
 
             <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
