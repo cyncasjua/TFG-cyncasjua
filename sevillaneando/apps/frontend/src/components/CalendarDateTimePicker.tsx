@@ -34,13 +34,9 @@ const toUtcDate = (v: string): Date => {
   // del usuario, pero anclado a UTC para la librería.
   const d = new Date(v);
   if (isNaN(d.getTime())) return new Date();
-  return new Date(Date.UTC(
-    d.getFullYear(),
-    d.getMonth(),
-    d.getDate(),
-    d.getHours(),
-    d.getMinutes(),
-  ));
+  return new Date(
+    Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes())
+  );
 };
 
 const formatFromUtc = (d: Date): string => {
@@ -56,13 +52,9 @@ const minimumToUtc = (min?: Date): Date | undefined => {
   if (!min) return undefined;
   // El usuario nos pasa un Date en hora local; lo "trasladamos" a UTC
   // conservando los campos visibles para que la librería compare bien.
-  return new Date(Date.UTC(
-    min.getFullYear(),
-    min.getMonth(),
-    min.getDate(),
-    min.getHours(),
-    min.getMinutes(),
-  ));
+  return new Date(
+    Date.UTC(min.getFullYear(), min.getMonth(), min.getDate(), min.getHours(), min.getMinutes())
+  );
 };
 
 export const CalendarDateTimePicker: React.FC<Props> = ({
@@ -74,9 +66,7 @@ export const CalendarDateTimePicker: React.FC<Props> = ({
 }) => {
   const { colors } = useTheme();
 
-  const [selected, setSelected] = useState<Date>(
-    value ? toUtcDate(value) : new Date()
-  );
+  const [selected, setSelected] = useState<Date>(value ? toUtcDate(value) : new Date());
 
   useEffect(() => {
     if (isVisible) {
@@ -88,11 +78,7 @@ export const CalendarDateTimePicker: React.FC<Props> = ({
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay} pointerEvents="box-none">
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={onCancel}
-        />
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onCancel} />
         <View style={[styles.container, { backgroundColor: colors.card }]}>
           <ThemedText style={styles.title}>Selecciona fecha y hora</ThemedText>
           <DateTimePicker
@@ -122,17 +108,17 @@ export const CalendarDateTimePicker: React.FC<Props> = ({
               time_label: { color: colors.text },
               button_next_image: { tintColor: colors.text },
               button_prev_image: { tintColor: colors.text },
-              time_selected_indicator: { backgroundColor: colors.primary + '33', borderRadius: 999 },
+              time_selected_indicator: {
+                backgroundColor: colors.primary + '33',
+                borderRadius: 999,
+              },
             }}
           />
           <View style={styles.buttons}>
             <ThemedButton onPress={onCancel} style={styles.btn}>
               Cancelar
             </ThemedButton>
-            <ThemedButton
-              onPress={() => onConfirm(formatFromUtc(selected))}
-              style={styles.btn}
-            >
+            <ThemedButton onPress={() => onConfirm(formatFromUtc(selected))} style={styles.btn}>
               Aceptar
             </ThemedButton>
           </View>

@@ -454,7 +454,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <CalendarDateTimePicker
               isVisible={showFechaInicio}
               value={fechaInicio}
-              onConfirm={(val) => { setFechaInicio(val); setShowFechaInicio(false); }}
+              onConfirm={(val) => {
+                setFechaInicio(val);
+                setShowFechaInicio(false);
+              }}
               onCancel={() => setShowFechaInicio(false)}
             />
 
@@ -477,7 +480,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               isVisible={showFechaFin}
               value={fechaFin}
               minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
-              onConfirm={(val) => { setFechaFin(val); setShowFechaFin(false); }}
+              onConfirm={(val) => {
+                setFechaFin(val);
+                setShowFechaFin(false);
+              }}
               onCancel={() => setShowFechaFin(false)}
             />
 

@@ -8,7 +8,13 @@ export const formatDateTime = (value: string): string =>
 // de octubre → CEST (+120 min); resto del año → CET (+60 min).
 // Implementación manual para no depender de los datos de zona del runtime
 // (Hermes/RN no incluye ICU completo).
-const madridOffsetMinutes = (year: number, month: number, day: number, hour: number, minute: number): number => {
+const madridOffsetMinutes = (
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number
+): number => {
   // último domingo de marzo
   const marchLast = new Date(Date.UTC(year, 2, 31));
   const dstStart = new Date(Date.UTC(year, 2, 31 - marchLast.getUTCDay(), 1, 0)); // 01:00 UTC

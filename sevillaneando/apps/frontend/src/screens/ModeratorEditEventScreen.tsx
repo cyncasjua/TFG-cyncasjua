@@ -489,7 +489,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               isVisible={showFechaInicio}
               value={fechaInicio}
               minimumDate={new Date()}
-              onConfirm={(val) => { setFechaInicio(val); setShowFechaInicio(false); }}
+              onConfirm={(val) => {
+                setFechaInicio(val);
+                setShowFechaInicio(false);
+              }}
               onCancel={() => setShowFechaInicio(false)}
             />
             <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
@@ -515,7 +518,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                   ? new Date(fechaInicio)
                   : new Date()
               }
-              onConfirm={(val) => { setFechaFin(val); setShowFechaFin(false); }}
+              onConfirm={(val) => {
+                setFechaFin(val);
+                setShowFechaFin(false);
+              }}
               onCancel={() => setShowFechaFin(false)}
             />
 

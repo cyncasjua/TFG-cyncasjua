@@ -41,7 +41,6 @@ import { reportWarning } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 import { formatDateTime, toBackendDateTime } from '../utils/dateTime';
 
-
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateEvent'>;
 
 type Categoria = {
@@ -433,7 +432,10 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               isVisible={showFechaInicio}
               value={fechaInicio}
               minimumDate={new Date()}
-              onConfirm={(val) => { setFechaInicio(val); setShowFechaInicio(false); }}
+              onConfirm={(val) => {
+                setFechaInicio(val);
+                setShowFechaInicio(false);
+              }}
               onCancel={() => setShowFechaInicio(false)}
             />
             <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
@@ -454,7 +456,10 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               isVisible={showFechaFin}
               value={fechaFin}
               minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
-              onConfirm={(val) => { setFechaFin(val); setShowFechaFin(false); }}
+              onConfirm={(val) => {
+                setFechaFin(val);
+                setShowFechaFin(false);
+              }}
               onCancel={() => setShowFechaFin(false)}
             />
             <ThemedText style={styles.label}>Privado</ThemedText>
