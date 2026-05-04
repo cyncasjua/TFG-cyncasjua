@@ -9,7 +9,11 @@ import {
   TextInput,
 } from 'react-native';
 import dayjs from 'dayjs';
-import 'dayjs/locale/es';
+import utc from 'dayjs/plugin/utc';
+import localeEs from 'dayjs/locale/es.js';
+
+dayjs.extend(utc);
+dayjs.locale(localeEs);
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getRoutes, getErrorMessage, type UserRoute } from '../services';

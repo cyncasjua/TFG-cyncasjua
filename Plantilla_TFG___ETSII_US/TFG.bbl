@@ -1,0 +1,48 @@
+\begin{thebibliography}{6}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Ministerio de Cultura y Deporte}(2023)]{mcd2023habitos}
+{Ministerio de Cultura y Deporte}.
+\newblock Encuesta de hábitos y prácticas culturales en españa 2022--2023,
+  2023.
+\newblock URL
+  \url{https://www.culturaydeporte.gob.es/dam/jcr:c5206a1e-bdc3-4e71-9bde-4f2b0dde38b3/encuesta-de-habitos-y-practicas-culturales-2022-2023.pdf}.
+\newblock Último acceso: mayo 2025.
+
+\bibitem[{Eventbrite, Inc.}(2024)]{eventbrite}
+{Eventbrite, Inc.}
+\newblock Eventbrite -- discover events or create your own, 2024.
+\newblock URL \url{https://www.eventbrite.com}.
+\newblock Último acceso: mayo 2025.
+
+\bibitem[{Meta Platforms, Inc.}(2024)]{facebook}
+{Meta Platforms, Inc.}
+\newblock Facebook events, 2024.
+\newblock URL \url{https://www.facebook.com/events}.
+\newblock Último acceso: mayo 2025.
+
+\bibitem[{Pew Research Center}(2023)]{pewresearch2023}
+{Pew Research Center}.
+\newblock Teens, social media and technology 2023, 2023.
+\newblock URL
+  \url{https://www.pewresearch.org/internet/2023/12/11/teens-social-media-and-technology-2023/}.
+\newblock Último acceso: mayo 2025.
+
+\bibitem[{Meetup, LLC}(2024)]{meetup}
+{Meetup, LLC}.
+\newblock Meetup -- find local groups, 2024.
+\newblock URL \url{https://www.meetup.com}.
+\newblock Último acceso: mayo 2025.
+
+\bibitem[{Ayuntamiento de Sevilla}(2024)]{ayuntamientosevilla}
+{Ayuntamiento de Sevilla}.
+\newblock Agenda cultural -- ayuntamiento de sevilla, 2024.
+\newblock URL
+  \url{https://www.sevilla.org/servicios/cultura-educacion-y-juventud/cultura/agenda-cultural}.
+\newblock Último acceso: mayo 2025.
+
+\end{thebibliography}

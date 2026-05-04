@@ -1782,8 +1782,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               />
 
               <View style={styles.privateModalActions}>
-                <ThemedButton title="Cancelar" onPress={closePrivateAccess} />
-                <ThemedButton title="Entrar" onPress={handlePrivateAccessSubmit} />
+                <ThemedButton
+                  title="Cancelar"
+                  variant="secondary"
+                  onPress={closePrivateAccess}
+                  style={{ flex: 1, borderColor: colors.primary }}
+                />
+                <ThemedButton
+                  title="Entrar"
+                  onPress={handlePrivateAccessSubmit}
+                  style={{ flex: 1 }}
+                />
               </View>
             </ThemedView>
           </View>

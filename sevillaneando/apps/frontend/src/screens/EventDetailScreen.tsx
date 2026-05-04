@@ -1238,14 +1238,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 {messages.map((item) => {
                   const hasImage = !!getFullImageUrl(item.imageUrl);
                   const isOwn = item.usuario?.firebaseUid === user?.firebaseUid;
-                  const isLight =
-                    colors.background === '#FFFFFF' ||
-                    colors.background === '#fff' ||
-                    colors.background === 'white';
-                  const nameColor =
-                    isOwn && isLight ? '#e0e0e0' : theme === 'dark' ? '#9bbcff' : '#3b5bdb';
-                  const messageColor =
-                    isOwn && isLight ? '#fff' : theme === 'dark' ? '#e6e8ef' : '#1f2937';
+                  const nameColor = isOwn ? 'rgba(255,255,255,0.75)' : colors.primary;
+                  const messageColor = isOwn ? '#fff' : colors.text;
 
                   return (
                     <ThemedView

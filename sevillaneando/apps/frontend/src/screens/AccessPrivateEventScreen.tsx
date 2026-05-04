@@ -61,10 +61,19 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>{event.title}</ThemedText>
-      <ThemedButton
-        onPress={() => navigation.navigate('EventDetail', { event })}
-        title="Ver evento completo"
-      />
+      <View style={styles.buttons}>
+        <ThemedButton
+          variant="secondary"
+          onPress={() => navigation.goBack()}
+          title="Volver"
+          style={[styles.btn, { borderColor: colors.primary }]}
+        />
+        <ThemedButton
+          onPress={() => navigation.navigate('EventDetail', { event })}
+          title="Ver evento completo"
+          style={styles.btn}
+        />
+      </View>
     </ThemedView>
   );
 };
@@ -79,8 +88,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 24,
     textAlign: 'center',
+  },
+  buttons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  btn: {
+    flex: 1,
   },
   errorText: {
     textAlign: 'center',

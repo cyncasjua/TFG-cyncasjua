@@ -28,9 +28,11 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
+import { CalendarDateTimePicker } from '../components';
 import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
+import { toBackendDateTime } from '../utils/dateTime';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -84,9 +86,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [fechaInicio, setFechaInicio] = useState(event.fechaInicio || '');
   const [fechaFin, setFechaFin] = useState(event.fechaFin || '');
   const [showFechaInicio, setShowFechaInicio] = useState(false);
-  const [showHoraInicio, setShowHoraInicio] = useState(false);
   const [showFechaFin, setShowFechaFin] = useState(false);
-  const [showHoraFin, setShowHoraFin] = useState(false);
 
   const [estado, setEstado] = useState(event.estado || 'Pendiente');
   const [openEstado, setOpenEstado] = useState(false);
@@ -329,8 +329,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         title,
         description,
         address,
-        fechaInicio: fechaInicio || undefined,
-        fechaFin: fechaFin || undefined,
+        fechaInicio: toBackendDateTime(fechaInicio),
+        fechaFin: toBackendDateTime(fechaFin),
         location: {
           type: 'Point',
           coordinates: [longitude, latitude],
@@ -451,33 +451,11 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 pointerEvents="none"
               />
             </TouchableOpacity>
-            <DateTimePickerModal
+            <CalendarDateTimePicker
               isVisible={showFechaInicio}
-              mode="date"
-              date={fechaInicio ? new Date(fechaInicio) : new Date()}
-              onConfirm={(date: Date) => {
-                const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
-                const nuevaFecha = dayjs(date).hour(prev.hour()).minute(prev.minute());
-                setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
-                setShowFechaInicio(false);
-                setShowHoraInicio(false);
-                setTimeout(() => setShowHoraInicio(true), 350);
-              }}
+              value={fechaInicio}
+              onConfirm={(val) => { setFechaInicio(val); setShowFechaInicio(false); }}
               onCancel={() => setShowFechaInicio(false)}
-              locale="es"
-            />
-            <DateTimePickerModal
-              isVisible={showHoraInicio}
-              mode="time"
-              date={fechaInicio ? new Date(fechaInicio) : new Date()}
-              onConfirm={(date: Date) => {
-                const prev = fechaInicio ? dayjs(fechaInicio) : dayjs();
-                const nuevaFecha = prev.hour(dayjs(date).hour()).minute(dayjs(date).minute());
-                setFechaInicio(nuevaFecha.format('YYYY-MM-DD HH:mm'));
-                setShowHoraInicio(false);
-              }}
-              onCancel={() => setShowHoraInicio(false)}
-              locale="es"
             />
 
             <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
@@ -495,33 +473,12 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 pointerEvents="none"
               />
             </TouchableOpacity>
-            <DateTimePickerModal
+            <CalendarDateTimePicker
               isVisible={showFechaFin}
-              mode="date"
-              date={fechaFin ? new Date(fechaFin) : new Date()}
-              onConfirm={(date: Date) => {
-                const prev = fechaFin ? dayjs(fechaFin) : dayjs();
-                const nuevaFecha = dayjs(date).hour(prev.hour()).minute(prev.minute());
-                setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
-                setShowFechaFin(false);
-                setShowHoraFin(false);
-                setTimeout(() => setShowHoraFin(true), 350);
-              }}
+              value={fechaFin}
+              minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+              onConfirm={(val) => { setFechaFin(val); setShowFechaFin(false); }}
               onCancel={() => setShowFechaFin(false)}
-              locale="es"
-            />
-            <DateTimePickerModal
-              isVisible={showHoraFin}
-              mode="time"
-              date={fechaFin ? new Date(fechaFin) : new Date()}
-              onConfirm={(date: Date) => {
-                const prev = fechaFin ? dayjs(fechaFin) : dayjs();
-                const nuevaFecha = prev.hour(dayjs(date).hour()).minute(dayjs(date).minute());
-                setFechaFin(nuevaFecha.format('YYYY-MM-DD HH:mm'));
-                setShowHoraFin(false);
-              }}
-              onCancel={() => setShowHoraFin(false)}
-              locale="es"
             />
 
             <ThemedText style={styles.label}>Privado</ThemedText>

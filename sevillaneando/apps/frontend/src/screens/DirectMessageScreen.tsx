@@ -362,12 +362,8 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
         >
           {messages.map((item) => {
             const isOwn = item.emisor?.id === user?.id;
-            const isLight =
-              colors.background === '#FFFFFF' ||
-              colors.background === '#fff' ||
-              colors.background === 'white';
-            const nameColor = isOwn && isLight ? '#e0e0e0' : '#9bbcff';
-            const messageColor = isOwn && isLight ? '#fff' : '#e6e8ef';
+            const nameColor = isOwn ? 'rgba(255,255,255,0.75)' : colors.primary;
+            const messageColor = isOwn ? '#fff' : colors.text;
             const hasImage = !!getFullImageUrl(item.imageUrl);
 
             return (
