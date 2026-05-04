@@ -597,20 +597,48 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               keyboardType="numeric"
             />
 
-
             <ThemedText style={styles.label}>Categoría</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />
             ) : (
               <View style={{ zIndex: 1000, elevation: 1000, overflow: 'visible' }}>
                 <DropDownPicker
-                open={openCategoria}
-                value={categoriaId}
-                items={dropdownItems}
-                setOpen={setOpenCategoria}
-                setValue={setCategoriaId}
-                setItems={setDropdownItems}
-                placeholder="Selecciona una categoría"
+                  open={openCategoria}
+                  value={categoriaId}
+                  items={dropdownItems}
+                  setOpen={setOpenCategoria}
+                  setValue={setCategoriaId}
+                  setItems={setDropdownItems}
+                  placeholder="Selecciona una categoría"
+                  style={{
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                    minHeight: 40,
+                    borderRadius: 16,
+                  }}
+                  dropDownContainerStyle={{
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                  }}
+                  textStyle={{ color: colors.text }}
+                  placeholderStyle={{ color: colors.text + '99' }}
+                  zIndex={1000}
+                  listMode="SCROLLVIEW"
+                  ArrowUpIconComponent={ArrowUpIcon}
+                  ArrowDownIconComponent={ArrowDownIcon}
+                />
+              </View>
+            )}
+            <ThemedText style={styles.label}>Estado</ThemedText>
+            <View style={{ zIndex: 900, elevation: 900, overflow: 'visible' }}>
+              <DropDownPicker
+                open={openEstado}
+                value={estado}
+                items={estadoItems}
+                setOpen={setOpenEstado}
+                setValue={setEstado}
+                setItems={setEstadoItems}
+                placeholder="Selecciona un estado"
                 style={{
                   backgroundColor: colors.card,
                   borderColor: colors.primary,
@@ -623,65 +651,39 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 }}
                 textStyle={{ color: colors.text }}
                 placeholderStyle={{ color: colors.text + '99' }}
-                zIndex={1000}
+                zIndex={900}
                 listMode="SCROLLVIEW"
                 ArrowUpIconComponent={ArrowUpIcon}
                 ArrowDownIconComponent={ArrowDownIcon}
-                />
-              </View>
-            )}
-            <ThemedText style={styles.label}>Estado</ThemedText>
-            <View style={{ zIndex: 900, elevation: 900, overflow: 'visible' }}>
-              <DropDownPicker
-              open={openEstado}
-              value={estado}
-              items={estadoItems}
-              setOpen={setOpenEstado}
-              setValue={setEstado}
-              setItems={setEstadoItems}
-              placeholder="Selecciona un estado"
-              style={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-                minHeight: 40,
-                borderRadius: 16,
-              }}
-              dropDownContainerStyle={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-              }}
-              textStyle={{ color: colors.text }}
-              placeholderStyle={{ color: colors.text + '99' }}
-              zIndex={900}
-              listMode="SCROLLVIEW"
-              ArrowUpIconComponent={ArrowUpIcon}
-              ArrowDownIconComponent={ArrowDownIcon}
               />
             </View>
             <ThemedText style={styles.label}>Recurrencia</ThemedText>
             <View style={{ zIndex: 850, elevation: 850, overflow: 'visible' }}>
               <DropDownPicker
-              open={openRecurrencia}
-              value={recurrencia}
-              items={recurrenciaItems}
-              setOpen={setOpenRecurrencia}
-              setValue={setRecurrencia}
-              setItems={() => {}}
-              placeholder="Sin recurrencia"
-              style={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-                minHeight: 40,
-                borderRadius: 16,
-                marginBottom: 10,
-              }}
-              dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
-              textStyle={{ color: colors.text }}
-              placeholderStyle={{ color: colors.text + '99' }}
-              zIndex={850}
-              listMode="SCROLLVIEW"
-              ArrowUpIconComponent={ArrowUpIcon}
-              ArrowDownIconComponent={ArrowDownIcon}
+                open={openRecurrencia}
+                value={recurrencia}
+                items={recurrenciaItems}
+                setOpen={setOpenRecurrencia}
+                setValue={setRecurrencia}
+                setItems={() => {}}
+                placeholder="Sin recurrencia"
+                style={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  minHeight: 40,
+                  borderRadius: 16,
+                  marginBottom: 10,
+                }}
+                dropDownContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                }}
+                textStyle={{ color: colors.text }}
+                placeholderStyle={{ color: colors.text + '99' }}
+                zIndex={850}
+                listMode="SCROLLVIEW"
+                ArrowUpIconComponent={ArrowUpIcon}
+                ArrowDownIconComponent={ArrowDownIcon}
               />
             </View>
             {!!recurrencia && (

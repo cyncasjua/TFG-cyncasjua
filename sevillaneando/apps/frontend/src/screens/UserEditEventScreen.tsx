@@ -678,7 +678,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   borderRadius: 16,
                   marginBottom: 10,
                 }}
-                dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
+                dropDownContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                }}
                 textStyle={{ color: colors.text }}
                 placeholder="Pendiente"
                 placeholderStyle={{ color: colors.text + '99' }}
@@ -706,7 +709,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   borderRadius: 16,
                   marginBottom: 10,
                 }}
-                dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.primary }}
+                dropDownContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                }}
                 textStyle={{ color: colors.text }}
                 placeholderStyle={{ color: colors.text + '99' }}
                 zIndex={950}
