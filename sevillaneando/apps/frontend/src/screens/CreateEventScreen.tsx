@@ -372,6 +372,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Crear Evento</ThemedTitle>
@@ -636,7 +637,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             />
 
             <ThemedText style={styles.label}>Estado</ThemedText>
-            <DropDownPicker
+            <View style={{ zIndex: 900, elevation: 900, overflow: 'visible' }}>
+              <DropDownPicker
               open={openEstado}
               value={estado}
               items={estadoItems}
@@ -661,9 +663,11 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               listMode="SCROLLVIEW"
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
-            />
+              />
+            </View>
             <ThemedText style={styles.label}>Recurrencia</ThemedText>
-            <DropDownPicker
+            <View style={{ zIndex: 850, elevation: 850, overflow: 'visible' }}>
+              <DropDownPicker
               open={openRecurrencia}
               value={recurrencia}
               items={recurrenciaItems}
@@ -688,7 +692,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               listMode="SCROLLVIEW"
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
-            />
+              />
+            </View>
             {!!recurrencia && (
               <>
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
@@ -725,7 +730,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (
-              <DropDownPicker
+              <View style={{ zIndex: 1000, elevation: 1000, overflow: 'visible' }}>
+                <DropDownPicker
                 open={openCategoria}
                 value={categoriaId}
                 items={dropdownItems}
@@ -750,7 +756,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 listMode="SCROLLVIEW"
                 ArrowUpIconComponent={ArrowUpIcon}
                 ArrowDownIconComponent={ArrowDownIcon}
-              />
+                />
+              </View>
             )}
             {privado && eventLinkAcceso && (
               <PrivateEventLinkModal
@@ -859,7 +866,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
   },
   container: {
     padding: 20,

@@ -4,8 +4,21 @@ export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
 });
+
+// Retry automático una vez si falla por timeout o red (Render durmiendo)
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const config = error.config as any;
+    if (config && !config._retried && (error.code === 'ECONNABORTED' || !error.response)) {
+      config._retried = true;
+      return api(config);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export function getErrorMessage(error: unknown): string {
   if (!error) return 'Error desconocido';

@@ -352,6 +352,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
@@ -596,11 +597,13 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               keyboardType="numeric"
             />
 
+
             <ThemedText style={styles.label}>Categoría</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />
             ) : (
-              <DropDownPicker
+              <View style={{ zIndex: 1000, elevation: 1000, overflow: 'visible' }}>
+                <DropDownPicker
                 open={openCategoria}
                 value={categoriaId}
                 items={dropdownItems}
@@ -624,10 +627,12 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 listMode="SCROLLVIEW"
                 ArrowUpIconComponent={ArrowUpIcon}
                 ArrowDownIconComponent={ArrowDownIcon}
-              />
+                />
+              </View>
             )}
             <ThemedText style={styles.label}>Estado</ThemedText>
-            <DropDownPicker
+            <View style={{ zIndex: 900, elevation: 900, overflow: 'visible' }}>
+              <DropDownPicker
               open={openEstado}
               value={estado}
               items={estadoItems}
@@ -651,9 +656,11 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               listMode="SCROLLVIEW"
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
-            />
+              />
+            </View>
             <ThemedText style={styles.label}>Recurrencia</ThemedText>
-            <DropDownPicker
+            <View style={{ zIndex: 850, elevation: 850, overflow: 'visible' }}>
+              <DropDownPicker
               open={openRecurrencia}
               value={recurrencia}
               items={recurrenciaItems}
@@ -675,7 +682,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               listMode="SCROLLVIEW"
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
-            />
+              />
+            </View>
             {!!recurrencia && (
               <>
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>

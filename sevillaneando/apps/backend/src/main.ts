@@ -430,6 +430,10 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
+
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/health', (_req: any, res: any) => res.json({ status: 'ok' }));
+
   const eventRepo = dataSource.getRepository(Event);
   await seedEvents(eventRepo, dataSource);
 
