@@ -54,6 +54,10 @@ Asumir simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Maste
 
 La configuración temprana del pipeline de CI/CD con GitHub Actions, aunque supuso un coste inicial no previsto, amortizó ese tiempo evitando regresiones en las últimas fases del proyecto, cuando la base de código era más grande y compleja.
 
+\subsection{Compatibilidad multiplataforma}
+
+El desarrollo en React Native con Expo promete una única base de código para iOS y Android, pero en la práctica existen diferencias de comportamiento que solo se manifiestan en dispositivos reales de cada plataforma. El hecho de haber desarrollado y probado íntegramente sobre iOS provocó que los problemas de compatibilidad con Android (renderizado del mapa, posicionamiento de elementos de interfaz) no fueran detectados hasta la fase de pruebas con usuarios piloto. La lección es clara: en proyectos multiplataforma es imprescindible incorporar dispositivos o emuladores de ambas plataformas en el ciclo de pruebas desde los primeros sprints, no solo al final.
+
 \section{Desviaciones respecto a la planificación}
 
 Las desviaciones respecto a la planificación inicial se describen a continuación, junto con su impacto cuantitativo estimado y la justificación de la decisión adoptada.
@@ -64,6 +68,8 @@ Las desviaciones respecto a la planificación inicial se describen a continuaci�
     \item \textbf{Mayor complejidad del scraping} (+15 h): la gestión de errores 429, la variabilidad en la estructura de las respuestas externas y la necesidad de implementar reintentos con retroceso exponencial superaron la estimación inicial. Esta desviación fue la principal causa de que las funcionalidades opcionales de la Fase 5 no pudieran completarse.
 
     \item \textbf{No implementación de NSFWJS y generación de carteles con IA} ($-$20 h, reducción de alcance): ambas funcionalidades estaban condicionadas a la disponibilidad de tiempo al concluir las fases principales. El esfuerzo adicional absorbido por el scraping y el sistema de rutas hizo inviable abordarlas dentro del plazo del proyecto. Se documentan en la sección de trabajo futuro.
+
+    \item \textbf{Corrección de compatibilidad con Android} (+8 h): durante las pruebas con usuarios piloto se detectaron problemas en dispositivos Android reales (mapa no visible, descuadres de pantalla) que no habían aparecido en el desarrollo sobre iOS ni en el emulador. La corrección requirió una iteración adicional en la fase de cierre, no contemplada en la planificación. Esta desviación pone de manifiesto la importancia de realizar pruebas sobre ambas plataformas desde fases tempranas del desarrollo.
 \end{itemize}
 
 En conjunto, el proyecto se completó dentro del plazo establecido y con el alcance funcional prioritario cubierto al 100\%, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance.
@@ -92,12 +98,16 @@ A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades q
 \begin{itemize}
     \item \textbf{Moderación de contenido inapropiado (NSFW)}: NSFWJS está importado en el proyecto pero \texttt{useNsfwGuard} es un placeholder sin implementar. Completar esta funcionalidad evitaría la subida de imágenes inapropiadas en eventos y chats, mejorando la seguridad del contenido sin requerir revisión manual para cada imagen.
 
+    \item \textbf{Verificación de correos electrónicos}: actualmente, el registro de usuarios no incluye un paso de validación del correo mediante enlace de confirmación. Implementar esta funcionalidad mediante Firebase Auth o un servicio de correo transaccional (SendGrid, Mailgun) aumentaría la confiabilidad de las direcciones de correo registradas y permitiría re-enviar invitaciones o notificaciones críticas con mayor seguridad. Además, facilitaría la recuperación de cuentas y reduciría registros fraudulentos o con errores tipográficos.
+
     \item \textbf{Cobertura de pruebas}: el plan de pruebas actual cubre los flujos principales pero deja fuera casos límite en el motor de recomendaciones, el scraping y la lógica de moderación. Ampliar la suite con pruebas de carga y pruebas de regresión automatizadas aumentaría la fiabilidad del sistema en producción.
 \end{itemize}
 
 \subsection{Nuevas funcionalidades}
 
 \begin{itemize}
+    \item \textbf{Módulo de amigos}: los usuarios piloto destacaron la ausencia de una sección específica para gestionar contactos cercanos dentro de la aplicación. La idea es complementar el sistema de seguidores ya existente con una capa de ``amigos'' con reciprocidad, que permita ver los eventos planeados por las personas de confianza y recibir sugerencias de planes basadas en los gustos de la red social propia. Esta funcionalidad haría la plataforma más parecida a una red social de ocio y aumentaría la retención de usuarios.
+
     \item \textbf{Generación de carteles con IA}: identificada desde el inicio como objetivo de la Fase 5, esta funcionalidad permitiría a los usuarios generar automáticamente un cartel visual para su evento a partir del título, la descripción y las imágenes proporcionadas, integrando un modelo generativo de imagen a través de una API externa.
 
     \item \textbf{Modo sin conexión básico}: actualmente no existe detección de red ni caché local. Mediante \texttt{AsyncStorage} o React Query se podrían almacenar localmente los últimos eventos cargados y mostrarlos sin conexión, mejorando la experiencia de usuario en entornos con conectividad intermitente.

@@ -1,14 +1,206 @@
-\chapter{Análisis del problema}\label{cap:analisis}
+﻿\chapter{Análisis del problema}\label{cap:analisis}
 
 \section{Introducción}
 
 En este capítulo se analiza el problema que motiva el desarrollo del sistema \textbf{Sevillaneando}, así como los requisitos que debe cumplir la solución propuesta.
 
-Actualmente, la información sobre eventos culturales y de ocio en la ciudad de Sevilla se encuentra dispersa en múltiples plataformas, muchas de ellas centradas en eventos de gran escala. Esto dificulta el descubrimiento de actividades emergentes o menos conocidas, reduciendo su visibilidad y limitando la participación de los usuarios. Personalmente, me cuesta mucho encontrar actividades culturales si no es porque algún conocido sepa de ellas, por lo que pensé que sería una buena idea tener un sitio donde poder encontrarlas.
+Actualmente, la información sobre eventos culturales y de ocio en la ciudad de Sevilla se encuentra dispersa en múltiples plataformas, muchas de ellas centradas en eventos de gran escala. Esto dificulta el descubrimiento de actividades emergentes o menos conocidas, reduciendo su visibilidad y limitando la participación de los usuarios.
 
-También, las soluciones existentes suelen carecer de funcionalidades de personalización, lo que impide ofrecer una experiencia adaptada a los intereses y preferencias de cada usuario. Además, no suelen ofrecer un servicio social donde cada uno pueda aportar algo, por lo que es difícil dar a conocer nuevos lugares y eventos, y sobretodo, tener a alguien con quien comunicarte para obtener más información y para conocer a alguien que frecuente esos sitios.
+Las soluciones existentes suelen carecer de funcionalidades de personalización, lo que impide ofrecer una experiencia adaptada a los intereses y preferencias de cada usuario. Además, no incorporan funcionalidades sociales que permitan a la propia comunidad generar y enriquecer el contenido, lo que limita la capacidad de dar visibilidad a eventos de pequeña escala y de facilitar la conexión entre personas con intereses comunes.
 
 Ante esta situación, se plantea el desarrollo de una aplicación móvil que centralice la información de eventos, permita la participación activa y social de los usuarios y ofrezca recomendaciones personalizadas basadas en su comportamiento, ubicación e intereses.
+
+\section{Actores del sistema}
+
+Los actores del sistema son las personas que interactúan con la aplicación. Cada actor representa un perfil de usuario real con motivaciones, necesidades y capacidades de uso diferenciadas. La identificación de actores es el punto de partida del análisis: determina qué historias de usuario existen, qué requisitos funcionales aplican a cada perfil y qué casos de prueba deben cubrirse para validar cada uno.
+
+\subsection{Visitante}
+
+Persona que llega a la aplicación sin cuenta o que aún no ha iniciado sesión. Su interacción con el sistema es mínima: puede registrarse, iniciar sesión o recuperar su contraseña. También puede acceder al detalle de un evento privado si dispone del enlace de invitación compartido por el creador, sin necesidad de autenticarse previamente.
+
+\textit{Casos de prueba relacionados:} CP-01 (registro), CP-02 (login incorrecto), CP-04 (recuperación de contraseña), CP-20 y CP-21 (acceso a evento privado con y sin enlace).
+
+\subsection{Ciudadano}
+
+Persona registrada que utiliza la aplicación para descubrir y participar en la vida cultural y de ocio de Sevilla. Es el actor principal y el más frecuente. Sus motivaciones son encontrar planes que se adapten a sus intereses, compartir eventos con otras personas, conocer a gente con gustos similares y mantenerse informado de lo que sucede en la ciudad.
+
+Sus actividades principales incluyen: consultar el listado y el mapa de eventos, filtrar por sus preferencias, apuntarse a actividades, chatear con otros asistentes, enviar mensajes privados, guardar eventos para más tarde, valorar los eventos a los que ha asistido y consultar las recomendaciones personalizadas y las rutas sugeridas.
+
+\textit{Casos de prueba relacionados:} CP-03 (perfil), CP-05 a CP-18 (consulta, búsqueda, mapa, participación, chat, recomendaciones y rutas), CP-29 y CP-30 (notificaciones).
+
+\subsection{Organizador}
+
+Todo ciudadano registrado puede crear y gestionar sus propios eventos, por lo que el rol de organizador no es un perfil técnico diferenciado sino un patrón de uso del mismo actor. Sin embargo, dentro de este perfil conviven motivaciones muy distintas: desde una persona particular que organiza una quedada o un taller esporádico, hasta un negocio local, una asociación cultural o un creador de contenido cuya actividad principal es precisamente la publicación de eventos. Este último grupo, aunque técnicamente igual al ciudadano estándar, hace un uso intensivo de las funcionalidades de creación, edición y gestión de visibilidad.
+
+Sus necesidades específicas incluyen publicar eventos públicos o privados, editarlos, gestionar los accesos y recibir información sobre el resultado de la moderación.
+
+\textit{Casos de prueba relacionados:} CP-08 y CP-09 (apuntarse a evento), CP-19 a CP-23 (creación, acceso y edición de eventos privados y cambio de visibilidad), CP-29 (notificación de moderación).
+
+\subsection{Moderador de contenido}
+
+Ciudadano con responsabilidad de revisión del contenido publicado por otros usuarios. Su función es garantizar la calidad y fiabilidad de los eventos que aparecen en el listado público. Puede revisar los eventos pendientes, editarlos directamente para corregir errores menores, aprobarlos o rechazarlos. Este rol es asignado por el administrador.
+
+\textit{Casos de prueba relacionados:} CP-26 (panel de moderación), CP-27 (evento no visible durante moderación), CP-28 (acceso denegado a usuario sin rol).
+
+\subsection{Administrador de la plataforma}
+
+Responsable de la configuración estructural del sistema. Gestiona el catálogo de categorías de eventos y los roles de los usuarios (puede promover a moderador o administrador, o eliminar cuentas). No interviene directamente en la revisión de contenido, separando así las responsabilidades de configuración y moderación.
+
+\textit{Casos de prueba relacionados:} CP-24 (panel de administración -- usuarios), CP-25 (gestión de categorías), CP-28 (verificación de acceso por rol).
+
+La figura~\ref{fig:diagrama_actores} muestra las relaciones de extensión entre actores y su vinculación con las principales áreas funcionales del sistema.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\small},
+    actor/.style={draw, rounded corners=3pt, minimum width=3.6cm, minimum height=0.75cm, align=center, fill=white},
+    arr/.style={->, thick},
+]
+\node[actor] (visit)   at (0,    0)   {Visitante};
+\node[actor] (ciudad)  at (0,   -1.8) {Ciudadano / Organizador};
+\node[actor] (mod)     at (-3.2,-3.8) {Moderador de contenido};
+\node[actor] (admin)   at (3.2, -3.8) {Administrador de plataforma};
+
+\draw[arr] (ciudad) -- (visit);
+\node[font=\tiny, right=0.05cm of ciudad, yshift=0.9cm] {extiende};
+\draw[arr] (mod)    -- (ciudad);
+\draw[arr] (admin)  -- (ciudad);
+\end{tikzpicture}
+\caption{Diagrama de actores del sistema Sevillaneando}
+\label{fig:diagrama_actores}
+\end{figure}
+
+\section{Diagrama de casos de uso}
+
+El diagrama de casos de uso muestra las principales funcionalidades del sistema y los actores que las utilizan. Se presentan agrupados en tres bloques funcionales para facilitar la lectura.
+
+Dado el número de funcionalidades del sistema, el diagrama de casos de uso se divide en dos partes: la primera cubre el acceso, el perfil y la gestión de eventos; la segunda cubre las funcionalidades sociales, la moderación y la administración.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.78,
+    every node/.style={font=\small},
+    actor/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.65cm, align=center, fill=white},
+    uc/.style={draw, ellipse, minimum width=3.4cm, minimum height=0.6cm, align=center, fill=gray!8, font=\scriptsize},
+    arr/.style={->, thick, color=gray},
+]
+%% -- Actores ------------------------------------------------------
+\node[actor] (visit)  at (-5.5,  1.0) {Visitante};
+\node[actor] (ciudad) at (-5.5, -4.5) {Ciudadano /\\Organizador};
+
+%% -- Bloque A: Acceso y perfil ------------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9, 2.0) rectangle (1.9, -1.5);
+\node[font=\tiny\bfseries] at (0, 1.85) {Acceso y perfil};
+\node[uc] (a1) at (0,  1.3) {Registrarse};
+\node[uc] (a2) at (0,  0.4) {Iniciar sesión};
+\node[uc] (a3) at (0, -0.5) {Recuperar contraseña};
+\node[uc] (a4) at (0, -1.3) {Gestionar perfil};
+
+%% -- Bloque B: Descubrimiento -------------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9, -2.0) rectangle (1.9, -5.5);
+\node[font=\tiny\bfseries] at (0, -2.15) {Descubrimiento};
+\node[uc] (b1) at (0, -2.7) {Consultar eventos};
+\node[uc] (b2) at (0, -3.6) {Buscar y filtrar};
+\node[uc] (b3) at (0, -4.5) {Ver mapa};
+\node[uc] (b4) at (0, -5.3) {Ver recomendaciones};
+
+%% -- Bloque C: Participación --------------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9, -6.0) rectangle (1.9, -9.5);
+\node[font=\tiny\bfseries] at (0, -6.15) {Participación};
+\node[uc] (c1) at (0, -6.7) {Apuntarse a evento};
+\node[uc] (c2) at (0, -7.6) {Guardar evento};
+\node[uc] (c3) at (0, -8.5) {Crear evento};
+\node[uc] (c4) at (0, -9.3) {Editar evento propio};
+
+%% -- Bloque D: Eventos privados -----------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9,-10.0) rectangle (1.9,-11.2);
+\node[font=\tiny\bfseries] at (0,-10.15) {Eventos privados};
+\node[uc] (d1) at (0,-10.8) {Acceder con enlace};
+
+%% -- Flechas Visitante --------------------------------------------
+\draw[arr] (visit) -- (a1);
+\draw[arr] (visit) -- (a2);
+\draw[arr] (visit) -- (a3);
+\draw[arr] (visit) -- (d1);
+
+%% -- Flechas Ciudadano / Organizador ------------------------------
+\draw[arr] (ciudad) -- (a4);
+\draw[arr] (ciudad) -- (b1);
+\draw[arr] (ciudad) -- (b2);
+\draw[arr] (ciudad) -- (b3);
+\draw[arr] (ciudad) -- (b4);
+\draw[arr] (ciudad) -- (c1);
+\draw[arr] (ciudad) -- (c2);
+\draw[arr] (ciudad) -- (c3);
+\draw[arr] (ciudad) -- (c4);
+\draw[arr] (ciudad) -- (d1);
+
+\end{tikzpicture}
+\caption{Diagrama de casos de uso (parte 1): acceso, perfil, descubrimiento y gestión de eventos}
+\label{fig:casos_uso_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.78,
+    every node/.style={font=\small},
+    actor/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.65cm, align=center, fill=white},
+    uc/.style={draw, ellipse, minimum width=3.4cm, minimum height=0.6cm, align=center, fill=gray!8, font=\scriptsize},
+    arr/.style={->, thick, color=gray},
+]
+%% -- Actores ------------------------------------------------------
+\node[actor] (ciudad) at (-5.5, -1.5) {Ciudadano};
+\node[actor] (mod)    at ( 5.5, -4.5) {Moderador};
+\node[actor] (admin)  at ( 5.5, -8.0) {Administrador};
+
+%% -- Bloque E: Social ---------------------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9, 0.4) rectangle (1.9, -3.8);
+\node[font=\tiny\bfseries] at (0, 0.25) {Social};
+\node[uc] (e1) at (0, -0.3) {Chatear en evento};
+\node[uc] (e2) at (0, -1.2) {Enviar mensaje privado};
+\node[uc] (e3) at (0, -2.1) {Valorar evento};
+\node[uc] (e4) at (0, -3.0) {Crear / ver rutas};
+\node[uc] (e5) at (0, -3.7) {Ver notificaciones};
+
+%% -- Bloque F: Moderación -----------------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9,-4.4) rectangle (1.9, -6.5);
+\node[font=\tiny\bfseries] at (0,-4.55) {Moderación};
+\node[uc] (f1) at (0,-5.1) {Revisar eventos pendientes};
+\node[uc] (f2) at (0,-6.1) {Aprobar / rechazar evento};
+
+%% -- Bloque G: Administración -------------------------------------
+\draw[draw=black!40, dashed, rounded corners=4pt]
+    (-1.9,-7.0) rectangle (1.9, -9.0);
+\node[font=\tiny\bfseries] at (0,-7.15) {Administración};
+\node[uc] (g1) at (0,-7.8) {Gestionar usuarios};
+\node[uc] (g2) at (0,-8.7) {Gestionar categorías};
+
+%% -- Flechas Ciudadano --------------------------------------------
+\draw[arr] (ciudad) -- (e1);
+\draw[arr] (ciudad) -- (e2);
+\draw[arr] (ciudad) -- (e3);
+\draw[arr] (ciudad) -- (e4);
+\draw[arr] (ciudad) -- (e5);
+
+%% -- Flechas Moderador --------------------------------------------
+\draw[arr] (mod) -- (f1);
+\draw[arr] (mod) -- (f2);
+
+%% -- Flechas Administrador ----------------------------------------
+\draw[arr] (admin) -- (g1);
+\draw[arr] (admin) -- (g2);
+
+\end{tikzpicture}
+\caption{Diagrama de casos de uso (parte 2): funcionalidades sociales, moderación y administración}
+\label{fig:casos_uso_2}
+\end{figure}
 
 \section{Requisitos de información}
 
@@ -58,74 +250,168 @@ Estos datos se almacenan en una base de datos relacional, concretamente \textbf{
 
 \section{Requisitos funcionales}
 
-Los requisitos funcionales describen las funcionalidades que el sistema debe ofrecer a los usuarios, junto con los criterios de aceptación que permiten verificar su correcta implementación.
-
-A partir del análisis del problema y del backlog definido, se han identificado los siguientes requisitos funcionales principales:
+Los requisitos funcionales describen las funcionalidades que el sistema debe ofrecer a los usuarios. Se expresan siguiendo el formato estándar de historia de usuario: \textit{Como [actor], quiero [acción], para [objetivo]}, lo que permite relacionar cada requisito con el actor que lo origina y con el objetivo del sistema que satisface.
 
 \begin{itemize}
-    \item \textbf{RF-01: Registro e inicio de sesión}: el sistema debe permitir a los usuarios registrarse, iniciar sesión y gestionar su cuenta.
-    \textit{Criterio de aceptación}: un usuario puede crear una cuenta con correo y contraseña, iniciar sesión correctamente y cerrar sesión. Un intento con credenciales incorrectas muestra un mensaje de error.
+    \item \textbf{RF-01: Registro e inicio de sesión}\\
+    \textit{Como usuario no autenticado, quiero registrarme con correo y contraseña e iniciar sesión, para acceder a las funcionalidades de la aplicación.}\\
+    \textit{Criterio de aceptación}: un usuario puede crear una cuenta, iniciar sesión correctamente y cerrar sesión. Un intento con credenciales incorrectas muestra un mensaje de error.
 
-    \item \textbf{RF-02: Gestión de perfil}: el usuario puede editar su información personal, incluyendo intereses, ubicación y cambio de contraseña, así como eliminar su cuenta.
+    \item \textbf{RF-02: Gestión de perfil}\\
+    \textit{Como usuario autenticado, quiero editar mi información personal, intereses, ubicación y contraseña, para mantener mi perfil actualizado y recibir recomendaciones ajustadas a mis preferencias.}\\
     \textit{Criterio de aceptación}: los cambios en el perfil se reflejan inmediatamente en la aplicación. El usuario puede eliminar su cuenta y todos sus datos asociados son eliminados del sistema.
 
-    \item \textbf{RF-03: Consulta de eventos}: el sistema debe mostrar un listado de eventos con información básica y permitir acceder al detalle de cada uno.
+    \item \textbf{RF-03: Consulta de eventos}\\
+    \textit{Como usuario autenticado, quiero consultar un listado de eventos con información básica y acceder al detalle de cada uno, para descubrir actividades culturales y de ocio en Sevilla.}\\
     \textit{Criterio de aceptación}: el listado muestra título, categoría, fecha y ubicación. Al pulsar sobre un evento se accede a su pantalla de detalle con toda la información disponible.
 
-    \item \textbf{RF-04: Búsqueda y filtrado}: el usuario puede filtrar eventos por categoría, precio, distancia, fecha, título o descripción.
+    \item \textbf{RF-04: Búsqueda y filtrado}\\
+    \textit{Como usuario autenticado, quiero filtrar eventos por categoría, precio, distancia, fecha, título o descripción, para encontrar rápidamente los eventos que se ajustan a mis intereses.}\\
     \textit{Criterio de aceptación}: al aplicar uno o varios filtros, el listado se actualiza mostrando únicamente los eventos que cumplen los criterios seleccionados.
 
-    \item \textbf{RF-05: Mapa de eventos}: el sistema debe mostrar los eventos en un mapa interactivo en función de la ubicación del usuario.
+    \item \textbf{RF-05: Mapa de eventos}\\
+    \textit{Como usuario autenticado, quiero visualizar los eventos cercanos en un mapa interactivo, para descubrir actividades en mi entorno de forma visual e intuitiva.}\\
     \textit{Criterio de aceptación}: los eventos aparecen como marcadores en el mapa. Al pulsar sobre un marcador se muestra información básica del evento y se puede navegar a su detalle.
 
-    \item \textbf{RF-06: Creación de eventos}: los usuarios pueden crear eventos, diferenciando entre eventos públicos y privados.
+    \item \textbf{RF-06: Creación de eventos}\\
+    \textit{Como usuario autenticado, quiero crear eventos públicos o privados, para dar visibilidad a actividades que organizo o que quiero compartir con otras personas.}\\
     \textit{Criterio de aceptación}: el formulario de creación permite seleccionar visibilidad. Un evento público queda en estado pendiente tras su creación; un evento privado es accesible inmediatamente por su creador.
 
-    \item \textbf{RF-07: Moderación de eventos}: los eventos públicos deben ser aprobados por un moderador antes de ser visibles al crearse o editarse. El moderador puede editarlos antes de aprobarlos y también puede rechazarlos.
+    \item \textbf{RF-07: Moderación de eventos}\\
+    \textit{Como moderador, quiero revisar los eventos públicos pendientes, editarlos si es necesario, y aprobarlos o rechazarlos, para garantizar la calidad y fiabilidad del contenido publicado.}\\
     \textit{Criterio de aceptación}: el moderador ve en su panel los eventos pendientes, puede aprobarlos, rechazarlos o modificarlos. Tras la resolución, el creador recibe una notificación con el resultado.
 
-    \item \textbf{RF-08: Participación en eventos}: los usuarios pueden apuntarse a eventos públicos o acceder a eventos privados mediante enlace.
+    \item \textbf{RF-08: Participación en eventos}\\
+    \textit{Como usuario autenticado, quiero apuntarme a eventos públicos o acceder a eventos privados mediante enlace, para gestionar mi asistencia y organizar mis planes.}\\
     \textit{Criterio de aceptación}: un usuario puede apuntarse a un evento activo y aparece en la lista de asistentes. Un evento privado solo es accesible si el usuario dispone del enlace de invitación.
 
-    \item \textbf{RF-09: Chat y mensajería}: el sistema permite la comunicación entre usuarios mediante chat en eventos y mensajes privados directos.
+    \item \textbf{RF-09: Chat y mensajería}\\
+    \textit{Como usuario autenticado, quiero comunicarme con otros usuarios mediante el chat de un evento o con mensajes privados directos, para coordinarme y conocer a personas con intereses similares.}\\
     \textit{Criterio de aceptación}: los mensajes en el chat de un evento se reciben en tiempo real por todos los participantes. Los mensajes privados entre dos usuarios se entregan de forma inmediata y muestran indicador de leído.
 
-    \item \textbf{RF-10: Gestión de imágenes}: los usuarios pueden subir y visualizar imágenes asociadas a eventos, chats y perfiles.
+    \item \textbf{RF-10: Gestión de imágenes}\\
+    \textit{Como usuario autenticado, quiero subir y visualizar imágenes en eventos, chats y perfiles, para enriquecer el contenido y compartir momentos de los eventos.}\\
     \textit{Criterio de aceptación}: las imágenes se suben correctamente y se muestran en el contexto correspondiente. Se rechaza la subida de archivos que superen 5 MB o que no sean de tipo permitido.
 
-    \item \textbf{RF-11: Valoraciones}: los usuarios pueden valorar eventos mediante puntuaciones y comentarios.
+    \item \textbf{RF-11: Valoraciones}\\
+    \textit{Como usuario autenticado, quiero valorar eventos mediante puntuaciones y comentarios, para compartir mi experiencia y ayudar a otros usuarios a decidir si asistir.}\\
     \textit{Criterio de aceptación}: un usuario puede dejar una puntuación de 1 a 5 estrellas y un comentario opcional. La valoración media del evento se actualiza y es visible en el detalle del evento.
 
-    \item \textbf{RF-12: Recomendaciones}: el sistema ofrece recomendaciones personalizadas en función de la actividad del usuario, su cercanía y fecha.
+    \item \textbf{RF-12: Recomendaciones}\\
+    \textit{Como usuario autenticado, quiero recibir recomendaciones personalizadas de eventos, para descubrir actividades que se ajusten a mis intereses sin tener que buscarlas activamente.}\\
     \textit{Criterio de aceptación}: la pantalla de recomendaciones muestra eventos distintos a los ya vistos, ordenados según la puntuación calculada por el algoritmo en base a intereses, ubicación y actividad previa.
 
-    \item \textbf{RF-13: Rutas de eventos}: el sistema recomienda rutas de eventos personalizadas en base a los gustos del usuario, la distancia y la fecha entre ellos. Además, los usuarios pueden crear sus propias rutas públicas y el resto puede valorarlas.
+    \item \textbf{RF-13: Rutas de eventos}\\
+    \textit{Como usuario autenticado, quiero consultar rutas de eventos recomendadas automáticamente o creadas por otros usuarios, y poder crear mis propias rutas públicas, para planificar itinerarios completos de ocio.}\\
     \textit{Criterio de aceptación}: el sistema genera al menos una ruta recomendada cuando el usuario tiene ubicación e intereses definidos. Un usuario puede crear una ruta pública que es visible y valorable por otros usuarios.
 
-    \item \textbf{RF-14: Notificaciones}: el sistema envía notificaciones sobre eventos cercanos, recordatorios de eventos a los que se apuntó el usuario y resultados de moderación al crear o editar un evento.
+    \item \textbf{RF-14: Notificaciones}\\
+    \textit{Como usuario autenticado, quiero recibir notificaciones sobre eventos cercanos, recordatorios y resultados de moderación, para estar informado sin tener que consultar la aplicación continuamente.}\\
     \textit{Criterio de aceptación}: el usuario recibe notificaciones push cuando: (1) hay eventos cercanos a su ubicación, (2) se acerca la fecha de un evento al que está apuntado, o (3) un evento suyo es aprobado o rechazado por el moderador.
 
-    \item \textbf{RF-15: Gestión de roles}: el sistema distingue entre usuario, administrador y moderador, ofreciendo funcionalidades específicas para cada uno.
+    \item \textbf{RF-15: Gestión de roles}\\
+    \textit{Como administrador, quiero gestionar el rol de los usuarios del sistema, para asignar responsabilidades de moderación y administración de forma controlada.}\\
     \textit{Criterio de aceptación}: un usuario sin permisos no puede acceder a las pantallas de administración ni moderación. Un administrador puede cambiar el rol de cualquier usuario.
 
-    \item \textbf{RF-16: Gestión de categorías}: el administrador puede crear, editar y eliminar categorías de eventos.
+    \item \textbf{RF-16: Gestión de categorías}\\
+    \textit{Como administrador, quiero crear, editar y eliminar categorías de eventos, para mantener una taxonomía coherente y representativa de la oferta cultural de la ciudad.}\\
     \textit{Criterio de aceptación}: las categorías creadas por el administrador aparecen disponibles inmediatamente en el formulario de creación de eventos y en los filtros de búsqueda.
 
-    \item \textbf{RF-17: Gestión de usuarios}: el administrador puede editar el rol y eliminar usuarios.
+    \item \textbf{RF-17: Gestión de usuarios}\\
+    \textit{Como administrador, quiero editar el rol y eliminar usuarios, para mantener la integridad del sistema y gestionar el equipo de moderación.}\\
     \textit{Criterio de aceptación}: el administrador puede cambiar el rol de un usuario desde el panel de administración. Un usuario eliminado no puede volver a iniciar sesión con esa cuenta.
 
-    \item \textbf{RF-18: Organización de eventos}: los usuarios pueden guardar eventos, apuntarse a ellos y añadirlos al calendario para consultarlos posteriormente.
+    \item \textbf{RF-18: Organización de eventos}\\
+    \textit{Como usuario autenticado, quiero guardar eventos y consultarlos en mi calendario, para organizar mis planes y no perder de vista las actividades que me interesan.}\\
     \textit{Criterio de aceptación}: los eventos guardados aparecen en la sección correspondiente. Los eventos con fecha a los que el usuario está apuntado aparecen en el calendario en su fecha correcta.
 
-    \item \textbf{RF-19: Actualización automática de eventos}: el sistema obtiene y actualiza eventos de fuentes externas de forma periódica mediante scraping.
+    \item \textbf{RF-19: Actualización automática de eventos}\\
+    \textit{Como sistema (scraper-bot), quiero obtener y actualizar eventos de fuentes externas de forma periódica, para ampliar automáticamente el catálogo con eventos de plataformas institucionales y comerciales.}\\
     \textit{Criterio de aceptación}: los eventos importados aparecen en el listado como eventos aprobados. Si un evento ya existe, sus datos se actualizan en lugar de crear un duplicado. Los eventos sin ubicación válida no se almacenan.
 
-    \item \textbf{RF-20: Edición de eventos}: los usuarios pueden editar los eventos que han creado.
+    \item \textbf{RF-20: Edición de eventos}\\
+    \textit{Como usuario autenticado, quiero editar los eventos que he creado, para corregir errores o actualizar la información antes o después de la moderación.}\\
     \textit{Criterio de aceptación}: el creador de un evento puede modificar sus datos. Si el evento es público, la edición vuelve a pasar por moderación antes de publicarse.
 
-    \item \textbf{RF-21: Acceso a eventos privados}: los usuarios pueden acceder a los eventos privados mediante un enlace privado que comparte el creador.
+    \item \textbf{RF-21: Acceso a eventos privados}\\
+    \textit{Como usuario autenticado, quiero acceder a eventos privados mediante el enlace que me comparte el creador, para participar en eventos restringidos a invitados.}\\
     \textit{Criterio de aceptación}: un usuario que accede mediante el enlace correcto puede ver el detalle del evento privado. Un usuario sin el enlace no puede ver ni listar el evento.
 \end{itemize}
+
+\subsection{Matriz de trazabilidad de requisitos a objetivos}
+
+La tabla~\ref{tab:trazabilidad} muestra la relación entre los requisitos funcionales y los objetivos del sistema definidos en el capítulo~\ref{cap:planificación}.
+
+\begin{table}[H]
+\centering
+\caption{Matriz de trazabilidad: requisitos funcionales y objetivos del sistema}
+\label{tab:trazabilidad}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Requisito funcional} & \textbf{Objetivo(s) del sistema relacionado(s)} \\
+\hline
+RF-01: Registro e inicio de sesión & Base habilitadora para todos los objetivos \\
+RF-02: Gestión de perfil & Recomendaciones personalizadas (OBJ-06) \\
+RF-03: Consulta de eventos & Listado y detalle de eventos (OBJ-01) \\
+RF-04: Búsqueda y filtrado & Listado y filtrado de eventos (OBJ-01) \\
+RF-05: Mapa de eventos & Geolocalización e interacción en mapa (OBJ-04) \\
+RF-06: Creación de eventos & Creación de eventos públicos y privados (OBJ-02) \\
+RF-07: Moderación de eventos & Sistema de moderación (OBJ-02) \\
+RF-08: Participación en eventos & Interacción social y asistencia (OBJ-05) \\
+RF-09: Chat y mensajería & Interacción social en tiempo real (OBJ-05) \\
+RF-10: Gestión de imágenes & Interacción social y contenido enriquecido (OBJ-05) \\
+RF-11: Valoraciones & Interacción social y contenido enriquecido (OBJ-05) \\
+RF-12: Recomendaciones & Sistema de recomendaciones personalizadas (OBJ-06) \\
+RF-13: Rutas de eventos & Sistema de rutas recomendadas y de usuario (OBJ-07, OBJ-08) \\
+RF-14: Notificaciones & Sistema de notificaciones (OBJ-09) \\
+RF-15: Gestión de roles & Moderación y administración (OBJ-02) \\
+RF-16: Gestión de categorías & Filtrado de eventos por temática (OBJ-01) \\
+RF-17: Gestión de usuarios & Moderación y administración (OBJ-02) \\
+RF-18: Organización de eventos & Asistencia y organización personal (OBJ-01, OBJ-05) \\
+RF-19: Actualización automática & Listado con eventos de fuentes externas (OBJ-01) \\
+RF-20: Edición de eventos & Gestión del ciclo de vida de eventos (OBJ-03) \\
+RF-21: Acceso a eventos privados & Eventos privados con acceso restringido (OBJ-02) \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\section{Diseño de mockups}
+
+Durante la fase de análisis se elaboraron mockups de las pantallas principales de la aplicación con el objetivo de validar el flujo de navegación y el diseño de la interfaz antes de iniciar la implementación. Los mockups sirvieron como punto de partida para definir la estructura visual de cada pantalla y para identificar los elementos de interacción más importantes.
+
+Las siguientes imágenes recogen una vista general de los mockups realizados para las principales áreas funcionales de la aplicación.
+
+\subsection{Vista general de mockups}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/mockups/mockups.png}
+    \caption{Acceso, listado de eventos y detalle de evento}
+    \label{fig:mockup_general_acceso}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/mockups/mockups2.png}
+    \caption{Chat de evento, creación de eventos y mapa}
+    \label{fig:mockup_general_interaccion}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/mockups/mockups3.png}
+    \caption{Perfil, menú lateral y rutas recomendadas}
+    \label{fig:mockup_general_perfil}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/mockups/mockups4.png}
+    \caption{Notificaciones, moderación y administración}
+    \label{fig:mockup_general_gestion}
+\end{figure}
 
 \section{Requisitos no funcionales}
 
@@ -133,20 +419,50 @@ Los requisitos no funcionales describen las características de calidad que debe
 
 \begin{itemize}
     \item \textbf{RNF-01: Usabilidad}: la aplicación debe ofrecer una interfaz intuitiva y fácil de usar, adaptada a dispositivos móviles.
-    
+
     \item \textbf{RNF-02: Rendimiento}: el sistema debe responder de forma rápida a las acciones del usuario, especialmente en la carga de eventos y mapas.
-    
+
     \item \textbf{RNF-03: Escalabilidad}: la arquitectura debe permitir el crecimiento del sistema en número de usuarios y eventos.
-    
+
     \item \textbf{RNF-04: Seguridad}: la autenticación debe ser segura, utilizando servicios como Firebase Auth, y protegiendo los datos del usuario.
-    
+
     \item \textbf{RNF-05: Disponibilidad}: el sistema debe estar disponible de forma continua para garantizar el acceso a los usuarios.
-    
+
     \item \textbf{RNF-06: Mantenibilidad}: el código debe estar organizado y documentado para facilitar futuras modificaciones.
-    
+
     \item \textbf{RNF-07: Compatibilidad}: la aplicación debe funcionar tanto en dispositivos Android como iOS.
-    
+
     \item \textbf{RNF-08: Integración}: el sistema debe integrarse correctamente con servicios externos como mapas, almacenamiento de imágenes y notificaciones.
+\end{itemize}
+
+\section{Modelo conceptual}
+
+El modelo conceptual describe la estructura del dominio del problema de forma independiente de la tecnología. A diferencia del diagrama entidad-relación del capítulo de diseño (que incluye tipos de datos, identificadores técnicos y detalles propios de PostgreSQL), el modelo conceptual se centra exclusivamente en qué entidades existen en el dominio y cómo se relacionan entre sí, sin comprometerse con ninguna decisión de implementación.
+
+Las entidades principales del dominio son:
+
+\begin{itemize}
+    \item \textbf{Usuario}: persona registrada en el sistema. Tiene nombre, correo electrónico, foto de perfil, ubicación e intereses. Puede tener uno de tres roles: usuario, moderador o administrador.
+    \item \textbf{Evento}: actividad cultural o de ocio. Tiene título, descripción, ubicación, fechas, precio y visibilidad (pública o privada). Pertenece a una categoría y tiene un creador.
+    \item \textbf{Categoría}: clasificación temática de los eventos. Tiene nombre y descripción.
+    \item \textbf{Reseña}: valoración que un usuario hace de un evento. Tiene puntuación y comentario.
+    \item \textbf{Mensaje}: texto o imagen enviado en el chat de un evento.
+    \item \textbf{Mensaje privado}: texto o imagen enviado directamente entre dos usuarios.
+    \item \textbf{Notificación}: aviso enviado a un usuario sobre un evento relevante o resultado de moderación.
+    \item \textbf{Ruta}: secuencia ordenada de eventos que forma un itinerario. Puede ser creada por un usuario o generada automáticamente.
+    \item \textbf{Recomendación}: lista de eventos sugeridos para un usuario en función de sus intereses y comportamiento.
+\end{itemize}
+
+Las relaciones principales entre entidades son:
+
+\begin{itemize}
+    \item Un \textbf{Usuario} crea múltiples \textbf{Eventos} (1:N).
+    \item Un \textbf{Usuario} se apunta, guarda o comparte múltiples \textbf{Eventos} (M:N).
+    \item Un \textbf{Evento} pertenece a una \textbf{Categoría} (N:1).
+    \item Un \textbf{Evento} tiene múltiples \textbf{Reseñas} y \textbf{Mensajes} (1:N).
+    \item Un \textbf{Usuario} puede seguir a otros \textbf{Usuarios} (M:N reflexiva).
+    \item Una \textbf{Ruta} agrupa múltiples \textbf{Eventos} en secuencia (M:N ordenada).
+    \item Una \textbf{Recomendación} agrupa múltiples \textbf{Eventos} para un \textbf{Usuario} (M:N).
 \end{itemize}
 
 \section{Reglas de negocio}

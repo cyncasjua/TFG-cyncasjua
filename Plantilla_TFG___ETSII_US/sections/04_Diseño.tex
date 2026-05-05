@@ -1,4 +1,4 @@
-\chapter{Diseño de la solución}\label{cap:diseño}
+﻿\chapter{Diseño de la solución}\label{cap:diseño}
 
 \section{Introducción}
 
@@ -38,13 +38,13 @@ La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecn
     darr/.style={latex-latex, thick, dashed},
 ]
 
-% ── Columna izquierda: móvil  (x = -4.2) ──────────────────────────
+% -- Columna izquierda: móvil  (x = -4.2) --------------------------
 \node[box] (screen) at (-4.2,  0.0) {Pantalla\\(React Native)};
 \node[box] (ctx)    at (-4.2, -1.6) {Contextos\\(Auth/Socket/Tema)};
 \node[box] (axios)  at (-4.2, -3.2) {Servicios\\(Axios)};
 \node[box] (fbase)  at (-4.2, -4.8) {Firebase SDK\\(cliente)};
 
-% ── Columna central: backend  (x = 0) ─────────────────────────────
+% -- Columna central: backend  (x = 0) -----------------------------
 \node[font=\tiny\itshape] at (0, 0.7) {Socket.IO / REST};
 \node[box] (guard) at (0,  0.0) {FirebaseAuthGuard};
 \node[box] (ctrl)  at (0, -1.6) {Controller\\(NestJS)};
@@ -52,37 +52,37 @@ La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecn
 \node[box] (orm)   at (0, -4.8) {TypeORM};
 \node[box] (db)    at (0, -6.4) {PostgreSQL\\+ PostGIS};
 
-% ── Columna derecha: servicios externos  (x = 4.2) ────────────────
+% -- Columna derecha: servicios externos  (x = 4.2) ----------------
 \node[ext] (fbauth) at (4.2,  0.0) {Firebase\\Authentication};
 \node[ext] (cloud)  at (4.2, -1.6) {Cloudinary};
 \node[ext] (osm)    at (4.2, -3.2) {OpenStreetMap};
 \node[ext] (scrap)  at (4.2, -4.8) {Ticketmaster\\Portal Sevilla};
 
-% ── Flechas verticales backend ─────────────────────────────────────
+% -- Flechas verticales backend -------------------------------------
 \draw[arr] (guard) -- (ctrl);
 \draw[arr] (ctrl)  -- (svc);
 \draw[arr] (svc)   -- (orm);
 \draw[arr] (orm)   -- (db);
 
-% ── Móvil → backend (horizontales en la misma fila) ───────────────
+% -- Móvil → backend (horizontales en la misma fila) ---------------
 \draw[arr] (ctx)   -- node[above,font=\tiny] {WS token}   (guard);
 \draw[arr] (axios) -- node[above,font=\tiny] {HTTP/REST}  (ctrl);
 
-% ── Backend → servicios externos (horizontales en la misma fila) ──
+% -- Backend → servicios externos (horizontales en la misma fila) --
 \draw[arr] (guard) -- node[above,font=\tiny] {verifica token} (fbauth);
 \draw[arr] (svc)   -- node[above,font=\tiny] {upload}         (cloud);
 
-% ── Firebase SDK ↔ Firebase Auth  ─────────────────────────────────
+% -- Firebase SDK ↔ Firebase Auth  ---------------------------------
 % Pasa por debajo de todos los nodos (y = -7.2) para no cruzar ninguna caja
 \draw[darr] (fbase.south) -- ++(0,-0.5)
     -| node[pos=0.3,below,font=\tiny] {JWT} (fbauth.south);
 
-% ── Pantalla → OpenStreetMap (tiles) ──────────────────────────────
+% -- Pantalla → OpenStreetMap (tiles) ------------------------------
 % Pasa por encima del área de nodos (y=1.3) para no cruzar ninguna caja
 \draw[arr] (screen.north) -- ++(0,1.3)
     -| node[pos=0.3,above,font=\tiny] {tiles} (osm.north);
 
-% ── Service → Ticketmaster/Sevilla (cron, punteada) ───────────────
+% -- Service → Ticketmaster/Sevilla (cron, punteada) ---------------
 \draw[arr,dashed] (svc) -- node[above,font=\tiny,sloped] {cron} (scrap);
 
 \end{tikzpicture}
@@ -676,6 +676,46 @@ El mismo motor puede generar rutas recomendadas aplicando tres estrategias selec
     \item \textbf{score}: maximiza la puntuación agregada de los eventos incluidos.
 \end{itemize}
 
+\section{Patrones de diseño aplicados}
+
+A lo largo del desarrollo de \textbf{Sevillaneando} se han aplicado de forma explícita o implícita varios patrones de diseño reconocidos. Muchos de ellos son inherentes a los frameworks y librerías elegidos; otros han sido aplicados de forma deliberada como decisiones de arquitectura. En esta sección se identifican y justifican los más relevantes.
+
+\subsection{Patrón Módulo (NestJS)}
+
+NestJS organiza el backend en módulos independientes (\textit{EventosModule}, \textit{UsuariosModule}, \textit{CategoriasModule}, etc.), cada uno encapsulando su propio controlador, servicio y entidades. Este patrón favorece la separación de responsabilidades, facilita el mantenimiento y permite extender el sistema añadiendo nuevos módulos sin modificar los existentes. Es el patrón estructural central del backend.
+
+\subsection{Patrón Estrategia (\textit{IScraper})}
+
+El sistema de scraping implementa el patrón Estrategia: cada fuente de eventos externos (\texttt{TicketmasterScraper}, \texttt{PortalSevillaScraper}) implementa la interfaz \texttt{IScraper}, que define el contrato común de obtención y normalización de eventos. El servicio orquestador (\texttt{ScrapingService}) trabaja con la abstracción, no con implementaciones concretas. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación.
+
+\subsection{Patrón Repositorio (TypeORM)}
+
+El acceso a la base de datos se realiza a través de los repositorios de TypeORM, que abstraen las operaciones de persistencia y consulta SQL. Los servicios de NestJS no interactúan directamente con SQL, sino con los repositorios tipados de cada entidad. Esto desacopla la lógica de negocio de los detalles de la base de datos y facilita las pruebas unitarias al poder sustituir el repositorio por un doble de prueba.
+
+\subsection{Patrón Guard (autenticación y autorización)}
+
+NestJS implementa los guards como componentes que interceptan cada petición antes de que llegue al controlador. El \texttt{FirebaseAuthGuard} verifica el token JWT en todas las rutas protegidas; el \texttt{RolesGuard} comprueba que el usuario tiene el rol requerido para cada endpoint. Este patrón centraliza la lógica de autenticación y autorización, evitando duplicarla en cada controlador.
+
+\subsection{Patrón Interceptor (Axios)}
+
+En el frontend, el cliente Axios centralizado actúa como interceptor: inyecta automáticamente el token de Firebase en la cabecera \texttt{Authorization} de cada petición y aplica lógica de reintento ante errores de red. Este patrón evita repetir la gestión de autenticación en cada llamada al servicio y garantiza un comportamiento uniforme ante fallos de conectividad.
+
+\subsection{Patrón Contexto / Proveedor (React)}
+
+La gestión de estado global del frontend se implementa mediante el patrón Contexto de React (\texttt{AuthContext}, \texttt{ThemeContext}, \textbf{SocketContext}, \texttt{NotificacionesContext}). Cada contexto actúa como proveedor de un estado compartido que los componentes hijos pueden consumir sin necesidad de \textit{prop drilling}. La separación en cuatro contextos independientes evita rerenders innecesarios: un cambio en el tema no provoca la actualización de los componentes suscritos al contexto de notificaciones.
+
+\subsection{Patrón Observador (Socket.IO)}
+
+La comunicación en tiempo real del chat se apoya en el patrón Observador: el servidor emite eventos (\texttt{mensaje-evento}, \texttt{mensaje-privado}) y los clientes suscritos a la sala correspondiente los reciben automáticamente. Socket.IO gestiona internamente la lista de suscriptores y la entrega de eventos, desacoplando al emisor del receptor.
+
+\subsection{Patrón Puntuación multifactorial (motor de recomendaciones)}
+
+El motor de recomendaciones aplica una variante del patrón de puntuación (\textit{scoring}): cada evento candidato recibe una puntuación calculada como suma ponderada de factores independientes (afinidad por categoría, proximidad geográfica, proximidad temporal, historial de interacciones). Añadir o modificar un factor de puntuación solo requiere cambiar su peso o su función de cálculo sin alterar el resto del algoritmo.
+
+\subsection{Patrón Estado (flujo de moderación)}
+
+El ciclo de vida de un evento sigue el patrón Estado: un evento puede encontrarse en estado \texttt{Pendiente}, \texttt{Aprobado} o \texttt{Rechazado}, y las transiciones entre estados están controladas por reglas de negocio definidas en el servicio. No todas las transiciones son válidas (por ejemplo, no se puede aprobar un evento ya aprobado), lo que garantiza la coherencia del flujo de moderación.
+
 \section{Decisiones de diseño relevantes}
 
 A lo largo del proceso de diseño se tomaron una serie de decisiones que merecen una justificación explícita, ya que no son evidentes a partir de los requisitos y condicionan la arquitectura y el comportamiento de la aplicación.
@@ -1034,6 +1074,6 @@ La aplicación gestiona URLs externas que abren directamente una pantalla concre
 
 \section{Conclusiones}
 
-En este capítulo se ha presentado el diseño de la solución adoptada para el sistema \textbf{Sevillaneando}. Se ha descrito la arquitectura cliente-servidor, el modelo de datos con sus entidades y relaciones, el diseño de la API REST, el flujo de moderación de eventos, el diseño de la interfaz de usuario con el grafo de navegación, y los sistemas de comunicación en tiempo real y de recomendaciones.
+En este capítulo se ha presentado el diseño de la solución adoptada para el sistema \textbf{Sevillaneando}. Se ha descrito la arquitectura cliente-servidor, el modelo de datos con sus entidades y relaciones, el diseño de la API REST, el flujo de moderación de eventos, el diseño de la interfaz de usuario con el grafo de navegación, los sistemas de comunicación en tiempo real y de recomendaciones, los patrones de diseño aplicados y las decisiones de diseño más relevantes.
 
-Las decisiones de diseño adoptadas responden directamente a los requisitos funcionales y no funcionales identificados en el análisis: la separación en cliente y servidor facilita la escalabilidad, el uso de PostGIS permite cubrir los requisitos de geolocalización, el sistema de roles garantiza el control de acceso, y la arquitectura modular de NestJS simplifica el mantenimiento y la extensión del sistema. Las decisiones específicas sobre roles, persistencia de eventos y diseño del chat han sido justificadas en la sección anterior, poniendo de manifiesto que cada elección responde a una necesidad concreta del dominio y no a una preferencia arbitraria.
+Las decisiones de diseño adoptadas responden directamente a los requisitos funcionales y no funcionales identificados en el análisis: la separación en cliente y servidor facilita la escalabilidad, el uso de PostGIS permite cubrir los requisitos de geolocalización, el sistema de roles garantiza el control de acceso, y la arquitectura modular de NestJS simplifica el mantenimiento y la extensión del sistema. Los patrones de diseño identificados ponen de manifiesto que la solución no solo responde a los requisitos funcionales, sino que también incorpora buenas prácticas de ingeniería del software consolidadas. Las decisiones específicas sobre roles, persistencia de eventos y diseño del chat han sido justificadas en la sección anterior, poniendo de manifiesto que cada elección responde a una necesidad concreta del dominio y no a una preferencia arbitraria.

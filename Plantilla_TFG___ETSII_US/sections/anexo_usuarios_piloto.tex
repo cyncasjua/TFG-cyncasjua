@@ -1,0 +1,77 @@
+\chapter{Usuarios piloto}\label{anexo:usuarios_piloto}
+
+\section{Introducción}
+
+Durante la fase final del desarrollo se llevó a cabo una validación de la aplicación con usuarios piloto reales. El objetivo fue obtener retroalimentación directa de personas que no habían participado en el desarrollo, para identificar problemas de usabilidad, ajustes visuales necesarios, nuevas ideas de funcionalidad y comportamientos inesperados de la interfaz en condiciones de uso real.
+
+La distribución se realizó mediante \textbf{Expo Go}, que permite instalar y ejecutar la aplicación directamente desde un enlace sin necesidad de publicarla en las tiendas oficiales. Se compartió el enlace con un grupo de usuarios voluntarios de distintos perfiles y con diferentes dispositivos.
+
+\section{Perfil de los usuarios}
+
+Los usuarios piloto fueron seleccionados informalmente entre conocidos y contactos de la autora, buscando diversidad en cuanto a:
+
+\begin{itemize}
+    \item \textbf{Dispositivo}: usuarios con iPhone (iOS) y usuarios con distintos modelos de Android.
+    \item \textbf{Perfil tecnológico}: desde personas habituadas al uso de aplicaciones móviles hasta perfiles con menor experiencia digital.
+    \item \textbf{Interés en el dominio}: personas con interés en el ocio y la cultura de Sevilla, perfil objetivo de la aplicación.
+\end{itemize}
+
+\section{Metodología de recogida de feedback}
+
+El feedback se recogió de forma informal a través de conversaciones directas y mensajes, sin un cuestionario estructurado. Se pidió a los usuarios que exploraran la aplicación libremente durante un período de uso y que comunicaran cualquier problema, sugerencia o impresión. Se tomaron notas de los comentarios más recurrentes y se agruparon por categoría.
+
+\section{Resultados e incidencias detectadas}
+
+\subsection{Problemas de compatibilidad con Android}
+
+La incidencia más significativa detectada durante las pruebas piloto fue la \textbf{incompatibilidad de varios elementos de la interfaz en dispositivos Android}. Esta incidencia no había sido detectada durante el desarrollo, que se realizó íntegramente sobre iOS.
+
+Los principales problemas observados en Android fueron:
+
+\begin{itemize}
+    \item \textbf{Mapa no visible}: el componente de mapa (OpenStreetMap) no se renderizaba en la pantalla de mapa de eventos en algunos dispositivos Android, mostrando una pantalla en blanco. El problema estaba relacionado con la configuración del proveedor de tiles en la compilación de Expo Go para Android.
+
+    \item \textbf{Descuadres de pantalla}: varios elementos de la interfaz (modales, cabeceras, botones flotantes y disposición de formularios) presentaban desajustes de posicionamiento en Android, causados por diferencias en el comportamiento del \textit{safe area} y la gestión del teclado virtual respecto a iOS.
+\end{itemize}
+
+Estos problemas fueron corregidos en una iteración adicional de la fase de cierre del proyecto. Supusieron una desviación no prevista en la planificación, documentada en el capítulo~\ref{cap:planificación} (sección de desviaciones) y en el capítulo~\ref{cap:conclusiones} (lecciones aprendidas).
+
+\subsection{Sugerencias de mejora visual y de interacción}
+
+Los usuarios piloto aportaron numerosas sugerencias de mejora relacionadas con aspectos visuales y de comodidad en la interacción. Las más recurrentes fueron:
+
+\begin{itemize}
+    \item \textbf{Ajustes en el tamaño y contraste de algunos textos}: en determinadas pantallas, el texto informativo secundario resultaba difícil de leer, especialmente en modo oscuro. Se realizaron ajustes de contraste y tamaño en los componentes afectados.
+
+    \item \textbf{Mejoras en el flujo de creación de eventos}: algunos usuarios encontraron el formulario de creación de eventos extenso. Se reorganizaron los campos para que los datos más importantes (título, categoría, fecha y ubicación) aparecieran en primer lugar.
+
+    \item \textbf{Navegación entre secciones}: varios usuarios indicaron que no encontraban intuitivamente algunas secciones (como ``Mis eventos'' o ``Guardados''). Se revisó la estructura del menú lateral para mejorar la accesibilidad de estas pantallas.
+
+    \item \textbf{Feedback visual en acciones}: en algunas acciones (apuntarse a un evento, guardar, enviar mensaje) no había suficiente retroalimentación visual inmediata. Se añadieron indicadores de carga y mensajes de confirmación en los casos más relevantes.
+\end{itemize}
+
+\subsection{Ideas de nuevas funcionalidades}
+
+Los usuarios piloto también propusieron funcionalidades que consideraban interesantes y que no estaban disponibles en la versión distribuida. La más mencionada fue:
+
+\begin{itemize}
+    \item \textbf{Módulo de amigos}: varios usuarios echaron en falta una sección específica para gestionar sus contactos dentro de la aplicación: ver qué eventos tienen planeados sus amigos, recibir sugerencias de planes basadas en los gustos de personas de confianza y poder enviar invitaciones directas a eventos. Esta funcionalidad complementaría el sistema de seguidores ya existente con una dimensión más cercana y social, similar a la que ofrecen redes sociales orientadas al ocio. Se ha incluido en la sección de trabajo futuro del capítulo de conclusiones.
+\end{itemize}
+
+\section{Valoración general de los usuarios}
+
+La valoración global de los usuarios piloto fue positiva. Los aspectos más destacados de forma recurrente fueron:
+
+\begin{itemize}
+    \item \textbf{Utilidad percibida}: la mayoría de los usuarios indicaron que se descargarían la aplicación si estuviera disponible en las tiendas oficiales, ya que la consideran útil para descubrir planes en Sevilla y más funcional que las alternativas existentes, especialmente por el módulo social.
+
+    \item \textbf{Módulo social como diferenciador}: el chat de evento, los mensajes privados y la posibilidad de ver qué amigos asisten a los mismos eventos fueron los aspectos valorados como más novedosos y útiles respecto a otras aplicaciones de eventos.
+
+    \item \textbf{Estética e interfaz}: la interfaz fue bien recibida, con especial mención al modo oscuro y a la coherencia visual de las pantallas. Los usuarios encontraron la aplicación cómoda de usar una vez superada la curva inicial de descubrimiento de las secciones.
+\end{itemize}
+
+\section{Conclusiones del proceso piloto}
+
+El proceso de validación con usuarios piloto fue valioso en dos dimensiones. Por un lado, permitió detectar y corregir la incidencia crítica de compatibilidad con Android antes de la entrega final. Por otro, proporcionó retroalimentación cualitativa sobre usabilidad e ideas de nuevas funcionalidades que han sido incorporadas al trabajo futuro del proyecto.
+
+La experiencia confirma que las pruebas con usuarios reales en dispositivos reales son un complemento imprescindible de las pruebas técnicas automatizadas: los problemas de compatibilidad multiplataforma y los ajustes de usabilidad difícilmente se detectan sin pasar la aplicación por manos de personas ajenas al desarrollo.

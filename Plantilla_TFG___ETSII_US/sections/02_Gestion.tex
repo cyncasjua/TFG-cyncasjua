@@ -8,22 +8,44 @@ El estudio previo constituye una base fundamental para el resto del proyecto, ya
 
 \section{Objetivos}
 
-El objetivo principal del proyecto es el desarrollo de una aplicación móvil orientada al descubrimiento de eventos y actividades en Sevilla, con especial énfasis en dar visibilidad a eventos emergentes o poco conocidos.
+\subsection{Objetivos del proyecto}
 
-A partir de este objetivo general, se definen los siguientes objetivos específicos:
+Los objetivos del proyecto son aquellos que persigue la estudiante como futura ingeniera de software en el marco del Trabajo de Fin de Grado:
+
+\begin{itemize}
+    \item Aplicar en un contexto real los conocimientos adquiridos a lo largo del Grado en Ingeniería del Software, especialmente en las áreas de diseño de software, arquitecturas de sistemas, ingeniería de requisitos y gestión de proyectos.
+
+    \item Desarrollar la capacidad de planificación, seguimiento y autogestión en un proyecto de desarrollo unipersonal, adoptando un proceso iterativo e incremental basado en metodologías ágiles.
+
+    \item Adquirir experiencia práctica en tecnologías modernas de desarrollo web y móvil (React Native, NestJS, PostgreSQL/PostGIS, Firebase) que complementen la formación académica con competencias técnicas de industria.
+
+    \item Adentrarse por primera vez en el desarrollo de aplicaciones móviles, un ámbito no cubierto durante el Grado, afrontando sus particularidades: ciclo de vida de la aplicación, adaptación a múltiples plataformas (iOS y Android) y compilación y distribución mediante Expo.
+
+    \item Consolidar el uso de TypeScript en un proyecto complejo de extremo a extremo, profundizando en el tipado estático y en las buenas prácticas del lenguaje más allá del contacto puntual previo, aplicándolo tanto en el frontend (React Native) como en el backend (NestJS).
+
+    \item Enfrentar y resolver retos técnicos no triviales: comunicación bidireccional en tiempo real, consultas geoespaciales, scraping automatizado y diseño de un motor de recomendaciones.
+
+    \item Producir documentación técnica de calidad (memoria, manuales de usuario, de desarrollo y de despliegue) como parte de las entregas propias de un proyecto profesional.
+\end{itemize}
+
+\subsection{Objetivos del sistema}
+
+El objetivo principal del sistema es el desarrollo de una aplicación móvil orientada al descubrimiento de eventos y actividades en Sevilla, con especial énfasis en dar visibilidad a eventos emergentes o poco conocidos.
+
+A partir de este objetivo general, se definen los siguientes objetivos específicos del sistema:
 
 \begin{itemize}
     \item Diseñar e implementar un sistema que permita listar eventos con información detallada (descripción, ubicación, imágenes, precio, etc.) y filtrado de eventos.
 
-    \item Permitir a los usuarios crear nuevos eventos, diferenciando entre eventos públicos y privados, e incorporando un sistema de moderación para garantizar la fiabilidad  de los eventos públicos.
+    \item Permitir a los usuarios crear nuevos eventos, diferenciando entre eventos públicos y privados, e incorporando un sistema de moderación para garantizar la fiabilidad de los eventos públicos.
 
-    \item Permitir a los usuarios editar los eventos creados por si mismo.
+    \item Permitir a los usuarios editar los eventos creados por sí mismos.
 
     \item Integrar funcionalidades de geolocalización para mostrar eventos cercanos y permitir su visualización en un mapa interactivo para un acceso más cómodo.
 
     \item Promover la interacción social entre usuarios mediante chat en eventos, mensajería privada, seguimiento entre usuarios y opiniones en las valoraciones.
 
-    \item Implementar un sistema de recomendaciones personalizado basado en la actividad del usuario (guardar a un evento, apuntarse a un evento, compartir un evento, ver un evento, valorar un evento, etc), sus intereses y su ubicación.
+    \item Implementar un sistema de recomendaciones personalizado basado en la actividad del usuario (guardar un evento, apuntarse a un evento, compartir un evento, ver un evento, valorar un evento, etc.), sus intereses y su ubicación.
 
     \item Desarrollar un sistema de rutas recomendadas de eventos que permita agrupar actividades según gustos y criterios de proximidad y horario.
 
@@ -34,15 +56,25 @@ A partir de este objetivo general, se definen los siguientes objetivos específi
 
 \section{Metodología}
 
-El desarrollo del proyecto se ha llevado a cabo mediante una adaptación de la metodología ágil Scrum, ajustada al contexto de un Trabajo de Fin de Grado.
+En este apartado se describe la metodología seguida durante el proyecto, organizada en tres ámbitos de actuación con distintos niveles de abstracción: la gestión general del proyecto, la gestión del proceso de desarrollo y la gestión del código fuente. Adicionalmente, se recoge la metodología de seguimiento del tiempo.
 
-Dado que el proyecto ha sido desarrollado por un único miembro, no se han realizado reuniones diarias (\textit{daily stand-ups}). En su lugar, la comunicación se ha mantenido de forma continua mediante tutorías periódicas. Estas sesiones han combinado la revisión del trabajo realizado con la planificación del siguiente sprint, permitiendo mantener una evolución iterativa del sistema y adaptar el alcance en función del tiempo disponible y de las prioridades del proyecto.
+\subsection{Metodología de gestión del proyecto}
+
+El desarrollo del proyecto se ha llevado a cabo mediante una adaptación de la metodología ágil Scrum, ajustada al contexto de un Trabajo de Fin de Grado.
 
 Al tratarse de un equipo unipersonal, la desarrolladora ha asumido simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora. Esto ha permitido una toma de decisiones ágil, aunque también ha requerido una mayor disciplina en la autogestión del tiempo y las prioridades.
 
+Dado que el proyecto ha sido desarrollado por un único miembro, no se han realizado reuniones diarias (\textit{daily stand-ups}). En su lugar, la comunicación se ha mantenido de forma continua mediante tutorías periódicas con el tutor académico. Estas sesiones han combinado la revisión del trabajo realizado con la planificación del siguiente sprint, permitiendo mantener una evolución iterativa del sistema y adaptar el alcance en función del tiempo disponible y de las prioridades del proyecto.
+
 Para la gestión del backlog y el seguimiento de tareas se han utilizado \textbf{GitHub Projects} como tablero Kanban, complementado con un documento Word donde se ha mantenido el backlog detallado junto con las actas de reunión de cada tutoría, en las que se recogen las tareas completadas en el sprint anterior y los objetivos definidos para el siguiente.
 
-El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en cada fase.
+\subsection{Metodología de gestión del desarrollo}
+
+La estimación de tareas se ha realizado mediante la técnica de tallas de camiseta (\textit{T-shirt sizing}), que asigna un tamaño relativo a cada historia: XS (extra pequeña), S (pequeña), M (mediana), L (grande) y XL (extra grande). La talla se define en función de la complejidad, el riesgo y la cantidad de trabajo, comparando cada historia con otras ya conocidas. Esta estimación permite priorizar el backlog combinando valor (prioridad) y esfuerzo (talla), facilitando la planificación ágil y la selección de historias por sprint.
+
+Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}, que automatiza los despliegues y la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
+
+\subsection{Metodología de gestión del código fuente}
 
 Para la gestión del código fuente se ha utilizado un sistema de control de versiones Git, permitiendo mantener el historial de cambios y asegurando el orden y la claridad en el desarrollo.
 
@@ -74,15 +106,17 @@ También se ha seguido un versionado semántico de tres niveles (X.Y.Z) para la 
     \item Z: Versión de parche, para corregir errores o problemas menores.
 \end{itemize}
 
-Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}, que automatiza los despliegues y la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
+\subsection{Metodología de seguimiento del tiempo}
 
-La estimación de tareas se ha realizado mediante la técnica de tallas de camiseta (\textit{T-shirt sizing}), que asigna un tamaño relativo a cada historia: XS (extra pequeña), S (pequeña), M (mediana), L (grande) y XL (extra grande). La talla se define en función de la complejidad, el riesgo y la cantidad de trabajo, comparando cada historia con otras ya conocidas. Esta estimación permite priorizar el backlog combinando valor (prioridad) y esfuerzo (talla), facilitando la planificación ágil y la selección de historias por sprint.
+El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en cada fase y mantener la coherencia entre la planificación estimada y el trabajo efectivamente realizado. El informe detallado de horas se recoge en el Anexo correspondiente.
 
 \section{Planificación}
 
 La planificación del proyecto se ha estructurado en varias fases, siguiendo un enfoque incremental:
 
 \begin{itemize}
+    \item \textbf{Fase 0 – Determinación del alcance}: definición del alcance funcional del sistema, identificación del problema a resolver, análisis del contexto y de las soluciones existentes, y establecimiento de las restricciones y criterios de éxito del proyecto.
+
     \item \textbf{Fase 1 – Análisis y planificación}: definición de requisitos y alcance, elaboración del backlog inicial, planificación temporal y de recursos (cronograma inicial) y diseño del modelo conceptual del sistema.
 
     \item \textbf{Fase 2 – Diseño}: diseño de la arquitectura técnica, de la interfaz de usuario, de la base de datos, de la API REST y planificación de la gestión de usuarios y permisos.
@@ -93,7 +127,7 @@ La planificación del proyecto se ha estructurado en varias fases, siguiendo un 
 
     \item \textbf{Fase 5 – Ampliaciones y extras}: funcionalidades adicionales condicionadas al tiempo disponible, como la generación de carteles con IA, la gestión de calendarios y el filtrado de contenido inapropiado (NSFW).
 
-    \item \textbf{Fase 6 – Despliegue y documentación}: despliegue del sistema y elaboración de la memoria y manuales.
+    \item \textbf{Fase 6 – Despliegue y cierre del proyecto}: despliegue del sistema, elaboración de la memoria técnica y los manuales, creación de los materiales de defensa del proyecto y cierre formal del trabajo.
 \end{itemize}
 
 \subsection{Desviaciones respecto a la planificación inicial}
@@ -101,14 +135,18 @@ La planificación del proyecto se ha estructurado en varias fases, siguiendo un 
 A lo largo del proyecto se han producido algunas desviaciones respecto a la planificación inicial, motivadas principalmente por la aparición de nuevas necesidades técnicas y por el ajuste del alcance en función del tiempo disponible.
 
 \begin{itemize}
-    \item \textbf{Incorporación de flujos de CI/CD}: inicialmente no estaba prevista la configuración de pipelines de integración continua. Sin embargo, durante el desarrollo se consideró conveniente automatizar las comprobaciones de calidad del código mediante GitHub Actions, lo que supuso una dedicación adicional no contemplada en la estimación original.
+    \item \textbf{Incorporación de flujos de CI/CD} \textit{(Fase 6 – Sprint 6)}: inicialmente no estaba prevista la configuración de pipelines de integración continua. Sin embargo, durante el Sprint 6 se consideró conveniente automatizar las comprobaciones de calidad del código mediante GitHub Actions. La configuración del pipeline, incluyendo la integración del linter, las comprobaciones de formato y los flujos de despliegue, supuso una dedicación de aproximadamente 6 horas, no contempladas en la estimación original de cierre del proyecto.
 
-    \item \textbf{No implementación de funcionalidades opcionales}: la Fase 5 del proyecto (ampliaciones y extras) estaba condicionada a la disponibilidad de tiempo una vez completadas las fases principales. Finalmente, la generación de carteles con IA y la moderación automática de imágenes mediante NSFWJS no pudieron implementarse, ya que el desarrollo de las funcionalidades core del sistema (especialmente rutas de eventos, sistema de recomendaciones y scraping) requirió más esfuerzo del estimado inicialmente.
+    \item \textbf{No implementación de funcionalidades opcionales} \textit{(Fase 5)}: la Fase 5 del proyecto (ampliaciones y extras) estaba condicionada a la disponibilidad de tiempo una vez completadas las fases principales. Finalmente, la generación de carteles con IA y la moderación automática de imágenes mediante NSFWJS no pudieron implementarse, ya que el desarrollo de las funcionalidades core del sistema (especialmente rutas de eventos, sistema de recomendaciones y scraping) requirió más esfuerzo del estimado inicialmente.
 
-    \item \textbf{Mayor complejidad en el scraping}: la integración del motor de scraping implicó una complejidad técnica superior a la prevista, principalmente por la gestión de errores 429 (límite de peticiones) y la variabilidad en la estructura de las fuentes externas, lo que requirió iteraciones adicionales de corrección y ajuste.
+    \item \textbf{Mayor complejidad en el scraping} \textit{(Fase 3 – Sprint 4)}: la integración del motor de scraping implicó una complejidad técnica superior a la prevista. Se estimaban entre 10 y 15 horas de desarrollo, pero el trabajo real ascendió a aproximadamente 20--22 horas. La desviación se debió principalmente a la gestión de errores 429 (límite de peticiones) y la variabilidad en la estructura de las fuentes externas, lo que requirió iteraciones adicionales de corrección y ajuste. A ello se sumaron tres dificultades no previstas: en primer lugar, la clasificación de los eventos extraídos en las categorías existentes del sistema resultó especialmente laboriosa, ya que los títulos y descripciones de las fuentes externas no siguen ninguna taxonomía estándar; fue necesario diseñar y refinar iterativamente una lista de palabras clave por categoría hasta lograr una asignación razonablemente precisa. En segundo lugar, la extracción de direcciones reales presentó dificultades por la falta de uniformidad en cómo cada fuente representa la ubicación, mezclando nombres de recintos, barrios, referencias parciales y formatos libres. En tercer lugar, el tratamiento de fechas supuso un reto significativo: muchas fuentes presentan sus calendarios de eventos en formatos no lineales (calendarios visuales, rangos de fechas, sesiones múltiples), lo que obligó a reajustar en varias ocasiones la lógica de extracción y normalización de fechas para cubrir los distintos casos encontrados.
+
+    \item \textbf{Impacto de las fechas del scraping en el motor de recomendaciones} \textit{(Fase 3 – Sprint 5)}: los problemas de normalización de fechas descritos en el punto anterior tuvieron también un efecto directo sobre el sistema de recomendaciones, cuyo desarrollo se concentró en el Sprint 5. Dicho sistema utiliza la proximidad temporal de los eventos como uno de los factores de puntuación, por lo que eventos con fechas incorrectamente extraídas o mal normalizadas producían recomendaciones erróneas o incoherentes. Fue necesario depurar y corregir los datos ya persistidos y ajustar la lógica del algoritmo para gestionar con mayor robustez los casos en que la fecha de un evento procede del scraping, añadiendo validaciones adicionales antes de incorporarlos al cálculo de relevancia. Esta incidencia supuso una desviación de aproximadamente 4--5 horas adicionales sobre las 12--14 horas estimadas para el algoritmo de recomendaciones.
+
+    \item \textbf{Problemas de compatibilidad con Android} \textit{(Fases 5 y 6 – Sprints 5 y 6)}: durante la fase de pruebas con usuarios piloto, llevada a cabo en el Sprint 5, se detectaron incidencias significativas en dispositivos Android que no habían aparecido durante el desarrollo, realizado íntegramente sobre iOS. Los principales problemas fueron la no visualización del mapa (OpenStreetMap) en Android y varios descuadres en la disposición de elementos de pantalla. La corrección de estas incidencias se extendió hasta el Sprint 6 y supuso una dedicación adicional de aproximadamente 7--8 horas no previstas en la planificación original. Esta desviación pone de manifiesto la importancia de incorporar pruebas sobre ambas plataformas desde las primeras fases del desarrollo.
 \end{itemize}
 
-En términos generales, el proyecto se ha completado dentro del plazo establecido y con el alcance funcional definido como prioritario, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance.
+En términos generales, el proyecto se ha completado dentro del plazo establecido y con el alcance funcional definido como prioritario, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance. El esfuerzo total registrado ha sido de aproximadamente 300 horas de trabajo, distribuidas a lo largo de 29 semanas de desarrollo, lo que supone una media de algo más de 10 horas semanales. El detalle del registro de horas por fase y actividad se recoge en el informe de Clockify incluido como Anexo.
 
 \subsection{Estructura de Desglose del Trabajo inicial}
 
@@ -116,6 +154,13 @@ La planificación inicial del proyecto se ha definido mediante una Estructura de
 
 \begin{itemize}
     \item \textbf{Nivel 1: Proyecto ``Sevillaneando''}
+
+    \item \textbf{Fase 0 -- Determinación del alcance}
+    \begin{itemize}
+        \item \textbf{0.1} Análisis del problema y contexto.
+        \item \textbf{0.2} Estudio de soluciones existentes.
+        \item \textbf{0.3} Definición del alcance funcional y restricciones del proyecto.
+    \end{itemize}
 
     \item \textbf{Fase 1 -- Análisis y planificación}
     \begin{itemize}
@@ -181,11 +226,12 @@ La planificación inicial del proyecto se ha definido mediante una Estructura de
         \item \textbf{5.3} Filtrado de contenido inapropiado (NSFW) en imágenes subidas por los usuarios.
     \end{itemize}
 
-    \item \textbf{Fase 6 -- Despliegue y documentación}
+    \item \textbf{Fase 6 -- Despliegue y cierre del proyecto}
     \begin{itemize}
         \item \textbf{6.1} Despliegue de backend y frontend.
-        \item \textbf{6.2} Publicación de la app. \textit{(No realizado: la publicación en las tiendas oficiales —Google Play Store y App Store— requiere el pago de una tarifa de desarrollador, lo que queda fuera del alcance de este proyecto.)}
+        \item \textbf{6.2} Publicación de la app. \textit{(No realizado: la publicación en las tiendas oficiales (Google Play Store y App Store) requiere el pago de una tarifa de desarrollador, lo que queda fuera del alcance de este proyecto.)}
         \item \textbf{6.3} Elaboración de la memoria técnica y manuales de usuario, de despliegue y de desarrollo.
+        \item \textbf{6.4} Preparación de los materiales de defensa del proyecto (presentación y vídeo demostrativo).
     \end{itemize}
 \end{itemize}
 
@@ -266,21 +312,28 @@ A continuación, se presenta un diagrama de Gantt simplificado que refleja la pl
 
 \section{Presupuesto}
 
-El proyecto ha sido desarrollado en un contexto académico, por lo que no ha requerido una inversión económica directa significativa. No obstante, es posible realizar una estimación aproximada del coste teniendo en cuenta los recursos empleados.
+El proyecto ha sido desarrollado en un contexto académico, por lo que no ha requerido una inversión económica directa significativa. No obstante, es posible realizar una estimación del coste real que tendría el proyecto si fuera encargado a una empresa de desarrollo de software, siguiendo la estructura estándar de presupuestación de proyectos informáticos.
 
 \subsection{Recursos humanos}
 
-El desarrollo ha sido llevado a cabo por una única persona, con una estimación total aproximada de 300 horas de trabajo. Considerando un coste medio de 15 €/hora para un perfil junior:
+El desarrollo ha sido llevado a cabo por una única persona asumiendo todos los roles del equipo. El coste unitario se estima a partir de las tablas salariales oficiales de referencia para el sector TIC en España, considerando un perfil de \textbf{Analista-Programadora junior}:
 
 \begin{itemize}
-    \item Coste estimado: 300 h $\times$ 15 €/h = 4500 €
+    \item Coste hora base: \textbf{25 €/h}
+    \item Total de horas: \textbf{300 h}
+    \item Coste base de personal: 300 h $\times$ 25 €/h = \textbf{7.500 €}
+\end{itemize}
+
+Sobre el coste base de personal se aplican los \textbf{costes sociales} a cargo de la empresa (Seguridad Social, formación, contingencias), estimados en un 30\% del coste base:
+
+\begin{itemize}
+    \item Costes sociales: 7.500 € $\times$ 30\% = \textbf{2.250 €}
+    \item Coste total de personal (base + sociales): \textbf{9.750 €}
 \end{itemize}
 
 \subsection{Distribución del esfuerzo}
 
-El esfuerzo total del proyecto se ha estimado en aproximadamente 300 horas de trabajo. Esta distribución no es uniforme, ya que la mayor parte del esfuerzo se ha concentrado en el desarrollo frontend y backend, mientras que las fases finales se destinan principalmente a documentación, validación, despliegue y pequeñas tareas de refactorización.
-
-A continuación, se muestra una distribución aproximada del tiempo dedicado a cada fase:
+El esfuerzo total del proyecto se ha estimado en aproximadamente 300 horas de trabajo. Esta distribución no es uniforme, ya que la mayor parte del esfuerzo se ha concentrado en el desarrollo frontend y backend.
 
 \begin{longtable}{|p{6cm}|p{4cm}|}
 \hline
@@ -306,20 +359,67 @@ Documentación y memoria & 60 h \\
 \hline
 \end{longtable}
 
-\subsection{Infraestructura}
+\subsection{Infraestructura y costes indirectos}
+
+Para el desarrollo del proyecto han sido necesarios los siguientes recursos materiales e infraestructura, cuyos costes se imputan mediante amortización durante la vida útil estimada:
+
+\begin{longtable}{|p{5cm}|p{2.5cm}|p{2cm}|p{2.5cm}|p{2.5cm}|}
+\hline
+\textbf{Recurso} & \textbf{Coste total} & \textbf{Vida útil} & \textbf{Duración proyecto} & \textbf{Coste imputable} \\
+\hline
+Ordenador portátil & 900 € & 4 años & 7 meses & 131 € \\
+\hline
+Conexión a internet & 40 €/mes & — & 7 meses & 280 € \\
+\hline
+Licencias y software & 0 € & — & — & 0 € \\
+\hline
+Herramientas en la nube (plan gratuito: Render, Supabase, Cloudinary, Firebase, GitHub) & 0 € & — & — & 0 € \\
+\hline
+\textbf{Total costes indirectos} & & & & \textbf{411 €} \\
+\hline
+\end{longtable}
+
+\subsection{Coste total del proyecto}
+
+\begin{longtable}{|p{8cm}|p{4cm}|}
+\hline
+\textbf{Concepto} & \textbf{Importe} \\
+\hline
+Coste de personal (base) & 7.500 € \\
+\hline
+Costes sociales (30\%) & 2.250 € \\
+\hline
+Costes indirectos (infraestructura) & 411 € \\
+\hline
+\textbf{Coste total del proyecto} & \textbf{10.161 €} \\
+\hline
+\end{longtable}
+
+\subsection{Presupuesto}
+
+El presupuesto es la cantidad que se cobraría al cliente por la realización del proyecto. A los costes totales se suman dos partidas adicionales:
 
 \begin{itemize}
-    \item Uso de herramientas gratuitas o con plan educativo (GitHub, Expo).
-    \item Base de datos PostgreSQL con extensión PostGIS: en entorno de desarrollo ejecutada en un contenedor Docker local; en producción gestionada mediante Supabase (plan gratuito).
-    \item Almacenamiento de imágenes mediante Cloudinary (plan gratuito).
-    \item Despliegue del backend en Render (plan gratuito).
-    \item Distribución del frontend mediante Expo (sin publicación en tiendas oficiales).
+    \item \textbf{Margen de contingencia (12\%)}: cubre desviaciones razonables respecto a la estimación inicial. 10.161 € $\times$ 12\% = 1.219 €
+    \item \textbf{Beneficio industrial (20\%)}: margen de beneficio habitual en el sector para proyectos de desarrollo de software. (10.161 € + 1.219 €) $\times$ 20\% = 2.276 €
 \end{itemize}
 
-\subsection{Coste total estimado}
+\begin{longtable}{|p{8cm}|p{4cm}|}
+\hline
+\textbf{Concepto} & \textbf{Importe} \\
+\hline
+Coste total del proyecto & 10.161 € \\
+\hline
+Margen de contingencia (12\%) & 1.219 € \\
+\hline
+Beneficio industrial (20\%) & 2.276 € \\
+\hline
+\textbf{Presupuesto total (sin IVA)} & \textbf{13.656 €} \\
+\hline
+\textbf{IVA (21\%)} & \textbf{2.868 €} \\
+\hline
+\textbf{Presupuesto total (con IVA)} & \textbf{16.524 €} \\
+\hline
+\end{longtable}
 
-\begin{itemize}
-    \item Coste total aproximado: 4500 €
-\end{itemize}
-
-Este coste es orientativo y representa el valor del trabajo realizado, aunque en el contexto del TFG no ha supuesto un gasto económico real.
+Este presupuesto representa el valor de mercado del trabajo realizado. En el contexto del TFG no ha supuesto un gasto económico real, ya que las herramientas y servicios utilizados están disponibles en planes gratuitos y el trabajo ha sido realizado por la propia estudiante.

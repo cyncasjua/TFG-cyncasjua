@@ -1,67 +1,76 @@
 \babel@toc {spanish}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Estructura de Desglose del Trabajo del proyecto}}{10}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Estructura de Desglose del Trabajo del proyecto}}{12}{figure.caption.9}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagrama de actores del sistema Sevillaneando}}{18}{figure.caption.10}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagrama de casos de uso (parte 1): acceso, perfil, descubrimiento y gestión de eventos}}{19}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagrama de casos de uso (parte 2): funcionalidades sociales, moderación y administración}}{19}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Acceso, listado de eventos y detalle de evento}}{26}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Chat de evento, creación de eventos y mapa}}{26}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Perfil, menú lateral y rutas recomendadas}}{27}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Notificaciones, moderación y administración}}{27}{figure.caption.17}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Vista lógica del sistema Sevillaneando}}{34}{figure.caption.18}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Vista de despliegue del sistema Sevillaneando}}{34}{figure.caption.19}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Conexión entre tecnologías del sistema en tiempo de ejecución}}{35}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Flujo de una petición en el frontend desde la acción del usuario hasta la actualización de la pantalla}}{36}{figure.caption.21}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Cadena de responsabilidades en el backend para una petición autenticada}}{37}{figure.caption.22}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Flujo de autenticación: desde el inicio de sesión hasta la verificación del token en el backend}}{38}{figure.caption.23}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Diagrama entidad-relación del sistema}}{41}{figure.caption.24}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Diagrama de secuencias del flujo de moderación de un evento}}{44}{figure.caption.26}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Grafo de navegación de la aplicación}}{46}{figure.caption.27}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Pantalla principal}}{48}{figure.caption.29}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Menú lateral}}{48}{figure.caption.29}%
+\contentsline {figure}{\numberline {4.12}{\ignorespaces Detalle de evento}}{48}{figure.caption.29}%
+\contentsline {figure}{\numberline {4.13}{\ignorespaces Mapa de eventos}}{49}{figure.caption.30}%
+\contentsline {figure}{\numberline {4.14}{\ignorespaces Eventos recomendados}}{49}{figure.caption.30}%
+\contentsline {figure}{\numberline {4.15}{\ignorespaces Rutas recomendadas}}{49}{figure.caption.30}%
+\contentsline {figure}{\numberline {4.16}{\ignorespaces Formulario de creación de evento}}{50}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.17}{\ignorespaces Panel de moderación}}{50}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.18}{\ignorespaces Panel de administración}}{50}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.19}{\ignorespaces Chat de evento}}{51}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.20}{\ignorespaces Mensaje directo}}{51}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.21}{\ignorespaces Notificaciones}}{51}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.22}{\ignorespaces Evento privado en listado}}{52}{figure.caption.33}%
+\contentsline {figure}{\numberline {4.23}{\ignorespaces Detalle de evento privado}}{52}{figure.caption.33}%
+\contentsline {figure}{\numberline {4.24}{\ignorespaces Creación de ruta}}{52}{figure.caption.33}%
+\contentsline {figure}{\numberline {4.25}{\ignorespaces Flujo de comunicación en tiempo real mediante Socket.IO: conexión, autenticación y entrega de mensajes}}{53}{figure.caption.34}%
+\contentsline {figure}{\numberline {4.26}{\ignorespaces Entradas y proceso del motor de recomendaciones}}{54}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.27}{\ignorespaces Flujo del sistema de scraping: orquestación, fuentes externas y persistencia}}{63}{figure.caption.36}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Vista lógica del sistema Sevillaneando}}{23}{figure.caption.11}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Vista de despliegue del sistema Sevillaneando}}{23}{figure.caption.12}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Conexión entre tecnologías del sistema en tiempo de ejecución}}{24}{figure.caption.13}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Flujo de una petición en el frontend desde la acción del usuario hasta la actualización de la pantalla}}{25}{figure.caption.14}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Cadena de responsabilidades en el backend para una petición autenticada}}{26}{figure.caption.15}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces Flujo de autenticación: desde el inicio de sesión hasta la verificación del token en el backend}}{27}{figure.caption.16}%
-\contentsline {figure}{\numberline {4.7}{\ignorespaces Diagrama entidad-relación del sistema}}{30}{figure.caption.17}%
-\contentsline {figure}{\numberline {4.8}{\ignorespaces Diagrama de secuencias del flujo de moderación de un evento}}{33}{figure.caption.19}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Grafo de navegación de la aplicación}}{35}{figure.caption.20}%
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Pantalla principal}}{37}{figure.caption.22}%
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Menú lateral}}{37}{figure.caption.22}%
-\contentsline {figure}{\numberline {4.12}{\ignorespaces Detalle de evento}}{37}{figure.caption.22}%
-\contentsline {figure}{\numberline {4.13}{\ignorespaces Mapa de eventos}}{38}{figure.caption.23}%
-\contentsline {figure}{\numberline {4.14}{\ignorespaces Eventos recomendados}}{38}{figure.caption.23}%
-\contentsline {figure}{\numberline {4.15}{\ignorespaces Rutas recomendadas}}{38}{figure.caption.23}%
-\contentsline {figure}{\numberline {4.16}{\ignorespaces Formulario de creación de evento}}{39}{figure.caption.24}%
-\contentsline {figure}{\numberline {4.17}{\ignorespaces Panel de moderación}}{39}{figure.caption.24}%
-\contentsline {figure}{\numberline {4.18}{\ignorespaces Panel de administración}}{39}{figure.caption.24}%
-\contentsline {figure}{\numberline {4.19}{\ignorespaces Chat de evento}}{40}{figure.caption.25}%
-\contentsline {figure}{\numberline {4.20}{\ignorespaces Mensaje directo}}{40}{figure.caption.25}%
-\contentsline {figure}{\numberline {4.21}{\ignorespaces Notificaciones}}{40}{figure.caption.25}%
-\contentsline {figure}{\numberline {4.22}{\ignorespaces Evento privado en listado}}{41}{figure.caption.26}%
-\contentsline {figure}{\numberline {4.23}{\ignorespaces Detalle de evento privado}}{41}{figure.caption.26}%
-\contentsline {figure}{\numberline {4.24}{\ignorespaces Creación de ruta}}{41}{figure.caption.26}%
-\contentsline {figure}{\numberline {4.25}{\ignorespaces Flujo de comunicación en tiempo real mediante Socket.IO: conexión, autenticación y entrega de mensajes}}{42}{figure.caption.27}%
-\contentsline {figure}{\numberline {4.26}{\ignorespaces Entradas y proceso del motor de recomendaciones}}{43}{figure.caption.28}%
-\contentsline {figure}{\numberline {4.27}{\ignorespaces Flujo del sistema de scraping: orquestación, fuentes externas y persistencia}}{49}{figure.caption.29}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Visión general de la arquitectura del sistema}}{99}{figure.caption.42}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {8.1}{\ignorespaces Arquitectura general de despliegue del sistema}}{110}{figure.caption.43}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {9.1}{\ignorespaces Acceso a la aplicación}}{125}{figure.caption.48}%
+\contentsline {figure}{\numberline {9.2}{\ignorespaces Acceso y opciones del perfil}}{126}{figure.caption.49}%
+\contentsline {figure}{\numberline {9.3}{\ignorespaces Gestión del perfil}}{127}{figure.caption.50}%
+\contentsline {figure}{\numberline {9.4}{\ignorespaces Mapa de eventos}}{128}{figure.caption.51}%
+\contentsline {figure}{\numberline {9.5}{\ignorespaces Filtros de búsqueda}}{129}{figure.caption.52}%
+\contentsline {figure}{\numberline {9.6}{\ignorespaces Pantalla del evento}}{130}{figure.caption.53}%
+\contentsline {figure}{\numberline {9.7}{\ignorespaces Interacción dentro del evento}}{131}{figure.caption.54}%
+\contentsline {figure}{\numberline {9.8}{\ignorespaces Listado de eventos guardados}}{132}{figure.caption.55}%
+\contentsline {figure}{\numberline {9.9}{\ignorespaces Listado de eventos apuntados}}{133}{figure.caption.56}%
+\contentsline {figure}{\numberline {9.10}{\ignorespaces Calendario de eventos}}{133}{figure.caption.57}%
+\contentsline {figure}{\numberline {9.11}{\ignorespaces Funcionalidades de administración}}{134}{figure.caption.58}%
+\contentsline {figure}{\numberline {9.12}{\ignorespaces Gestión de categorías}}{135}{figure.caption.59}%
+\contentsline {figure}{\numberline {9.13}{\ignorespaces Recomendaciones y rutas}}{136}{figure.caption.60}%
+\contentsline {figure}{\numberline {9.14}{\ignorespaces Rutas creadas por usuarios}}{138}{figure.caption.61}%
+\contentsline {figure}{\numberline {9.15}{\ignorespaces Creación de eventos}}{139}{figure.caption.62}%
+\contentsline {figure}{\numberline {9.16}{\ignorespaces Creación de eventos }}{140}{figure.caption.63}%
+\contentsline {figure}{\numberline {9.17}{\ignorespaces Acceso a evento privado}}{141}{figure.caption.64}%
+\contentsline {figure}{\numberline {9.18}{\ignorespaces Consulta de evento privado}}{142}{figure.caption.65}%
+\contentsline {figure}{\numberline {9.19}{\ignorespaces Gestión de eventos privados}}{143}{figure.caption.66}%
+\contentsline {figure}{\numberline {9.20}{\ignorespaces Eventos creados por el usuario}}{144}{figure.caption.67}%
+\contentsline {figure}{\numberline {9.21}{\ignorespaces Moderación de eventos}}{145}{figure.caption.68}%
+\contentsline {figure}{\numberline {9.22}{\ignorespaces Notificaciones}}{146}{figure.caption.69}%
+\contentsline {figure}{\numberline {9.23}{\ignorespaces Mensajes privados}}{147}{figure.caption.70}%
+\contentsline {figure}{\numberline {9.24}{\ignorespaces Consulta de mensajes privados}}{148}{figure.caption.71}%
+\contentsline {figure}{\numberline {9.25}{\ignorespaces Evento finalizado}}{149}{figure.caption.72}%
+\contentsline {figure}{\numberline {9.26}{\ignorespaces Grafo de navegabilidad de la aplicación}}{150}{figure.caption.73}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {7.1}{\ignorespaces Visión general de la arquitectura del sistema}}{85}{figure.caption.35}%
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {8.1}{\ignorespaces Arquitectura general de despliegue del sistema}}{96}{figure.caption.36}%
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {9.1}{\ignorespaces Acceso a la aplicación}}{111}{figure.caption.41}%
-\contentsline {figure}{\numberline {9.2}{\ignorespaces Acceso y opciones del perfil}}{112}{figure.caption.42}%
-\contentsline {figure}{\numberline {9.3}{\ignorespaces Gestión del perfil}}{113}{figure.caption.43}%
-\contentsline {figure}{\numberline {9.4}{\ignorespaces Mapa de eventos}}{114}{figure.caption.44}%
-\contentsline {figure}{\numberline {9.5}{\ignorespaces Filtros de búsqueda}}{115}{figure.caption.45}%
-\contentsline {figure}{\numberline {9.6}{\ignorespaces Pantalla del evento}}{116}{figure.caption.46}%
-\contentsline {figure}{\numberline {9.7}{\ignorespaces Interacción dentro del evento}}{117}{figure.caption.47}%
-\contentsline {figure}{\numberline {9.8}{\ignorespaces Listado de eventos guardados}}{118}{figure.caption.48}%
-\contentsline {figure}{\numberline {9.9}{\ignorespaces Listado de eventos apuntados}}{119}{figure.caption.49}%
-\contentsline {figure}{\numberline {9.10}{\ignorespaces Calendario de eventos}}{119}{figure.caption.50}%
-\contentsline {figure}{\numberline {9.11}{\ignorespaces Funcionalidades de administración}}{120}{figure.caption.51}%
-\contentsline {figure}{\numberline {9.12}{\ignorespaces Gestión de categorías}}{121}{figure.caption.52}%
-\contentsline {figure}{\numberline {9.13}{\ignorespaces Recomendaciones y rutas}}{122}{figure.caption.53}%
-\contentsline {figure}{\numberline {9.14}{\ignorespaces Rutas creadas por usuarios}}{124}{figure.caption.54}%
-\contentsline {figure}{\numberline {9.15}{\ignorespaces Creación de eventos}}{125}{figure.caption.55}%
-\contentsline {figure}{\numberline {9.16}{\ignorespaces Creación de eventos }}{126}{figure.caption.56}%
-\contentsline {figure}{\numberline {9.17}{\ignorespaces Acceso a evento privado}}{127}{figure.caption.57}%
-\contentsline {figure}{\numberline {9.18}{\ignorespaces Consulta de evento privado}}{128}{figure.caption.58}%
-\contentsline {figure}{\numberline {9.19}{\ignorespaces Gestión de eventos privados}}{129}{figure.caption.59}%
-\contentsline {figure}{\numberline {9.20}{\ignorespaces Eventos creados por el usuario}}{130}{figure.caption.60}%
-\contentsline {figure}{\numberline {9.21}{\ignorespaces Moderación de eventos}}{131}{figure.caption.61}%
-\contentsline {figure}{\numberline {9.22}{\ignorespaces Notificaciones}}{132}{figure.caption.62}%
-\contentsline {figure}{\numberline {9.23}{\ignorespaces Mensajes privados}}{133}{figure.caption.63}%
-\contentsline {figure}{\numberline {9.24}{\ignorespaces Consulta de mensajes privados}}{134}{figure.caption.64}%
-\contentsline {figure}{\numberline {9.25}{\ignorespaces Evento finalizado}}{135}{figure.caption.65}%
-\contentsline {figure}{\numberline {9.26}{\ignorespaces Grafo de navegabilidad de la aplicación}}{136}{figure.caption.66}%
 \addvspace {10\p@ }

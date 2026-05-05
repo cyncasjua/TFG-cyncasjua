@@ -1,15 +1,18 @@
 \babel@toc {spanish}{}\relax 
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {1.1}{\ignorespaces Comparativa de soluciones existentes}}{2}{table.caption.9}%
+\contentsline {table}{\numberline {1.1}{\ignorespaces Comparativa de soluciones existentes}}{3}{table.caption.8}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Matriz de trazabilidad: requisitos funcionales y objetivos del sistema}}{25}{table.caption.13}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Módulos y operaciones principales de la API REST}}{31}{table.caption.18}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{36}{table.caption.21}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Módulos y operaciones principales de la API REST}}{42}{table.caption.25}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{47}{table.caption.28}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{75}{table.caption.33}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{76}{table.caption.34}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{89}{table.caption.40}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{90}{table.caption.41}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

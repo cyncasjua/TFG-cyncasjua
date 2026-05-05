@@ -2,9 +2,11 @@
 
 Sevilla es una ciudad que no para. Cada semana hay talleres, conciertos en salas pequeñas, exposiciones temporales, rutas guiadas, mercadillos, festividades de barrio y decenas de actividades que pasan desapercibidas para la mayoría de sus habitantes. No es que no existan: es que nadie las reúne en un mismo sitio. La información cultural de la ciudad llega fragmentada, a través de redes sociales, carteles físicos, webs de organismos públicos desconectadas entre sí o, simplemente, por recomendación de un conocido.
 
-Esta situación no es exclusiva de Sevilla. Según el Informe de Hábitos Culturales del Ministerio de Cultura y Deporte~\cite{mcd2023habitos}, el 43\% de la población española declara no asistir a actividades culturales por falta de información sobre la oferta disponible en su entorno. Desde una perspectiva económica, el sector del ocio y la cultura tiene un peso considerable: según datos del INE, los hogares españoles destinan en torno al 9\% de su gasto total al ocio, cultura y espectáculos, lo que supone más de 70.000 millones de euros anuales a nivel nacional~\cite{ine2023presupuestos}. En Sevilla, ciudad con más de 700.000 habitantes y referente turístico y cultural del sur de Europa, el turismo cultural y el ocio representan una parte significativa de la actividad económica local: el sector turístico en la provincia genera más de 3.000 millones de euros al año y emplea a más de 60.000 personas, según datos de la Encuesta de Ocupación Hotelera del INE~\cite{ine2023eoh}. En este contexto, una plataforma que mejore la visibilidad de la oferta cultural local no solo tiene un valor social, sino también un impacto económico directo en la actividad comercial vinculada a los eventos. En el caso de ciudades con una programación cultural densa y descentralizada como Sevilla, con más de 700.000 habitantes y una agenda que combina patrimonio histórico, cultura popular y escena emergente, esta fragmentación informativa tiene un impacto directo en la visibilidad de los eventos más pequeños y en la participación ciudadana.
+Esta situación no es exclusiva de Sevilla. Según el Informe de Hábitos y Prácticas Culturales del Ministerio de Cultura y Deporte~\cite{mcd2023habitos}, el 43\% de la población española declara no asistir a actividades culturales por falta de información sobre la oferta disponible en su entorno. En ciudades con una programación cultural densa y descentralizada como Sevilla, con más de 700.000 habitantes y una agenda que combina patrimonio histórico, cultura popular y escena emergente, esta fragmentación informativa tiene un impacto directo en la visibilidad de los eventos más pequeños y en la participación ciudadana.
 
 La consecuencia es una brecha real: los eventos grandes tienen visibilidad, pero los pequeños y emergentes, a menudo los más interesantes, mueren sin audiencia. Al mismo tiempo, mucha gente busca planes sin saber qué tiene a diez minutos de casa, y descubre lo que se perdió días después, al verlo por redes sociales o leer un cartel ya caducado.
+
+Más allá del impacto social, existe también una dimensión económica de peso. El ocio y la cultura constituyen un sector de enorme relevancia para la economía española: según datos del INE, los hogares españoles destinan en torno al 9\% de su gasto total al ocio, cultura y espectáculos, lo que supone más de 70.000 millones de euros anuales a nivel nacional~\cite{ine2023presupuestos}. En Sevilla, referente turístico y cultural del sur de Europa, el sector turístico genera más de 3.000 millones de euros al año y emplea a más de 60.000 personas en la provincia, según la Encuesta de Ocupación Hotelera del INE~\cite{ine2023eoh}. Tanto los grandes eventos como los pequeños contribuyen a esta actividad económica: los primeros atraen visitantes y generan gasto directo, mientras que los segundos dinamizan el comercio local, la hostelería de proximidad y la escena cultural emergente. Una plataforma que mejore la visibilidad de toda la oferta, no solo la de los eventos consolidados, tiene por tanto un impacto económico real en el tejido comercial y cultural de la ciudad.
 
 \section{Motivación}
 
@@ -37,37 +39,37 @@ La tabla~\ref{tab:comparativa} resume las principales diferencias entre estas so
 \caption{Comparativa de soluciones existentes}
 \label{tab:comparativa}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|c|c|c|}
 \hline
-\textbf{Característica} & \textbf{Eventbrite} & \textbf{Facebook Events} & \textbf{Meetup} & \textbf{Web Ayto.} & \textbf{Sevillaneando} \\
+\textbf{Característica} & \textbf{Eventbrite} & \textbf{Facebook Events} & \textbf{Meetup} & \textbf{Web Ayto.} & \textbf{Fiber} & \textbf{Sevillaneando} \\
 \hline
-Enfoque local (Sevilla) & \xmark & \xmark & \xmark & \cmark & \cmark \\
+Enfoque local (Sevilla) & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark \\
 \hline
-Eventos emergentes/gratuitos & \xmark & \cmark & \xmark & \xmark & \cmark \\
+Eventos emergentes/gratuitos & \xmark & \cmark & \xmark & \xmark & \cmark & \cmark \\
 \hline
-Contenido generado por usuarios & \xmark & \cmark & \cmark & \xmark & \cmark \\
+Contenido generado por usuarios & \xmark & \cmark & \cmark & \xmark & \cmark & \cmark \\
 \hline
-Moderación de contenido & \xmark & Parcial & \xmark & \cmark & \cmark \\
+Moderación de contenido & \xmark & Parcial & \xmark & \cmark & \xmark & \cmark \\
 \hline
-Chat / comunidad en el evento & \xmark & \xmark & \xmark & \xmark & \cmark \\
+Chat / comunidad en el evento & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark \\
 \hline
-Mensajería directa entre usuarios & \xmark & \cmark & \xmark & \xmark & \cmark \\
+Mensajería directa entre usuarios & \xmark & \cmark & \xmark & \xmark & \xmark & \cmark \\
 \hline
-Eventos privados con acceso restringido & \xmark & \cmark & \xmark & \xmark & \cmark \\
+Eventos privados con acceso restringido & \xmark & \cmark & \xmark & \xmark & \xmark & \cmark \\
 \hline
-Mapa interactivo de eventos cercanos & \xmark & \cmark & \xmark & \xmark & \cmark \\
+Mapa interactivo de eventos cercanos & \xmark & \cmark & \xmark & \xmark & \cmark & \cmark \\
 \hline
-Rutas turísticas personalizadas & \xmark & \xmark & \xmark & \xmark & \cmark \\
+Rutas turísticas personalizadas & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark \\
 \hline
-Recomendaciones personalizadas & \xmark & Parcial & \cmark & \xmark & \cmark \\
+Recomendaciones personalizadas & \xmark & Parcial & \cmark & \xmark & Parcial & \cmark \\
 \hline
-Moderación automática de imágenes (IA) & \xmark & \cmark & \xmark & \xmark & \xmark \\
+Moderación automática de imágenes (IA) & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark \\
 \hline
 \end{tabular}%
 }
 \end{table}
 
-Como se observa, \textit{Sevillaneando} es la única solución que combina el enfoque local, la participación ciudadana, las funcionalidades sociales en tiempo real, la moderación de contenido por parte de usuarios con rol específico y la personalización mediante recomendaciones en una misma plataforma orientada específicamente al ocio y la cultura en Sevilla.
+Como se observa, \textit{Sevillaneando} es la única solución que combina el enfoque local, la participación ciudadana, las funcionalidades sociales en tiempo real, la moderación de contenido por parte de usuarios con rol específico y la personalización mediante recomendaciones en una misma plataforma orientada específicamente al ocio y la cultura en Sevilla. Aunque Fiber ofrece funcionalidades de descubrimiento local y personalización básica, no dispone del sistema de gestión de rutas entre eventos ni de la moderación por roles que caracterizan a \textit{Sevillaneando}.
 
 \section{Estructura del documento}
 

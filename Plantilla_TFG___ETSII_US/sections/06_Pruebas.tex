@@ -206,10 +206,22 @@ Las pruebas de aceptación se han ejecutado sobre dos entornos:
 \begin{itemize}
     \item \textbf{Entorno local}: servidor NestJS ejecutado en local, conectado a una instancia de PostgreSQL con PostGIS en Docker. Frontend compilado con Expo y ejecutado en un emulador Android a través de Android Studio.
 
-    \item \textbf{Entorno desplegado}: backend desplegado en Google Cloud Run con base de datos en Cloud SQL. Frontend distribuido mediante \textbf{Expo Go}, probado sobre un \textbf{iPhone 16 Pro} con iOS. Se ha verificado que todos los módulos de la aplicación se abren correctamente, incluyendo el mapa (OpenStreetMap), el chat en tiempo real y las notificaciones.
+    \item \textbf{Entorno desplegado}: backend desplegado en Render con base de datos en Supabase. Frontend distribuido mediante \textbf{Expo Go}, probado principalmente sobre un \textbf{iPhone 16 Pro} con iOS. Se ha verificado que todos los módulos de la aplicación se abren correctamente, incluyendo el mapa (OpenStreetMap), el chat en tiempo real y las notificaciones.
 \end{itemize}
 
 En ambos entornos se comprobó el correcto funcionamiento de la interfaz, la navegación entre pantallas, la carga de datos desde la API y el comportamiento ante acciones del usuario.
+
+\subsection{Incidencias de compatibilidad con Android}
+
+Durante la fase de pruebas con usuarios piloto (véase el Anexo de Usuarios Piloto), se detectaron problemas de compatibilidad en dispositivos Android reales que no habían aparecido en el emulador ni en las pruebas sobre iOS. Los principales problemas identificados fueron:
+
+\begin{itemize}
+    \item \textbf{Mapa no visible}: el componente de mapa (OpenStreetMap mediante \texttt{react-native-maps}) no se renderizaba correctamente en algunos dispositivos Android, mostrando una pantalla en blanco. El problema estaba relacionado con la configuración del proveedor de tiles y la gestión del token de acceso en la compilación de Expo Go para Android.
+
+    \item \textbf{Descuadres de pantalla}: varios elementos de la interfaz (modales, cabeceras, botones flotantes) presentaban desajustes de posicionamiento en Android debido a diferencias en el comportamiento del \textit{safe area} y el teclado virtual respecto a iOS.
+\end{itemize}
+
+Estos problemas fueron corregidos en una iteración adicional de la fase de cierre del proyecto, no prevista en la planificación original. La detección se produjo al distribuir la aplicación a usuarios piloto con dispositivos Android, ya que el desarrollo previo se había realizado íntegramente sobre iOS. Esta incidencia se recoge como desviación en el capítulo de gestión del proyecto y como lección aprendida en el capítulo de conclusiones.
 
 \section{Plan de pruebas de aceptación}
 
