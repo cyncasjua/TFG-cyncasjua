@@ -10,37 +10,11 @@ Además, el sistema integra servicios externos para resolver necesidades concret
 
 \section{Herramientas}
 
-\subsection{Lenguaje de programación}
+Las tecnologías utilizadas en el sistema —TypeScript, React Native, Expo, NestJS, PostgreSQL con PostGIS, TypeORM, Docker, Firebase Authentication, Cloudinary y OpenStreetMap— se describen en detalle en el capítulo~\ref{cap:diseño}, dentro de la sección dedicada a la arquitectura del sistema. A continuación se recogen únicamente los aspectos específicos de su uso durante la implementación.
 
-El desarrollo se ha realizado principalmente en \textbf{TypeScript}, tanto en el frontend como en el backend. El uso de TypeScript permite añadir tipado estático sobre JavaScript, reduciendo errores durante el desarrollo y facilitando el mantenimiento del código.
+\subsection{ORM y datos geográficos}
 
-\subsection{Frontend móvil}
-
-El frontend se ha desarrollado con \textbf{React Native} y \textbf{Expo}. React Native permite construir aplicaciones móviles multiplataforma a partir de una única base de código, mientras que Expo simplifica la configuración del entorno, la ejecución de la aplicación y el acceso a módulos nativos.
-
-Para la navegación entre pantallas se ha utilizado \textbf{React Navigation}, concretamente una navegación basada en pila. Esto permite estructurar el flujo entre vistas como la pantalla principal, el detalle de eventos, el mapa, la autenticación, la gestión de perfil o las secciones privadas del usuario.
-
-La comunicación con el backend se realiza mediante \textbf{Axios}, centralizando las peticiones HTTP en una capa de servicios. Esta capa permite configurar la URL base de la API, añadir cabeceras de autenticación y transformar los datos recibidos antes de mostrarlos en la interfaz.
-
-\subsection{Backend}
-
-El backend se ha implementado con \textbf{Node.js} y el framework \textbf{NestJS}. NestJS permite organizar el servidor en módulos, controladores y servicios, separando claramente las responsabilidades de cada parte de la aplicación.
-
-Los controladores se encargan de definir los endpoints de la API REST, mientras que los servicios contienen la lógica de negocio. Esta estructura facilita la mantenibilidad del sistema y permite ampliar nuevas funcionalidades sin afectar al resto de módulos.
-
-Para la validación de datos recibidos en las peticiones se han utilizado \textbf{DTOs} junto con las librerías \textbf{class-validator} y \textbf{class-transformer}. De esta forma, el backend puede comprobar que los datos enviados por el frontend cumplen el formato esperado antes de procesarlos.
-
-\subsection{Base de datos}
-
-La base de datos utilizada es \textbf{PostgreSQL}, junto con la extensión \textbf{PostGIS}. PostgreSQL permite modelar las entidades principales del sistema de forma relacional, mientras que PostGIS añade soporte para datos geográficos.
-
-Esta elección es especialmente importante en \textbf{Sevillaneando}, ya que muchos casos de uso dependen de la ubicación de los usuarios y de los eventos. Gracias a PostGIS, el sistema puede almacenar coordenadas, calcular distancias, filtrar eventos por cercanía y representar eventos sobre un mapa.
-
-\subsection{ORM}
-
-Para la comunicación entre el backend y la base de datos se ha utilizado \textbf{TypeORM}. Esta herramienta permite definir entidades en TypeScript y mapearlas con tablas de la base de datos.
-
-En el caso de los eventos, la entidad correspondiente incluye campos como identificador, título, descripción, dirección y ubicación geográfica. La ubicación se almacena como un punto geográfico compatible con PostGIS, utilizando el sistema de referencia SRID 4326.
+La ubicación de los eventos se almacena en PostgreSQL como un punto geográfico compatible con PostGIS mediante TypeORM, utilizando el sistema de referencia SRID 4326. El siguiente fragmento muestra la definición del campo en la entidad \texttt{Event}:
 
 \begin{lstlisting}[language=JavaScript, caption={Definición del campo geográfico en la entidad Event con TypeORM}]
 @Entity({ name: 'events' })
@@ -65,34 +39,6 @@ export class Event {
 }
 \end{lstlisting}
 
-\subsection{Docker}
-
-Para facilitar la configuración del entorno local se ha utilizado \textbf{Docker} junto con \textbf{Docker Compose}. En concreto, la base de datos se ejecuta en un contenedor basado en la imagen \texttt{postgis/postgis:15-3.3}.
-
-El uso de Docker permite disponer de una base de datos PostgreSQL con PostGIS sin necesidad de instalarla manualmente en el sistema operativo. Además, garantiza que el entorno de desarrollo sea reproducible y evita diferencias de configuración entre equipos.
-
-\subsection{Autenticación}
-
-La autenticación se ha implementado mediante \textbf{Firebase Authentication}. En el frontend se obtiene el token de autenticación del usuario y se envía al backend mediante la cabecera \texttt{Authorization} con el formato \texttt{Bearer token}.
-
-En el backend se utiliza \textbf{Firebase Admin SDK} para verificar dicho token. Esta comprobación se encapsula en un guard de NestJS, de forma que los endpoints protegidos solo puedan ejecutarse cuando el usuario está autenticado correctamente.
-
-\subsection{Almacenamiento de imágenes}
-
-La gestión de imágenes se realiza mediante el servicio externo \textbf{Cloudinary}.
-
-Todas las imágenes relevantes del sistema, como las asociadas a eventos, perfiles de usuario o chats, son enviadas al backend, donde se procesan y se almacenan en Cloudinary. Este servicio permite gestionar los recursos multimedia de forma eficiente, proporcionando URLs de acceso a las imágenes y ofreciendo funcionalidades adicionales como optimización y transformación automática.
-
-Por otro lado, \textbf{Firebase} se utiliza exclusivamente para la gestión de la autenticación de usuarios mediante \textbf{Firebase Authentication}. Aunque Firebase ofrece capacidades de almacenamiento mediante Firebase Storage, estas no se emplean en el flujo principal de la aplicación.
-
-Esta decisión permite centralizar la gestión de imágenes en Cloudinary, simplificando la arquitectura del sistema y aprovechando sus capacidades específicas para el manejo eficiente de contenido multimedia.
-
-\subsection{Mapas y geolocalización}
-
-La visualización de mapas se ha implementado mediante \textbf{react-native-maps}, utilizando \textbf{OpenStreetMap}. Esta solución permite mostrar mapas interactivos dentro de la aplicación móvil, ubicar eventos mediante marcadores y representar visualmente la cercanía de los eventos al usuario.
-
-La información geográfica se almacena en la base de datos mediante PostGIS y se transforma en el frontend para obtener valores de latitud y longitud que puedan ser utilizados por los componentes de mapa.
-
 \subsection{Scraping}
 
 El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado dos fuentes concretas:
@@ -103,8 +49,6 @@ El sistema incluye una funcionalidad de scraping para incorporar eventos procede
 \end{itemize}
 
 Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida, descartando aquellos sin coordenadas o con datos incompletos.
-
-Esta funcionalidad permite mantener actualizado el catálogo de eventos sin depender únicamente de los eventos creados manualmente por los usuarios.
 
 \section{Estructura del proyecto}
 

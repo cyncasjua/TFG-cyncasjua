@@ -24,14 +24,13 @@ import {
   ThemedTitle,
   ThemedButton,
   OsmAttribution,
+  AppPickerModal,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
-import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
-import { StyleProp, ViewStyle } from 'react-native';
 import { ComponentType } from 'react';
 import { CalendarDateTimePicker } from '../components';
 import DateTimePickerModalOriginal from 'react-native-modal-datetime-picker';
@@ -62,13 +61,6 @@ const parseOptionalNumber = (value: string) => {
 export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const mapRef = useRef<MapView | null>(null);
   const { colors } = useTheme();
-
-  const ArrowUpIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
-    <Icon name="chevron-up" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
-  );
-  const ArrowDownIcon = ({ style }: { style?: StyleProp<ViewStyle> }) => (
-    <Icon name="chevron-down" size={24} color={colors.text} style={(style || {}) as ViewStyle} />
-  );
 
   const { user } = useAuth();
   const [title, setTitle] = useState('');
@@ -637,91 +629,71 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             />
 
             <ThemedText style={styles.label}>Estado</ThemedText>
-            <DropDownPicker
-              open={openEstado}
-              value={estado}
-              items={estadoItems}
-              setOpen={setOpenEstado}
-              setValue={setEstado}
-              setItems={setEstadoItems}
-              placeholder="Selecciona un estado"
-              style={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-                minHeight: 48,
-                borderRadius: 16,
-                marginBottom: 10,
-              }}
-              dropDownContainerStyle={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-              }}
-              textStyle={{ color: colors.text, fontSize: 15 }}
-              placeholderStyle={{ color: colors.text + '80' }}
-              listMode="MODAL"
-              modalProps={{ animationType: 'fade', style: { margin: 0 } }}
-              modalContentContainerStyle={{
-                backgroundColor: colors.card,
-                borderRadius: 20,
-                paddingVertical: 8,
-                marginHorizontal: 24,
-                marginVertical: 'auto',
-                maxHeight: '60%',
-                alignSelf: 'center',
-                width: '90%',
-              }}
-              modalTitle="Estado"
-              modalTitleStyle={{ color: colors.text, fontWeight: '700', fontSize: 17 }}
-              selectedItemContainerStyle={{ backgroundColor: colors.primary + '22' }}
-              selectedItemLabelStyle={{ color: colors.primary, fontWeight: '600' }}
-              itemSeparator
-              itemSeparatorStyle={{ backgroundColor: colors.border ?? colors.text + '15' }}
-              ArrowUpIconComponent={ArrowUpIcon}
-              ArrowDownIconComponent={ArrowDownIcon}
-            />
+            <>
+              <TouchableOpacity
+                onPress={() => setOpenEstado(true)}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    minHeight: 48,
+                  },
+                ]}
+              >
+                <ThemedText style={{ fontSize: 15, color: colors.text, flex: 1 }}>
+                  {estadoItems.find((i) => i.value === estado)?.label ?? estado}
+                </ThemedText>
+                <Icon name="chevron-down" size={22} color={colors.text} />
+              </TouchableOpacity>
+              <AppPickerModal
+                visible={openEstado}
+                title="Estado"
+                items={estadoItems}
+                value={estado}
+                onSelect={(val) => setEstado(val)}
+                onClose={() => setOpenEstado(false)}
+              />
+            </>
             <ThemedText style={styles.label}>Recurrencia</ThemedText>
-            <DropDownPicker
-              open={openRecurrencia}
-              value={recurrencia}
-              items={recurrenciaItems}
-              setOpen={setOpenRecurrencia}
-              setValue={setRecurrencia}
-              setItems={() => {}}
-              placeholder="Sin recurrencia"
-              style={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-                minHeight: 48,
-                borderRadius: 16,
-                marginBottom: 10,
-              }}
-              dropDownContainerStyle={{
-                backgroundColor: colors.card,
-                borderColor: colors.primary,
-              }}
-              textStyle={{ color: colors.text, fontSize: 15 }}
-              placeholderStyle={{ color: colors.text + '80' }}
-              listMode="MODAL"
-              modalProps={{ animationType: 'fade', style: { margin: 0 } }}
-              modalContentContainerStyle={{
-                backgroundColor: colors.card,
-                borderRadius: 20,
-                paddingVertical: 8,
-                marginHorizontal: 24,
-                marginVertical: 'auto',
-                maxHeight: '60%',
-                alignSelf: 'center',
-                width: '90%',
-              }}
-              modalTitle="Recurrencia"
-              modalTitleStyle={{ color: colors.text, fontWeight: '700', fontSize: 17 }}
-              selectedItemContainerStyle={{ backgroundColor: colors.primary + '22' }}
-              selectedItemLabelStyle={{ color: colors.primary, fontWeight: '600' }}
-              itemSeparator
-              itemSeparatorStyle={{ backgroundColor: colors.border ?? colors.text + '15' }}
-              ArrowUpIconComponent={ArrowUpIcon}
-              ArrowDownIconComponent={ArrowDownIcon}
-            />
+            <>
+              <TouchableOpacity
+                onPress={() => setOpenRecurrencia(true)}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    minHeight: 48,
+                  },
+                ]}
+              >
+                <ThemedText
+                  style={{
+                    fontSize: 15,
+                    color: recurrencia ? colors.text : colors.text + '80',
+                    flex: 1,
+                  }}
+                >
+                  {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ?? 'Sin recurrencia'}
+                </ThemedText>
+                <Icon name="chevron-down" size={22} color={colors.text} />
+              </TouchableOpacity>
+              <AppPickerModal
+                visible={openRecurrencia}
+                title="Recurrencia"
+                items={recurrenciaItems}
+                value={recurrencia ?? ''}
+                onSelect={(val) => setRecurrencia(val || null)}
+                onClose={() => setOpenRecurrencia(false)}
+              />
+            </>
             {!!recurrencia && (
               <>
                 <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
@@ -758,44 +730,43 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (
-              <DropDownPicker
-                open={openCategoria}
-                value={categoriaId}
-                items={dropdownItems}
-                setOpen={setOpenCategoria}
-                setValue={setCategoriaId}
-                setItems={setDropdownItems}
-                placeholder="Selecciona una categoría..."
-                style={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.primary,
-                  minHeight: 48,
-                  borderRadius: 16,
-                  marginBottom: 10,
-                }}
-                dropDownContainerStyle={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.primary,
-                }}
-                textStyle={{ color: colors.text, fontSize: 15 }}
-                placeholderStyle={{ color: colors.text + '80' }}
-                listMode="MODAL"
-                modalProps={{ animationType: 'fade' }}
-                modalContentContainerStyle={{
-                  backgroundColor: colors.card,
-                  borderRadius: 20,
-                  paddingVertical: 8,
-                  marginHorizontal: 16,
-                }}
-                modalTitle="Categoría"
-                modalTitleStyle={{ color: colors.text, fontWeight: '700', fontSize: 17 }}
-                selectedItemContainerStyle={{ backgroundColor: colors.primary + '22' }}
-                selectedItemLabelStyle={{ color: colors.primary, fontWeight: '600' }}
-                itemSeparator
-                itemSeparatorStyle={{ backgroundColor: colors.border ?? colors.text + '15' }}
-                ArrowUpIconComponent={ArrowUpIcon}
-                ArrowDownIconComponent={ArrowDownIcon}
-              />
+              <>
+                <TouchableOpacity
+                  onPress={() => setOpenCategoria(true)}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      minHeight: 48,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    style={{
+                      fontSize: 15,
+                      color: categoriaId ? colors.text : colors.text + '80',
+                      flex: 1,
+                    }}
+                  >
+                    {categoriaId
+                      ? (dropdownItems.find((i) => i.value === categoriaId)?.label ?? 'Selecciona una categoría...')
+                      : 'Selecciona una categoría...'}
+                  </ThemedText>
+                  <Icon name="chevron-down" size={22} color={colors.text} />
+                </TouchableOpacity>
+                <AppPickerModal
+                  visible={openCategoria}
+                  title="Categoría"
+                  items={dropdownItems}
+                  value={categoriaId}
+                  onSelect={(val) => setCategoriaId(val)}
+                  onClose={() => setOpenCategoria(false)}
+                />
+              </>
             )}
             {privado && eventLinkAcceso && (
               <PrivateEventLinkModal

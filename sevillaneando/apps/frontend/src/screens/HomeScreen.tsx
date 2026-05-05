@@ -920,64 +920,121 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     </ThemedTextSecondary>
                   ) : (
                     <>
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.recommendedListContent}
-                      >
-                        {visibleRecommendedEvents.map((event) => (
-                          <TouchableOpacity
-                            key={event.id}
-                            onPress={() => openRecommendedEvent(event.id)}
-                            activeOpacity={0.88}
-                            style={[
-                              styles.recommendedCard,
-                              { backgroundColor: colors.background, borderColor: colors.border },
-                            ]}
-                          >
-                            <View style={styles.recommendedCardTop}>
-                              <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
-                                {event.title}
-                              </ThemedText>
-                              <MaterialIcons
-                                name="chevron-right"
-                                size={16}
-                                color={colors.primary}
-                              />
-                            </View>
-                            <ThemedTextSecondary numberOfLines={1}>
-                              {event.categoria || 'General'}
-                            </ThemedTextSecondary>
-                            {!event.hasMultipleDatesAvailable && (
+                      {showAllRecommendedEvents ? (
+                        <View style={styles.recommendedGrid}>
+                          {visibleRecommendedEvents.map((event) => (
+                            <TouchableOpacity
+                              key={event.id}
+                              onPress={() => openRecommendedEvent(event.id)}
+                              activeOpacity={0.88}
+                              style={[
+                                styles.recommendedGridCard,
+                                { backgroundColor: colors.background, borderColor: colors.border },
+                              ]}
+                            >
+                              <View style={styles.recommendedCardTop}>
+                                <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
+                                  {event.title}
+                                </ThemedText>
+                                <MaterialIcons
+                                  name="chevron-right"
+                                  size={16}
+                                  color={colors.primary}
+                                />
+                              </View>
                               <ThemedTextSecondary numberOfLines={1}>
-                                {formatSevillaTime(event.fechaInicio)}
+                                {event.categoria || 'General'}
                               </ThemedTextSecondary>
-                            )}
-                            {event.hasMultipleDatesAvailable && (
-                              <ThemedTextSecondary numberOfLines={1}>
-                                Varias fechas disponibles
-                              </ThemedTextSecondary>
-                            )}
-                            <ThemedView style={styles.recommendedMetaRow}>
-                              <MaterialIcons name="star" size={14} color="#f39c12" />
-                              <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
-                              {event.distanceKm != null && (
-                                <>
-                                  <MaterialIcons
-                                    name="near-me"
-                                    size={14}
-                                    color={colors.primary}
-                                    style={{ marginLeft: 8 }}
-                                  />
-                                  <ThemedTextSecondary>
-                                    {event.distanceKm.toFixed(1)} km
-                                  </ThemedTextSecondary>
-                                </>
+                              {!event.hasMultipleDatesAvailable && (
+                                <ThemedTextSecondary numberOfLines={1}>
+                                  {formatSevillaTime(event.fechaInicio)}
+                                </ThemedTextSecondary>
                               )}
-                            </ThemedView>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
+                              {event.hasMultipleDatesAvailable && (
+                                <ThemedTextSecondary numberOfLines={1}>
+                                  Varias fechas disponibles
+                                </ThemedTextSecondary>
+                              )}
+                              <ThemedView style={styles.recommendedMetaRow}>
+                                <MaterialIcons name="star" size={14} color="#f39c12" />
+                                <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
+                                {event.distanceKm != null && (
+                                  <>
+                                    <MaterialIcons
+                                      name="near-me"
+                                      size={14}
+                                      color={colors.primary}
+                                      style={{ marginLeft: 8 }}
+                                    />
+                                    <ThemedTextSecondary>
+                                      {event.distanceKm.toFixed(1)} km
+                                    </ThemedTextSecondary>
+                                  </>
+                                )}
+                              </ThemedView>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      ) : (
+                        <ScrollView
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          contentContainerStyle={styles.recommendedListContent}
+                        >
+                          {visibleRecommendedEvents.map((event) => (
+                            <TouchableOpacity
+                              key={event.id}
+                              onPress={() => openRecommendedEvent(event.id)}
+                              activeOpacity={0.88}
+                              style={[
+                                styles.recommendedCard,
+                                { backgroundColor: colors.background, borderColor: colors.border },
+                              ]}
+                            >
+                              <View style={styles.recommendedCardTop}>
+                                <ThemedText style={styles.recommendedCardTitle} numberOfLines={1}>
+                                  {event.title}
+                                </ThemedText>
+                                <MaterialIcons
+                                  name="chevron-right"
+                                  size={16}
+                                  color={colors.primary}
+                                />
+                              </View>
+                              <ThemedTextSecondary numberOfLines={1}>
+                                {event.categoria || 'General'}
+                              </ThemedTextSecondary>
+                              {!event.hasMultipleDatesAvailable && (
+                                <ThemedTextSecondary numberOfLines={1}>
+                                  {formatSevillaTime(event.fechaInicio)}
+                                </ThemedTextSecondary>
+                              )}
+                              {event.hasMultipleDatesAvailable && (
+                                <ThemedTextSecondary numberOfLines={1}>
+                                  Varias fechas disponibles
+                                </ThemedTextSecondary>
+                              )}
+                              <ThemedView style={styles.recommendedMetaRow}>
+                                <MaterialIcons name="star" size={14} color="#f39c12" />
+                                <ThemedTextSecondary>{event.score.toFixed(1)}</ThemedTextSecondary>
+                                {event.distanceKm != null && (
+                                  <>
+                                    <MaterialIcons
+                                      name="near-me"
+                                      size={14}
+                                      color={colors.primary}
+                                      style={{ marginLeft: 8 }}
+                                    />
+                                    <ThemedTextSecondary>
+                                      {event.distanceKm.toFixed(1)} km
+                                    </ThemedTextSecondary>
+                                  </>
+                                )}
+                              </ThemedView>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      )}
                       {hasMoreRecommendedEvents && (
                         <TouchableOpacity
                           onPress={() => setShowAllRecommendedEvents((prev) => !prev)}
@@ -2561,6 +2618,18 @@ const styles = StyleSheet.create({
   },
   recommendedCard: {
     width: 200,
+    borderRadius: RECOMMENDATION_BORDER_RADIUS,
+    borderWidth: 1,
+    padding: 9,
+  },
+  recommendedGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  recommendedGridCard: {
+    width: '48%',
     borderRadius: RECOMMENDATION_BORDER_RADIUS,
     borderWidth: 1,
     padding: 9,

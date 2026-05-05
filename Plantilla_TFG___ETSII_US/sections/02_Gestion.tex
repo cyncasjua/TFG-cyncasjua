@@ -14,37 +14,35 @@ A partir de este objetivo general, se definen los siguientes objetivos específi
 
 \begin{itemize}
     \item Diseñar e implementar un sistema que permita listar eventos con información detallada (descripción, ubicación, imágenes, precio, etc.) y filtrado de eventos.
-    
-    \item Permitir a los usuarios crear nuevos eventos, diferenciando entre eventos públicos y privados, e incorporando un sistema de moderación para garantizar la fiabilidad  de los eventos públicos. 
+
+    \item Permitir a los usuarios crear nuevos eventos, diferenciando entre eventos públicos y privados, e incorporando un sistema de moderación para garantizar la fiabilidad  de los eventos públicos.
 
     \item Permitir a los usuarios editar los eventos creados por si mismo.
-    
+
     \item Integrar funcionalidades de geolocalización para mostrar eventos cercanos y permitir su visualización en un mapa interactivo para un acceso más cómodo.
-    
-    \item Promover la interacción social entre usuarios mediante chat en eventos, mensajería privada y opiniones en las valoraciones.
-    
+
+    \item Promover la interacción social entre usuarios mediante chat en eventos, mensajería privada, seguimiento entre usuarios y opiniones en las valoraciones.
+
     \item Implementar un sistema de recomendaciones personalizado basado en la actividad del usuario (guardar a un evento, apuntarse a un evento, compartir un evento, ver un evento, valorar un evento, etc), sus intereses y su ubicación.
-    
+
     \item Desarrollar un sistema de rutas recomendadas de eventos que permita agrupar actividades según gustos y criterios de proximidad y horario.
 
     \item Permitir a los usuarios crear rutas de eventos que sean visibles para el resto y que puedan valorarlas.
-    
-    \item Incluir notificaciones para informar al usuario sobre eventos relevantes, recordatorios y estado de los eventos.
+
+    \item Incluir notificaciones para informar al usuario sobre eventos cercanos, recordatorios, seguidores nuevos y aprobación o rechazo de los eventos.
 \end{itemize}
 
 \section{Metodología}
 
 El desarrollo del proyecto se ha llevado a cabo mediante una adaptación de la metodología ágil Scrum, ajustada al contexto de un Trabajo de Fin de Grado.
 
-Dado que el proyecto ha sido desarrollado por un único miembro, no se han realizado reuniones diarias (\textit{daily stand-ups}). En su lugar, la comunicación se ha mantenido de forma continua mediante tutorías periódicas, en las que se han revisado los avances y se han definido los siguientes pasos del desarrollo (\textit{review} + \textit{sprint planning}).
+Dado que el proyecto ha sido desarrollado por un único miembro, no se han realizado reuniones diarias (\textit{daily stand-ups}). En su lugar, la comunicación se ha mantenido de forma continua mediante tutorías periódicas. Estas sesiones han combinado la revisión del trabajo realizado con la planificación del siguiente sprint, permitiendo mantener una evolución iterativa del sistema y adaptar el alcance en función del tiempo disponible y de las prioridades del proyecto.
 
 Al tratarse de un equipo unipersonal, la desarrolladora ha asumido simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora. Esto ha permitido una toma de decisiones ágil, aunque también ha requerido una mayor disciplina en la autogestión del tiempo y las prioridades.
 
-El trabajo se ha organizado en sprints con objetivos concretos, combinando en una única sesión la revisión del trabajo realizado y la planificación del siguiente sprint. Este enfoque ha permitido mantener una evolución iterativa del sistema, adaptando el alcance en función del tiempo disponible y de las prioridades del proyecto.
-
 Para la gestión del backlog y el seguimiento de tareas se han utilizado \textbf{GitHub Projects} como tablero Kanban, complementado con un documento Word donde se ha mantenido el backlog detallado junto con las actas de reunión de cada tutoría, en las que se recogen las tareas completadas en el sprint anterior y los objetivos definidos para el siguiente.
 
-El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en cada fase y compararlo con la estimación inicial.
+El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en cada fase.
 
 Para la gestión del código fuente se ha utilizado un sistema de control de versiones Git, permitiendo mantener el historial de cambios y asegurando el orden y la claridad en el desarrollo.
 
@@ -76,7 +74,7 @@ También se ha seguido un versionado semántico de tres niveles (X.Y.Z) para la 
     \item Z: Versión de parche, para corregir errores o problemas menores.
 \end{itemize}
 
-Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}, que automatiza la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
+Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}, que automatiza los despliegues y la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
 
 La estimación de tareas se ha realizado mediante la técnica de tallas de camiseta (\textit{T-shirt sizing}), que asigna un tamaño relativo a cada historia: XS (extra pequeña), S (pequeña), M (mediana), L (grande) y XL (extra grande). La talla se define en función de la complejidad, el riesgo y la cantidad de trabajo, comparando cada historia con otras ya conocidas. Esta estimación permite priorizar el backlog combinando valor (prioridad) y esfuerzo (talla), facilitando la planificación ágil y la selección de historias por sprint.
 
@@ -86,17 +84,17 @@ La planificación del proyecto se ha estructurado en varias fases, siguiendo un 
 
 \begin{itemize}
     \item \textbf{Fase 1 – Análisis y planificación}: definición de requisitos y alcance, elaboración del backlog inicial, planificación temporal y de recursos (cronograma inicial) y diseño del modelo conceptual del sistema.
-    
-    \item \textbf{Fase 2 – Diseño}: diseño de la arquitectura técnica, de la interfaz de usuario, de la base de datos, de la API REST y planificación de la gestión de usuarios y permisos.
-    
-    \item \textbf{Fase 3 – Desarrollo}: implementación del sistema, incluyendo el frontend móvil (React Native + Expo) y el backend (NestJS), así como funcionalidades como eventos, chat, mapa, notificaciones y recomendaciones.
-    
-    \item \textbf{Fase 4 – Pruebas y validación}: ejecución de pruebas funcionales, de integración y de usabilidad, así como la corrección de errores.
-    
-    \item \textbf{Fase 5 – Despliegue y documentación}: despliegue del sistema y elaboración de la memoria y manuales.
-\end{itemize}
 
-Durante el desarrollo se ha definido un último sprint centrado en la implementación de rutas de eventos, considerado como uno de los objetivos principales del sistema. Paralelamente, se ha iniciado la redacción de la memoria y la ejecución del plan de pruebas, tal y como se estableció en las reuniones de seguimiento.
+    \item \textbf{Fase 2 – Diseño}: diseño de la arquitectura técnica, de la interfaz de usuario, de la base de datos, de la API REST y planificación de la gestión de usuarios y permisos.
+
+    \item \textbf{Fase 3 – Desarrollo}: implementación del sistema, incluyendo el frontend móvil (React Native + Expo) y el backend (NestJS), así como funcionalidades como eventos, chat, mapa, notificaciones y recomendaciones.
+
+    \item \textbf{Fase 4 – Pruebas y validación}: ejecución de pruebas funcionales, de integración y de usabilidad, así como la corrección de errores.
+
+    \item \textbf{Fase 5 – Ampliaciones y extras}: funcionalidades adicionales condicionadas al tiempo disponible, como la generación de carteles con IA, la gestión de calendarios y el filtrado de contenido inapropiado (NSFW).
+
+    \item \textbf{Fase 6 – Despliegue y documentación}: despliegue del sistema y elaboración de la memoria y manuales.
+\end{itemize}
 
 \subsection{Desviaciones respecto a la planificación inicial}
 
@@ -179,13 +177,14 @@ La planificación inicial del proyecto se ha definido mediante una Estructura de
 
     \begin{itemize}
         \item \textbf{5.1} Generación de carteles con IA.
-        \item \textbf{5.2} Gestión de calendarios.
+        \item \textbf{5.2} Gestión de calendarios. \textit{(Implementado.)}
+        \item \textbf{5.3} Filtrado de contenido inapropiado (NSFW) en imágenes subidas por los usuarios.
     \end{itemize}
 
     \item \textbf{Fase 6 -- Despliegue y documentación}
     \begin{itemize}
-        \item \textbf{6.1} Despliegue del backend.
-        \item \textbf{6.2} Publicación de la app.
+        \item \textbf{6.1} Despliegue de backend y frontend.
+        \item \textbf{6.2} Publicación de la app. \textit{(No realizado: la publicación en las tiendas oficiales —Google Play Store y App Store— requiere el pago de una tarifa de desarrollador, lo que queda fuera del alcance de este proyecto.)}
         \item \textbf{6.3} Elaboración de la memoria técnica y manuales de usuario, de despliegue y de desarrollo.
     \end{itemize}
 \end{itemize}
@@ -310,10 +309,11 @@ Documentación y memoria & 60 h \\
 \subsection{Infraestructura}
 
 \begin{itemize}
-    \item Uso de herramientas gratuitas o con plan educativo (GitHub, Expo, Firebase).
-    \item Base de datos PostgreSQL con extensión PostGIS (entorno local o servicios gratuitos).
+    \item Uso de herramientas gratuitas o con plan educativo (GitHub, Expo).
+    \item Base de datos PostgreSQL con extensión PostGIS: en entorno de desarrollo ejecutada en un contenedor Docker local; en producción gestionada mediante Supabase (plan gratuito).
     \item Almacenamiento de imágenes mediante Cloudinary (plan gratuito).
-    \item Despliegue del backend en Google Cloud Run.
+    \item Despliegue del backend en Render (plan gratuito).
+    \item Distribución del frontend mediante Expo (sin publicación en tiendas oficiales).
 \end{itemize}
 
 \subsection{Coste total estimado}

@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../events/events.service';
 import { UsersService } from '../users/users.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
@@ -18,7 +17,6 @@ export class NotificacionesScheduler {
     private readonly notificacionesService: NotificacionesService
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
   async notificarEventosCercanos() {
     this.logger.log('Ejecutando notificación de eventos cercanos...');
     const eventos = await this.eventsService.findAllForScheduler();
@@ -51,7 +49,6 @@ export class NotificacionesScheduler {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
   async notificarEventosProximos() {
     this.logger.log('Ejecutando notificación de eventos próximos...');
 
@@ -96,7 +93,6 @@ export class NotificacionesScheduler {
     this.logger.log('Proceso finalizado.');
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
   async notificarEventosMenos24h() {
     this.logger.log('Ejecutando notificación de eventos en menos de 24h...');
 

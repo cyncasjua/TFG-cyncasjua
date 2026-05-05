@@ -31,59 +31,59 @@ La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecn
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=1.2cm and 2.0cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners=3pt, minimum width=2.6cm, minimum height=0.75cm, align=center, fill=white},
-    ext/.style={draw, rounded corners=3pt, minimum width=2.6cm, minimum height=0.75cm, align=center, fill=gray!12},
+    box/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.75cm, align=center, fill=white},
+    ext/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.75cm, align=center, fill=gray!12},
     arr/.style={-{Stealth[length=5pt]}, thick},
-    darr/.style={<->, thick, dashed},
+    darr/.style={latex-latex, thick, dashed},
 ]
 
-% Columna izquierda: móvil
-\node[box] (screen)  {Pantalla\\(React Native)};
-\node[box, below=of screen] (ctx)    {Contextos\\(Auth/Socket/Tema)};
-\node[box, below=of ctx]    (axios)  {Servicios\\(Axios)};
-\node[box, below=of axios]  (fbase)  {Firebase SDK\\(cliente)};
+% ── Columna izquierda: móvil  (x = -4.2) ──────────────────────────
+\node[box] (screen) at (-4.2,  0.0) {Pantalla\\(React Native)};
+\node[box] (ctx)    at (-4.2, -1.6) {Contextos\\(Auth/Socket/Tema)};
+\node[box] (axios)  at (-4.2, -3.2) {Servicios\\(Axios)};
+\node[box] (fbase)  at (-4.2, -4.8) {Firebase SDK\\(cliente)};
 
-% Columna central: backend
-\node[box, right=3.2cm of screen]  (guard)  {FirebaseAuthGuard};
-\node[box, below=of guard]         (ctrl)   {Controller\\(NestJS)};
-\node[box, below=of ctrl]          (svc)    {Service\\(NestJS)};
-\node[box, below=of svc]           (orm)    {TypeORM};
-\node[box, below=of orm]           (db)     {PostgreSQL\\+ PostGIS};
+% ── Columna central: backend  (x = 0) ─────────────────────────────
+\node[font=\tiny\itshape] at (0, 0.7) {Socket.IO / REST};
+\node[box] (guard) at (0,  0.0) {FirebaseAuthGuard};
+\node[box] (ctrl)  at (0, -1.6) {Controller\\(NestJS)};
+\node[box] (svc)   at (0, -3.2) {Service\\(NestJS)};
+\node[box] (orm)   at (0, -4.8) {TypeORM};
+\node[box] (db)    at (0, -6.4) {PostgreSQL\\+ PostGIS};
 
-% Columna derecha: servicios externos
-\node[ext, right=2.8cm of guard]   (fbauth) {Firebase\\Authentication};
-\node[ext, below=of fbauth]        (cloud)  {Cloudinary};
-\node[ext, below=of cloud]         (osm)    {OpenStreetMap};
-\node[ext, below=of osm]           (scrap)  {Ticketmaster\\Portal Sevilla};
+% ── Columna derecha: servicios externos  (x = 4.2) ────────────────
+\node[ext] (fbauth) at (4.2,  0.0) {Firebase\\Authentication};
+\node[ext] (cloud)  at (4.2, -1.6) {Cloudinary};
+\node[ext] (osm)    at (4.2, -3.2) {OpenStreetMap};
+\node[ext] (scrap)  at (4.2, -4.8) {Ticketmaster\\Portal Sevilla};
 
-% Flechas móvil → backend
-\draw[arr] (axios)  -- node[above, font=\tiny] {HTTP/REST} (ctrl);
-\draw[arr] (ctx)    -- node[above, font=\tiny] {WS token} (guard);
-
-% Flechas internas backend
+% ── Flechas verticales backend ─────────────────────────────────────
 \draw[arr] (guard) -- (ctrl);
 \draw[arr] (ctrl)  -- (svc);
 \draw[arr] (svc)   -- (orm);
 \draw[arr] (orm)   -- (db);
 
-% Firebase: cliente ↔ Firebase Auth
-\draw[darr] (fbase) -- node[right, font=\tiny] {JWT} (fbauth);
-% Guard verifica token con Firebase
-\draw[arr] (guard)  -- node[above, font=\tiny] {verifica token} (fbauth);
+% ── Móvil → backend (horizontales en la misma fila) ───────────────
+\draw[arr] (ctx)   -- node[above,font=\tiny] {WS token}   (guard);
+\draw[arr] (axios) -- node[above,font=\tiny] {HTTP/REST}  (ctrl);
 
-% Service → Cloudinary
-\draw[arr] (svc)    -- node[above, font=\tiny] {upload} (cloud);
+% ── Backend → servicios externos (horizontales en la misma fila) ──
+\draw[arr] (guard) -- node[above,font=\tiny] {verifica token} (fbauth);
+\draw[arr] (svc)   -- node[above,font=\tiny] {upload}         (cloud);
 
-% Pantalla → OSM (tiles directos)
-\draw[arr] (screen) -- node[above, font=\tiny] {tiles} (osm);
+% ── Firebase SDK ↔ Firebase Auth  ─────────────────────────────────
+% Pasa por debajo de todos los nodos (y = -7.2) para no cruzar ninguna caja
+\draw[darr] (fbase.south) -- ++(0,-0.5)
+    -| node[pos=0.3,below,font=\tiny] {JWT} (fbauth.south);
 
-% Scheduler → scrapers (flecha punteada desde Service)
-\draw[arr, dashed] (svc) -- node[above, font=\tiny] {cron} (scrap);
+% ── Pantalla → OpenStreetMap (tiles) ──────────────────────────────
+% Pasa por encima del área de nodos (y=1.3) para no cruzar ninguna caja
+\draw[arr] (screen.north) -- ++(0,1.3)
+    -| node[pos=0.3,above,font=\tiny] {tiles} (osm.north);
 
-% Etiqueta Socket.IO
-\node[font=\tiny\itshape, above=0.15cm of guard] {Socket.IO / REST};
+% ── Service → Ticketmaster/Sevilla (cron, punteada) ───────────────
+\draw[arr,dashed] (svc) -- node[above,font=\tiny,sloped] {cron} (scrap);
 
 \end{tikzpicture}
 \caption{Conexión entre tecnologías del sistema en tiempo de ejecución}
@@ -208,24 +208,24 @@ La figura~\ref{fig:flujo_autenticacion} muestra en detalle el flujo completo de 
 ]
 % Columna izquierda
 \node[box] (app)    {App móvil};
-\node[box, below=of app]  (sdk)    {Firebase SDK (cliente)};
-\node[box, below=2.5cm of sdk]  (axios)  {Axios (interceptor)};
-\node[box, below=of axios] (be)     {Backend NestJS};
-\node[box, below=of be]    (guard)  {FirebaseAuthGuard};
+\node[box, below=of app]   (sdk)   {Firebase SDK (cliente)};
+\node[box, below=of sdk]   (axios) {Axios (interceptor)};
+\node[box, below=of axios] (be)    {Backend NestJS};
+\node[box, below=of be]    (guard) {FirebaseAuthGuard};
 
 % Columna derecha
-\node[ext, right=3.0cm of sdk]   (fbauth) {Firebase Authentication};
-\node[ext, right=3.0cm of guard] (fbadm)  {Firebase Admin SDK};
+\node[ext, right=3.2cm of sdk]   (fbauth) {Firebase Authentication};
+\node[ext, right=3.2cm of guard] (fbadm)  {Firebase Admin SDK};
 
 % Flechas
-\draw[arr] (app)   -- node[right, font=\tiny] {email + pass} (sdk);
-\draw[arr] (sdk)   -- node[above, font=\tiny] {signIn()} (fbauth);
+\draw[arr] (app)    -- node[right, font=\tiny] {email + pass} (sdk);
+\draw[arr] (sdk)    -- node[above, font=\tiny] {signIn()} (fbauth);
 \draw[arr] (fbauth) -- node[above, font=\tiny] {JWT (60 min)} (sdk);
-\draw[arr] (sdk)   -- node[right, font=\tiny] {token} (axios);
-\draw[arr] (axios) -- node[right, font=\tiny] {Authorization: Bearer \{token\}} (be);
-\draw[arr] (be)    -- (guard);
-\draw[arr] (guard) -- node[above, font=\tiny] {verifyIdToken()} (fbadm);
-\draw[arr] (fbadm) -- node[above, font=\tiny] {uid + claims} (guard);
+\draw[arr] (sdk)    -- node[right, font=\tiny] {token} (axios);
+\draw[arr] (axios)  -- node[right, font=\tiny] {Authorization: Bearer \{token\}} (be);
+\draw[arr] (be)     -- (guard);
+\draw[arr] (guard)  -- node[above, font=\tiny] {verifyIdToken()} (fbadm);
+\draw[arr] (fbadm)  -- node[above, font=\tiny] {uid + claims} (guard);
 \end{tikzpicture}
 \caption{Flujo de autenticación: desde el inicio de sesión hasta la verificación del token en el backend}
 \label{fig:flujo_autenticacion}
@@ -273,7 +273,7 @@ Almacena las sugerencias personalizadas generadas por el motor de recomendacione
 
 \subsection{Solicitud de edición (\texttt{EventEditRequest})}
 
-Permite a los moderadores proponer cambios sobre un evento sin aplicarlos directamente. Incluye los campos modificados, el estado de la solicitud (\texttt{pendiente}, \texttt{aprobada} o \texttt{rechazada}) y, en caso de rechazo, el motivo.
+Registra los cambios que un moderador realiza directamente sobre un evento pendiente antes de aprobarlo. Almacena los campos modificados y el estado final de la solicitud (\texttt{pendiente}, \texttt{aprobada} o \texttt{rechazada}).
 
 \subsection{Diagrama entidad-relación}
 
@@ -374,7 +374,7 @@ El flujo de estados de un evento sigue las siguientes reglas de negocio:
 
 El listado general de eventos solo muestra eventos públicos aprobados y eventos privados únicamente al creador o a quien disponga del enlace. El listado de edición del usuario muestra sus eventos creados que no están en moderación. El listado de moderación muestra los eventos públicos pendientes.
 
-Adicionalmente, los moderadores pueden crear solicitudes de edición (\texttt{EventEditRequest}) proponiendo cambios al creador del evento. El creador recibe una notificación y puede aceptar o rechazar la propuesta. Al aprobar o rechazar un evento, el moderador desaparece del listado de moderación.
+El moderador recibe en su panel los eventos en estado pendiente y puede editarlos, aprobarlos o rechazarlos directamente, sin necesidad de solicitar permiso al creador. Al aprobar o rechazar un evento, este desaparece del listado de moderación.
 
 En cuanto al comportamiento del botón de compartir, en eventos públicos cualquier usuario puede compartirlo. En eventos privados, el botón de compartir se sustituye por uno de \textit{invitar}, que solo está activo para el creador del evento; el resto de usuarios lo ven desactivado.
 
@@ -444,7 +444,7 @@ Cambiar contraseña & Modificación de la contraseña de la cuenta & Usuario \\
 Panel de administración & Gestión de usuarios y roles & Administrador \\
 Gestión de categorías & Creación, edición y eliminación de categorías & Administrador \\
 Moderación de eventos & Revisión y aprobación de eventos pendientes & Moderador \\
-Edición moderada & Propuesta de cambios sobre un evento pendiente & Moderador \\
+Edición moderada & Edición directa de un evento pendiente antes de aprobarlo & Moderador \\
 \hline
 \end{tabular}%
 }
@@ -694,12 +694,12 @@ Añadir más roles (por ejemplo, un \textit{superadmin} o un \textit{editor}) ha
 
 \subsection{Por qué los eventos no se pueden eliminar}
 
-Los eventos no se eliminan físicamente del sistema. Esta decisión se fundamenta en varias razones:
+Los eventos no se eliminan físicamente del sistema. Esta decisión responde a tres motivos concretos:
 
 \begin{itemize}
-    \item \textbf{Integridad referencial}: los eventos están referenciados por reseñas, mensajes de chat, rutas, notificaciones y registros de asistencia. Eliminar un evento borraría en cascada una historia de interacción que otros usuarios han generado, lo que resulta destructivo e inesperado para quienes participaron.
-    \item \textbf{Trazabilidad}: los moderadores deben poder consultar eventos rechazados o finalizados para revisar el historial de decisiones. Si los eventos desaparecieran, no habría forma de auditar el proceso de moderación.
-    \item \textbf{Consistencia de rutas}: una ruta puede referenciar eventos ya finalizados como parte de un itinerario histórico o cultural. Eliminar el evento invalidaría la ruta de forma silenciosa.
+    \item \textbf{Consistencia de rutas}: una ruta puede referenciar eventos ya finalizados como parte de un itinerario. Eliminar el evento invalidaría silenciosamente cualquier ruta que lo contenga.
+    \item \textbf{Valor social acumulado}: las reseñas y el chat del evento siguen siendo útiles después de que este haya terminado. Otros usuarios pueden descubrir el evento, consultar las valoraciones de quienes asistieron e informarse de cara a futuras ediciones del mismo o de eventos de la misma compañía o organizador.
+    \item \textbf{Recomendaciones}: el historial de asistencia y las interacciones con eventos pasados alimentan el motor de recomendaciones. Sin esos registros, el algoritmo perdería señales de comportamiento relevantes para sugerir contenido afín.
 \end{itemize}
 
 En lugar de eliminar, el sistema permite \textbf{ocultar} eventos (cambiándolos a privado o rechazándolos), lo que preserva la información sin hacerla visible al público general.
@@ -717,16 +717,16 @@ Un evento finalizado sigue teniendo valor informativo y social dentro del sistem
 
 Borrar eventos finalizados de forma automática habría reducido la utilidad histórica y social del sistema sin beneficio claro para el usuario.
 
-\subsection{Por qué un moderador puede proponer ediciones sobre eventos}
+\subsection{Por qué el moderador puede editar un evento directamente antes de aprobarlo}
 
 El rol del moderador no se limita a aprobar o rechazar: puede detectar que un evento tiene un error menor (fecha incorrecta, descripción incompleta, categoría equivocada) que no justifica el rechazo completo. Rechazar ese evento obliga al creador a corregirlo y volver a someterlo a moderación, lo que genera fricción innecesaria.
 
-La entidad \texttt{EventEditRequest} permite al moderador proponer un conjunto de cambios concretos que el creador puede aceptar o rechazar. Esto:
+La pantalla de edición moderada permite al moderador corregir directamente los campos necesarios y publicar el evento en un único paso. Esto:
 
 \begin{itemize}
     \item Reduce el número de ciclos de moderación para eventos con errores menores.
-    \item Mantiene la autoría del evento en manos del creador, que siempre tiene la última palabra.
-    \item Ofrece un canal de comunicación estructurado entre moderador y creador sin necesidad de mensajes privados externos.
+    \item Agiliza la publicación de contenido de calidad sin depender de la disponibilidad del creador para aplicar los cambios.
+    \item Concentra en el moderador la responsabilidad de garantizar que el contenido publicado cumple los estándares del sistema.
 \end{itemize}
 
 \subsection{Por qué el administrador solo gestiona roles y categorías}
@@ -741,16 +741,13 @@ El administrador tiene un alcance intencionalmente acotado: puede cambiar el rol
 
 \subsection{Por qué el chat incluye persistencia y no es solo en tiempo real}
 
-El chat de evento está implementado con \textbf{Socket.IO} para la transmisión en tiempo real, pero todos los mensajes se persisten en base de datos (entidades \texttt{Mensaje} y \texttt{MensajePrivado}). Esta decisión responde a una limitación inherente de la comunicación puramente en tiempo real:
+El chat de evento está implementado con \textbf{Socket.IO} para la transmisión en tiempo real, pero todos los mensajes se persisten en base de datos (entidades \texttt{Mensaje} y \texttt{MensajePrivado}). Esta decisión responde a dos necesidades diferenciadas: el valor social del chat antes y durante el evento, y su utilidad después de que este haya terminado.
 
-\begin{itemize}
-    \item Un usuario que se incorpora al chat de un evento después de que otros hayan enviado mensajes no podría ver el historial si los mensajes no se almacenaran. Esto haría el chat prácticamente inútil para eventos con comunidades activas.
-    \item Los mensajes privados entre usuarios deben estar disponibles cuando uno de los dos está desconectado. Sin persistencia, el mensaje se perdería si el receptor no está conectado en ese instante.
-    \item La persistencia permite implementar el indicador de mensajes no leídos (\texttt{leido}), que es esencial para que los usuarios sepan cuándo tienen mensajes pendientes sin tener que entrar en cada conversación.
-    \item Desde el punto de vista de la moderación, los mensajes almacenados pueden ser consultados o eliminados si un usuario reporta contenido inapropiado.
-\end{itemize}
+Antes y durante el evento, el chat es el espacio donde los asistentes pueden coordinarse: quedar para ir juntos, resolver dudas sobre el lugar o el horario, compartir fotos o simplemente conocer a otras personas que van al mismo plan. Para que esto sea posible, el historial debe estar disponible para cualquiera que se una al chat más tarde; sin persistencia, quien llegara después solo vería el estado actual de la conversación y perdería todo el contexto previo. Lo mismo aplica a los mensajes privados: si el receptor no está conectado en el momento del envío, el mensaje se perdería sin persistencia.
 
-El uso de Socket.IO garantiza la entrega inmediata cuando ambos usuarios están conectados; la base de datos garantiza que el mensaje esté disponible independientemente del estado de conexión de los participantes. Ambos mecanismos son complementarios y necesarios.
+Después del evento, el chat conserva el mismo valor que el resto del historial del evento: otros usuarios pueden consultar la conversación para saber cómo fue, qué opinaron los asistentes o si merece la pena acudir a futuras ediciones. Esto conecta directamente con las razones por las que los eventos tampoco se eliminan del sistema.
+
+Adicionalmente, la persistencia permite implementar el indicador de mensajes no leídos (\texttt{leido}), que informa al usuario de mensajes pendientes sin tener que entrar en cada conversación. El uso de Socket.IO garantiza la entrega inmediata cuando los participantes están conectados; la base de datos garantiza que el mensaje esté disponible independientemente del estado de conexión. Ambos mecanismos son complementarios y necesarios.
 
 \subsection{Por qué los eventos privados se aprueban automáticamente}
 
@@ -790,18 +787,6 @@ Las ubicaciones de usuarios y eventos se almacenan como puntos \texttt{geography
 
 La alternativa de almacenar latitud y longitud como dos columnas numéricas habría impedido aprovechar los índices espaciales de PostGIS (GIST), lo que habría degradado significativamente el rendimiento de las consultas de filtrado por proximidad a medida que crece el número de eventos.
 
-\subsection{Por qué las notificaciones son registros en base de datos y no push notifications}
-
-El sistema de notificaciones almacena los avisos en la tabla \texttt{Notificacion} y los sirve a través de la API REST, en lugar de enviar notificaciones push al dispositivo mediante Firebase Cloud Messaging u otro servicio equivalente.
-
-Las razones de esta elección son:
-
-\begin{itemize}
-    \item \textbf{Independencia del dispositivo}: las notificaciones son accesibles desde cualquier sesión y no se pierden si el usuario tiene el dispositivo apagado o la aplicación desinstalada en el momento del evento.
-    \item \textbf{Historial persistente}: el usuario puede revisar todas sus notificaciones pasadas desde la pantalla de notificaciones. Las push notifications son efímeras y no constituyen un historial consultable.
-    \item \textbf{Control de duplicados}: el scheduler comprueba si ya existe una notificación del mismo tipo para el mismo usuario y evento antes de crearla, evitando duplicados de forma sencilla con una consulta a base de datos.
-    \item \textbf{Menor complejidad de integración}: las push notifications requieren gestionar tokens de dispositivo, manejar su caducidad y configurar un servicio adicional. Para el alcance de este proyecto, la solución in-app es suficiente y más mantenible.
-\end{itemize}
 
 \subsection{Por qué hay tres schedulers de notificaciones independientes}
 
@@ -811,6 +796,16 @@ El sistema define tres tareas programadas separadas para los distintos tipos de 
 
 La tarea de obtención de eventos externos (Eventbrite, Ticketmaster) se programa a las 3:00 AM mediante un \textit{cron job} diario. Esta hora se eligió porque es el período de menor actividad de usuarios en la aplicación, lo que reduce la competencia por recursos del servidor y de la base de datos durante el proceso de scraping. Además, ejecutarlo una vez al día es suficiente para mantener el catálogo actualizado: los eventos de ocio y cultura no cambian con frecuencia mayor a la diaria.
 
+\subsection{Por qué el cron job es externo y no interno al backend}
+
+La planificación de las tareas periódicas (scraping diario y envío de notificaciones) se gestiona mediante un servicio de \textit{cron} externo (cron-job.org) que invoca los endpoints \texttt{POST /scheduler/run-scraping} y \texttt{POST /scheduler/run-notifications}, en lugar de usar el planificador interno de NestJS (\texttt{@nestjs/schedule}).
+
+La razón principal es la infraestructura de despliegue: el backend se aloja en Render con el plan gratuito, que suspende el proceso tras 15 minutos de inactividad. Cuando el proceso está suspendido, el planificador interno de NestJS no corre; y cuando Render lo reactiva ante una nueva petición, el planificador se reinicia desde cero. Esto hace que los \texttt{@Cron} internos sean poco fiables: la tarea diaria de las 3:00 AM o la de notificaciones horarias podrían no ejecutarse si el proceso lleva inactivo más de 15 minutos antes de la hora programada.
+
+Un \textit{cron} externo es independiente del ciclo de vida del proceso del servidor: aunque el backend esté suspendido, la petición del \textit{cron} externo lo reactiva y ejecuta la tarea. Además, el servicio de \textit{keep-alive} (que llama periódicamente a \texttt{GET /scheduler/health}) se gestiona también desde el mismo sistema externo, lo que centraliza en un único panel el control de todas las tareas programadas y su historial de ejecuciones.
+
+El \textit{cron} interno de NestJS sería la opción preferida si el backend corriera de forma continua en un servidor dedicado o en un plan de pago con instancias siempre activas: en ese caso eliminaría la dependencia de un servicio externo y la latencia de la petición HTTP entrante. Para el contexto actual de la aplicación, con infraestructura gratuita, el \textit{cron} externo es la solución más fiable.
+
 \subsection{Flujo del sistema de scraping}
 
 La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de eventos externos, desde el \textit{cron job} hasta la persistencia en base de datos.
@@ -818,31 +813,37 @@ La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de ev
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=0.85cm and 1.8cm,
     every node/.style={font=\small},
-    box/.style={draw, rounded corners=3pt, minimum width=3.2cm, minimum height=0.7cm, align=center, fill=white},
-    ext/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.7cm, align=center, fill=gray!12},
+    box/.style={draw, rounded corners=3pt, minimum width=3.4cm, minimum height=0.75cm, align=center, fill=white},
+    ext/.style={draw, rounded corners=3pt, minimum width=3.0cm, minimum height=0.75cm, align=center, fill=gray!12},
     arr/.style={-{Stealth[length=5pt]}, thick},
 ]
-\node[box] (cron)   {Cron Job (3:00 AM)\\@nestjs/schedule};
-\node[box, below=of cron]  (orch)   {ScrapingService\\(orquestador)};
-\node[box, below left=1.0cm and 1.4cm of orch]  (s1)    {TicketmasterScraper\\(API oficial)};
-\node[box, below right=1.0cm and 1.4cm of orch] (s2)    {PortalSevillaScraper\\(scraping HTML)};
 
-\node[ext, left=2.0cm of s1]  (tick)  {Ticketmaster API};
-\node[ext, right=2.0cm of s2] (web)   {Portal Municipal\\Sevilla};
+% Flujo central (eje x=0)
+\node[box] (cron) at (0, 0.0) {Cron Job (3:00 AM)\\@nestjs/schedule};
+\node[box] (orch) at (0,-1.6) {ScrapingService\\(orquestador)};
+\node[box] (norm) at (0,-5.6) {Normalización al\\modelo Event};
+\node[box] (db)   at (0,-7.2) {PostgreSQL\\(usuario scraper-bot)};
 
-\node[box, below=2.8cm of orch]  (norm)   {Normalización al\\modelo Event};
-\node[box, below=of norm]  (db)     {PostgreSQL\\(usuario scraper-bot)};
+% Fuentes externas (fila y=-1.6, en columnas laterales — misma altura que orch)
+\node[ext] (tick) at (-3.2,-1.6) {Ticketmaster API};
+\node[ext] (web)  at ( 3.2,-1.6) {Portal Municipal\\Sevilla};
 
+% Scrapers (fila y=-3.6, bajo las fuentes externas)
+\node[box] (s1) at (-3.2,-3.6) {TicketmasterScraper\\(API oficial)};
+\node[box] (s2) at ( 3.2,-3.6) {PortalSevillaScraper\\(scraping HTML)};
+
+% Flechas
 \draw[arr] (cron) -- (orch);
-\draw[arr] (orch) -- (s1);
-\draw[arr] (orch) -- (s2);
+% orch → scrapers: baja primero, luego va horizontal (evita cruzar tick/web)
+\draw[arr] (orch.south) -- ++(0,-0.6) -| (s1.north);
+\draw[arr] (orch.south) -- ++(0,-0.6) -| (s2.north);
 \draw[arr] (tick) -- (s1);
 \draw[arr] (web)  -- (s2);
-\draw[arr] (s1)   -- (norm);
-\draw[arr] (s2)   -- (norm);
+\draw[arr] (s1)   |- (norm);
+\draw[arr] (s2)   |- (norm);
 \draw[arr] (norm) -- (db);
+
 \end{tikzpicture}
 \caption{Flujo del sistema de scraping: orquestación, fuentes externas y persistencia}
 \label{fig:flujo_scraping}
@@ -880,26 +881,9 @@ Al incorporarse a la sala de chat de un evento, el servidor envía al cliente lo
 
 La entidad \texttt{Event} tiene un campo \texttt{imagen} (imagen principal, cadena de texto con URL) y un campo \texttt{imagenes} (array serializado en JSON con hasta 5 imágenes adicionales). La imagen principal es la que se muestra en los listados y tarjetas de eventos, donde el rendimiento es crítico y no tiene sentido deserializar un array para obtener solo una URL. Las imágenes adicionales solo se cargan en la pantalla de detalle. Esta separación evita una deserialización innecesaria en la mayoría de las consultas y simplifica el código de los componentes de listado.
 
-\subsection{Por qué el modelo de usuario registra cuatro tipos de interacción con eventos}
-
-El usuario mantiene cuatro relaciones muchos-a-muchos con eventos: \texttt{eventosAsistidos}, \texttt{eventosGuardados}, \texttt{eventosCompartidos} y \texttt{eventosVisitados}. Cada tipo de interacción tiene un significado semántico diferente para el motor de recomendaciones:
-
-\begin{itemize}
-    \item \textbf{Asistidos}: señal de interés confirmado (el usuario se apuntó formalmente).
-    \item \textbf{Guardados}: señal de interés latente (marcó el evento para revisarlo).
-    \item \textbf{Compartidos}: señal de afinidad fuerte (consideró el evento relevante para otros).
-    \item \textbf{Visitados}: señal de descubrimiento (consultó el detalle aunque no actuara más).
-\end{itemize}
-
-Fusionar todos los tipos en una única tabla con un campo discriminador habría simplificado el modelo de datos pero habría complicado las consultas del motor de recomendaciones, que necesita ponderar cada tipo de interacción de forma independiente con pesos distintos.
-
 \subsection{Por qué el token de Firebase se refresca cada 50 minutos en el frontend}
 
 Los tokens de Firebase tienen una validez de 60 minutos. El frontend programa un refresco automático cada 50 minutos, dejando un margen de 10 minutos antes de la expiración. Refrescar bajo demanda (cuando la API devuelve 401) habría generado una mala experiencia de usuario: la primera petición tras la expiración fallaría, el cliente debería detectar el error, obtener un nuevo token y reintentar la llamada, con la consiguiente latencia percibida y la posibilidad de que alguna operación de escritura se perdiera en el proceso. El refresco proactivo garantiza que el token siempre sea válido sin interrumpir el flujo de uso.
-
-\subsection{Por qué la sincronización de esquema de TypeORM está activada (\texttt{synchronize: true})}
-
-TypeORM está configurado con \texttt{synchronize: true}, lo que significa que el esquema de la base de datos se actualiza automáticamente al arrancar el servidor para reflejar los cambios en las entidades. Esta configuración se eligió para agilizar el desarrollo iterativo: cada modificación en una entidad se aplica a la base de datos sin necesidad de escribir y ejecutar archivos de migración. Es una decisión apropiada para un proyecto en fase de desarrollo activo y con una única instancia de base de datos. En un entorno de producción con múltiples réplicas o con datos reales que no se pueden perder, lo correcto sería deshabilitar \texttt{synchronize} y usar migraciones explícitas.
 
 \subsection{Por qué solo el administrador puede crear y gestionar categorías}
 
@@ -915,14 +899,14 @@ El riesgo de que se publique contenido de baja calidad o inapropiado se controla
 
 \subsection{Por qué los roles de administrador y moderador no se han unificado}
 
-A primera vista podría parecer más simple tener un único rol con todos los privilegios. Sin embargo, las responsabilidades de administrador y moderador son de naturaleza diferente y no conviene mezclarlas en una sola persona o cuenta:
+A medida que la aplicación crece, garantizar la fiabilidad del contenido requiere contar con un número elevado de moderadores: cuantos más eventos se publiquen, más revisores se necesitan para mantener tiempos de respuesta razonables. Sin embargo, no es deseable que ese grupo numeroso tenga acceso a la configuración estructural del sistema. Separar ambos roles permite escalar el equipo de moderación sin ampliar el conjunto de personas con privilegios administrativos, que debe mantenerse lo más reducido posible.
 
 \begin{itemize}
-    \item El \textbf{administrador} gestiona la configuración estructural del sistema (quién es moderador, qué categorías existen). Son acciones infrecuentes y de alto impacto.
-    \item El \textbf{moderador} revisa contenido de forma continua y operativa. Son acciones frecuentes y de impacto acotado.
+    \item El \textbf{administrador} gestiona quién es moderador y qué categorías existen. Son acciones infrecuentes, de alto impacto y reservadas a un grupo muy reducido de responsables del sistema.
+    \item El \textbf{moderador} revisa y valida contenido de forma continua. Es un rol operativo que puede asignarse a muchas personas sin riesgo, porque sus acciones están acotadas al flujo de moderación de eventos.
 \end{itemize}
 
-Unificar ambos roles implicaría que quien revisa eventos también puede cambiar roles de usuario o crear categorías, lo que amplía innecesariamente la superficie de error y la responsabilidad sobre una sola cuenta. En un escenario real, los moderadores serían voluntarios o empleados con acceso limitado; los administradores serían los responsables técnicos del sistema. Mantenerlos separados refleja esa realidad operativa.
+Unificar ambos roles implicaría que cualquiera del amplio grupo de moderadores podría cambiar roles de usuario o modificar las categorías globales del sistema, lo que ampliaría innecesariamente la superficie de error y el riesgo asociado a cada cuenta.
 
 \subsection{Por qué se ha implementado scraping en lugar de usar únicamente APIs oficiales}
 
@@ -1008,33 +992,24 @@ Con \texttt{fetch} habría sido necesario implementar manualmente el timeout (me
 
 \subsection{Por qué existen tanto rutas creadas por usuarios como rutas recomendadas automáticamente}
 
-El sistema de rutas tiene dos orígenes bien diferenciados: rutas que los propios usuarios diseñan y publican, y rutas que el motor de recomendaciones genera automáticamente para cada usuario. Aunque comparten la misma estructura de datos, responden a necesidades distintas:
+El sistema de rutas tiene dos orígenes bien diferenciados que responden a necesidades distintas y se complementan para reforzar el carácter social de la aplicación:
 
 \begin{itemize}
-    \item \textbf{Rutas creadas por usuarios}: permiten compartir itinerarios curados con criterio propio. Un usuario puede diseñar una ruta temática (arte urbano, tapas tradicionales, iglesias barrocas) combinando eventos que conoce bien, aportando valor editorial que un algoritmo no puede generar. Estas rutas son visibles para toda la comunidad y pueden ser valoradas y seguidas por otros usuarios.
-    \item \textbf{Rutas recomendadas}: son itinerarios generados automáticamente a partir del perfil de intereses del usuario, su ubicación y los eventos disponibles en ese momento. Su utilidad es diferente: no requieren esfuerzo del usuario y se actualizan dinámicamente según la oferta de eventos. Son especialmente útiles para usuarios nuevos que aún no conocen la ciudad o que no tienen tiempo de planificar un itinerario.
+    \item \textbf{Rutas creadas por usuarios}: un usuario que publica una ruta ya la ha recorrido y ha comprobado que funciona. Ese itinerario lleva implícita una validación humana que un algoritmo no puede aportar: la experiencia real de alguien que estuvo allí. Además, compartir y valorar rutas de otros usuarios fomenta la interacción social dentro de la plataforma, ya que los usuarios pueden descubrir planes a través de personas en las que confían más que en una recomendación automática.
+    \item \textbf{Rutas recomendadas}: son itinerarios generados automáticamente según los intereses del usuario, su ubicación y los eventos disponibles en ese momento. No han sido recorridas por nadie, pero tienen la ventaja de estar personalizadas y de no requerir ningún esfuerzo por parte del usuario. Son especialmente útiles para quienes no conocen la ciudad o no saben por dónde empezar.
 \end{itemize}
 
-Ofrecer solo rutas de usuario habría dejado sin servicio a quien no sabe por dónde empezar. Ofrecer solo rutas automáticas habría eliminado el componente social y el valor del conocimiento local. Ambas modalidades se complementan: el usuario experto aporta curaduría humana; el motor de recomendaciones aporta personalización y disponibilidad inmediata.
-
-\subsection{Por qué la calificación de rutas es una entidad separada de las reseñas de eventos}
-
-Las reseñas de eventos (\texttt{Resena}) incluyen puntuación numérica y comentario de texto. Las calificaciones de rutas (\texttt{CalificacionRuta}) solo incluyen puntuación numérica, sin comentario. Esta diferencia semántica justifica mantener dos entidades distintas en lugar de una tabla genérica polimórfica.
-
-Valorar un evento implica haber asistido a él: el comentario tiene sentido porque el usuario describe su experiencia en primera persona. Valorar una ruta es una valoración más abstracta del itinerario propuesto como conjunto, para la que el comentario de texto añade poco valor en la mayoría de los casos. Forzar el comentario en la calificación de ruta habría reducido la tasa de valoración; eliminarlo de las reseñas de eventos habría empobrecido la utilidad social de las mismas.
-
-Compartir una entidad común con un campo \texttt{comentario} nullable habría funcionado técnicamente, pero habría obscurecido la diferencia semántica entre los dos conceptos y habría generado filas con valores nulos sin propósito claro.
+Ofrecer solo rutas automáticas habría eliminado el componente social y la fiabilidad que aporta la experiencia de otro usuario. Ofrecer solo rutas de usuarios habría dejado sin servicio a quienes no tienen referencias previas. La combinación de ambas cubre el espectro completo: desde el usuario que confía en las recomendaciones del sistema hasta quien prefiere fiarse de alguien que ya lo ha hecho.
 
 \subsection{Por qué los usuarios pueden seguirse entre sí}
 
-El sistema implementa un grafo de seguimiento unidireccional entre usuarios: una persona puede seguir a otra sin que esa otra deba aceptar ni corresponder. Esta funcionalidad responde a la naturaleza de la aplicación como plataforma social orientada al descubrimiento cultural:
+El sistema implementa un grafo de seguimiento unidireccional entre usuarios: una persona puede seguir a otra sin que esa otra deba aceptar ni corresponder. Esta funcionalidad refuerza el carácter social de la aplicación al permitir descubrir planes a través de otras personas:
 
 \begin{itemize}
-    \item Un usuario que organiza eventos habitualmente (organizador local, asociación cultural) puede ser seguido por personas interesadas en su programación, que así reciben notificaciones cuando ese usuario crea nuevos eventos.
-    \item El modelo unidireccional (a la manera de Twitter, no de Facebook) es más natural para la relación entre un organizador y su audiencia: no implica reciprocidad ni requiere aceptación.
+    \item Desde el perfil de un usuario seguido se pueden consultar los eventos a los que va a asistir, lo que facilita coordinarse o descubrir planes que de otro modo no habrían aparecido en el listado general.
+    \item El perfil de otro usuario es también el punto de entrada para iniciar una conversación privada, lo que permite ponerse en contacto con alguien para quedar o resolver dudas sobre un evento concreto.
+    \item El modelo unidireccional es más natural para la relación entre un organizador habitual y su audiencia: no implica reciprocidad ni requiere aceptación por parte del otro usuario.
 \end{itemize}
-
-El sistema de seguimiento también alimenta el motor de recomendaciones: la actividad de los usuarios seguidos puede tomarse como señal de interés para sugerir eventos similares.
 
 \subsection{Por qué el precio de un evento puede ser fijo o expresarse como rango}
 
@@ -1043,19 +1018,10 @@ La entidad \texttt{Event} permite tres variantes de precio: un valor fijo (\text
 \begin{itemize}
     \item Algunos eventos tienen una entrada de precio único (un concierto con entrada a 15€).
     \item Otros tienen precios diferenciados por tipo de entrada o categoría de asiento (de 10€ a 40€), por lo que expresar solo el mínimo o el máximo sería engañoso.
-    \item Los eventos scraped de Ticketmaster devuelven directamente un rango de precios; forzar un único valor habría requerido descartar información.
     \item Muchos eventos (talleres, ferias, exposiciones) son gratuitos o no tienen precio definido en el momento de publicarse.
 \end{itemize}
 
 La validación en la entidad impide que se proporcionen simultáneamente precio fijo y rango, evitando estados ambiguos.
-
-\subsection{Por qué existe el historial de eventos visitados además del de asistidos}
-
-El sistema distingue entre los eventos a los que un usuario se ha apuntado formalmente (\texttt{eventosAsistidos}) y los eventos cuyo detalle ha consultado sin apuntarse (\texttt{eventosVisitados}). Esta distinción es relevante para el motor de recomendaciones: consultar el detalle de un evento es una señal débil de interés (el usuario lo descubrió y quiso saber más) que no llega al nivel de compromiso que implica apuntarse. Ponderar ambas señales por separado permite al algoritmo capturar el espectro completo del comportamiento del usuario, incluyendo el interés exploratorio que no llega a materializarse en asistencia.
-
-\subsection{Por qué el backend y el frontend comparten monorepo}
-
-El código del servidor y el de la aplicación móvil reside en el mismo repositorio, bajo las carpetas \texttt{apps/backend} y \texttt{apps/frontend}. Esta organización facilita los cambios que afectan a ambas capas simultáneamente: modificar el contrato de un endpoint (añadir un campo en el DTO del backend y consumirlo en el frontend) se gestiona en un único \textit{commit}, lo que mantiene la trazabilidad y simplifica la revisión de cambios. También simplifica la configuración del entorno de desarrollo, ya que con un único \texttt{docker-compose.yml} se levanta la base de datos, el backend y el entorno de desarrollo del frontend.
 
 \subsection{Por qué se implementa deep linking}
 
