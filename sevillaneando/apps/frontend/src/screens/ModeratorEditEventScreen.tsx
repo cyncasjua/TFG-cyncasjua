@@ -18,7 +18,14 @@ import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { ThemedView, ThemedText, ThemedTitle, ThemedButton, OsmAttribution, AppPickerModal } from '../components';
+import {
+  ThemedView,
+  ThemedText,
+  ThemedTitle,
+  ThemedButton,
+  OsmAttribution,
+  AppPickerModal,
+} from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL } from '../services';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -616,7 +623,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                     }}
                   >
                     {categoriaId
-                      ? (dropdownItems.find((i) => i.value === categoriaId)?.label ?? 'Selecciona una categoría')
+                      ? dropdownItems.find((i) => i.value === categoriaId)?.label ??
+                        'Selecciona una categoría'
                       : 'Selecciona una categoría'}
                   </ThemedText>
                   <Icon name="chevron-down" size={22} color={colors.text} />
@@ -685,7 +693,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                     flex: 1,
                   }}
                 >
-                  {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ?? 'Sin recurrencia'}
+                  {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ??
+                    'Sin recurrencia'}
                 </ThemedText>
                 <Icon name="chevron-down" size={22} color={colors.text} />
               </TouchableOpacity>

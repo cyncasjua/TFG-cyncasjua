@@ -44,19 +44,16 @@ export const AppPickerModal: React.FC<Props> = ({
         <View style={styles.backdrop}>
           <TouchableWithoutFeedback>
             <View
-              style={[
-                styles.sheet,
-                { backgroundColor: colors.card, borderColor: colors.border },
-              ]}
+              style={[styles.sheet, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <View
-                style={[
-                  styles.header,
-                  { borderBottomColor: colors.border ?? colors.text + '22' },
-                ]}
+                style={[styles.header, { borderBottomColor: colors.border ?? colors.text + '22' }]}
               >
                 <ThemedText style={styles.title}>{title}</ThemedText>
-                <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <TouchableOpacity
+                  onPress={onClose}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
                   <Icon name="close" size={22} color={colors.text} />
                 </TouchableOpacity>
               </View>
@@ -91,9 +88,7 @@ export const AppPickerModal: React.FC<Props> = ({
                       >
                         {item.label}
                       </ThemedText>
-                      {selected && (
-                        <Icon name="check" size={18} color={colors.primary} />
-                      )}
+                      {selected && <Icon name="check" size={18} color={colors.primary} />}
                     </TouchableOpacity>
                   );
                 })}

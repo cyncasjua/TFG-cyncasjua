@@ -681,7 +681,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ?? 'Sin recurrencia'}
+                  {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ??
+                    'Sin recurrencia'}
                 </ThemedText>
                 <Icon name="chevron-down" size={22} color={colors.text} />
               </TouchableOpacity>
@@ -753,7 +754,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     {categoriaId
-                      ? (dropdownItems.find((i) => i.value === categoriaId)?.label ?? 'Selecciona una categoría...')
+                      ? dropdownItems.find((i) => i.value === categoriaId)?.label ??
+                        'Selecciona una categoría...'
                       : 'Selecciona una categoría...'}
                   </ThemedText>
                   <Icon name="chevron-down" size={22} color={colors.text} />
