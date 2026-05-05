@@ -673,7 +673,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               style={{
                 backgroundColor: colors.card,
                 borderColor: colors.primary,
-                minHeight: 40,
+                minHeight: 48,
                 borderRadius: 16,
                 marginBottom: 10,
               }}
@@ -681,10 +681,27 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 backgroundColor: colors.card,
                 borderColor: colors.primary,
               }}
-              textStyle={{ color: colors.text }}
+              textStyle={{ color: colors.text, fontSize: 15 }}
               placeholder="Pendiente"
-              placeholderStyle={{ color: colors.text + '99' }}
+              placeholderStyle={{ color: colors.text + '80' }}
               listMode="MODAL"
+              modalProps={{ animationType: 'fade', style: { margin: 0 } }}
+              modalContentContainerStyle={{
+                backgroundColor: colors.card,
+                borderRadius: 20,
+                paddingVertical: 8,
+                marginHorizontal: 24,
+                marginVertical: 'auto',
+                maxHeight: '60%',
+                alignSelf: 'center',
+                width: '90%',
+              }}
+              modalTitle="Estado"
+              modalTitleStyle={{ color: colors.text, fontWeight: '700', fontSize: 17 }}
+              selectedItemContainerStyle={{ backgroundColor: colors.primary + '22' }}
+              selectedItemLabelStyle={{ color: colors.primary, fontWeight: '600' }}
+              itemSeparator
+              itemSeparatorStyle={{ backgroundColor: colors.border ?? colors.text + '15' }}
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
             />
@@ -701,7 +718,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               style={{
                 backgroundColor: colors.card,
                 borderColor: colors.primary,
-                minHeight: 40,
+                minHeight: 48,
                 borderRadius: 16,
                 marginBottom: 10,
               }}
@@ -709,9 +726,26 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 backgroundColor: colors.card,
                 borderColor: colors.primary,
               }}
-              textStyle={{ color: colors.text }}
-              placeholderStyle={{ color: colors.text + '99' }}
+              textStyle={{ color: colors.text, fontSize: 15 }}
+              placeholderStyle={{ color: colors.text + '80' }}
               listMode="MODAL"
+              modalProps={{ animationType: 'fade', style: { margin: 0 } }}
+              modalContentContainerStyle={{
+                backgroundColor: colors.card,
+                borderRadius: 20,
+                paddingVertical: 8,
+                marginHorizontal: 24,
+                marginVertical: 'auto',
+                maxHeight: '60%',
+                alignSelf: 'center',
+                width: '90%',
+              }}
+              modalTitle="Recurrencia"
+              modalTitleStyle={{ color: colors.text, fontWeight: '700', fontSize: 17 }}
+              selectedItemContainerStyle={{ backgroundColor: colors.primary + '22' }}
+              selectedItemLabelStyle={{ color: colors.primary, fontWeight: '600' }}
+              itemSeparator
+              itemSeparatorStyle={{ backgroundColor: colors.border ?? colors.text + '15' }}
               ArrowUpIconComponent={ArrowUpIcon}
               ArrowDownIconComponent={ArrowDownIcon}
             />
@@ -763,7 +797,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 style={{
                   backgroundColor: colors.card,
                   borderColor: colors.primary,
-                  minHeight: 40,
+                  minHeight: 48,
                   borderRadius: 16,
                   marginBottom: 10,
                 }}
@@ -771,9 +805,22 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   backgroundColor: colors.card,
                   borderColor: colors.primary,
                 }}
-                textStyle={{ color: colors.text }}
-                placeholderStyle={{ color: colors.text + '99' }}
+                textStyle={{ color: colors.text, fontSize: 15 }}
+                placeholderStyle={{ color: colors.text + '80' }}
                 listMode="MODAL"
+                modalProps={{ animationType: 'fade' }}
+                modalContentContainerStyle={{
+                  backgroundColor: colors.card,
+                  borderRadius: 20,
+                  paddingVertical: 8,
+                  marginHorizontal: 16,
+                }}
+                modalTitle="Categoría"
+                modalTitleStyle={{ color: colors.text, fontWeight: '700', fontSize: 17 }}
+                selectedItemContainerStyle={{ backgroundColor: colors.primary + '22' }}
+                selectedItemLabelStyle={{ color: colors.primary, fontWeight: '600' }}
+                itemSeparator
+                itemSeparatorStyle={{ backgroundColor: colors.border ?? colors.text + '15' }}
                 ArrowUpIconComponent={ArrowUpIcon}
                 ArrowDownIconComponent={ArrowDownIcon}
               />
