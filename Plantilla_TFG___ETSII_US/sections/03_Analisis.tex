@@ -77,58 +77,62 @@ El diagrama de casos de uso muestra las principales funcionalidades del sistema 
 
 Dado el número de funcionalidades del sistema, el diagrama de casos de uso se divide en dos partes: la primera cubre el acceso, el perfil y la gestión de eventos; la segunda cubre las funcionalidades sociales, la moderación y la administración.
 
+\begin{quote}
+\small\textit{Nota: el moderador y el administrador heredan todas las funcionalidades del ciudadano, tal como refleja el diagrama de actores (figura~\ref{fig:diagrama_actores}), a excepción de \textbf{crear evento} y \textbf{editar evento propio}. Por claridad visual, estas relaciones no se representan explícitamente en los diagramas de casos de uso.}
+\end{quote}
+
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=0.78,
+\begin{tikzpicture}[
     every node/.style={font=\small},
-    actor/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.65cm, align=center, fill=white},
-    uc/.style={draw, ellipse, minimum width=3.4cm, minimum height=0.6cm, align=center, fill=gray!8, font=\scriptsize},
+    actor/.style={draw, rounded corners=3pt, minimum width=3cm, minimum height=0.75cm, align=center, fill=white},
+    uc/.style={draw, ellipse, minimum width=3.6cm, minimum height=0.65cm, align=center, fill=gray!8, font=\scriptsize},
     arr/.style={->, thick, color=gray},
 ]
-%% -- Actores ------------------------------------------------------
-\node[actor] (visit)  at (-5.5,  1.0) {Visitante};
-\node[actor] (ciudad) at (-5.5, -4.5) {Ciudadano /\\Organizador};
+%% -- Actores
+\node[actor] (visit)  at ( 5.5,  0.2) {Visitante};
+\node[actor] (ciudad) at (-5.5, -7.2) {Ciudadano /\\Organizador};
 
 %% -- Bloque A: Acceso y perfil ------------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9, 2.0) rectangle (1.9, -1.5);
-\node[font=\tiny\bfseries] at (0, 1.85) {Acceso y perfil};
-\node[uc] (a1) at (0,  1.3) {Registrarse};
-\node[uc] (a2) at (0,  0.4) {Iniciar sesión};
-\node[uc] (a3) at (0, -0.5) {Recuperar contraseña};
-\node[uc] (a4) at (0, -1.3) {Gestionar perfil};
+    (-1.8, 1.8) rectangle (1.8, -2.2);
+\node[font=\tiny\bfseries] at (0, 1.65) {Acceso y perfil};
+\node[uc] (a1) at (0,  1.1) {Registrarse};
+\node[uc] (a2) at (0,  0.2) {Iniciar sesión};
+\node[uc] (a3) at (0, -0.8) {Recuperar contraseña};
+\node[uc] (a4) at (0, -1.8) {Gestionar perfil};
 
 %% -- Bloque B: Descubrimiento -------------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9, -2.0) rectangle (1.9, -5.5);
-\node[font=\tiny\bfseries] at (0, -2.15) {Descubrimiento};
-\node[uc] (b1) at (0, -2.7) {Consultar eventos};
-\node[uc] (b2) at (0, -3.6) {Buscar y filtrar};
-\node[uc] (b3) at (0, -4.5) {Ver mapa};
-\node[uc] (b4) at (0, -5.3) {Ver recomendaciones};
+    (-1.8, -2.8) rectangle (1.8, -7.2);
+\node[font=\tiny\bfseries] at (0, -2.95) {Descubrimiento};
+\node[uc] (b1) at (0, -3.6) {Consultar eventos};
+\node[uc] (b2) at (0, -4.7) {Buscar y filtrar};
+\node[uc] (b3) at (0, -5.8) {Ver mapa};
+\node[uc] (b4) at (0, -6.8) {Ver recomendaciones};
 
 %% -- Bloque C: Participación --------------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9, -6.0) rectangle (1.9, -9.5);
-\node[font=\tiny\bfseries] at (0, -6.15) {Participación};
-\node[uc] (c1) at (0, -6.7) {Apuntarse a evento};
-\node[uc] (c2) at (0, -7.6) {Guardar evento};
-\node[uc] (c3) at (0, -8.5) {Crear evento};
-\node[uc] (c4) at (0, -9.3) {Editar evento propio};
+    (-1.8, -7.8) rectangle (1.8, -12.2);
+\node[font=\tiny\bfseries] at (0, -7.95) {Participación};
+\node[uc] (c1) at (0, -8.6)  {Apuntarse a evento};
+\node[uc] (c2) at (0, -9.7)  {Guardar evento};
+\node[uc] (c3) at (0, -10.8) {Crear evento};
+\node[uc] (c4) at (0, -11.8) {Editar evento propio};
 
 %% -- Bloque D: Eventos privados -----------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9,-10.0) rectangle (1.9,-11.2);
-\node[font=\tiny\bfseries] at (0,-10.15) {Eventos privados};
-\node[uc] (d1) at (0,-10.8) {Acceder con enlace};
+    (-1.8,-12.8) rectangle (1.8,-14.2);
+\node[font=\tiny\bfseries] at (0,-12.95) {Eventos privados};
+\node[uc] (d1) at (0,-13.6) {Acceder con enlace};
 
-%% -- Flechas Visitante --------------------------------------------
+%% -- Flechas Visitante
 \draw[arr] (visit) -- (a1);
 \draw[arr] (visit) -- (a2);
 \draw[arr] (visit) -- (a3);
-\draw[arr] (visit) -- (d1);
+\draw[arr] (visit) to[out=260, in=0, looseness=0.4] (d1);
 
-%% -- Flechas Ciudadano / Organizador ------------------------------
+%% -- Flechas Ciudadano / Organizador
 \draw[arr] (ciudad) -- (a4);
 \draw[arr] (ciudad) -- (b1);
 \draw[arr] (ciudad) -- (b2);
@@ -147,40 +151,40 @@ Dado el número de funcionalidades del sistema, el diagrama de casos de uso se d
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=0.78,
+\begin{tikzpicture}[
     every node/.style={font=\small},
-    actor/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.65cm, align=center, fill=white},
-    uc/.style={draw, ellipse, minimum width=3.4cm, minimum height=0.6cm, align=center, fill=gray!8, font=\scriptsize},
+    actor/.style={draw, rounded corners=3pt, minimum width=3cm, minimum height=0.75cm, align=center, fill=white},
+    uc/.style={draw, ellipse, minimum width=3.6cm, minimum height=0.65cm, align=center, fill=gray!8, font=\scriptsize},
     arr/.style={->, thick, color=gray},
 ]
 %% -- Actores ------------------------------------------------------
-\node[actor] (ciudad) at (-5.5, -1.5) {Ciudadano};
-\node[actor] (mod)    at ( 5.5, -4.5) {Moderador};
-\node[actor] (admin)  at ( 5.5, -8.0) {Administrador};
+\node[actor] (ciudad) at (-5.5, -2.5) {Ciudadano};
+\node[actor] (mod)    at ( 5.5, -9.2) {Moderador};
+\node[actor] (admin)  at ( 5.5, -13.7) {Administrador};
 
 %% -- Bloque E: Social ---------------------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9, 0.4) rectangle (1.9, -3.8);
-\node[font=\tiny\bfseries] at (0, 0.25) {Social};
-\node[uc] (e1) at (0, -0.3) {Chatear en evento};
-\node[uc] (e2) at (0, -1.2) {Enviar mensaje privado};
-\node[uc] (e3) at (0, -2.1) {Valorar evento};
-\node[uc] (e4) at (0, -3.0) {Crear / ver rutas};
-\node[uc] (e5) at (0, -3.7) {Ver notificaciones};
+    (-2.2, 1.2) rectangle (2.2, -6.5);
+\node[font=\tiny\bfseries] at (0, 1.05) {Social};
+\node[uc] (e1) at (0,  0.4) {Chatear en evento};
+\node[uc] (e2) at (0, -1.0) {Enviar mensaje privado};
+\node[uc] (e3) at (0, -2.4) {Valorar evento};
+\node[uc] (e4) at (0, -3.8) {Crear / ver rutas};
+\node[uc] (e5) at (0, -5.2) {Ver notificaciones};
 
 %% -- Bloque F: Moderación -----------------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9,-4.4) rectangle (1.9, -6.5);
-\node[font=\tiny\bfseries] at (0,-4.55) {Moderación};
-\node[uc] (f1) at (0,-5.1) {Revisar eventos pendientes};
-\node[uc] (f2) at (0,-6.1) {Aprobar / rechazar evento};
+    (-2.2, -7.5) rectangle (2.2, -11.0);
+\node[font=\tiny\bfseries] at (0, -7.65) {Moderación};
+\node[uc] (f1) at (0, -8.4) {Revisar eventos pendientes};
+\node[uc] (f2) at (0, -9.9) {Aprobar / rechazar evento};
 
 %% -- Bloque G: Administración -------------------------------------
 \draw[draw=black!40, dashed, rounded corners=4pt]
-    (-1.9,-7.0) rectangle (1.9, -9.0);
-\node[font=\tiny\bfseries] at (0,-7.15) {Administración};
-\node[uc] (g1) at (0,-7.8) {Gestionar usuarios};
-\node[uc] (g2) at (0,-8.7) {Gestionar categorías};
+    (-2.2, -12.0) rectangle (2.2, -15.5);
+\node[font=\tiny\bfseries] at (0, -12.15) {Administración};
+\node[uc] (g1) at (0, -12.9) {Gestionar usuarios};
+\node[uc] (g2) at (0, -14.4) {Gestionar categorías};
 
 %% -- Flechas Ciudadano --------------------------------------------
 \draw[arr] (ciudad) -- (e1);
@@ -247,6 +251,15 @@ En el sistema \textbf{Sevillaneando}, los principales elementos de información 
 \vspace{0.1cm}
 
 Estos datos se almacenan en una base de datos relacional, concretamente \textbf{PostgreSQL con PostGIS}. Esta permite gestionar de forma eficiente las relaciones entre entidades, así como realizar consultas tanto convencionales como geoespaciales. En particular, las capacidades de PostGIS se utilizan para operaciones como el cálculo de distancias, filtrado por radio, búsqueda de eventos cercanos, visualización en mapas y generación de rutas, entre otras funcionalidades basadas en localización.
+
+La figura~\ref{fig:modelo_conceptual} muestra el diagrama del modelo conceptual del sistema, representando las entidades del dominio y sus relaciones.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/modelo_conceptual.png}
+    \caption{Diagrama del modelo conceptual del sistema}
+    \label{fig:modelo_conceptual}
+\end{figure}
 
 \section{Requisitos funcionales}
 
@@ -433,36 +446,6 @@ Los requisitos no funcionales describen las características de calidad que debe
     \item \textbf{RNF-07: Compatibilidad}: la aplicación debe funcionar tanto en dispositivos Android como iOS.
 
     \item \textbf{RNF-08: Integración}: el sistema debe integrarse correctamente con servicios externos como mapas, almacenamiento de imágenes y notificaciones.
-\end{itemize}
-
-\section{Modelo conceptual}
-
-El modelo conceptual describe la estructura del dominio del problema de forma independiente de la tecnología. A diferencia del diagrama entidad-relación del capítulo de diseño (que incluye tipos de datos, identificadores técnicos y detalles propios de PostgreSQL), el modelo conceptual se centra exclusivamente en qué entidades existen en el dominio y cómo se relacionan entre sí, sin comprometerse con ninguna decisión de implementación.
-
-Las entidades principales del dominio son:
-
-\begin{itemize}
-    \item \textbf{Usuario}: persona registrada en el sistema. Tiene nombre, correo electrónico, foto de perfil, ubicación e intereses. Puede tener uno de tres roles: usuario, moderador o administrador.
-    \item \textbf{Evento}: actividad cultural o de ocio. Tiene título, descripción, ubicación, fechas, precio y visibilidad (pública o privada). Pertenece a una categoría y tiene un creador.
-    \item \textbf{Categoría}: clasificación temática de los eventos. Tiene nombre y descripción.
-    \item \textbf{Reseña}: valoración que un usuario hace de un evento. Tiene puntuación y comentario.
-    \item \textbf{Mensaje}: texto o imagen enviado en el chat de un evento.
-    \item \textbf{Mensaje privado}: texto o imagen enviado directamente entre dos usuarios.
-    \item \textbf{Notificación}: aviso enviado a un usuario sobre un evento relevante o resultado de moderación.
-    \item \textbf{Ruta}: secuencia ordenada de eventos que forma un itinerario. Puede ser creada por un usuario o generada automáticamente.
-    \item \textbf{Recomendación}: lista de eventos sugeridos para un usuario en función de sus intereses y comportamiento.
-\end{itemize}
-
-Las relaciones principales entre entidades son:
-
-\begin{itemize}
-    \item Un \textbf{Usuario} crea múltiples \textbf{Eventos} (1:N).
-    \item Un \textbf{Usuario} se apunta, guarda o comparte múltiples \textbf{Eventos} (M:N).
-    \item Un \textbf{Evento} pertenece a una \textbf{Categoría} (N:1).
-    \item Un \textbf{Evento} tiene múltiples \textbf{Reseñas} y \textbf{Mensajes} (1:N).
-    \item Un \textbf{Usuario} puede seguir a otros \textbf{Usuarios} (M:N reflexiva).
-    \item Una \textbf{Ruta} agrupa múltiples \textbf{Eventos} en secuencia (M:N ordenada).
-    \item Una \textbf{Recomendación} agrupa múltiples \textbf{Eventos} para un \textbf{Usuario} (M:N).
 \end{itemize}
 
 \section{Reglas de negocio}

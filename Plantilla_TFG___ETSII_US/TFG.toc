@@ -19,10 +19,10 @@
 \contentsline {subsection}{\numberline {2.4.3}Planificación por sprints}{12}{subsection.2.4.3}%
 \contentsline {subsection}{\numberline {2.4.4}Diagrama de planificación}{13}{subsection.2.4.4}%
 \contentsline {section}{\numberline {2.5}Presupuesto}{13}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Recursos humanos}{14}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.1}Recursos humanos}{13}{subsection.2.5.1}%
 \contentsline {subsection}{\numberline {2.5.2}Distribución del esfuerzo}{14}{subsection.2.5.2}%
 \contentsline {subsection}{\numberline {2.5.3}Infraestructura y costes indirectos}{14}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.5.4}Coste total del proyecto}{15}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.4}Coste total del proyecto}{14}{subsection.2.5.4}%
 \contentsline {subsection}{\numberline {2.5.5}Presupuesto}{15}{subsection.2.5.5}%
 \contentsline {chapter}{\numberline {3}Análisis del problema}{16}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Introducción}{16}{section.3.1}%
@@ -34,24 +34,23 @@
 \contentsline {subsection}{\numberline {3.2.5}Administrador de la plataforma}{18}{subsection.3.2.5}%
 \contentsline {section}{\numberline {3.3}Diagrama de casos de uso}{18}{section.3.3}%
 \contentsline {section}{\numberline {3.4}Requisitos de información}{20}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Requisitos funcionales}{21}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Matriz de trazabilidad de requisitos a objetivos}{25}{subsection.3.5.1}%
-\contentsline {section}{\numberline {3.6}Diseño de mockups}{25}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Vista general de mockups}{26}{subsection.3.6.1}%
-\contentsline {section}{\numberline {3.7}Requisitos no funcionales}{27}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Modelo conceptual}{28}{section.3.8}%
-\contentsline {section}{\numberline {3.9}Reglas de negocio}{29}{section.3.9}%
-\contentsline {subsection}{\numberline {3.9.1}Gestión de usuarios y roles}{29}{subsection.3.9.1}%
-\contentsline {subsection}{\numberline {3.9.2}Gestión de eventos}{29}{subsection.3.9.2}%
-\contentsline {subsection}{\numberline {3.9.3}Eventos privados}{30}{subsection.3.9.3}%
-\contentsline {subsection}{\numberline {3.9.4}Participación en eventos}{30}{subsection.3.9.4}%
-\contentsline {subsection}{\numberline {3.9.5}Comunicación y contenido}{30}{subsection.3.9.5}%
-\contentsline {subsection}{\numberline {3.9.6}Valoraciones y reseñas}{30}{subsection.3.9.6}%
-\contentsline {subsection}{\numberline {3.9.7}Recomendaciones y geolocalización}{31}{subsection.3.9.7}%
-\contentsline {subsection}{\numberline {3.9.8}Scraping}{31}{subsection.3.9.8}%
-\contentsline {subsection}{\numberline {3.9.9}Restricciones de integridad de datos}{31}{subsection.3.9.9}%
-\contentsline {subsection}{\numberline {3.9.10}Notificaciones}{31}{subsection.3.9.10}%
-\contentsline {section}{\numberline {3.10}Conclusiones}{32}{section.3.10}%
+\contentsline {section}{\numberline {3.5}Requisitos funcionales}{23}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Matriz de trazabilidad de requisitos a objetivos}{26}{subsection.3.5.1}%
+\contentsline {section}{\numberline {3.6}Diseño de mockups}{26}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Vista general de mockups}{27}{subsection.3.6.1}%
+\contentsline {section}{\numberline {3.7}Requisitos no funcionales}{28}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Reglas de negocio}{29}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Gestión de usuarios y roles}{29}{subsection.3.8.1}%
+\contentsline {subsection}{\numberline {3.8.2}Gestión de eventos}{29}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.3}Eventos privados}{30}{subsection.3.8.3}%
+\contentsline {subsection}{\numberline {3.8.4}Participación en eventos}{30}{subsection.3.8.4}%
+\contentsline {subsection}{\numberline {3.8.5}Comunicación y contenido}{30}{subsection.3.8.5}%
+\contentsline {subsection}{\numberline {3.8.6}Valoraciones y reseñas}{30}{subsection.3.8.6}%
+\contentsline {subsection}{\numberline {3.8.7}Recomendaciones y geolocalización}{31}{subsection.3.8.7}%
+\contentsline {subsection}{\numberline {3.8.8}Scraping}{31}{subsection.3.8.8}%
+\contentsline {subsection}{\numberline {3.8.9}Restricciones de integridad de datos}{31}{subsection.3.8.9}%
+\contentsline {subsection}{\numberline {3.8.10}Notificaciones}{31}{subsection.3.8.10}%
+\contentsline {section}{\numberline {3.9}Conclusiones}{32}{section.3.9}%
 \contentsline {chapter}{\numberline {4}Diseño de la solución}{33}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Introducción}{33}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Arquitectura del sistema}{33}{section.4.2}%
@@ -170,9 +169,9 @@
 \contentsline {section}{\numberline {6.1}Introducción}{86}{section.6.1}%
 \contentsline {section}{\numberline {6.2}Metodología y tipos de pruebas}{86}{section.6.2}%
 \contentsline {subsection}{\numberline {6.2.1}Pruebas unitarias del backend}{86}{subsection.6.2.1}%
-\contentsline {subsubsection}{EventsService}{86}{subsubsection*.37}%
-\contentsline {subsubsection}{RecomendacionesService}{87}{subsubsection*.38}%
-\contentsline {subsubsection}{UsersService}{88}{subsubsection*.39}%
+\contentsline {subsubsection}{EventsService}{86}{subsubsection*.38}%
+\contentsline {subsubsection}{RecomendacionesService}{87}{subsubsection*.39}%
+\contentsline {subsubsection}{UsersService}{88}{subsubsection*.40}%
 \contentsline {subsection}{\numberline {6.2.2}Resumen de pruebas unitarias}{89}{subsection.6.2.2}%
 \contentsline {subsection}{\numberline {6.2.3}Cobertura de código}{89}{subsection.6.2.3}%
 \contentsline {subsection}{\numberline {6.2.4}Pruebas de integración}{90}{subsection.6.2.4}%
@@ -240,10 +239,10 @@
 \contentsline {subsection}{\numberline {8.5.1}Construcción local previa}{113}{subsection.8.5.1}%
 \contentsline {subsection}{\numberline {8.5.2}Variables de entorno de producción}{113}{subsection.8.5.2}%
 \contentsline {subsection}{\numberline {8.5.3}Despliegue en Render}{114}{subsection.8.5.3}%
-\contentsline {subsubsection}{Creación del servicio}{114}{subsubsection*.44}%
-\contentsline {subsubsection}{Configuración del proceso de build}{114}{subsubsection*.45}%
-\contentsline {subsubsection}{Configuración de variables de entorno}{114}{subsubsection*.46}%
-\contentsline {subsubsection}{Publicación}{114}{subsubsection*.47}%
+\contentsline {subsubsection}{Creación del servicio}{114}{subsubsection*.45}%
+\contentsline {subsubsection}{Configuración del proceso de build}{114}{subsubsection*.46}%
+\contentsline {subsubsection}{Configuración de variables de entorno}{114}{subsubsection*.47}%
+\contentsline {subsubsection}{Publicación}{114}{subsubsection*.48}%
 \contentsline {section}{\numberline {8.6}Distribución de la aplicación móvil}{115}{section.8.6}%
 \contentsline {subsection}{\numberline {8.6.1}Variables de entorno del frontend}{115}{subsection.8.6.1}%
 \contentsline {subsection}{\numberline {8.6.2}Opción 1: APK para Android}{115}{subsection.8.6.2}%
@@ -302,7 +301,7 @@
 \contentsline {subsection}{\numberline {10.7.2}Alcance del uso}{159}{subsection.10.7.2}%
 \contentsline {subsection}{\numberline {10.7.3}Verificación}{159}{subsection.10.7.3}%
 \contentsline {section}{\numberline {10.8}Conclusión final}{159}{section.10.8}%
-\contentsline {chapter}{Bibliograf\'{\i }a}{160}{chapter*.74}%
+\contentsline {chapter}{Bibliograf\'{\i }a}{160}{chapter*.75}%
 \contentsline {chapter}{\numberline {A}Declaración de autoría}{161}{appendix.Alph1}%
 \contentsline {chapter}{\numberline {B}Usuarios piloto}{162}{appendix.Alph2}%
 \contentsline {section}{\numberline {B.1}Introducción}{162}{section.Alph2.1}%
@@ -314,3 +313,12 @@
 \contentsline {subsection}{\numberline {B.4.3}Ideas de nuevas funcionalidades}{164}{subsection.Alph2.4.3}%
 \contentsline {section}{\numberline {B.5}Valoración general de los usuarios}{164}{section.Alph2.5}%
 \contentsline {section}{\numberline {B.6}Conclusiones del proceso piloto}{164}{section.Alph2.6}%
+\contentsline {chapter}{\numberline {C}Actas de reunión}{166}{appendix.Alph3}%
+\contentsline {section}{Acta de Reunión 1}{166}{section*.76}%
+\contentsline {section}{Acta de Reunión 2}{169}{Item.26}%
+\contentsline {section}{Acta de Reunión 3}{172}{Item.29}%
+\contentsline {section}{Acta de Reunión 4}{176}{Item.38}%
+\contentsline {section}{Acta de Reunión 5}{180}{Item.38}%
+\contentsline {section}{Acta de Reunión 6}{183}{Item.38}%
+\contentsline {section}{Acta de Reunión 7}{186}{Item.38}%
+\contentsline {section}{Acta de Reunión 8}{190}{Item.38}%
