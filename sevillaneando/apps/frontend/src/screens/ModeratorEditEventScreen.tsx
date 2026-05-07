@@ -313,8 +313,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         title,
         description,
         address,
-        fechaInicio: toBackendDateTime(fechaInicio),
-        fechaFin: toBackendDateTime(fechaFin),
+        fechaInicio: toBackendDateTime(fechaInicio ?? ''),
+        fechaFin: toBackendDateTime(fechaFin ?? ''),
         location: { type: 'Point', coordinates: [longitude, latitude] },
         precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
         precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
@@ -487,7 +487,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             </TouchableOpacity>
             <CalendarDateTimePicker
               isVisible={showFechaInicio}
-              value={fechaInicio}
+              value={fechaInicio ?? ''}
               minimumDate={new Date()}
               onConfirm={(val) => {
                 setFechaInicio(val);
@@ -512,7 +512,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             </TouchableOpacity>
             <CalendarDateTimePicker
               isVisible={showFechaFin}
-              value={fechaFin}
+              value={fechaFin ?? ''}
               minimumDate={
                 fechaInicio && new Date(fechaInicio) > new Date()
                   ? new Date(fechaInicio)

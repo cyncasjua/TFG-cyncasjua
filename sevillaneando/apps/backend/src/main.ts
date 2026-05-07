@@ -432,7 +432,8 @@ async function bootstrap() {
   });
 
   const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/health', (_req: any, res: any) => res.json({ status: 'ok' }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  httpAdapter.get('/health', (_req: unknown, res: any) => res.json({ status: 'ok' }));
 
   const eventRepo = dataSource.getRepository(Event);
   await seedEvents(eventRepo, dataSource);

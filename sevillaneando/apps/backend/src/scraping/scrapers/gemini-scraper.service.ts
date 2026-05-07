@@ -31,18 +31,21 @@ export class GeminiScraperService implements IScraper {
     );
     let todosLosEventos: ScrapedEvent[] = [];
 
-    for (const url of this.urlsToScrape) {
-      this.logger.log(`Procesando web: ${url}`);
+    for (let i = 0; i < this.urlsToScrape.length; i++) {
+      const url = this.urlsToScrape[i];
+      this.logger.log(`[${i + 1}/${this.urlsToScrape.length}] Procesando: ${url}`);
+      const t0 = Date.now();
       try {
         const eventosDeEstaWeb = await this.extraerEventosDeUrl(url);
         todosLosEventos = [...todosLosEventos, ...eventosDeEstaWeb];
-        this.logger.log(`Extraídos ${eventosDeEstaWeb.length} eventos de ${url}`);
+        this.logger.log(
+          `[${i + 1}/${this.urlsToScrape.length}] Extraídos ${eventosDeEstaWeb.length} eventos de ${url} en ${((Date.now() - t0) / 1000).toFixed(1)}s`
+        );
 
         await new Promise((resolve) => setTimeout(resolve, 3000));
       } catch (error) {
         this.logger.error(
-          `Falló la extracción en ${url}:`,
-          error instanceof Error ? error.message : String(error)
+          `[${i + 1}/${this.urlsToScrape.length}] Falló en ${url} tras ${((Date.now() - t0) / 1000).toFixed(1)}s: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
@@ -69,12 +72,20 @@ export class GeminiScraperService implements IScraper {
       'estadio ramón sánchez pizjuán': 'C. Sevilla Fútbol Club, s/n, 41005 Sevilla, España',
       'estadio benito villamarín': 'Av. de la Palmera, s/n, 41012 Sevilla, España',
     };
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    });
+    const fetchController = new AbortController();
+    const fetchTimeout = setTimeout(() => fetchController.abort(), 60000);
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+        signal: fetchController.signal,
+      });
+    } finally {
+      clearTimeout(fetchTimeout);
+    }
 
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
@@ -155,7 +166,13 @@ ${htmlLimpio}
 `;
 
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(prompt);
+    this.logger.log(`Enviando prompt a Gemini para: ${url}`);
+    const result = await Promise.race([
+      model.generateContent(prompt),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Gemini timeout (360s)')), 360000)
+      ),
+    ]) as Awaited<ReturnType<typeof model.generateContent>>;
 
     let textoRespuesta = result.response.text();
     textoRespuesta = textoRespuesta
@@ -171,10 +188,9 @@ ${htmlLimpio}
         const fechaInicio = evento.fechaInicio ? new Date(evento.fechaInicio) : null;
         const fechaFin = evento.fechaFin ? new Date(evento.fechaFin) : null;
 
-        let imagenFinal = evento.imagen || null;
-        if (!imagenFinal && Array.isArray(imagenesPrincipales) && imagenesPrincipales.length > 0) {
-          imagenFinal = imagenesPrincipales[0];
-        }
+        const imagenFinal = evento.imagen || null;
+
+        const descripcionFinal = `${evento.description || ''}\n\nFuente: ${url}`.trim();
 
         let addressFinal = evento.address || 'Sevilla, España';
         const addressKey = addressFinal.trim().toLowerCase();
@@ -311,7 +327,7 @@ ${htmlLimpio}
         if (locationFinal) {
           eventos.push({
             title: evento.title || 'Evento sin título',
-            description: evento.description || '',
+            description: descripcionFinal,
             address: addressFinal,
             fechaInicio: fechaInicio && !isNaN(fechaInicio.getTime()) ? fechaInicio : null,
             fechaFin: fechaFin && !isNaN(fechaFin.getTime()) ? fechaFin : null,

@@ -156,7 +156,7 @@ export class SevillaScraperService implements IScraper {
 
           events.push({
             title,
-            description: description || `Evento en Sevilla: ${title}`,
+            description: `${description || `Evento en Sevilla: ${title}`}\n\nFuente: ${sourceUrl}`,
             address,
             location: {
               type: 'Point',

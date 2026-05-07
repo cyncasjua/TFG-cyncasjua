@@ -197,7 +197,7 @@ export class TicketmasterScraperService implements IScraper {
 
       return {
         title,
-        description,
+        description: `${description}\n\nFuente: ${tmEvent.url}`,
         address,
         location: {
           type: 'Point',
