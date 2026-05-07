@@ -15,7 +15,7 @@ export class Resena {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => User, (user) => user.resenas)
+  @ManyToOne(() => User, (user) => user.resenas, { onDelete: 'CASCADE' })
   autor!: User;
 
   @ManyToOne(() => Event, { onDelete: 'CASCADE' })

@@ -13,7 +13,6 @@ import { Event } from '../events/event.entity';
 import { Resena } from '../events/resena.entity';
 import { Ruta } from '../rutas/ruta.entity';
 import type { GeoJsonPoint } from '../common/geojson-point';
-import { InteresCategoriaEnum } from './enums/interes-categoria.enum';
 import { RolEnum } from './enums/rol.enum';
 import { Logger } from '@nestjs/common';
 
@@ -39,8 +38,8 @@ export class User {
   @Column({ type: 'text', nullable: true })
   fotoPerfil!: string | null;
 
-  @Column({ type: 'enum', enum: InteresCategoriaEnum, array: true, default: '{}' })
-  intereses!: InteresCategoriaEnum[];
+  @Column({ type: 'text', array: true, default: '{}' })
+  intereses!: string[];
 
   @Column({ type: 'text', array: true, default: '{}' })
   categoryOrder!: string[];

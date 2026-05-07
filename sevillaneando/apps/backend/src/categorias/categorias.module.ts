@@ -4,9 +4,10 @@ import { Categoria } from './categoria.entity';
 import { CategoriasController } from './categorias.controller';
 import { CategoriasService } from './categorias.service';
 import { AuthModule } from '../auth/auth.module';
+import { User } from '../users/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Categoria]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Categoria, User]), AuthModule],
   controllers: [CategoriasController],
   providers: [CategoriasService],
   exports: [CategoriasService],

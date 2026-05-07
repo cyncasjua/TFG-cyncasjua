@@ -7,12 +7,11 @@ import {
   IsArray,
   IsNumber,
   ValidateNested,
-  IsEnum,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import type { GeoJsonPoint } from '../../common/geojson-point';
 import { GeoJsonPointDto } from '../../common/geojson-point.dto';
-import { InteresCategoriaEnum, normalizeIntereses } from '../enums/interes-categoria.enum';
+import { normalizeIntereses } from '../enums/interes-categoria.enum';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -38,11 +37,8 @@ export class UpdateProfileDto {
   @IsOptional()
   @Transform(({ value }) => normalizeIntereses(value))
   @IsArray({ message: 'Los intereses deben ser un array.' })
-  @IsEnum(InteresCategoriaEnum, {
-    each: true,
-    message: 'Cada interés debe ser una categoría válida.',
-  })
-  intereses?: InteresCategoriaEnum[];
+  @IsString({ each: true, message: 'Cada interés debe ser un texto.' })
+  intereses?: string[];
 
   @IsOptional()
   @IsArray({ message: 'El orden de categorías debe ser un array.' })

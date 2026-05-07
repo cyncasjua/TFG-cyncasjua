@@ -11,7 +11,7 @@ export class EventEditRequest {
   @ManyToOne(() => Event, (event) => event.id, { nullable: false, onDelete: 'CASCADE' })
   event!: Event;
 
-  @ManyToOne(() => User, (user) => user.id, { nullable: false })
+  @ManyToOne(() => User, (user) => user.id, { nullable: false, onDelete: 'CASCADE' })
   requestedBy!: User;
 
   @Column({ length: 100, nullable: true })

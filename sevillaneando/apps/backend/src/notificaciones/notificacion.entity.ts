@@ -14,7 +14,7 @@ export class Notificacion {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   usuario!: User;
 
   @Column({ nullable: false })
@@ -27,7 +27,7 @@ export class Notificacion {
   fecha!: Date;
 
   @Column({ default: false })
-  leida: boolean;
+  leida!: boolean;
 
   enviarNotificacion() {
     this.fecha = new Date();

@@ -5,11 +5,29 @@ import { User } from './user.entity';
 import { RolEnum } from './enums/rol.enum';
 import * as admin from 'firebase-admin';
 import type { GeoJsonPoint } from '../common/geojson-point';
-import { InteresCategoriaEnum, normalizeIntereses } from './enums/interes-categoria.enum';
+import { Categoria } from '../categorias/categoria.entity';
+import { normalizeInteres, normalizeIntereses } from './enums/interes-categoria.enum';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly usersRepo: Repository<User>,
+    @InjectRepository(Categoria) private readonly categoriaRepo: Repository<Categoria>
+  ) {}
+
+  private async resolveIntereses(values: unknown): Promise<string[]> {
+    const normalizedValues = normalizeIntereses(values);
+    if (normalizedValues.length === 0) return [];
+
+    const categorias = await this.categoriaRepo.find({ select: { nombre: true } });
+    const categoriasByNormalizedName = new Map(
+      categorias.map((categoria) => [normalizeInteres(categoria.nombre), categoria.nombre])
+    );
+
+    return normalizedValues
+      .map((value) => categoriasByNormalizedName.get(value))
+      .filter((value): value is string => Boolean(value));
+  }
 
   async ensureFromFirebase(payload: {
     uid: string;
@@ -81,7 +99,7 @@ export class UsersService {
       email?: string;
       ubicacion?: GeoJsonPoint;
       fotoPerfil?: string;
-      intereses?: InteresCategoriaEnum[];
+      intereses?: string[];
       categoryOrder?: string[];
       radiusOptions?: number[];
     }
@@ -91,7 +109,7 @@ export class UsersService {
     if (data.email !== undefined) user.email = data.email;
     if (data.ubicacion !== undefined) user.ubicacion = data.ubicacion;
     if (data.fotoPerfil !== undefined) user.fotoPerfil = data.fotoPerfil;
-    if (data.intereses !== undefined) user.intereses = normalizeIntereses(data.intereses);
+    if (data.intereses !== undefined) user.intereses = await this.resolveIntereses(data.intereses);
     if (data.categoryOrder !== undefined) user.categoryOrder = data.categoryOrder;
     if (data.radiusOptions !== undefined) user.radiusOptions = data.radiusOptions;
     return this.usersRepo.save(user);

@@ -38,7 +38,7 @@ export class Ruta {
   @Column('int')
   temporizacion!: number;
 
-  @ManyToOne(() => User, (user) => user.rutas, { nullable: false })
+  @ManyToOne(() => User, (user) => user.rutas, { nullable: false, onDelete: 'CASCADE' })
   creador!: User;
 
   @CreateDateColumn()

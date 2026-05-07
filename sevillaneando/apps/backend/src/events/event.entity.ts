@@ -64,26 +64,23 @@ export class Event {
   @Column({ type: 'varchar', length: 255, nullable: true })
   linkAcceso?: string | null;
 
-  @ManyToOne(() => Categoria, (categoria) => categoria.eventos)
-  categoria!: Categoria;
+  @ManyToOne(() => Categoria, (categoria) => categoria.eventos, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  categoria!: Categoria | null;
 
   @Column({ type: 'enum', enum: EstadoEnum, default: EstadoEnum.Pendiente })
   estado!: EstadoEnum;
 
-  /*@Column(type => Coordenadas)
-  ubicacion!: Coordenadas;*/
-
-  @ManyToOne(() => User, (user) => user.eventos)
-  creador!: User;
-
-  /*@OneToMany(() => Imagen, imagen => imagen.evento)
-  imagenes!: Imagen[];*/
+  @ManyToOne(() => User, (user) => user.eventos, { nullable: true, onDelete: 'SET NULL' })
+  creador!: User | null;
 
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;
 
   @Column({ type: 'text', nullable: true })
-  imagenes?: string | string[] | null; // JSON string en BD; array al serializar respuestas
+  imagenes?: string | string[] | null;
 
   @ManyToMany(() => User, (user) => user.eventosAsistidos)
   @JoinTable({
@@ -108,7 +105,6 @@ export class Event {
   @BeforeInsert()
   @BeforeUpdate()
   validateDates() {
-    // Asegurar que imagenes SIEMPRE se guarde como JSON string válido
     if (this.imagenes) {
       this.imagenes = stringifyEventImages(this.imagenes);
     }

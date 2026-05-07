@@ -104,7 +104,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [searchLoading, setSearchLoading] = useState(false);
 
   const [categoriaId, setCategoriaId] = useState<string | null>(
-    event.categoria.id || event.categoria?.id || null
+    event.categoria?.id ?? null
   );
   const [openCategoria, setOpenCategoria] = useState(false);
   const [dropdownItems, setDropdownItems] = useState<{ label: string; value: string }[]>([]);

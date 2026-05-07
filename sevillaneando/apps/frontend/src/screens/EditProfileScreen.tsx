@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -23,6 +23,7 @@ import { API_BASE_URL } from '../services';
 import { Button } from 'react-native';
 import { Alert } from 'react-native';
 import { getAuth, deleteUser } from 'firebase/auth';
+import { useFocusEffect } from '@react-navigation/native';
 
 type Props = {
   navigation: any;
@@ -51,27 +52,32 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   const endpointPerfil = esFirebase ? '/users/me/firebase' : '/users/me';
   const resolvedFotoPerfil = getFullImageUrl(fotoPerfil);
 
-  useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/categorias`, {
-          headers: {
-            Authorization: `Bearer ${token || ''}`,
-          },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setCategorias(data);
-        }
-      } catch (err) {
-        reportWarning('edit-profile.fetch-categories', 'No se pudieron cargar categorías', err);
-        // Non blocking.
+  const fetchCategorias = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/categorias`, {
+        headers: {
+          Authorization: `Bearer ${token || ''}`,
+        },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCategorias(data);
       }
-    };
-
-    fetchCategorias();
+    } catch (err) {
+      reportWarning('edit-profile.fetch-categories', 'No se pudieron cargar categorías', err);
+    }
   }, [token]);
+
+  useEffect(() => {
+    fetchCategorias();
+  }, [fetchCategorias]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchCategorias();
+    }, [fetchCategorias])
+  );
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({

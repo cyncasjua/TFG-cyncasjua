@@ -13,7 +13,7 @@ export class Mensaje {
   @Column({ nullable: true })
   imageUrl?: string | null;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   usuario!: User;
 
   @ManyToOne(() => Event, { onDelete: 'CASCADE' })

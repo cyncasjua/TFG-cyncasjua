@@ -16,7 +16,7 @@ export class Recomendacion {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   usuario!: User;
 
   @ManyToMany(() => Event)
@@ -27,7 +27,7 @@ export class Recomendacion {
   criterios!: string[];
 
   @Column('boolean', { default: false })
-  vista: boolean;
+  vista!: boolean;
 
   generarRecomendaciones() {}
   actualizarRecomendaciones() {}
