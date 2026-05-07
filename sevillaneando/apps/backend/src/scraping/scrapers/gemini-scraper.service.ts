@@ -167,12 +167,12 @@ ${htmlLimpio}
 
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     this.logger.log(`Enviando prompt a Gemini para: ${url}`);
-    const result = await Promise.race([
+    const result = (await Promise.race([
       model.generateContent(prompt),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Gemini timeout (360s)')), 360000)
       ),
-    ]) as Awaited<ReturnType<typeof model.generateContent>>;
+    ])) as Awaited<ReturnType<typeof model.generateContent>>;
 
     let textoRespuesta = result.response.text();
     textoRespuesta = textoRespuesta
