@@ -830,7 +830,25 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <MaterialIcons name="place" size={16} color="#6c2eb7" /> {event.address}
             </ThemedTextSecondary>
             <ThemedText style={[styles.description, { marginBottom: 8 }]}>
-              {event.description}
+              {(() => {
+                const urlMatch = event.description?.match(/Fuente: (https?:\/\/\S+)/);
+                if (!urlMatch) return event.description;
+                const [full, url] = urlMatch;
+                const before = event.description!.replace(full, '').trimEnd();
+                return (
+                  <>
+                    {before}
+                    {'\n\n'}
+                    <ThemedText style={styles.description}>Fuente: </ThemedText>
+                    <ThemedText
+                      style={[styles.description, { color: '#6c2eb7', textDecorationLine: 'underline' }]}
+                      onPress={() => Linking.openURL(url)}
+                    >
+                      {url}
+                    </ThemedText>
+                  </>
+                );
+              })()}
             </ThemedText>
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
