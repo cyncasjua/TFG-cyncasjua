@@ -841,7 +841,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     {'\n\n'}
                     <ThemedText style={styles.description}>Fuente: </ThemedText>
                     <ThemedText
-                      style={[styles.description, { color: '#6c2eb7', textDecorationLine: 'underline' }]}
+                      style={[
+                        styles.description,
+                        { color: '#6c2eb7', textDecorationLine: 'underline' },
+                      ]}
                       onPress={() => Linking.openURL(url)}
                     >
                       {url}
