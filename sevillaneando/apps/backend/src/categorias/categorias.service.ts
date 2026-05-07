@@ -73,7 +73,10 @@ export class CategoriasService {
     );
   }
 
-  private async removeCategoriafromUsers(categoriaId: string, categoriaName: string): Promise<void> {
+  private async removeCategoriafromUsers(
+    categoriaId: string,
+    categoriaName: string
+  ): Promise<void> {
     const users = await this.userRepo.find();
     const toUpdate = users.filter(
       (u) => u.intereses.includes(categoriaName) || u.categoryOrder.includes(categoriaId)
