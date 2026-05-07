@@ -1,4 +1,4 @@
-﻿\chapter{Análisis del problema}\label{cap:analisis}
+\chapter{Análisis del problema}\label{cap:analisis}
 
 \section{Introducción}
 
@@ -16,9 +16,9 @@ Los actores del sistema son las personas que interactúan con la aplicación. Ca
 
 \subsection{Visitante}
 
-Persona que llega a la aplicación sin cuenta o que aún no ha iniciado sesión. Su interacción con el sistema es mínima: puede registrarse, iniciar sesión o recuperar su contraseña. También puede acceder al detalle de un evento privado si dispone del enlace de invitación compartido por el creador, sin necesidad de autenticarse previamente.
+Persona que llega a la aplicación sin cuenta o que aún no ha iniciado sesión. Su interacción con el sistema es mínima: puede registrarse, iniciar sesión o recuperar su contraseña.
 
-\textit{Casos de prueba relacionados:} CP-01 (registro), CP-02 (login incorrecto), CP-04 (recuperación de contraseña), CP-20 y CP-21 (acceso a evento privado con y sin enlace).
+\textit{Casos de prueba relacionados:} CP-01 (registro), CP-02 (login incorrecto), CP-04 (recuperación de contraseña).
 
 \subsection{Ciudadano}
 
@@ -63,7 +63,6 @@ La figura~\ref{fig:diagrama_actores} muestra las relaciones de extensión entre 
 \node[actor] (admin)   at (3.2, -3.8) {Administrador de plataforma};
 
 \draw[arr] (ciudad) -- (visit);
-\node[font=\tiny, right=0.05cm of ciudad, yshift=0.9cm] {extiende};
 \draw[arr] (mod)    -- (ciudad);
 \draw[arr] (admin)  -- (ciudad);
 \end{tikzpicture}
@@ -158,7 +157,7 @@ Dado el número de funcionalidades del sistema, el diagrama de casos de uso se d
     arr/.style={->, thick, color=gray},
 ]
 %% -- Actores ------------------------------------------------------
-\node[actor] (ciudad) at (-5.5, -2.5) {Ciudadano};
+\node[actor] (ciudad) at (-5.5, -2.5) {Ciudadano /\\ Organizador};
 \node[actor] (mod)    at ( 5.5, -9.2) {Moderador};
 \node[actor] (admin)  at ( 5.5, -13.7) {Administrador};
 
@@ -221,7 +220,7 @@ En el sistema \textbf{Sevillaneando}, los principales elementos de información 
 
     \item \textbf{Eventos}: cada evento contiene título, descripción, categoría, ubicación, fecha, precio, imágenes, estado (aprobado, rechazado o pendiente), creador y visibilidad pública o privada.
 
-    \item \textbf{Eventos privados}: información relativa al acceso restringido, incluyendo códigos o enlaces de acceso o invitación y usuarios autorizados, además de todos los datos que contiene une evento.
+    \item \textbf{Eventos privados}: información relativa al acceso restringido, incluyendo códigos o enlaces de acceso o invitación y usuarios autorizados, además de todos los datos que contiene un evento.
 
     \item \textbf{Moderación de eventos}: datos necesarios para controlar el estado de revisión de los eventos públicos propuestos por usuarios, incluyendo aprobación, rechazo y posibles modificaciones realizadas por el moderador de edición de eventos.
 
@@ -237,7 +236,7 @@ En el sistema \textbf{Sevillaneando}, los principales elementos de información 
 
     \item \textbf{Valoraciones y reseñas}: puntuaciones y comentarios que los usuarios realizan sobre eventos y rutas.
 
-    \item \textbf{Notificaciones}: avisos enviados al usuario, como aprobación o rechazo de eventos públicos creados/editados por el usuario, recordatorios de eventos apuntados en fechas cercanas y eventos cercanos según su ubicación.
+    \item \textbf{Notificaciones}: avisos enviados al usuario, como aprobación o rechazo de eventos públicos creados/editados por el usuario, recordatorios de eventos apuntados en fechas cercanas, eventos cercanos según su ubicación y seguidores nuevos.
 
     \item \textbf{Recomendaciones}: información utilizada para sugerir eventos en función de intereses, ubicación, eventos vistos, eventos guardados, eventos apuntados, eventos compartidos, fecha y valoraciones tanto propias como globales.
 
@@ -266,9 +265,9 @@ La figura~\ref{fig:modelo_conceptual} muestra el diagrama del modelo conceptual 
 Los requisitos funcionales describen las funcionalidades que el sistema debe ofrecer a los usuarios. Se expresan siguiendo el formato estándar de historia de usuario: \textit{Como [actor], quiero [acción], para [objetivo]}, lo que permite relacionar cada requisito con el actor que lo origina y con el objetivo del sistema que satisface.
 
 \begin{itemize}
-    \item \textbf{RF-01: Registro e inicio de sesión}\\
-    \textit{Como usuario no autenticado, quiero registrarme con correo y contraseña e iniciar sesión, para acceder a las funcionalidades de la aplicación.}\\
-    \textit{Criterio de aceptación}: un usuario puede crear una cuenta, iniciar sesión correctamente y cerrar sesión. Un intento con credenciales incorrectas muestra un mensaje de error.
+    \item \textbf{RF-01: Registro, inicio de sesión y recuperación de contraseña}\\
+    \textit{Como usuario no autenticado, quiero registrarme con correo y contraseña, iniciar sesión y recuperar mi contraseña en caso de olvidarla, para acceder a las funcionalidades de la aplicación.}\\
+    \textit{Criterio de aceptación}: un usuario puede crear una cuenta e iniciar sesión correctamente. Un intento con credenciales incorrectas muestra un mensaje de error. Un usuario puede solicitar el restablecimiento de contraseña mediante su correo electrónico.
 
     \item \textbf{RF-02: Gestión de perfil}\\
     \textit{Como usuario autenticado, quiero editar mi información personal, intereses, ubicación y contraseña, para mantener mi perfil actualizado y recibir recomendaciones ajustadas a mis preferencias.}\\
@@ -300,7 +299,7 @@ Los requisitos funcionales describen las funcionalidades que el sistema debe ofr
 
     \item \textbf{RF-09: Chat y mensajería}\\
     \textit{Como usuario autenticado, quiero comunicarme con otros usuarios mediante el chat de un evento o con mensajes privados directos, para coordinarme y conocer a personas con intereses similares.}\\
-    \textit{Criterio de aceptación}: los mensajes en el chat de un evento se reciben en tiempo real por todos los participantes. Los mensajes privados entre dos usuarios se entregan de forma inmediata y muestran indicador de leído.
+    \textit{Criterio de aceptación}: los mensajes en el chat de un evento se reciben en tiempo real por todos los participantes. Los mensajes privados entre dos usuarios se entregan de forma inmediata.
 
     \item \textbf{RF-10: Gestión de imágenes}\\
     \textit{Como usuario autenticado, quiero subir y visualizar imágenes en eventos, chats y perfiles, para enriquecer el contenido y compartir momentos de los eventos.}\\
@@ -316,11 +315,11 @@ Los requisitos funcionales describen las funcionalidades que el sistema debe ofr
 
     \item \textbf{RF-13: Rutas de eventos}\\
     \textit{Como usuario autenticado, quiero consultar rutas de eventos recomendadas automáticamente o creadas por otros usuarios, y poder crear mis propias rutas públicas, para planificar itinerarios completos de ocio.}\\
-    \textit{Criterio de aceptación}: el sistema genera al menos una ruta recomendada cuando el usuario tiene ubicación e intereses definidos. Un usuario puede crear una ruta pública que es visible y valorable por otros usuarios.
+    \textit{Criterio de aceptación}: el sistema genera rutas recomendadas al usuario. Un usuario puede crear una ruta pública que es visible y valorable por otros usuarios.
 
     \item \textbf{RF-14: Notificaciones}\\
-    \textit{Como usuario autenticado, quiero recibir notificaciones sobre eventos cercanos, recordatorios y resultados de moderación, para estar informado sin tener que consultar la aplicación continuamente.}\\
-    \textit{Criterio de aceptación}: el usuario recibe notificaciones push cuando: (1) hay eventos cercanos a su ubicación, (2) se acerca la fecha de un evento al que está apuntado, o (3) un evento suyo es aprobado o rechazado por el moderador.
+    \textit{Como usuario autenticado, quiero recibir notificaciones sobre eventos cercanos, recordatorios, seguidores nuevos y resultados de moderación, para estar informado sin tener que consultar la aplicación continuamente.}\\
+    \textit{Criterio de aceptación}: el usuario recibe notificaciones push cuando: (1) hay eventos cercanos a su ubicación, (2) se acerca la fecha de un evento al que está apuntado, (3) un evento suyo es aprobado o rechazado por el moderador, o (4) un usuario comienza a seguirlo.
 
     \item \textbf{RF-15: Gestión de roles}\\
     \textit{Como administrador, quiero gestionar el rol de los usuarios del sistema, para asignar responsabilidades de moderación y administración de forma controlada.}\\
@@ -335,8 +334,8 @@ Los requisitos funcionales describen las funcionalidades que el sistema debe ofr
     \textit{Criterio de aceptación}: el administrador puede cambiar el rol de un usuario desde el panel de administración. Un usuario eliminado no puede volver a iniciar sesión con esa cuenta.
 
     \item \textbf{RF-18: Organización de eventos}\\
-    \textit{Como usuario autenticado, quiero guardar eventos y consultarlos en mi calendario, para organizar mis planes y no perder de vista las actividades que me interesan.}\\
-    \textit{Criterio de aceptación}: los eventos guardados aparecen en la sección correspondiente. Los eventos con fecha a los que el usuario está apuntado aparecen en el calendario en su fecha correcta.
+    \textit{Como usuario autenticado, quiero guardar eventos, apuntarme a ellos y consultarlos en mi calendario, para organizar mis planes y no perder de vista las actividades que me interesan.}\\
+    \textit{Criterio de aceptación}: los eventos guardados y los eventos a los que el usuario se ha apuntado aparecen en la sección correspondiente. Los eventos con fecha a los que el usuario está apuntado aparecen en el calendario en su fecha correcta.
 
     \item \textbf{RF-19: Actualización automática de eventos}\\
     \textit{Como sistema (scraper-bot), quiero obtener y actualizar eventos de fuentes externas de forma periódica, para ampliar automáticamente el catálogo con eventos de plataformas institucionales y comerciales.}\\

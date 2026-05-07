@@ -177,24 +177,6 @@ En los tres servicios que sí disponen de pruebas unitarias, la cobertura oscila
 
 La ampliación de la cobertura mediante pruebas de integración con base de datos real y la incorporación de pruebas para controladores y guards se identifican como trabajo futuro en el capítulo de conclusiones.
 
-\subsection{Pruebas de integración}
-
-Las pruebas de integración verifican que la comunicación entre los distintos componentes del sistema funciona correctamente de extremo a extremo. Dado que el sistema está formado por un frontend React Native, un backend NestJS y una base de datos PostgreSQL con PostGIS, se han identificado los siguientes escenarios de integración relevantes:
-
-\begin{itemize}
-    \item \textbf{Frontend -- API REST}: se verifica que las llamadas HTTP realizadas desde el frontend llegan correctamente al backend, los parámetros son procesados y la respuesta JSON es interpretada correctamente por la capa de presentación.
-
-    \item \textbf{API REST -- Base de datos}: se comprueba que las operaciones de creación, consulta, actualización y eliminación sobre los repositorios TypeORM se traducen correctamente en operaciones SQL sobre PostgreSQL, incluyendo las consultas geoespaciales con PostGIS (\texttt{ST\_DWithin}, \texttt{ST\_MakePoint}, \texttt{ST\_Distance}).
-
-    \item \textbf{Backend -- Firebase Auth}: se verifica que el guard de autenticación (\texttt{FirebaseGuard}) valida correctamente los tokens JWT emitidos por Firebase y que las peticiones sin token o con token inválido son rechazadas con código HTTP 401.
-
-    \item \textbf{Backend -- WebSockets}: se comprueba que los mensajes enviados desde la aplicación a través de Socket.IO llegan correctamente al servidor y se distribuyen a los participantes de la sala correspondiente.
-
-    \item \textbf{Backend -- Cloudinary}: se verifica que las imágenes subidas desde la aplicación se almacenan correctamente en Cloudinary y que la URL generada queda guardada en la base de datos.
-\end{itemize}
-
-Estos escenarios se han validado de forma funcional durante la ejecución de las pruebas de aceptación documentadas en la sección siguiente, ya que cada caso de prueba ejecutado sobre la aplicación real ejercita implícitamente el flujo completo entre capas.
-
 \subsection{Pruebas de aceptación}
 
 Las pruebas de aceptación son el tipo principal de prueba documentado en este capítulo. Se basan en las historias de usuario del backlog y verifican que el sistema cumple los criterios de aceptación definidos en cada historia. Se han ejecutado manualmente sobre dispositivos reales y emuladores, tal como se describe en la siguiente sección.
@@ -437,38 +419,10 @@ CP-30 & Notificación de evento cercano & Superada & \\
 
 Todos los casos de prueba han sido superados satisfactoriamente. El sistema se comporta de acuerdo con los requisitos funcionales definidos en el análisis tanto en el entorno de desarrollo local como en el entorno desplegado en producción.
 
-\section{Evidencias visuales}
-
-% [GUÍA PARA COMPLETAR] Inserta aquí las capturas de pantalla más representativas de cada bloque funcional.
-% Para insertar una captura usa:
-%
-%   \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.38\textwidth]{figures/pruebas/cp05_listado.png}
-%     \caption{CP-05: listado principal de eventos}
-%   \end{figure}
-%
-% Guarda las imágenes en Plantilla_TFG___ETSII_US/figures/pruebas/
-%
-% Capturas mínimas recomendadas:
-%   - CP-01 o CP-03: pantalla de registro o edición de perfil
-%   - CP-05 o CP-06: listado o detalle de evento
-%   - CP-07: buscador con filtros aplicados
-%   - CP-10 o CP-12: mapa con marcadores
-%   - CP-13: chat de evento con mensajes
-%   - CP-16 o CP-17: pantalla de recomendaciones o rutas
-%   - CP-19 o CP-20: flujo de evento privado
-%   - CP-26: panel de moderación
-%   - CP-29: pantalla de notificaciones
-
-Las siguientes capturas de pantalla ilustran el comportamiento del sistema en los flujos más representativos de cada bloque funcional, obtenidas durante la ejecución de las pruebas de aceptación sobre el entorno desplegado.
-
-% [GUÍA PARA COMPLETAR] Inserta aquí las figuras con las capturas reales de la app.
-
 \section{Conclusiones}
 
 El plan de pruebas del sistema \textbf{Sevillaneando} ha combinado pruebas unitarias automatizadas del backend y pruebas de aceptación manuales ejecutadas sobre dispositivos reales, cubriendo los principales requisitos funcionales del sistema.
 
-Las \textbf{36 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go sobre el entorno desplegado en Google Cloud Run).
+Las \textbf{36 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go sobre el entorno desplegado).
 
 El resultado global es que todos los casos de prueba han sido superados, lo que valida que el sistema cumple con los requisitos funcionales definidos y que los principales flujos de uso de la aplicación funcionan de forma correcta y coherente.

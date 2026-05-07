@@ -41,11 +41,12 @@ export class Event {
 
 \subsection{Scraping}
 
-El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado dos fuentes concretas:
+El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado tres fuentes concretas:
 
 \begin{itemize}
-    \item \textbf{Eventbrite Sevilla}: el scraper descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD embebidos en la página.
-    \item \textbf{Ticketmaster API}: el scraper consume la API oficial de Ticketmaster Discovery paginando los resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha de inicio.
+    \item \textbf{Eventbrite Sevilla}: el \texttt{SevillaScraperService} descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD embebidos en la página.
+    \item \textbf{Ticketmaster API}: el \texttt{TicketmasterScraperService} consume la API oficial de Ticketmaster Discovery paginando los resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha de inicio.
+    \item \textbf{Scraper multi-web con Gemini AI}: el \texttt{GeminiScraperService} procesa siete webs institucionales y de ocio de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras). Para cada URL, descarga el HTML, lo limpia con \texttt{cheerio} eliminando scripts, estilos y elementos de navegación, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que devuelve los eventos en formato JSON estructurado. Las coordenadas geográficas que Gemini no puede deducir se resuelven mediante geocodificación con la API de \textbf{Nominatim} (OpenStreetMap), con hasta tres variantes de búsqueda por dirección.
 \end{itemize}
 
 Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida, descartando aquellos sin coordenadas o con datos incompletos.
@@ -114,9 +115,9 @@ Los administradores pueden cambiar el rol de cualquier usuario. Los moderadores 
 Para proteger la API frente a abusos, el backend aplica throttling HTTP mediante \textbf{@nestjs/throttler}. Se definen tres niveles configurables mediante decoradores personalizados:
 
 \begin{itemize}
-    \item \texttt{ThrottleStrict}: 5 peticiones por minuto (operaciones sensibles como creación de cuentas).
-    \item \texttt{ThrottleModerate}: 20 peticiones por minuto (operaciones de escritura habituales).
-    \item \texttt{ThrottleUpload}: 10 peticiones por minuto (subida de imágenes).
+    \item \texttt{ThrottleStrict}: 5 peticiones por minuto. Se aplica a los endpoints de administración del scraping (\texttt{POST /scraping/run-all}, \texttt{POST /scraping/reset}, \texttt{POST /scraping/run/:name}), que son operaciones costosas reservadas a administradores.
+    \item \texttt{ThrottleModerate}: 20 peticiones por minuto. Se aplica a la creación de eventos (\texttt{POST /events}), operación de escritura habitual pero que podría usarse de forma abusiva para inundar el sistema de contenido pendiente de moderación.
+    \item \texttt{ThrottleUpload}: 10 peticiones por minuto. Se aplica a todos los endpoints de subida de archivos: imágenes de eventos (\texttt{POST /events/upload-image}), imágenes en el chat (\texttt{POST /chat/upload}) y foto de perfil (\texttt{POST /users/upload-profile-image/firebase}).
 \end{itemize}
 
 Los endpoints de solo lectura pueden omitir el throttling con el decorador \texttt{SkipThrottle}.
@@ -335,7 +336,6 @@ El sistema implementa notificaciones persistentes almacenadas en base de datos. 
     \item \textbf{Aprobacion} / \textbf{Rechazado}: informan al creador de un evento del resultado de la moderación.
     \item \textbf{EventoProximo}: recuerda a los usuarios apuntados que el evento ocurre dentro de los próximos siete días o en menos de 24 horas.
     \item \textbf{EventoCercano}: avisa al usuario cuando un evento aprobado se encuentra a menos de 1 km de su ubicación registrada.
-    \item \textbf{MensajePrivado}: notifica la recepción de un mensaje directo.
     \item \textbf{NuevoSeguidor}: informa cuando otro usuario comienza a seguir al destinatario.
     \item \textbf{Recomendacion}: reservado para notificaciones generadas por el motor de recomendaciones.
 \end{itemize}

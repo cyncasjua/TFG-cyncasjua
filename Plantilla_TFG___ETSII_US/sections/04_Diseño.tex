@@ -1,4 +1,4 @@
-﻿\chapter{Diseño de la solución}\label{cap:diseño}
+\chapter{Diseño de la solución}\label{cap:diseño}
 
 \section{Introducción}
 
@@ -20,72 +20,18 @@ La figura~\ref{fig:vista_logica} muestra la vista lógica del sistema con los co
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{figures/vistas/vista_de_despligue.png}
-    \caption{Vista de despliegue del sistema Sevillaneando}
-    \label{fig:vista_despliegue}
+\centering
+\includegraphics[width=0.95\textwidth]{figures/vistas/vista_despliegue.png}
+\caption{Vista de despliegue del sistema Sevillaneando}
+\label{fig:vista_despliegue}
 \end{figure}
+
 
 La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecnologías del sistema en tiempo de ejecución, mostrando el camino que recorre una petición desde que el usuario interactúa con la aplicación hasta que los datos son persistidos o devueltos.
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[
-    every node/.style={font=\small},
-    box/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.75cm, align=center, fill=white},
-    ext/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.75cm, align=center, fill=gray!12},
-    arr/.style={-{Stealth[length=5pt]}, thick},
-    darr/.style={latex-latex, thick, dashed},
-]
-
-% -- Columna izquierda: móvil  (x = -4.2) --------------------------
-\node[box] (screen) at (-4.2,  0.0) {Pantalla\\(React Native)};
-\node[box] (ctx)    at (-4.2, -1.6) {Contextos\\(Auth/Socket/Tema)};
-\node[box] (axios)  at (-4.2, -3.2) {Servicios\\(Axios)};
-\node[box] (fbase)  at (-4.2, -4.8) {Firebase SDK\\(cliente)};
-
-% -- Columna central: backend  (x = 0) -----------------------------
-\node[font=\tiny\itshape] at (0, 0.7) {Socket.IO / REST};
-\node[box] (guard) at (0,  0.0) {FirebaseAuthGuard};
-\node[box] (ctrl)  at (0, -1.6) {Controller\\(NestJS)};
-\node[box] (svc)   at (0, -3.2) {Service\\(NestJS)};
-\node[box] (orm)   at (0, -4.8) {TypeORM};
-\node[box] (db)    at (0, -6.4) {PostgreSQL\\+ PostGIS};
-
-% -- Columna derecha: servicios externos  (x = 4.2) ----------------
-\node[ext] (fbauth) at (4.2,  0.0) {Firebase\\Authentication};
-\node[ext] (cloud)  at (4.2, -1.6) {Cloudinary};
-\node[ext] (osm)    at (4.2, -3.2) {OpenStreetMap};
-\node[ext] (scrap)  at (4.2, -4.8) {Ticketmaster\\Portal Sevilla};
-
-% -- Flechas verticales backend -------------------------------------
-\draw[arr] (guard) -- (ctrl);
-\draw[arr] (ctrl)  -- (svc);
-\draw[arr] (svc)   -- (orm);
-\draw[arr] (orm)   -- (db);
-
-% -- Móvil → backend (horizontales en la misma fila) ---------------
-\draw[arr] (ctx)   -- node[above,font=\tiny] {WS token}   (guard);
-\draw[arr] (axios) -- node[above,font=\tiny] {HTTP/REST}  (ctrl);
-
-% -- Backend → servicios externos (horizontales en la misma fila) --
-\draw[arr] (guard) -- node[above,font=\tiny] {verifica token} (fbauth);
-\draw[arr] (svc)   -- node[above,font=\tiny] {upload}         (cloud);
-
-% -- Firebase SDK ↔ Firebase Auth  ---------------------------------
-% Pasa por debajo de todos los nodos (y = -7.2) para no cruzar ninguna caja
-\draw[darr] (fbase.south) -- ++(0,-0.5)
-    -| node[pos=0.3,below,font=\tiny] {JWT} (fbauth.south);
-
-% -- Pantalla → OpenStreetMap (tiles) ------------------------------
-% Pasa por encima del área de nodos (y=1.3) para no cruzar ninguna caja
-\draw[arr] (screen.north) -- ++(0,1.3)
-    -| node[pos=0.3,above,font=\tiny] {tiles} (osm.north);
-
-% -- Service → Ticketmaster/Sevilla (cron, punteada) ---------------
-\draw[arr,dashed] (svc) -- node[above,font=\tiny,sloped] {cron} (scrap);
-
-\end{tikzpicture}
+\includegraphics[width=0.95\textwidth]{figures/conexion_tecnologias.png}
 \caption{Conexión entre tecnologías del sistema en tiempo de ejecución}
 \label{fig:conexion_tecnologias}
 \end{figure}
@@ -107,26 +53,7 @@ La figura~\ref{fig:flujo_frontend} muestra cómo interactúan estos niveles desd
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[
-    node distance=0.9cm and 1.8cm,
-    every node/.style={font=\small},
-    box/.style={draw, rounded corners=3pt, minimum width=3.0cm, minimum height=0.7cm, align=center, fill=white},
-    arr/.style={-{Stealth[length=5pt]}, thick},
-]
-\node[box] (user)    {Usuario};
-\node[box, below=of user]  (screen) {Pantalla (Screen)};
-\node[box, below=of screen](svc)    {Servicio (Axios)};
-\node[box, below=of svc]   (ctx)    {AuthContext\\(token Firebase)};
-\node[box, below=of ctx]   (api)    {Backend API REST};
-\node[box, below=of api]   (resp)   {Respuesta JSON};
-
-\draw[arr] (user)   -- node[right, font=\tiny] {acción} (screen);
-\draw[arr] (screen) -- node[right, font=\tiny] {llama} (svc);
-\draw[arr] (ctx)    -- node[right, font=\tiny] {inyecta token} (svc);
-\draw[arr] (svc)    -- node[right, font=\tiny] {HTTP + Bearer token} (api);
-\draw[arr] (api)    -- node[right, font=\tiny] {JSON} (resp);
-\draw[arr] (resp)   -- ++(3.2,0) |- node[right, font=\tiny, pos=0.25] {actualiza estado} (screen);
-\end{tikzpicture}
+\includegraphics[width=0.65\textwidth]{figures/flujo_frontend.png}
 \caption{Flujo de una petición en el frontend desde la acción del usuario hasta la actualización de la pantalla}
 \label{fig:flujo_frontend}
 \end{figure}
@@ -190,9 +117,11 @@ El sistema delega en servicios externos las siguientes responsabilidades:
 
 \begin{itemize}
     \item \textbf{Firebase Authentication}: gestión del ciclo de vida de la sesión del usuario (registro, inicio de sesión y tokens JWT). El cliente móvil usa el SDK de Firebase para obtener y renovar tokens; el backend usa el SDK de administración para verificarlos sin almacenar contraseñas ni gestionar sesiones propias.
-    \item \textbf{Cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats. El backend sube las imágenes directamente a Cloudinary mediante su SDK y almacena únicamente la URL resultante en PostgreSQL. Cloudinary sirve las imágenes desde su CDN con transformaciones automáticas de formato y calidad.
+    \item \textbf{Cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats. El backend sube las imágenes directamente a Cloudinary mediante su SDK y almacena únicamente la URL resultante en PostgreSQL. Cloudinary sirve las imágenes desde su CDN (Content Delivery Network) con transformaciones automáticas de formato y calidad.
     \item \textbf{OpenStreetMap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}. Los \textit{tiles} cartográficos se obtienen directamente del servidor de OpenStreetMap sin pasar por el backend.
-    \item \textbf{Ticketmaster / Portal municipal de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
+    \item \textbf{Eventbrite / Ticketmaster / webs institucionales y de ocio de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. Eventbrite se procesa extrayendo tarjetas de eventos y bloques JSON-LD del HTML; la API oficial de Ticketmaster se consume directamente; el resto de webs (portal municipal, guías de ocio, teatros y fundaciones) se procesan mediante el scraper basado en \textbf{Google Gemini AI}. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
+    \item \textbf{Google Gemini AI}: modelo de lenguaje utilizado por el \texttt{GeminiScraperService} para extraer y estructurar eventos a partir del contenido HTML de siete webs de ocio e institucionales de Sevilla. El backend envía el texto limpio de cada página al modelo \textbf{Gemini 2.5 Flash} mediante la API de Google Generative AI y obtiene los eventos en formato JSON estructurado.
+    \item \textbf{Nominatim (OpenStreetMap)}: API de geocodificación utilizada por el \texttt{GeminiScraperService} para resolver las coordenadas geográficas de los eventos cuando Gemini no puede deducirlas directamente del texto. Se realizan hasta tres variantes de búsqueda por dirección para maximizar la cobertura.
 \end{itemize}
 
 La figura~\ref{fig:flujo_autenticacion} muestra en detalle el flujo completo de autenticación, desde el inicio de sesión del usuario hasta la verificación del token en el backend.
@@ -219,13 +148,13 @@ La figura~\ref{fig:flujo_autenticacion} muestra en detalle el flujo completo de 
 
 % Flechas
 \draw[arr] (app)    -- node[right, font=\tiny] {email + pass} (sdk);
-\draw[arr] (sdk)    -- node[above, font=\tiny] {signIn()} (fbauth);
-\draw[arr] (fbauth) -- node[above, font=\tiny] {JWT (60 min)} (sdk);
+\draw[arr] (sdk)    to[bend left=15]  node[above, font=\tiny] {signIn()} (fbauth);
+\draw[arr] (fbauth) to[bend left=15]  node[below, font=\tiny] {JWT (60 min)} (sdk);
 \draw[arr] (sdk)    -- node[right, font=\tiny] {token} (axios);
 \draw[arr] (axios)  -- node[right, font=\tiny] {Authorization: Bearer \{token\}} (be);
 \draw[arr] (be)     -- (guard);
-\draw[arr] (guard)  -- node[above, font=\tiny] {verifyIdToken()} (fbadm);
-\draw[arr] (fbadm)  -- node[above, font=\tiny] {uid + claims} (guard);
+\draw[arr] (guard)  to[bend left=15]  node[above, font=\tiny] {verifyIdToken()} (fbadm);
+\draw[arr] (fbadm)  to[bend left=15]  node[below, font=\tiny] {uid + claims} (guard);
 \end{tikzpicture}
 \caption{Flujo de autenticación: desde el inicio de sesión hasta la verificación del token en el backend}
 \label{fig:flujo_autenticacion}
@@ -265,7 +194,11 @@ Registra los avisos enviados a cada usuario. Incluye el tipo de notificación (a
 
 \subsection{Ruta (\texttt{Ruta})}
 
-Agrupa una secuencia ordenada de eventos formando un itinerario. Almacena el título, la descripción, la secuencia de eventos, el trayecto geográfico (array de puntos), la temporización estimada en minutos, el creador y la puntuación promedio obtenida de las valoraciones de otros usuarios.
+Agrupa una secuencia ordenada de eventos formando un itinerario. Almacena el título, la descripción, la secuencia de eventos (M:N con \texttt{Event}), el trayecto geográfico (array de puntos GeoJSON), la temporización estimada en minutos, el creador, la puntuación promedio y el número de calificaciones recibidas. Las valoraciones individuales de cada ruta se almacenan en la entidad \texttt{CalificacionRuta}, que registra la puntuación, el usuario autor, la ruta valorada y las fechas de creación y actualización, con restricción de unicidad por par (usuario, ruta).
+
+\subsection{Calificación de ruta (\texttt{CalificacionRuta})}
+
+Registra la valoración que un usuario otorga a una ruta. Almacena la puntuación numérica, la fecha de creación y la fecha de última actualización. Tiene una restricción de unicidad compuesta que garantiza que un usuario solo puede calificar una ruta una vez. Al eliminar el usuario o la ruta, la calificación se borra en cascada.
 
 \subsection{Recomendación (\texttt{Recomendacion})}
 
@@ -289,13 +222,16 @@ La figura~\ref{fig:edt_modelo} muestra el diagrama entidad-relación del sistema
 Las relaciones principales entre entidades son las siguientes:
 
 \begin{itemize}
-    \item Un usuario puede crear múltiples eventos (1:N).
-    \item Un usuario puede asistir, guardar, compartir o visitar múltiples eventos (M:N).
+    \item Un usuario puede crear múltiples eventos (1:N) y múltiples rutas (1:N).
+    \item Un usuario mantiene cuatro relaciones M:N independientes con los eventos: asistencia (\texttt{event\_asistentes}), guardado (\texttt{user\_saved\_events}), compartición (\texttt{user\_shared\_events}) y visita (\texttt{user\_visited\_events}).
+    \item Un usuario puede seguir a otros usuarios mediante una relación reflexiva M:N (\texttt{user\_seguidores}).
     \item Un evento pertenece a una categoría (N:1).
-    \item Un evento puede tener múltiples reseñas y mensajes (1:N).
-    \item Un usuario puede seguir a otros usuarios (M:N reflexiva).
-    \item Una ruta contiene una secuencia de eventos (M:N).
-    \item Una recomendación agrupa múltiples eventos para un usuario concreto (M:N).
+    \item Un evento puede tener múltiples reseñas (1:N), múltiples mensajes de chat grupal (1:N) y múltiples solicitudes de edición (1:N).
+    \item Dos usuarios cualesquiera pueden intercambiar mensajes privados: cada \texttt{MensajePrivado} referencia a un emisor y a un receptor (N:1 hacia \texttt{User} en ambos extremos).
+    \item Una notificación pertenece a un único usuario (N:1).
+    \item Una ruta contiene una secuencia ordenada de eventos (M:N mediante \texttt{ruta\_eventos}) y puede recibir múltiples calificaciones de usuarios (1:N a \texttt{CalificacionRuta}); cada calificación referencia también al usuario autor (N:1).
+    \item Una recomendación pertenece a un usuario (N:1) y agrupa múltiples eventos recomendados para ese usuario (M:N).
+    \item Una solicitud de edición (\texttt{EventEditRequest}) referencia al evento sobre el que se proponen cambios (N:1) y al moderador que la realiza (N:1).
 \end{itemize}
 
 \section{Diseño de la API REST}
@@ -349,15 +285,28 @@ La API aplica limitación de velocidad (\textit{throttling}) mediante \texttt{@n
     \item \textbf{Subida} (10 req/min): carga de imágenes.
 \end{itemize}
 
-\section{Diseño del sistema de moderación}
+% ═══════════════════════════════════════════════════════════════
+\section{Flujo de interacción del usuario}
 
-La moderación de eventos públicos es una de las piezas centrales del sistema. La figura~\ref{fig:secuencias_moderacion} muestra el diagrama de secuencias del flujo de moderación de un evento público.
+El usuario ordinario puede registrarse, iniciar sesión, explorar eventos, crear eventos propios, gestionar su asistencia, interactuar con el chat, escribir reseñas y gestionar su perfil. La figura~\ref{fig:seq_usuario} detalla estas interacciones principales.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{figures/vistas/vista_de_secuencias.png}
-    \caption{Diagrama de secuencias del flujo de moderación de un evento}
-    \label{fig:secuencias_moderacion}
+\centering
+\includegraphics[width=\textwidth]{figures/secuencias_usuario.png}
+\caption{Diagrama de secuencias del flujo del usuario (registro, consulta, creación y asistencia)}
+\label{fig:seq_usuario}
+\end{figure}
+
+% ═══════════════════════════════════════════════════════════════
+\section{Diseño del sistema de moderación}
+
+La moderación de eventos públicos es una de las piezas centrales del sistema. El moderador accede al panel de moderación, revisa los eventos en estado \textbf{Pendiente}, puede editarlos directamente antes de tomar una decisión, y los aprueba o rechaza. La notificación correspondiente se envía al creador en todos los casos. La figura~\ref{fig:seq_moderador} muestra este flujo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/secuencias_moderador.png}
+\caption{Diagrama de secuencias del flujo del moderador}
+\label{fig:seq_moderador}
 \end{figure}
 
 El flujo de estados de un evento sigue las siguientes reglas de negocio:
@@ -378,6 +327,18 @@ El moderador recibe en su panel los eventos en estado pendiente y puede editarlo
 
 En cuanto al comportamiento del botón de compartir, en eventos públicos cualquier usuario puede compartirlo. En eventos privados, el botón de compartir se sustituye por uno de \textit{invitar}, que solo está activo para el creador del evento; el resto de usuarios lo ven desactivado.
 
+% ═══════════════════════════════════════════════════════════════
+\section{Flujo de interacción del administrador}
+
+El administrador gestiona la estructura del sistema: consulta el listado de usuarios, cambia sus roles y administra las categorías de eventos. No interviene en el flujo de moderación de contenido. La figura~\ref{fig:seq_admin} muestra estas interacciones.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/secuencias_admin.png}
+\caption{Diagrama de secuencias del flujo del administrador}
+\label{fig:seq_admin}
+\end{figure}
+
 \section{Diseño de la interfaz de usuario}
 
 \subsection{Principios de diseño}
@@ -396,17 +357,17 @@ La interfaz de usuario ha sido diseñada siguiendo los principios de usabilidad 
 La aplicación se divide en dos grupos de pantallas según el estado de autenticación del usuario. La figura~\ref{fig:grafo_navegacion} muestra el grafo de navegación completo.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{figures/grafo_navegacion.png}
-    \caption{Grafo de navegación de la aplicación}
-    \label{fig:grafo_navegacion}
+\centering
+\includegraphics[width=\textwidth]{figures/grafo_navegacion.png}
+\caption{Grafo de navegación de la aplicación organizado por rol de acceso}
+\label{fig:grafo_navegacion}
 \end{figure}
 
 El grupo de pantallas no autenticadas comprende únicamente las pantallas de inicio de sesión y registro. El grupo de pantallas autenticadas incluye todas las funcionalidades de la aplicación, organizadas alrededor de la pantalla principal.
 
 Las pantallas exclusivas de moderador y administrador solo son accesibles si el usuario dispone del rol correspondiente; de lo contrario, no aparecen en el menú lateral ni en ningún punto de entrada de la navegación.
 
-\subsection{Pantallas principales}
+\subsection{Pantallas del sistema}
 
 La tabla~\ref{tab:pantallas} describe las pantallas del sistema y su accesibilidad según el rol del usuario.
 
@@ -426,21 +387,22 @@ Detalle de evento & Información completa, chat, reseñas y asistencia & Todos \
 Mapa de eventos & Vista cartográfica de los eventos cercanos & Todos \\
 Calendario & Eventos con fecha a los que está apuntado el usuario & Todos \\
 Acceso a evento privado & Acceso a evento privado mediante enlace de invitación & Todos \\
+Guardados y privados & Eventos guardados y eventos privados del usuario & Todos \\
 Crear evento & Formulario de creación de evento público o privado & Usuario \\
 Editar evento & Modificación de un evento propio & Usuario \\
-Mis eventos & Listado de eventos creados por el usuario & Usuario \\
-Guardados y privados & Eventos guardados y eventos privados del usuario & Usuario \\
+Mis eventos & Listado de eventos creados por el usuario & Todos \\
 Rutas & Listado de rutas públicas & Todos \\
 Detalle de ruta & Información de la ruta y secuencia de eventos & Todos \\
-Rutas recomendadas & Itinerarios generados automáticamente para el usuario & Usuario \\
-Crear ruta & Formulario para crear una ruta propia & Usuario \\
-Notificaciones & Listado de notificaciones del usuario & Usuario \\
-Mensajes & Lista de conversaciones privadas & Usuario \\
-Mensaje directo & Chat privado entre dos usuarios & Usuario \\
-Perfil de usuario & Vista del perfil de otro usuario & Usuario \\
-Amigos & Seguidores y seguidos del usuario & Usuario \\
-Editar perfil & Modificación de datos personales e intereses & Usuario \\
-Cambiar contraseña & Modificación de la contraseña de la cuenta & Usuario \\
+Rutas recomendadas & Itinerarios generados automáticamente para el usuario & Todos \\
+Vista previa de ruta & Previsualización de una ruta recomendada & Todos \\
+Crear ruta & Formulario para crear una ruta propia & Todos \\
+Notificaciones & Listado de notificaciones del usuario & Todos \\
+Mensajes & Lista de conversaciones privadas & Todos \\
+Mensaje directo & Chat privado entre dos usuarios & Todos \\
+Perfil de usuario & Vista del perfil de otro usuario & Todos \\
+Amigos & Seguidores y seguidos del usuario & Todos \\
+Editar perfil & Modificación de datos personales e intereses & Todos \\
+Cambiar contraseña & Modificación de la contraseña de la cuenta & Todos \\
 Panel de administración & Gestión de usuarios y roles & Administrador \\
 Gestión de categorías & Creación, edición y eliminación de categorías & Administrador \\
 Moderación de eventos & Revisión y aprobación de eventos pendientes & Moderador \\
@@ -450,129 +412,6 @@ Edición moderada & Edición directa de un evento pendiente antes de aprobarlo &
 }
 \end{table}
 
-\subsection{Capturas de pantalla}
-
-Las siguientes figuras muestran las pantallas más representativas de la aplicación.
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/home_screen.png}
-        \caption{Pantalla principal}
-        \label{fig:home}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/lateral_menu.png}
-        \caption{Menú lateral}
-        \label{fig:lateral_menu}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso5/event_detail.png}
-        \caption{Detalle de evento}
-        \label{fig:event_detail}
-    \end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso3/mapa1.png}
-        \caption{Mapa de eventos}
-        \label{fig:mapa}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso8/recomendados.png}
-        \caption{Eventos recomendados}
-        \label{fig:recomendados}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso8/rutas_recomendadas.png}
-        \caption{Rutas recomendadas}
-        \label{fig:rutas_rec}
-    \end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso10/crear_evento.png}
-        \caption{Formulario de creación de evento}
-        \label{fig:crear_evento}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso14/moderacion.png}
-        \caption{Panel de moderación}
-        \label{fig:moderacion}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso7/panel_admin.png}
-        \caption{Panel de administración}
-        \label{fig:admin}
-    \end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso16/chat_evento.png}
-        \caption{Chat de evento}
-        \label{fig:chat_evento}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso16/chat_priv.png}
-        \caption{Mensaje directo}
-        \label{fig:chat_priv}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso15/notificaciones.png}
-        \caption{Notificaciones}
-        \label{fig:notificaciones}
-    \end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso11/evento_privado.png}
-        \caption{Evento privado en listado}
-        \label{fig:evento_priv_listado}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso11/detalles_event_priv.png}
-        \caption{Detalle de evento privado}
-        \label{fig:evento_priv_detalle}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{figures/paso9/crear_ruta.png}
-        \caption{Creación de ruta}
-        \label{fig:crear_ruta}
-    \end{minipage}
-\end{figure}
 
 \section{Diseño del sistema de comunicación en tiempo real}
 
@@ -584,6 +423,14 @@ El chat de la aplicación está implementado sobre \textbf{Socket.IO}, integrado
 \end{itemize}
 
 La conexión WebSocket se autentica con el mismo token de Firebase que los endpoints REST, verificado en el middleware del socket antes de aceptar la conexión. Para prevenir el abuso, el servidor aplica un límite de 10 mensajes por ventana de 10 segundos por conexión.
+
+\subsection{Ciclo de vida de la conexión y los listeners}
+
+La conexión WebSocket es única y persistente durante toda la sesión del usuario. El \texttt{SocketProvider} la abre al montarse (es decir, al arrancar la aplicación con sesión activa) y la cierra cuando el componente se desmonta o tras 24 horas de inactividad sin enviar mensajes. Esta conexión única es compartida por toda la aplicación mediante el contexto de React.
+
+Los \textit{listeners} de cada chat, en cambio, tienen un ciclo de vida ligado a la pantalla que los usa. Cuando el usuario navega a la pantalla de detalle de un evento, se registran los listeners correspondientes (\texttt{chat\_history}, \texttt{chat\_message}, etc.) y se emite el evento \texttt{join\_room} para unirse a la sala. Al salir de la pantalla, el cleanup del \texttt{useEffect} llama a \texttt{socket.off()} para eliminar todos esos listeners. El mismo patrón se aplica en la pantalla de mensaje directo (\texttt{dm\_history}, \texttt{dm\_message}) y en la pantalla de conversaciones (\texttt{get\_conversations}, \texttt{refresh\_conversations}).
+
+Esta separación garantiza que la conexión no se reabre en cada navegación y que no se acumulan listeners duplicados al entrar y salir de las pantallas de chat.
 
 La figura~\ref{fig:flujo_socket} muestra el flujo completo desde el establecimiento de la conexión hasta la recepción del mensaje en otro cliente.
 
@@ -621,7 +468,7 @@ La figura~\ref{fig:flujo_socket} muestra el flujo completo desde el establecimie
 
 % Sala y emit
 \draw[arr] (gate) -- node[above, font=\tiny] {join room} (sala);
-\draw[arr] (sala) -- node[above, font=\tiny] {emit evento} (clientB);
+\draw[arr] (sala.north) -- node[right, font=\tiny] {emit evento} (clientB.south);
 \end{tikzpicture}
 \caption{Flujo de comunicación en tiempo real mediante Socket.IO: conexión, autenticación y entrega de mensajes}
 \label{fig:flujo_socket}
@@ -686,7 +533,7 @@ NestJS organiza el backend en módulos independientes (\textit{EventosModule}, \
 
 \subsection{Patrón Estrategia (\textit{IScraper})}
 
-El sistema de scraping implementa el patrón Estrategia: cada fuente de eventos externos (\texttt{TicketmasterScraper}, \texttt{PortalSevillaScraper}) implementa la interfaz \texttt{IScraper}, que define el contrato común de obtención y normalización de eventos. El servicio orquestador (\texttt{ScrapingService}) trabaja con la abstracción, no con implementaciones concretas. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación.
+El sistema de scraping implementa el patrón Estrategia: cada fuente de eventos externos (\texttt{SevillaScraperService}, \texttt{TicketmasterScraperService}, \texttt{GeminiScraperService}) implementa la interfaz \texttt{IScraper}, que define el contrato común de obtención y normalización de eventos. El servicio orquestador (\texttt{ScrapingService}) trabaja con la abstracción, no con implementaciones concretas. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación.
 
 \subsection{Patrón Repositorio (TypeORM)}
 
@@ -787,8 +634,6 @@ Antes y durante el evento, el chat es el espacio donde los asistentes pueden coo
 
 Después del evento, el chat conserva el mismo valor que el resto del historial del evento: otros usuarios pueden consultar la conversación para saber cómo fue, qué opinaron los asistentes o si merece la pena acudir a futuras ediciones. Esto conecta directamente con las razones por las que los eventos tampoco se eliminan del sistema.
 
-Adicionalmente, la persistencia permite implementar el indicador de mensajes no leídos (\texttt{leido}), que informa al usuario de mensajes pendientes sin tener que entrar en cada conversación. El uso de Socket.IO garantiza la entrega inmediata cuando los participantes están conectados; la base de datos garantiza que el mensaje esté disponible independientemente del estado de conexión. Ambos mecanismos son complementarios y necesarios.
-
 \subsection{Por qué los eventos privados se aprueban automáticamente}
 
 Cuando un usuario crea un evento privado, el sistema le asigna directamente el estado \textbf{Aprobado} sin pasar por el flujo de moderación. La razón es que los eventos privados no son visibles en el listado público: solo acceden a ellos las personas que disponen del enlace de invitación. El objetivo de la moderación es garantizar la calidad del contenido que el público en general puede encontrar; un evento cuyo alcance está restringido a las personas que el creador decide invitar no supone un riesgo para la comunidad y no requiere revisión externa.
@@ -834,7 +679,7 @@ El sistema define tres tareas programadas separadas para los distintos tipos de 
 
 \subsection{Por qué el scraping se ejecuta a las 3:00 AM}
 
-La tarea de obtención de eventos externos (Eventbrite, Ticketmaster) se programa a las 3:00 AM mediante un \textit{cron job} diario. Esta hora se eligió porque es el período de menor actividad de usuarios en la aplicación, lo que reduce la competencia por recursos del servidor y de la base de datos durante el proceso de scraping. Además, ejecutarlo una vez al día es suficiente para mantener el catálogo actualizado: los eventos de ocio y cultura no cambian con frecuencia mayor a la diaria.
+La tarea de obtención de eventos externos (Eventbrite, Ticketmaster y webs institucionales y de ocio procesadas con Gemini AI) se programa a las 3:00 AM mediante un \textit{cron job} diario. Esta hora se eligió porque es el período de menor actividad de usuarios en la aplicación, lo que reduce la competencia por recursos del servidor y de la base de datos durante el proceso de scraping. Además, ejecutarlo una vez al día es suficiente para mantener el catálogo actualizado: los eventos de ocio y cultura no cambian con frecuencia mayor a la diaria.
 
 \subsection{Por qué el cron job es externo y no interno al backend}
 
@@ -854,34 +699,51 @@ La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de ev
 \centering
 \begin{tikzpicture}[
     every node/.style={font=\small},
-    box/.style={draw, rounded corners=3pt, minimum width=3.4cm, minimum height=0.75cm, align=center, fill=white},
+    box/.style={draw, rounded corners=3pt, minimum width=3.2cm, minimum height=0.75cm, align=center, fill=white},
     ext/.style={draw, rounded corners=3pt, minimum width=3.0cm, minimum height=0.75cm, align=center, fill=gray!12},
     arr/.style={-{Stealth[length=5pt]}, thick},
 ]
 
-% Flujo central (eje x=0)
-\node[box] (cron) at (0, 0.0) {Cron Job (3:00 AM)\\@nestjs/schedule};
+% Fila 1: Cron job (centro)
+\node[box] (cron) at (0, 0.0) {Cron Job (3:00 AM)\\cron-job.org};
+
+% Fila 2: Orquestador (centro)
 \node[box] (orch) at (0,-1.6) {ScrapingService\\(orquestador)};
-\node[box] (norm) at (0,-5.6) {Normalización al\\modelo Event};
-\node[box] (db)   at (0,-7.2) {PostgreSQL\\(usuario scraper-bot)};
 
-% Fuentes externas (fila y=-1.6, en columnas laterales — misma altura que orch)
-\node[ext] (tick) at (-3.2,-1.6) {Ticketmaster API};
-\node[ext] (web)  at ( 3.2,-1.6) {Portal Municipal\\Sevilla};
+% Fila 3: Scrapers (tres columnas)
+\node[box] (s1) at (-4.2,-3.4) {SevillaScraper\\(cheerio + JSON-LD)};
+\node[box] (s2) at ( 0.0,-3.4) {TicketmasterScraper\\(API oficial)};
+\node[box] (s3) at ( 4.2,-3.4) {GeminiScraper\\(extracción con IA)};
 
-% Scrapers (fila y=-3.6, bajo las fuentes externas)
-\node[box] (s1) at (-3.2,-3.6) {TicketmasterScraper\\(API oficial)};
-\node[box] (s2) at ( 3.2,-3.6) {PortalSevillaScraper\\(scraping HTML)};
+% Fila 4: Fuentes externas (bajo cada scraper)
+\node[ext] (evtb) at (-4.2,-5.0) {Eventbrite\\(HTML + JSON-LD)};
+\node[ext] (tick) at ( 0.0,-5.0) {Ticketmaster API};
+\node[ext] (gem)  at ( 4.2,-5.0) {7 webs + Gemini AI};
 
-% Flechas
+% Fila 5: Normalización (centro)
+\node[box] (norm) at (0,-6.8) {Normalización al\\modelo Event};
+
+% Fila 6: BD (centro)
+\node[box] (db)   at (0,-8.4) {PostgreSQL\\(usuario scraper-bot)};
+
+% Flechas orch → scrapers
 \draw[arr] (cron) -- (orch);
-% orch → scrapers: baja primero, luego va horizontal (evita cruzar tick/web)
-\draw[arr] (orch.south) -- ++(0,-0.6) -| (s1.north);
-\draw[arr] (orch.south) -- ++(0,-0.6) -| (s2.north);
-\draw[arr] (tick) -- (s1);
-\draw[arr] (web)  -- (s2);
-\draw[arr] (s1)   |- (norm);
-\draw[arr] (s2)   |- (norm);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s1.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -- (s2.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s3.north);
+
+% Flechas scrapers ↔ fuentes
+\draw[arr] (s1) -- (evtb);
+\draw[arr] (s2) -- (tick);
+\draw[arr] (s3) -- (gem);
+
+% Punto de confluencia entre fuentes y normalización
+\coordinate (merge) at (0,-6.1);
+\draw (evtb.south) -- ++(0,-0.35) -| (merge);
+\draw (tick.south) -- (merge);
+\draw (gem.south)  -- ++(0,-0.35) -| (merge);
+\draw[arr] (merge) -- (norm.north);
+
 \draw[arr] (norm) -- (db);
 
 \end{tikzpicture}
@@ -891,7 +753,7 @@ La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de ev
 
 \subsection{Por qué los scrapers siguen el patrón estrategia con interfaz \texttt{IScraper}}
 
-Cada fuente de eventos externos (portal de cultura de Sevilla, Ticketmaster) está implementada como un scraper independiente que implementa la interfaz \texttt{IScraper}. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación del servicio de scraping. La alternativa de implementar el scraping como código monolítico habría acoplado la lógica de cada fuente con el proceso de guardado en base de datos, dificultando el mantenimiento cuando alguna de las fuentes externas cambia su estructura.
+Cada fuente de eventos externos (Eventbrite, Ticketmaster, webs institucionales y de ocio de Sevilla procesadas con Gemini AI) está implementada como un scraper independiente que implementa la interfaz \texttt{IScraper}. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación del servicio de scraping. La alternativa de implementar el scraping como código monolítico habría acoplado la lógica de cada fuente con el proceso de guardado en base de datos, dificultando el mantenimiento cuando alguna de las fuentes externas cambia su estructura.
 
 Además, todos los eventos scraped se asignan a un único usuario técnico del sistema (\textit{scraper-bot}), centralizado con un UID y correo fijos. Esto simplifica la trazabilidad: es inmediato identificar qué eventos provienen de fuentes externas y quién es su ``creador'' a efectos del modelo de datos.
 
@@ -933,7 +795,7 @@ Permitir que cualquier usuario o moderador crease categorías generaría un cat�
 
 \subsection{Por qué cualquier usuario autenticado puede crear eventos}
 
-La creación de eventos no está restringida a ningún rol concreto: cualquier usuario que haya iniciado sesión puede publicar un evento. Esta decisión es intencionada: el modelo de negocio de la aplicación es comunitario y participativo. Reservar la creación de eventos a moderadores o administradores habría convertido la plataforma en un directorio cerrado gestionado por un equipo reducido, en lugar de una comunidad donde cualquier persona puede dar visibilidad a un plan cultural.
+Cualquier usuario que haya iniciado sesión puede publicar un evento. Esta decisión es intencionada: el modelo de negocio de la aplicación es comunitario y participativo. Reservar la creación de eventos a moderadores o administradores habría convertido la plataforma en un directorio cerrado gestionado por un equipo reducido, en lugar de una comunidad donde cualquier persona puede dar visibilidad a un plan cultural.
 
 El riesgo de que se publique contenido de baja calidad o inapropiado se controla mediante el flujo de moderación posterior: los eventos públicos no son visibles hasta ser aprobados. La creación está abierta; la visibilidad pública está controlada.
 
@@ -950,11 +812,15 @@ Unificar ambos roles implicaría que cualquiera del amplio grupo de moderadores 
 
 \subsection{Por qué se ha implementado scraping en lugar de usar únicamente APIs oficiales}
 
-El contenido de eventos de la aplicación proviene de dos fuentes: eventos creados por usuarios y eventos obtenidos automáticamente de fuentes externas. Para estas últimas se combina el uso de la API oficial de Ticketmaster con scraping del portal municipal de eventos de Sevilla.
+El contenido de eventos de la aplicación proviene de dos grandes bloques: eventos creados por usuarios y eventos obtenidos automáticamente de fuentes externas. Para estas últimas se utilizan tres estrategias complementarias:
 
-La razón de no limitarse a APIs oficiales es de cobertura: Ticketmaster recoge principalmente grandes conciertos y eventos de sala, pero la oferta cultural de Sevilla incluye multitud de eventos locales (ferias de barrio, exposiciones, talleres, mercadillos) que no tienen presencia en plataformas de ticketing comerciales. Estos eventos solo están publicados en webs institucionales o municipales que no exponen API pública.
+\begin{itemize}
+    \item \textbf{Scraping HTML con JSON-LD (Eventbrite)}: el \texttt{SevillaScraperService} descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD estructurados embebidos en la página.
+    \item \textbf{API oficial de Ticketmaster}: el \texttt{TicketmasterScraperService} consume la API Discovery de Ticketmaster paginando resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha.
+    \item \textbf{Extracción asistida por IA (Gemini)}: el \texttt{GeminiScraperService} accede a siete webs de ocio e institucionales de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras), limpia el HTML con \texttt{cheerio}, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que extrae y estructura los eventos en formato JSON. Las coordenadas no deducidas por el modelo se resuelven mediante geocodificación con Nominatim. Esto permite integrar fuentes con estructuras HTML variables o sin patrón fijo, que serían inviables de parsear con selectores estáticos.
+\end{itemize}
 
-El scraping permite integrar estas fuentes sin depender de que terceros ofrezcan una API, lo que amplía significativamente el catálogo disponible para el usuario sin coste adicional. El patrón \texttt{IScraper} hace que añadir nuevas fuentes en el futuro sea una tarea de implementación acotada sin tocar la lógica central.
+La razón de esta combinación de estrategias es la cobertura: Ticketmaster y Eventbrite recogen principalmente grandes eventos comerciales, pero la oferta cultural de Sevilla incluye multitud de actividades locales (ferias de barrio, exposiciones, talleres, mercadillos, programación de teatros) que solo están publicadas en webs institucionales sin API pública ni estructura HTML uniforme. El uso de Gemini AI como capa de extracción permite incorporar estas fuentes sin escribir un parser específico para cada web, lo que hace el sistema más robusto ante cambios de estructura. El patrón \texttt{IScraper} garantiza que añadir nuevas fuentes es una tarea acotada sin tocar la lógica central.
 
 \subsection{Por qué se usa Cloudinary para el almacenamiento de imágenes}
 
@@ -1048,7 +914,6 @@ El sistema implementa un grafo de seguimiento unidireccional entre usuarios: una
 \begin{itemize}
     \item Desde el perfil de un usuario seguido se pueden consultar los eventos a los que va a asistir, lo que facilita coordinarse o descubrir planes que de otro modo no habrían aparecido en el listado general.
     \item El perfil de otro usuario es también el punto de entrada para iniciar una conversación privada, lo que permite ponerse en contacto con alguien para quedar o resolver dudas sobre un evento concreto.
-    \item El modelo unidireccional es más natural para la relación entre un organizador habitual y su audiencia: no implica reciprocidad ni requiere aceptación por parte del otro usuario.
 \end{itemize}
 
 \subsection{Por qué el precio de un evento puede ser fijo o expresarse como rango}

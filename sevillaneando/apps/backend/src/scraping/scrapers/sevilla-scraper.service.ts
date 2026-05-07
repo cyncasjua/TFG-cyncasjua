@@ -847,8 +847,6 @@ export class SevillaScraperService implements IScraper {
         startDate.getDate() === endDate.getDate();
 
       if (sameCalendarDay) {
-        // Para eventos sin hora específica en el mismo día, no agregar duración
-        // Dejar como null para que sea tratado como evento sin fechas precisas
         return null;
       }
 
@@ -859,7 +857,6 @@ export class SevillaScraperService implements IScraper {
       }
     }
 
-    // Si la fecha de fin es igual o anterior a la de inicio, devolver null
     if (endDate.getTime() <= startDate.getTime()) {
       return null;
     }
@@ -867,7 +864,6 @@ export class SevillaScraperService implements IScraper {
     return endDate;
   }
 
-  // Normaliza URLs relativas a absolutas
   private normalizeUrl(url: string, baseUrl: string): string {
     if (url.startsWith('http')) {
       return url;

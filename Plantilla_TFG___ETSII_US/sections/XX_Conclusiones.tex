@@ -6,7 +6,31 @@ Este capítulo recoge las conclusiones obtenidas tras el desarrollo del sistema 
 
 \section{Objetivos alcanzados}
 
-El objetivo principal del proyecto era desarrollar una aplicación móvil multiplataforma que centralizase la oferta de ocio y cultura de Sevilla, con especial énfasis en dar visibilidad a eventos emergentes. A continuación se revisa el grado de cumplimiento de cada uno de los objetivos específicos definidos en el capítulo de estudio previo.
+El capítulo de estudio previo definió dos categorías de objetivos: los objetivos del proyecto, orientados al aprendizaje y la formación de la estudiante, y los objetivos del sistema, que describen las funcionalidades de la aplicación. A continuación se revisa el grado de cumplimiento de ambos.
+
+\subsection{Objetivos del proyecto}
+
+Los objetivos del proyecto hacen referencia a las metas formativas y profesionales perseguidas durante el desarrollo del TFG:
+
+\begin{itemize}
+    \item \textbf{Aplicación de conocimientos del Grado}: alcanzado. El proyecto ha integrado de forma transversal contenidos de diseño de software, arquitecturas de sistemas, ingeniería de requisitos y gestión de proyectos, aplicándolos en un contexto real y complejo.
+
+    \item \textbf{Planificación y autogestión}: alcanzado. La gestión unipersonal del proyecto mediante metodología ágil adaptada ha requerido priorizar el backlog, revisar el alcance en función del tiempo disponible y tomar decisiones autónomas en cada sprint.
+
+    \item \textbf{Experiencia en tecnologías modernas}: alcanzado. Se ha trabajado con React Native, NestJS, PostgreSQL/PostGIS y Firebase en un proyecto de extremo a extremo con despliegue real en producción.
+
+    \item \textbf{Primer contacto con desarrollo móvil}: alcanzado. Se ha afrontado el ciclo de vida de una aplicación móvil, la adaptación a iOS y Android, y la compilación y distribución mediante Expo.
+
+    \item \textbf{Consolidación de TypeScript}: alcanzado. TypeScript se ha utilizado de forma rigurosa tanto en el frontend como en el backend, profundizando en el tipado estático y las buenas prácticas del lenguaje.
+
+    \item \textbf{Resolución de retos técnicos no triviales}: alcanzado. El sistema integra comunicación bidireccional en tiempo real, consultas geoespaciales con PostGIS, scraping automatizado de fuentes externas y un motor de recomendaciones multifactorial.
+
+    \item \textbf{Documentación técnica de calidad}: alcanzado. El proyecto incluye memoria, manual de usuario, manual de desarrollo y manual de despliegue como parte de las entregas.
+\end{itemize}
+
+\subsection{Objetivos del sistema}
+
+El objetivo principal del sistema era desarrollar una aplicación móvil multiplataforma que centralizase la oferta de ocio y cultura de Sevilla, con especial énfasis en dar visibilidad a eventos emergentes. A continuación se revisa el grado de cumplimiento de cada uno de los objetivos específicos:
 
 \begin{itemize}
     \item \textbf{Listado y filtrado de eventos}: implementado completamente. La pantalla principal ofrece filtrado por categoría, precio, fecha y radio de distancia, con soporte para geolocalización en tiempo real.
@@ -28,7 +52,7 @@ El objetivo principal del proyecto era desarrollar una aplicación móvil multip
     \item \textbf{Notificaciones}: implementado completamente. El sistema envía notificaciones por aprobación o rechazo de eventos, eventos cercanos, eventos próximos, nuevos mensajes privados, nuevos seguidores y recomendaciones generadas.
 \end{itemize}
 
-En cuanto a los objetivos no alcanzados, la generación automática de carteles con IA y la moderación de imágenes mediante NSFWJS (detección de contenido inapropiado) quedaron fuera del alcance final del proyecto, tal como se detalló en el análisis de desviaciones del capítulo de estudio previo.
+En cuanto a los objetivos del sistema no alcanzados, la generación automática de carteles con IA y la moderación de imágenes mediante NSFWJS (detección de contenido inapropiado) quedaron fuera del alcance final del proyecto, tal como se detalló en el análisis de desviaciones del capítulo de estudio previo.
 
 \section{Lecciones aprendidas}
 
@@ -36,11 +60,7 @@ El desarrollo de \textit{Sevillaneando} ha representado un recorrido técnico co
 
 \subsection{Gestión de sistemas distribuidos}
 
-La integración de múltiples servicios externos (Firebase, Cloudinary, OpenStreetMap, Eventbrite, Ticketmaster) puso de manifiesto la importancia de diseñar capas de abstracción que aislen al sistema de las particularidades de cada proveedor. Los errores 429 (límite de peticiones) del scraping revelaron la necesidad de implementar políticas de reintento con retroceso exponencial desde el principio, en lugar de añadirlas como parche posterior.
-
-\subsection{Comunicación en tiempo real}
-
-La implementación del chat con Socket.IO en el mismo proceso que la API REST simplificó el despliegue pero introdujo un acoplamiento que, a escala, podría requerir separar ambos servicios. La autenticación compartida mediante tokens de Firebase resultó una decisión acertada que evitó duplicar la lógica de validación.
+La integración de múltiples servicios externos (Firebase, Cloudinary, OpenStreetMap, Eventbrite, Ticketmaster, Google Gemini AI) puso de manifiesto la importancia de diseñar capas de abstracción que aislen al sistema de las particularidades de cada proveedor. Los errores de límite de peticiones del scraping y la variabilidad en las respuestas de la API de Gemini revelaron la necesidad de implementar pausas entre peticiones y gestión robusta de errores desde el principio, en lugar de añadirlos como parche posterior.
 
 \subsection{Consultas espaciales}
 
@@ -85,9 +105,9 @@ Durante el desarrollo se han aplicado medidas de seguridad a distintos niveles d
     \item \textbf{Validación de entrada}: los DTOs del backend utilizan \texttt{class-validator} para validar y sanear todos los datos recibidos del cliente antes de procesarlos.
     \item \textbf{Privacidad de datos}: la aplicación no almacena contraseñas (delegadas en Firebase) ni datos de pago. Los datos de ubicación del usuario solo se utilizan para consultas espaciales y no se registran con seguimiento histórico.
     \item \textbf{Eventos privados}: el acceso a eventos privados requiere un enlace de invitación único generado en el backend, que no es predecible ni enumerable.
+    \item \textbf{Row-Level Security en Supabase}: tras recibir un aviso de seguridad crítico de Supabase, se activó la política de \textit{Row-Level Security} (RLS) en las 18 tablas del esquema público de la base de datos. Sin esta medida, cualquier persona con la URL del proyecto y la clave anónima podía leer, modificar y eliminar datos directamente a través de la API REST de Supabase, sin pasar por el backend. El backend NestJS no se ve afectado, ya que se conecta como \textit{service role}, que bypasea el RLS por diseño.
 \end{itemize}
 
-Como limitación conocida, la moderación automática de imágenes mediante NSFWJS fue importada pero no completada, quedando el guardián (\texttt{useNsfwGuard}) como placeholder. Esta funcionalidad se identifica como prioritaria en el trabajo futuro.
 
 \section{Trabajo futuro}
 
@@ -96,7 +116,7 @@ A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades q
 \subsection{Mejoras sobre funcionalidades existentes}
 
 \begin{itemize}
-    \item \textbf{Moderación de contenido inapropiado (NSFW)}: NSFWJS está importado en el proyecto pero \texttt{useNsfwGuard} es un placeholder sin implementar. Completar esta funcionalidad evitaría la subida de imágenes inapropiadas en eventos y chats, mejorando la seguridad del contenido sin requerir revisión manual para cada imagen.
+    \item \textbf{Moderación de contenido inapropiado (NSFW)}: Completar esta funcionalidad evitaría la subida de imágenes inapropiadas en eventos y chats, mejorando la seguridad del contenido sin requerir revisión manual para cada imagen.
 
     \item \textbf{Verificación de correos electrónicos}: actualmente, el registro de usuarios no incluye un paso de validación del correo mediante enlace de confirmación. Implementar esta funcionalidad mediante Firebase Auth o un servicio de correo transaccional (SendGrid, Mailgun) aumentaría la confiabilidad de las direcciones de correo registradas y permitiría re-enviar invitaciones o notificaciones críticas con mayor seguridad. Además, facilitaría la recuperación de cuentas y reduciría registros fraudulentos o con errores tipográficos.
 
@@ -106,8 +126,6 @@ A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades q
 \subsection{Nuevas funcionalidades}
 
 \begin{itemize}
-    \item \textbf{Módulo de amigos}: los usuarios piloto destacaron la ausencia de una sección específica para gestionar contactos cercanos dentro de la aplicación. La idea es complementar el sistema de seguidores ya existente con una capa de ``amigos'' con reciprocidad, que permita ver los eventos planeados por las personas de confianza y recibir sugerencias de planes basadas en los gustos de la red social propia. Esta funcionalidad haría la plataforma más parecida a una red social de ocio y aumentaría la retención de usuarios.
-
     \item \textbf{Generación de carteles con IA}: identificada desde el inicio como objetivo de la Fase 5, esta funcionalidad permitiría a los usuarios generar automáticamente un cartel visual para su evento a partir del título, la descripción y las imágenes proporcionadas, integrando un modelo generativo de imagen a través de una API externa.
 
     \item \textbf{Modo sin conexión básico}: actualmente no existe detección de red ni caché local. Mediante \texttt{AsyncStorage} o React Query se podrían almacenar localmente los últimos eventos cargados y mostrarlos sin conexión, mejorando la experiencia de usuario en entornos con conectividad intermitente.
@@ -138,16 +156,16 @@ Durante el desarrollo de este proyecto se han utilizado herramientas de intelige
 \subsection{Herramientas utilizadas}
 
 \begin{itemize}
-    \item \textbf{GitHub Copilot}: asistente de autocompletado de código integrado en el entorno de desarrollo. Se ha utilizado para sugerir fragmentos de código repetitivo (DTOs, validadores, controladores NestJS con estructura similar) y para acelerar la escritura de código boilerplate en el frontend (componentes con estructura análoga a otros ya existentes).
+    \item \textbf{GitHub Copilot}: asistente de autocompletado de código integrado en el entorno de desarrollo. Se ha utilizado para sugerir fragmentos de código repetitivo (DTOs, validadores, controladores NestJS con estructura similar) y para acelerar la escritura de código boilerplate en el frontend (componentes con estructura análoga a otros ya existentes). Además, se ha empleado puntualmente para proponer mejoras visuales en componentes de interfaz, como ajustes de estilos y disposición de elementos.
 
-    \item \textbf{Claude (Anthropic)}: modelo de lenguaje utilizado puntualmente para resolver dudas técnicas concretas (p.ej., uso de funciones espaciales de PostGIS, configuración de guardias de autenticación en NestJS) y para revisar la redacción de fragmentos de la memoria.
+    \item \textbf{Claude (Anthropic)}: modelo de lenguaje utilizado para resolver dudas técnicas concretas (p.ej., uso de funciones espaciales de PostGIS, configuración de guardias de autenticación en NestJS), proponer mejoras visuales en la interfaz y como guía en procesos técnicos más elaborados, como el despliegue en producción y la revisión de vulnerabilidades de seguridad. Asimismo, la redacción de la memoria ha sido revisada con ayuda de esta herramienta para mejorar la expresión y coherencia del texto.
 \end{itemize}
 
 \subsection{Alcance del uso}
 
-El uso de estas herramientas ha sido complementario y supervisado en todo momento. No se ha delegado en ellas la toma de decisiones de diseño, arquitectónicas ni funcionales; éstas han sido adoptadas íntegramente por la autora. El código generado automáticamente ha sido siempre revisado, comprendido y adaptado antes de integrarse en el proyecto, nunca copiado directamente sin verificación.
+El uso de estas herramientas ha sido complementario y supervisado en todo momento. No se ha delegado en ellas la toma de decisiones de diseño, arquitectónicas ni funcionales; éstas han sido adoptadas íntegramente por la autora. El código generado automáticamente ha sido siempre revisado, comprendido y adaptado antes de integrarse en el proyecto, nunca copiado directamente sin verificación. Las guías proporcionadas para procesos como el despliegue o la revisión de seguridad han servido como referencia técnica, pero las decisiones finales y su implementación han sido responsabilidad de la autora.
 
-La redacción de la memoria ha sido elaborada por la autora. Las herramientas de IA se han utilizado exclusivamente como apoyo puntual para mejorar la expresión de determinados párrafos o verificar la coherencia de alguna sección, pero el contenido, la estructura y las conclusiones son propios.
+La redacción de la memoria ha sido elaborada por la autora. Las herramientas de IA se han utilizado como apoyo para mejorar la expresión y coherencia del texto, pero el contenido, la estructura y las conclusiones son propios.
 
 \subsection{Verificación}
 
