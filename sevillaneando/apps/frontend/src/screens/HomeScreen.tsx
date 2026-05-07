@@ -1534,17 +1534,15 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
               </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.creatorLinkRow, { borderColor: colors.border }]}
-                  onPress={() => handleOpenLink('https://github.com/cyncasjua')}
-                  activeOpacity={0.85}
-                >
-                  <MaterialIcons name="code" size={18} color={colors.primary} />
-                  <ThemedText style={styles.creatorLinkText}>
-                    GitHub: cyncasjua
-                  </ThemedText>
-                  <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
-                </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.creatorLinkRow, { borderColor: colors.border }]}
+                onPress={() => handleOpenLink('https://github.com/cyncasjua')}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name="code" size={18} color={colors.primary} />
+                <ThemedText style={styles.creatorLinkText}>GitHub: cyncasjua</ThemedText>
+                <MaterialIcons name="open-in-new" size={16} color={colors.text + '80'} />
+              </TouchableOpacity>
             </ThemedView>
           }
         />
