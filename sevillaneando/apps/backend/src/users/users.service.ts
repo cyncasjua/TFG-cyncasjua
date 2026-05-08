@@ -133,11 +133,11 @@ export class UsersService {
     }
 
     const em = this.usersRepo.manager;
-    await em.query(`DELETE FROM user_seguidores WHERE seguidor_id = $1 OR seguido_id = $1`, [id]);
-    await em.query(`DELETE FROM user_saved_events WHERE user_id = $1`, [id]);
-    await em.query(`DELETE FROM user_shared_events WHERE user_id = $1`, [id]);
-    await em.query(`DELETE FROM user_visited_events WHERE user_id = $1`, [id]);
-    await em.query(`DELETE FROM event_asistentes WHERE user_id = $1`, [id]);
+    await em.query('DELETE FROM user_seguidores WHERE seguidor_id = $1 OR seguido_id = $1', [id]);
+    await em.query('DELETE FROM user_saved_events WHERE user_id = $1', [id]);
+    await em.query('DELETE FROM user_shared_events WHERE user_id = $1', [id]);
+    await em.query('DELETE FROM user_visited_events WHERE user_id = $1', [id]);
+    await em.query('DELETE FROM event_asistentes WHERE user_id = $1', [id]);
 
     await this.usersRepo.delete({ id });
   }
