@@ -8,16 +8,20 @@ import {
 } from 'typeorm';
 import { Event } from '../events/event.entity';
 import { Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class Categoria {
+  @ApiProperty({ description: 'UUID de la categoría' })
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @ApiProperty({ description: 'Nombre único de la categoría', minLength: 3, maxLength: 50 })
   @Length(3, 50)
   @Column({ unique: true, nullable: false })
   nombre!: string;
 
+  @ApiProperty({ description: 'Descripción de la categoría', minLength: 5, maxLength: 200 })
   @Length(5, 200)
   @Column({ nullable: true })
   descripcion!: string;

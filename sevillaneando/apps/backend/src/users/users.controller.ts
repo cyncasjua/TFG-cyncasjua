@@ -28,7 +28,11 @@ import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { TipoEnum } from '../notificaciones/enums/tipo.enum';
 import { ThrottleUpload } from '../common/decorators/throttle-custom.decorator';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 
+
+@ApiTags('Usuarios')
+@ApiBearerAuth('firebase-jwt')
 @Controller('users')
 @UseGuards(FirebaseAuthGuard)
 export class UsersController {
@@ -40,6 +44,12 @@ export class UsersController {
 
   @Post('upload-profile-image/firebase')
   @ThrottleUpload()
+  @ApiOperation({ summary: 'Subir imagen de perfil' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @ApiResponse({ status: 201, description: 'URL de la imagen subida', schema: { example: { url: 'https://res.cloudinary.com/...' } } })
+  @ApiResponse({ status: 400, description: 'Archivo no proporcionado o formato no permitido' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -69,6 +79,10 @@ export class UsersController {
   }
 
   @Get('search')
+  @ApiOperation({ summary: 'Buscar usuarios por nombre' })
+  @ApiQuery({ name: 'q', description: 'Texto de búsqueda (mínimo 2 caracteres)' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios encontrados', schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async search(@Query('q') q: string) {
     if (!q || q.trim().length < 2) return [];
     const users = await this.usersService.searchUsers(q.trim());
@@ -76,6 +90,9 @@ export class UsersController {
   }
 
   @Get('me')
+  @ApiOperation({ summary: 'Obtener o crear el perfil del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil del usuario autenticado', type: User })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async me(@Req() req: { user: { uid: string; email?: string; name?: string } }): Promise<User> {
     const decoded = this.getFirebaseUser(req);
     return this.usersService.ensureFromFirebase({
@@ -88,6 +105,10 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('admin', 'moderator')
+  @ApiOperation({ summary: 'Listar todos los usuarios (admin/moderator)' })
+  @ApiResponse({ status: 200, description: 'Lista completa de usuarios', type: [User] })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'Sin permiso de admin/moderator' })
   findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
@@ -95,11 +116,21 @@ export class UsersController {
   @Patch(':id/role')
   @UseGuards(RolesGuard)
   @Roles('admin')
+  @ApiOperation({ summary: 'Cambiar el rol de un usuario (admin)' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Usuario con rol actualizado', type: User })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'Sin permiso de admin' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   updateRole(@Param('id') id: string, @Body() body: UpdateRoleDto): Promise<User> {
     return this.usersService.updateRole(id, body.rol as RolEnum);
   }
 
   @Patch('me/firebase')
+  @ApiOperation({ summary: 'Actualizar el perfil del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil actualizado', type: User })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async updateMeFirebase(
     @Req() req: { user: { uid: string } },
     @Body() body: UpdateProfileDto
@@ -110,6 +141,9 @@ export class UsersController {
 
   @Delete('me/firebase')
   @UseGuards(FirebaseAuthGuard)
+  @ApiOperation({ summary: 'Eliminar la propia cuenta del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Cuenta eliminada', schema: { example: { message: 'Cuenta eliminada correctamente' } } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async deleteMeFirebase(@Request() req: { user: { uid: string } }) {
     await this.usersService.deleteByFirebaseUid(req.user.uid);
     return { message: 'Cuenta eliminada correctamente' };
@@ -118,12 +152,22 @@ export class UsersController {
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles('admin')
+  @ApiOperation({ summary: 'Eliminar un usuario por ID (admin)' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Usuario eliminado', schema: { example: { success: true } } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'Sin permiso de admin' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async remove(@Param('id') id: string) {
     await this.usersService.deleteCompletelyById(id);
     return { success: true };
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Obtener perfil público de un usuario' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Perfil público del usuario', schema: { example: { id: 'uuid', nombre: 'Ana', fotoPerfil: null, intereses: [] } } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findById(id);
     if (!user) {
@@ -139,6 +183,10 @@ export class UsersController {
 
   @Post(':id/seguir')
   @UseGuards(FirebaseAuthGuard)
+  @ApiOperation({ summary: 'Seguir a un usuario' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario a seguir' })
+  @ApiResponse({ status: 201, description: 'Ahora sigues al usuario', schema: { example: { siguiendo: true } } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async seguir(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const yo = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!yo) return;
@@ -159,6 +207,10 @@ export class UsersController {
 
   @Delete(':id/seguir')
   @UseGuards(FirebaseAuthGuard)
+  @ApiOperation({ summary: 'Dejar de seguir a un usuario' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Has dejado de seguir al usuario', schema: { example: { siguiendo: false } } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async dejarDeSeguir(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const yo = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!yo) return;
@@ -168,6 +220,10 @@ export class UsersController {
 
   @Get(':id/siguiendo')
   @UseGuards(FirebaseAuthGuard)
+  @ApiOperation({ summary: 'Comprobar si el usuario actual sigue a otro usuario' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario a comprobar' })
+  @ApiResponse({ status: 200, description: 'Estado de seguimiento', schema: { example: { siguiendo: true } } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async checkSiguiendo(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const yo = await this.usersService.findByFirebaseUid(req.user.uid);
     if (!yo) return { siguiendo: false };
@@ -176,12 +232,20 @@ export class UsersController {
   }
 
   @Get(':id/seguidos')
+  @ApiOperation({ summary: 'Listar usuarios a los que sigue un usuario' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios seguidos', schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async getSeguidos(@Param('id') id: string) {
     const users = await this.usersService.getSeguidos(id);
     return users.map((u) => ({ id: u.id, nombre: u.nombre, fotoPerfil: u.fotoPerfil }));
   }
 
   @Get(':id/seguidores')
+  @ApiOperation({ summary: 'Listar seguidores de un usuario' })
+  @ApiParam({ name: 'id', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Lista de seguidores', schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] } })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   async getSeguidores(@Param('id') id: string) {
     const users = await this.usersService.getSeguidores(id);
     return users.map((u) => ({ id: u.id, nombre: u.nombre, fotoPerfil: u.fotoPerfil }));

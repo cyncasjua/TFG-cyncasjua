@@ -8,24 +8,30 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { TipoEnum } from './enums/tipo.enum';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class Notificacion {
+  @ApiProperty({ description: 'UUID de la notificación' })
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   usuario!: User;
 
+  @ApiProperty({ description: 'Texto de la notificación' })
   @Column({ nullable: false })
   mensaje!: string;
 
+  @ApiProperty({ description: 'Tipo de notificación', enum: TipoEnum })
   @Column({ type: 'enum', enum: TipoEnum, nullable: false })
   tipo!: TipoEnum;
 
+  @ApiProperty({ description: 'Fecha de la notificación' })
   @Column('timestamp', { nullable: false })
   fecha!: Date;
 
+  @ApiProperty({ description: 'Si la notificación ha sido leída' })
   @Column({ default: false })
   leida!: boolean;
 

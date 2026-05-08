@@ -29,36 +29,36 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {7.1}{\ignorespaces Visión general de la arquitectura del sistema}}{98}{figure.caption.40}%
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Visión general de la arquitectura del sistema}}{99}{figure.caption.40}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {8.1}{\ignorespaces Arquitectura general de despliegue del sistema}}{109}{figure.caption.41}%
+\contentsline {figure}{\numberline {8.1}{\ignorespaces Arquitectura general de despliegue del sistema}}{110}{figure.caption.41}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {9.1}{\ignorespaces Acceso a la aplicación}}{124}{figure.caption.46}%
-\contentsline {figure}{\numberline {9.2}{\ignorespaces Acceso y opciones del perfil}}{125}{figure.caption.47}%
-\contentsline {figure}{\numberline {9.3}{\ignorespaces Gestión del perfil}}{126}{figure.caption.48}%
-\contentsline {figure}{\numberline {9.4}{\ignorespaces Mapa de eventos}}{127}{figure.caption.49}%
-\contentsline {figure}{\numberline {9.5}{\ignorespaces Filtros de búsqueda}}{128}{figure.caption.50}%
-\contentsline {figure}{\numberline {9.6}{\ignorespaces Pantalla del evento}}{129}{figure.caption.51}%
-\contentsline {figure}{\numberline {9.7}{\ignorespaces Interacción dentro del evento}}{130}{figure.caption.52}%
-\contentsline {figure}{\numberline {9.8}{\ignorespaces Listado de eventos guardados}}{131}{figure.caption.53}%
-\contentsline {figure}{\numberline {9.9}{\ignorespaces Listado de eventos apuntados}}{132}{figure.caption.54}%
-\contentsline {figure}{\numberline {9.10}{\ignorespaces Calendario de eventos}}{132}{figure.caption.55}%
-\contentsline {figure}{\numberline {9.11}{\ignorespaces Funcionalidades de administración}}{133}{figure.caption.56}%
-\contentsline {figure}{\numberline {9.12}{\ignorespaces Gestión de categorías}}{134}{figure.caption.57}%
-\contentsline {figure}{\numberline {9.13}{\ignorespaces Recomendaciones y rutas}}{135}{figure.caption.58}%
-\contentsline {figure}{\numberline {9.14}{\ignorespaces Rutas creadas por usuarios}}{137}{figure.caption.59}%
-\contentsline {figure}{\numberline {9.15}{\ignorespaces Creación de eventos}}{138}{figure.caption.60}%
-\contentsline {figure}{\numberline {9.16}{\ignorespaces Creación de eventos }}{139}{figure.caption.61}%
-\contentsline {figure}{\numberline {9.17}{\ignorespaces Acceso a evento privado}}{140}{figure.caption.62}%
-\contentsline {figure}{\numberline {9.18}{\ignorespaces Consulta de evento privado}}{141}{figure.caption.63}%
-\contentsline {figure}{\numberline {9.19}{\ignorespaces Gestión de eventos privados}}{142}{figure.caption.64}%
-\contentsline {figure}{\numberline {9.20}{\ignorespaces Eventos creados por el usuario}}{143}{figure.caption.65}%
-\contentsline {figure}{\numberline {9.21}{\ignorespaces Moderación de eventos}}{144}{figure.caption.66}%
-\contentsline {figure}{\numberline {9.22}{\ignorespaces Notificaciones}}{145}{figure.caption.67}%
-\contentsline {figure}{\numberline {9.23}{\ignorespaces Mensajes privados}}{146}{figure.caption.68}%
-\contentsline {figure}{\numberline {9.24}{\ignorespaces Consulta de mensajes privados}}{147}{figure.caption.69}%
-\contentsline {figure}{\numberline {9.25}{\ignorespaces Evento finalizado}}{148}{figure.caption.70}%
-\contentsline {figure}{\numberline {9.26}{\ignorespaces Grafo de navegabilidad de la aplicación}}{149}{figure.caption.71}%
+\contentsline {figure}{\numberline {9.1}{\ignorespaces Acceso a la aplicación}}{125}{figure.caption.46}%
+\contentsline {figure}{\numberline {9.2}{\ignorespaces Acceso y opciones del perfil}}{126}{figure.caption.47}%
+\contentsline {figure}{\numberline {9.3}{\ignorespaces Gestión del perfil}}{127}{figure.caption.48}%
+\contentsline {figure}{\numberline {9.4}{\ignorespaces Mapa de eventos}}{128}{figure.caption.49}%
+\contentsline {figure}{\numberline {9.5}{\ignorespaces Filtros de búsqueda}}{129}{figure.caption.50}%
+\contentsline {figure}{\numberline {9.6}{\ignorespaces Pantalla del evento}}{130}{figure.caption.51}%
+\contentsline {figure}{\numberline {9.7}{\ignorespaces Interacción dentro del evento}}{131}{figure.caption.52}%
+\contentsline {figure}{\numberline {9.8}{\ignorespaces Listado de eventos guardados}}{132}{figure.caption.53}%
+\contentsline {figure}{\numberline {9.9}{\ignorespaces Listado de eventos apuntados}}{133}{figure.caption.54}%
+\contentsline {figure}{\numberline {9.10}{\ignorespaces Calendario de eventos}}{133}{figure.caption.55}%
+\contentsline {figure}{\numberline {9.11}{\ignorespaces Funcionalidades de administración}}{134}{figure.caption.56}%
+\contentsline {figure}{\numberline {9.12}{\ignorespaces Gestión de categorías}}{135}{figure.caption.57}%
+\contentsline {figure}{\numberline {9.13}{\ignorespaces Recomendaciones y rutas}}{136}{figure.caption.58}%
+\contentsline {figure}{\numberline {9.14}{\ignorespaces Rutas creadas por usuarios}}{138}{figure.caption.59}%
+\contentsline {figure}{\numberline {9.15}{\ignorespaces Creación de eventos}}{139}{figure.caption.60}%
+\contentsline {figure}{\numberline {9.16}{\ignorespaces Creación de eventos }}{140}{figure.caption.61}%
+\contentsline {figure}{\numberline {9.17}{\ignorespaces Acceso a evento privado}}{141}{figure.caption.62}%
+\contentsline {figure}{\numberline {9.18}{\ignorespaces Consulta de evento privado}}{142}{figure.caption.63}%
+\contentsline {figure}{\numberline {9.19}{\ignorespaces Gestión de eventos privados}}{143}{figure.caption.64}%
+\contentsline {figure}{\numberline {9.20}{\ignorespaces Eventos creados por el usuario}}{144}{figure.caption.65}%
+\contentsline {figure}{\numberline {9.21}{\ignorespaces Moderación de eventos}}{145}{figure.caption.66}%
+\contentsline {figure}{\numberline {9.22}{\ignorespaces Notificaciones}}{146}{figure.caption.67}%
+\contentsline {figure}{\numberline {9.23}{\ignorespaces Mensajes privados}}{147}{figure.caption.68}%
+\contentsline {figure}{\numberline {9.24}{\ignorespaces Consulta de mensajes privados}}{148}{figure.caption.69}%
+\contentsline {figure}{\numberline {9.25}{\ignorespaces Evento finalizado}}{149}{figure.caption.70}%
+\contentsline {figure}{\numberline {9.26}{\ignorespaces Grafo de navegabilidad de la aplicación}}{150}{figure.caption.71}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

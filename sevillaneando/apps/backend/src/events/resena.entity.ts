@@ -9,9 +9,11 @@ import {
 import { User } from '../users/user.entity';
 import { Event } from './event.entity';
 import { MaxLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class Resena {
+  @ApiProperty({ description: 'UUID de la reseña' })
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -21,13 +23,16 @@ export class Resena {
   @ManyToOne(() => Event, { onDelete: 'CASCADE' })
   evento!: Event;
 
+  @ApiProperty({ description: 'Texto del comentario', maxLength: 500 })
   @MaxLength(500)
   @Column({ nullable: false })
   comentario!: string;
 
+  @ApiProperty({ description: 'Puntuación del 1 al 5', minimum: 1, maximum: 5 })
   @Column('int', { nullable: false })
   puntuacion!: number;
 
+  @ApiProperty({ description: 'Fecha de la reseña' })
   @Column('timestamp', { nullable: false })
   fecha!: Date;
 

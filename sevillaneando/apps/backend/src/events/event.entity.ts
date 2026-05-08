@@ -16,69 +16,91 @@ import { RecurrenciaEnum } from './enums/recurrencia.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { User } from '../users/user.entity';
 import { countEventImages, stringifyEventImages } from './event-images.util';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity({ name: 'events' })
 export class Event {
+  @ApiProperty({ description: 'UUID del evento' })
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @ApiPropertyOptional({ description: 'Título del evento', maxLength: 100 })
   @Column({ length: 100, nullable: true })
   title!: string | null;
 
+  @ApiProperty({ description: 'Descripción del evento' })
   @Column({ type: 'text', nullable: false })
   description!: string;
 
+  @ApiProperty({ description: 'Dirección del evento', maxLength: 255 })
   @Column({ type: 'varchar', length: 255, nullable: false })
   address!: string;
 
+  @ApiProperty({ description: 'Ubicación GeoJSON (Point)', example: { type: 'Point', coordinates: [-5.9845, 37.3891] } })
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
   location!: GeoJsonPoint;
 
+  @ApiPropertyOptional({ description: 'Fecha y hora de inicio' })
   @Column('timestamp', { nullable: true })
   fechaInicio!: Date | null;
 
+  @ApiPropertyOptional({ description: 'Fecha y hora de fin' })
   @Column('timestamp', { nullable: true })
   fechaFin!: Date | null;
 
+  @ApiProperty({ description: 'Si el evento tiene múltiples fechas disponibles' })
   @Column({ type: 'boolean', default: false })
   hasMultipleDatesAvailable!: boolean;
 
+  @ApiPropertyOptional({ description: 'Tipo de recurrencia', enum: RecurrenciaEnum })
   @Column({ type: 'enum', enum: RecurrenciaEnum, nullable: true })
   recurrencia?: RecurrenciaEnum | null;
 
+  @ApiPropertyOptional({ description: 'Fecha de fin de la recurrencia' })
   @Column('timestamp', { nullable: true })
   recurrenciaFin?: Date | null;
 
+  @ApiPropertyOptional({ description: 'Precio fijo de entrada (0 = gratuito)', minimum: 0 })
   @Column('float', { nullable: true })
   precio?: number | null;
 
+  @ApiPropertyOptional({ description: 'Precio mínimo (rango)', minimum: 0 })
   @Column('float', { nullable: true })
   precioMin?: number | null;
 
+  @ApiPropertyOptional({ description: 'Precio máximo (rango)', minimum: 0 })
   @Column('float', { nullable: true })
   precioMax?: number | null;
 
+  @ApiPropertyOptional({ description: 'Si el evento es privado' })
   @Column({ type: 'boolean', nullable: true })
   privado?: boolean | null;
 
+  @ApiPropertyOptional({ description: 'Token de acceso para eventos privados' })
   @Column({ type: 'varchar', length: 255, nullable: true })
   linkAcceso?: string | null;
 
+  @ApiProperty({ description: 'Categoría del evento', type: () => Categoria })
   @ManyToOne(() => Categoria, (categoria) => categoria.eventos)
   categoria!: Categoria;
 
+  @ApiProperty({ description: 'Estado de moderación del evento', enum: EstadoEnum })
   @Column({ type: 'enum', enum: EstadoEnum, default: EstadoEnum.Pendiente })
   estado!: EstadoEnum;
 
+  @ApiProperty({ description: 'Usuario creador del evento', type: () => User })
   @ManyToOne(() => User, (user) => user.eventos, { nullable: false, onDelete: 'CASCADE' })
   creador!: User;
 
+  @ApiPropertyOptional({ description: 'URL de la imagen principal' })
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;
 
+  @ApiPropertyOptional({ description: 'URLs de imágenes adicionales (hasta 5)' })
   @Column({ type: 'text', nullable: true })
   imagenes?: string | string[] | null;
 
+  @ApiPropertyOptional({ description: 'Asistentes del evento', type: () => User, isArray: true })
   @ManyToMany(() => User, (user) => user.eventosAsistidos)
   @JoinTable({
     name: 'event_asistentes',

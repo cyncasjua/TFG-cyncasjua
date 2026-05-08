@@ -12,6 +12,7 @@ import { Mensaje } from './chat/mensaje.entity';
 import { FirebaseService } from './auth/firebase.service';
 import { User } from './users/user.entity';
 import { MensajePrivado } from './chat/mensaje-privado.entity';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -120,6 +121,8 @@ async function bootstrap() {
         const conversationMap = new Map();
 
         for (const msg of messages) {
+          if (!msg.emisor || !msg.receptor) continue;
+
           const otherUser = msg.emisor.id === me ? msg.receptor : msg.emisor;
           const otherId = otherUser.id;
 
@@ -359,8 +362,8 @@ async function bootstrap() {
           relations: ['emisor', 'receptor'],
         });
 
-        if (!message) {
-          logger.warn(`delete_dm: mensaje no encontrado ${JSON.stringify({ messageId })}`);
+        if (!message || !message.emisor || !message.receptor) {
+          logger.warn(`delete_dm: mensaje o relaciones no encontradas ${JSON.stringify({ messageId })}`);
           return;
         }
 
@@ -426,6 +429,18 @@ async function bootstrap() {
       }
     );
   });
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Sevillaneando API')
+    .setDescription('API REST de la plataforma Sevillaneando para gestión de eventos culturales en Sevilla')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'Firebase JWT' },
+      'firebase-jwt'
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',

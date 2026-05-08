@@ -15,38 +15,48 @@ import { Ruta } from '../rutas/ruta.entity';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { RolEnum } from './enums/rol.enum';
 import { Logger } from '@nestjs/common';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity({ name: 'users' })
 export class User {
   private static readonly logger = new Logger(User.name);
 
+  @ApiProperty({ description: 'UUID del usuario' })
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @ApiProperty({ description: 'Nombre del usuario', maxLength: 120 })
   @Column({ type: 'varchar', length: 120, nullable: false })
   nombre!: string;
 
+  @ApiProperty({ description: 'Email del usuario', maxLength: 180 })
   @Column({ type: 'varchar', length: 180, unique: true, nullable: false })
   email!: string;
 
   @Column({ type: 'text', nullable: true })
   contrasena!: string | null;
 
+  @ApiPropertyOptional({ description: 'Ubicación GeoJSON del usuario' })
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326, nullable: true })
   ubicacion!: GeoJsonPoint | null;
 
+  @ApiPropertyOptional({ description: 'URL de la foto de perfil' })
   @Column({ type: 'text', nullable: true })
   fotoPerfil!: string | null;
 
+  @ApiProperty({ description: 'Categorías de interés del usuario', type: [String] })
   @Column({ type: 'text', array: true, default: '{}' })
   intereses!: string[];
 
+  @ApiProperty({ description: 'Orden preferido de categorías', type: [String] })
   @Column({ type: 'text', array: true, default: '{}' })
   categoryOrder!: string[];
 
+  @ApiProperty({ description: 'Radios de búsqueda personalizados (km)', type: [Number] })
   @Column({ type: 'double precision', array: true, default: '{}' })
   radiusOptions!: number[];
 
+  @ApiProperty({ description: 'Rol del usuario', enum: RolEnum })
   @Column({ type: 'enum', enum: RolEnum, default: RolEnum.USER })
   rol!: RolEnum;
 
@@ -54,6 +64,7 @@ export class User {
   firebaseUid!: string;
 
   @OneToMany(() => Event, (event) => event.creador)
+  @ApiPropertyOptional({ description: 'Eventos creados por el usuario', type: () => Event, isArray: true })
   eventos!: Event[];
 
   @OneToMany(() => Ruta, (ruta) => ruta.creador)
@@ -66,6 +77,7 @@ export class User {
   resenas!: Resena[];
 
   @ManyToMany(() => Event, (event) => event.asistentes)
+  @ApiPropertyOptional({ description: 'Eventos a los que asiste el usuario', type: () => Event, isArray: true })
   eventosAsistidos!: Event[];
 
   @ManyToMany(() => Event)
@@ -74,6 +86,7 @@ export class User {
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
   })
+  @ApiPropertyOptional({ description: 'Eventos guardados por el usuario', type: () => Event, isArray: true })
   eventosGuardados!: Event[];
 
   @ManyToMany(() => Event)
@@ -82,6 +95,7 @@ export class User {
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
   })
+  @ApiPropertyOptional({ description: 'Eventos compartidos por el usuario', type: () => Event, isArray: true })
   eventosCompartidos!: Event[];
 
   @ManyToMany(() => Event)
@@ -90,6 +104,7 @@ export class User {
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
   })
+  @ApiPropertyOptional({ description: 'Eventos visitados por el usuario', type: () => Event, isArray: true })
   eventosVisitados!: Event[];
 
   @ManyToMany(() => User, (user) => user.seguidos)
@@ -98,9 +113,11 @@ export class User {
     joinColumn: { name: 'seguidor_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'seguido_id', referencedColumnName: 'id' },
   })
+  @ApiPropertyOptional({ description: 'Usuarios seguidores', type: () => User, isArray: true })
   seguidores!: User[];
 
   @ManyToMany(() => User, (user) => user.seguidores)
+  @ApiPropertyOptional({ description: 'Usuarios seguidos', type: () => User, isArray: true })
   seguidos!: User[];
 
   iniciarSesion() {}

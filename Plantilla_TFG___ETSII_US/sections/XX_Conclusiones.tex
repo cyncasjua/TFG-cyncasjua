@@ -50,6 +50,8 @@ El objetivo principal del sistema era desarrollar una aplicación móvil multipl
     \item \textbf{Creación de rutas propias}: implementado completamente. Los usuarios pueden crear rutas visibles para el resto de la comunidad, que pueden ser valoradas por otros usuarios.
 
     \item \textbf{Notificaciones}: implementado completamente. El sistema envía notificaciones por aprobación o rechazo de eventos, eventos cercanos, eventos próximos, nuevos mensajes privados, nuevos seguidores y recomendaciones generadas.
+
+    \item \textbf{Documentación automática de la API con Swagger}: implementado completamente. El backend expone un contrato OpenAPI completo mediante \texttt{@nestjs/swagger}. La documentación interactiva se genera automáticamente a partir de los decoradores \texttt{@ApiTags}, \texttt{@ApiOperation}, \texttt{@ApiParam}, \texttt{@ApiBearerAuth} y \texttt{@ApiProperty} añadidos a los diez controladores y los DTOs principales, y queda accesible en la ruta \texttt{/api/docs} de la API.
 \end{itemize}
 
 En cuanto a los objetivos del sistema no alcanzados, la generación automática de carteles con IA y la moderación de imágenes mediante NSFWJS (detección de contenido inapropiado) quedaron fuera del alcance final del proyecto, tal como se detalló en el análisis de desviaciones del capítulo de estudio previo.
@@ -135,8 +137,6 @@ A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades q
     \item \textbf{Integración con el calendario nativo del dispositivo}: la pantalla \texttt{CalendarEventsScreen} ya existe pero no hay integración con el calendario nativo del teléfono. Mediante \texttt{expo-calendar} sería posible añadir directamente los eventos a los que el usuario se apunta en Google Calendar o Apple Calendar, sin salir de la aplicación.
 
     \item \textbf{Reseñas con fotos}: las reseñas (\texttt{Resena}) actualmente contienen puntuación y comentario de texto. Permitir adjuntar fotografías en las valoraciones aumentaría la credibilidad de las reseñas y la confianza de los usuarios a la hora de apuntarse a un evento.
-
-    \item \textbf{Documentación automática de la API con Swagger}: el backend no expone actualmente ningún contrato OpenAPI. Con \texttt{@nestjs/swagger} se generaría documentación interactiva automáticamente a partir de los decoradores ya existentes en los controladores y DTOs, facilitando la integración futura con otras aplicaciones o clientes.
 
     \item \textbf{Asistencia mediante código QR}: integrar un sistema de códigos QR que el organizador pueda mostrar en el evento permitiría registrar la asistencia de forma sencilla. Combinado con un enlace de inscripción externo (Eventbrite, formularios propios), facilitaría la interoperabilidad con otras plataformas de gestión de eventos.
 
