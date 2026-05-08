@@ -1,18 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { RolEnum } from './enums/rol.enum';
-import * as admin from 'firebase-admin';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { Categoria } from '../categorias/categoria.entity';
 import { normalizeInteres, normalizeIntereses } from './enums/interes-categoria.enum';
+import { FirebaseService } from '../auth/firebase.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
-    @InjectRepository(Categoria) private readonly categoriaRepo: Repository<Categoria>
+    @InjectRepository(Categoria) private readonly categoriaRepo: Repository<Categoria>,
+    @Inject(forwardRef(() => FirebaseService)) private readonly firebaseService: FirebaseService
   ) {}
 
   private async resolveIntereses(values: unknown): Promise<string[]> {
@@ -126,7 +127,7 @@ export class UsersService {
     if (!user) return;
     if (user.firebaseUid) {
       try {
-        await admin.auth().deleteUser(user.firebaseUid);
+        await this.firebaseService.deleteUser(user.firebaseUid);
       } catch (e) {
         console.error(
           `[UserDeletion] Failed to delete Firebase user ${user.firebaseUid} (db id: ${id}):`,
