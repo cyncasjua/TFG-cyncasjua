@@ -128,7 +128,10 @@ export class UsersService {
       try {
         await admin.auth().deleteUser(user.firebaseUid);
       } catch (e) {
-        console.error(`[UserDeletion] Failed to delete Firebase user ${user.firebaseUid} (db id: ${id}):`, e);
+        console.error(
+          `[UserDeletion] Failed to delete Firebase user ${user.firebaseUid} (db id: ${id}):`,
+          e
+        );
         throw new Error(`No se pudo borrar el usuario de Firebase Auth: ${(e as Error).message}`);
       }
     } else {
