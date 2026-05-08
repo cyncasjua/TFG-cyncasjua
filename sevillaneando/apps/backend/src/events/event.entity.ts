@@ -70,8 +70,8 @@ export class Event {
   @Column({ type: 'enum', enum: EstadoEnum, default: EstadoEnum.Pendiente })
   estado!: EstadoEnum;
 
-  @ManyToOne(() => User, (user) => user.eventos, { nullable: true, onDelete: 'SET NULL' })
-  creador!: User | null;
+  @ManyToOne(() => User, (user) => user.eventos, { nullable: false, onDelete: 'CASCADE' })
+  creador!: User;
 
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;

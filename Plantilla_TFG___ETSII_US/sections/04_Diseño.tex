@@ -937,6 +937,27 @@ La aplicación gestiona URLs externas que abren directamente una pantalla concre
     \item \textbf{Acceso a eventos privados}: el enlace de invitación a un evento privado (UUID) debe resolverse directamente en la pantalla de acceso, tanto desde un navegador externo como desde otra app. Sin deep linking este flujo no sería posible.
 \end{itemize}
 
+\subsection{Qué ocurre al eliminar un usuario}
+
+Cuando se elimina una cuenta de usuario, el sistema aplica las siguientes reglas de integridad referencial:
+
+\begin{itemize}
+    \item \textbf{Eventos creados}: se eliminan en cascada junto con el usuario. Al ser el creador el responsable del evento, se considera que el evento pierde su razón de existir si la cuenta que lo publicó desaparece.
+    \item \textbf{Rutas creadas}: se eliminan en cascada por el mismo motivo.
+    \item \textbf{Mensajes en chats de eventos}: se eliminan en cascada, ya que están ligados directamente a la identidad del emisor.
+    \item \textbf{Mensajes privados}: el campo de emisor o receptor se establece a \texttt{NULL} (\textit{SET NULL}), de forma que la conversación permanece visible para el otro participante bajo la etiqueta \emph{Usuario eliminado}. Borrar el hilo completo perjudicaría al otro usuario, que perdería su historial de conversación.
+    \item \textbf{Resto de relaciones} (notificaciones, reseñas, recomendaciones, calificaciones de rutas): se eliminan en cascada.
+    \item \textbf{Tablas de unión M:N} (\texttt{user\_seguidores}, \texttt{user\_saved\_events}, \texttt{user\_shared\_events}, \texttt{user\_visited\_events}, \texttt{event\_asistentes}): se limpian manualmente antes del \texttt{DELETE} en el servicio de usuarios, ya que TypeORM no propaga \texttt{onDelete} automáticamente sobre relaciones \texttt{@JoinTable}.
+\end{itemize}
+
+\subsection{Qué ocurre al eliminar una categoría}
+
+Las categorías son el eje de clasificación de todos los eventos del sistema. Si se eliminara una categoría sin reasignar los eventos que la usan, estos quedarían sin categoría, lo que violaría la integridad del modelo y los excluiría de los filtros y del motor de recomendaciones.
+
+Para evitarlo, el sistema obliga a que exista siempre una categoría llamada \textbf{Otros}. Cuando el administrador elimina una categoría, todos los eventos que la tenían asignada se reasignan automáticamente a \emph{Otros} antes de ejecutar el borrado. Si la categoría \emph{Otros} no existe en ese momento, la operación se rechaza con un error que indica al administrador que debe crearla previamente.
+
+Se descartó el uso de \texttt{SET NULL} en la clave foránea porque la categoría es un campo obligatorio en los eventos: un evento sin categoría no puede participar en la navegación por categorías, en los filtros de búsqueda ni en el cálculo de afinidades del motor de recomendaciones.
+
 \section{Conclusiones}
 
 En este capítulo se ha presentado el diseño de la solución adoptada para el sistema \textbf{Sevillaneando}. Se ha descrito la arquitectura cliente-servidor, el modelo de datos con sus entidades y relaciones, el diseño de la API REST, el flujo de moderación de eventos, el diseño de la interfaz de usuario con el grafo de navegación, los sistemas de comunicación en tiempo real y de recomendaciones, los patrones de diseño aplicados y las decisiones de diseño más relevantes.
