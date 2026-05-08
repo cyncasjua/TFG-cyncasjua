@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Categoria } from './categoria.entity';
 import { Repository } from 'typeorm';
 import { CreateCategoriaDTO } from './dto/create-categoria.dto';
 import { User } from '../users/user.entity';
+import { Event } from '../events/event.entity';
 
 @Injectable()
 export class CategoriasService {
@@ -11,7 +12,9 @@ export class CategoriasService {
     @InjectRepository(Categoria)
     private readonly categoriaRepo: Repository<Categoria>,
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>
+    private readonly userRepo: Repository<User>,
+    @InjectRepository(Event)
+    private readonly eventRepo: Repository<Event>
   ) {}
 
   async create(dto: CreateCategoriaDTO): Promise<Categoria> {
@@ -55,6 +58,25 @@ export class CategoriasService {
   async delete(id: string): Promise<void> {
     const categoria = await this.categoriaRepo.findOneBy({ id });
     if (!categoria) return;
+
+    const otros = await this.categoriaRepo
+      .createQueryBuilder('categoria')
+      .where("LOWER(TRIM(categoria.nombre)) = 'otros'")
+      .andWhere('categoria.id != :id', { id })
+      .getOne();
+
+    if (!otros) {
+      throw new BadRequestException(
+        'No existe una categoría "Otros" para reasignar los eventos afectados. Crea una antes de borrar esta categoría.'
+      );
+    }
+
+    await this.eventRepo
+      .createQueryBuilder()
+      .update()
+      .set({ categoria: otros })
+      .where('categoriaId = :id', { id })
+      .execute();
 
     await this.removeCategoriafromUsers(id, categoria.nombre);
     await this.categoriaRepo.delete(id);

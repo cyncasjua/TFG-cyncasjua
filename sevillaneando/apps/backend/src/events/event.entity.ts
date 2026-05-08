@@ -64,11 +64,8 @@ export class Event {
   @Column({ type: 'varchar', length: 255, nullable: true })
   linkAcceso?: string | null;
 
-  @ManyToOne(() => Categoria, (categoria) => categoria.eventos, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  categoria!: Categoria | null;
+  @ManyToOne(() => Categoria, (categoria) => categoria.eventos)
+  categoria!: Categoria;
 
   @Column({ type: 'enum', enum: EstadoEnum, default: EstadoEnum.Pendiente })
   estado!: EstadoEnum;

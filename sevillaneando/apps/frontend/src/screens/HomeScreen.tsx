@@ -273,26 +273,28 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     }, [fetchUnreadCount])
   );
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await api.get('/categorias');
-        let data = res.data as { id: string; nombre: string }[];
-        if (user?.categoryOrder && user.categoryOrder.length > 0) {
-          const orderIndex = new Map(user.categoryOrder.map((id, idx) => [id, idx]));
-          data = [...data].sort((a, b) => {
-            const aIdx = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-            const bIdx = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-            return aIdx - bIdx;
-          });
+  useFocusEffect(
+    useCallback(() => {
+      const fetchCategories = async () => {
+        try {
+          const res = await api.get('/categorias');
+          let data = res.data as { id: string; nombre: string }[];
+          if (user?.categoryOrder && user.categoryOrder.length > 0) {
+            const orderIndex = new Map(user.categoryOrder.map((id, idx) => [id, idx]));
+            data = [...data].sort((a, b) => {
+              const aIdx = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+              const bIdx = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+              return aIdx - bIdx;
+            });
+          }
+          setCategories(sortWithOtrosLast(data));
+        } catch (e) {
+          setCategories([]);
         }
-        setCategories(sortWithOtrosLast(data));
-      } catch (e) {
-        setCategories([]);
-      }
-    };
-    fetchCategories();
-  }, [sortWithOtrosLast, user?.categoryOrder]);
+      };
+      fetchCategories();
+    }, [sortWithOtrosLast, user?.categoryOrder])
+  );
 
   useEffect(() => {
     if (user?.radiusOptions && user.radiusOptions.length > 0) {

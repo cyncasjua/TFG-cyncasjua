@@ -116,7 +116,9 @@ export class UsersService {
   }
 
   async deleteByFirebaseUid(firebaseUid: string): Promise<void> {
-    await this.usersRepo.delete({ firebaseUid });
+    const user = await this.usersRepo.findOne({ where: { firebaseUid } });
+    if (!user) return;
+    await this.deleteCompletelyById(user.id);
   }
 
   async deleteCompletelyById(id: string): Promise<void> {
@@ -129,6 +131,14 @@ export class UsersService {
         // Ignorar errores al borrar usuario de Firebase
       }
     }
+
+    const em = this.usersRepo.manager;
+    await em.query(`DELETE FROM user_seguidores WHERE seguidor_id = $1 OR seguido_id = $1`, [id]);
+    await em.query(`DELETE FROM user_saved_events WHERE user_id = $1`, [id]);
+    await em.query(`DELETE FROM user_shared_events WHERE user_id = $1`, [id]);
+    await em.query(`DELETE FROM user_visited_events WHERE user_id = $1`, [id]);
+    await em.query(`DELETE FROM event_asistentes WHERE user_id = $1`, [id]);
+
     await this.usersRepo.delete({ id });
   }
 
