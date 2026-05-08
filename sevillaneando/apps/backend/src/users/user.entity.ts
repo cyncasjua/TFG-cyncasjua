@@ -64,7 +64,11 @@ export class User {
   firebaseUid!: string;
 
   @OneToMany(() => Event, (event) => event.creador)
-  @ApiPropertyOptional({ description: 'Eventos creados por el usuario', type: () => Event, isArray: true })
+  @ApiPropertyOptional({
+    description: 'Eventos creados por el usuario',
+    type: () => Event,
+    isArray: true,
+  })
   eventos!: Event[];
 
   @OneToMany(() => Ruta, (ruta) => ruta.creador)
@@ -77,7 +81,11 @@ export class User {
   resenas!: Resena[];
 
   @ManyToMany(() => Event, (event) => event.asistentes)
-  @ApiPropertyOptional({ description: 'Eventos a los que asiste el usuario', type: () => Event, isArray: true })
+  @ApiPropertyOptional({
+    description: 'Eventos a los que asiste el usuario',
+    type: () => Event,
+    isArray: true,
+  })
   eventosAsistidos!: Event[];
 
   @ManyToMany(() => Event)
@@ -86,7 +94,11 @@ export class User {
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
   })
-  @ApiPropertyOptional({ description: 'Eventos guardados por el usuario', type: () => Event, isArray: true })
+  @ApiPropertyOptional({
+    description: 'Eventos guardados por el usuario',
+    type: () => Event,
+    isArray: true,
+  })
   eventosGuardados!: Event[];
 
   @ManyToMany(() => Event)
@@ -95,7 +107,11 @@ export class User {
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
   })
-  @ApiPropertyOptional({ description: 'Eventos compartidos por el usuario', type: () => Event, isArray: true })
+  @ApiPropertyOptional({
+    description: 'Eventos compartidos por el usuario',
+    type: () => Event,
+    isArray: true,
+  })
   eventosCompartidos!: Event[];
 
   @ManyToMany(() => Event)
@@ -104,7 +120,11 @@ export class User {
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'event_id', referencedColumnName: 'id' },
   })
-  @ApiPropertyOptional({ description: 'Eventos visitados por el usuario', type: () => Event, isArray: true })
+  @ApiPropertyOptional({
+    description: 'Eventos visitados por el usuario',
+    type: () => Event,
+    isArray: true,
+  })
   eventosVisitados!: Event[];
 
   @ManyToMany(() => User, (user) => user.seguidos)

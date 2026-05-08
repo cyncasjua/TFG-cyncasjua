@@ -17,7 +17,14 @@ import { UpdateRutaDto } from './dto/update-ruta.dto';
 import { Ruta } from './ruta.entity';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { UsersService } from '../users/users.service';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Rutas')
 @Controller('rutas')
@@ -76,7 +83,11 @@ export class RutasController {
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Obtener la calificación propia del usuario para una ruta' })
   @ApiParam({ name: 'id', description: 'UUID de la ruta' })
-  @ApiResponse({ status: 200, description: 'Calificación del usuario (null si no ha calificado)', schema: { example: { calificacion: 4 } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Calificación del usuario (null si no ha calificado)',
+    schema: { example: { calificacion: 4 } },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async getMyRating(
     @Param('id') id: string,

@@ -31,7 +31,15 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { ThrottleModerate, ThrottleUpload } from '../common/decorators/throttle-custom.decorator';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiConsumes,
+  ApiBody,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Eventos')
 @Controller('events')
@@ -85,7 +93,11 @@ export class EventsController {
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Obtener el link de acceso privado de un evento (solo creador)' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Link de acceso', schema: { example: { linkAcceso: 'abc123' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Link de acceso',
+    schema: { example: { linkAcceso: 'abc123' } },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'No autorizado (no es el creador)' })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
@@ -183,8 +195,14 @@ export class EventsController {
   @ThrottleUpload()
   @ApiOperation({ summary: 'Subir una imagen para un evento' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
-  @ApiResponse({ status: 201, description: 'URL de la imagen subida', schema: { example: { url: 'https://res.cloudinary.com/...' } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'URL de la imagen subida',
+    schema: { example: { url: 'https://res.cloudinary.com/...' } },
+  })
   @ApiResponse({ status: 400, description: 'Archivo no proporcionado o formato no permitido' })
   @UseInterceptors(
     FileInterceptor('file', {
@@ -213,7 +231,11 @@ export class EventsController {
   @Get(':id/attendees')
   @ApiOperation({ summary: 'Listar asistentes de un evento' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Lista de asistentes', schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] } })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de asistentes',
+    schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] },
+  })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
   async listAttendees(@Param('id') id: string) {
     const attendees = await this.eventsService.getAttendees(id);
@@ -229,7 +251,11 @@ export class EventsController {
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Comprobar si el usuario actual asiste a un evento' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Estado de asistencia', schema: { example: { attending: true } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado de asistencia',
+    schema: { example: { attending: true } },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async myAttendance(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
     const user = await this.usersService.findByFirebaseUid(req.user.uid);
@@ -241,7 +267,21 @@ export class EventsController {
   @Get(':id/reviews')
   @ApiOperation({ summary: 'Obtener reseñas de un evento' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Lista de reseñas', schema: { example: [{ id: 'uuid', puntuacion: 4, comentario: 'Muy bien', fecha: '2025-06-01', autor: { id: 'uuid', nombre: 'Ana', fotoPerfil: null } }] } })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de reseñas',
+    schema: {
+      example: [
+        {
+          id: 'uuid',
+          puntuacion: 4,
+          comentario: 'Muy bien',
+          fecha: '2025-06-01',
+          autor: { id: 'uuid', nombre: 'Ana', fotoPerfil: null },
+        },
+      ],
+    },
+  })
   async getEventReviews(@Param('id') id: string) {
     const reviews = await this.eventsService.getEventReviews(id);
     return reviews.map((review) => ({
@@ -262,7 +302,11 @@ export class EventsController {
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Apuntarse a un evento' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 201, description: 'Lista actualizada de asistentes', schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] } })
+  @ApiResponse({
+    status: 201,
+    description: 'Lista actualizada de asistentes',
+    schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 404, description: 'Evento o usuario no encontrado' })
   async attend(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
@@ -281,7 +325,11 @@ export class EventsController {
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Desapuntarse de un evento' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Lista actualizada de asistentes', schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] } })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista actualizada de asistentes',
+    schema: { example: [{ id: 'uuid', nombre: 'Ana', fotoPerfil: null }] },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 404, description: 'Evento o usuario no encontrado' })
   async unattend(@Param('id') id: string, @Req() req: { user: { uid: string } }) {
@@ -313,7 +361,11 @@ export class EventsController {
   @Get('attending/:userId')
   @ApiOperation({ summary: 'Listar eventos a los que asiste un usuario' })
   @ApiParam({ name: 'userId', description: 'UUID del usuario' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos a los que asiste el usuario', type: [Event] })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de eventos a los que asiste el usuario',
+    type: [Event],
+  })
   async findEventsAttending(@Param('userId') userId: string): Promise<Event[]> {
     return this.eventsService.findEventsAttending(userId);
   }

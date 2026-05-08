@@ -32,7 +32,11 @@ export class Ruta {
   @Column('simple-json')
   trayecto!: GeoJsonPoint[];
 
-  @ApiProperty({ description: 'Secuencia de eventos que componen la ruta', type: () => Event, isArray: true })
+  @ApiProperty({
+    description: 'Secuencia de eventos que componen la ruta',
+    type: () => Event,
+    isArray: true,
+  })
   @ManyToMany(() => Event)
   @JoinTable({
     name: 'ruta_eventos',
