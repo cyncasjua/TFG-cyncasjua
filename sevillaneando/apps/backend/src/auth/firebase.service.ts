@@ -37,7 +37,9 @@ export class FirebaseService {
 
   async deleteUser(firebaseUid: string): Promise<void> {
     if (!admin.apps.length) {
-      throw new Error('Firebase Admin no está inicializado: no se puede borrar el usuario de Firebase Auth');
+      throw new Error(
+        'Firebase Admin no está inicializado: no se puede borrar el usuario de Firebase Auth'
+      );
     }
     await admin.auth().deleteUser(firebaseUid);
   }
