@@ -119,7 +119,10 @@ export class UsersService {
   async deleteByFirebaseUid(firebaseUid: string): Promise<void> {
     const user = await this.usersRepo.findOne({ where: { firebaseUid } });
     if (!user) return;
-    await this.deleteCompletelyById(user.id);
+    // El cliente Firebase ya borra su propia cuenta tras recibir el 200.
+    // No llamamos a firebaseService.deleteUser aquí para no invalidar el token
+    // antes de que el SDK del cliente pueda completar el deleteUser().
+    await this.deleteDbRecordsById(user.id);
   }
 
   async deleteCompletelyById(id: string): Promise<void> {
@@ -138,14 +141,16 @@ export class UsersService {
     } else {
       console.warn(`[UserDeletion] User ${id} has no firebaseUid, skipping Firebase deletion`);
     }
+    await this.deleteDbRecordsById(id);
+  }
 
+  private async deleteDbRecordsById(id: string): Promise<void> {
     const em = this.usersRepo.manager;
     await em.query('DELETE FROM user_seguidores WHERE seguidor_id = $1 OR seguido_id = $1', [id]);
     await em.query('DELETE FROM user_saved_events WHERE user_id = $1', [id]);
     await em.query('DELETE FROM user_shared_events WHERE user_id = $1', [id]);
     await em.query('DELETE FROM user_visited_events WHERE user_id = $1', [id]);
     await em.query('DELETE FROM event_asistentes WHERE user_id = $1', [id]);
-
     await this.usersRepo.delete({ id });
   }
 

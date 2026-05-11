@@ -945,7 +945,7 @@ Cuando se elimina una cuenta de usuario, el sistema aplica las siguientes reglas
     \item \textbf{Eventos creados}: se eliminan en cascada junto con el usuario. Al ser el creador el responsable del evento, se considera que el evento pierde su razón de existir si la cuenta que lo publicó desaparece.
     \item \textbf{Rutas creadas}: se eliminan en cascada por el mismo motivo.
     \item \textbf{Mensajes en chats de eventos}: se eliminan en cascada, ya que están ligados directamente a la identidad del emisor.
-    \item \textbf{Mensajes privados}: el campo de emisor o receptor se establece a \texttt{NULL} (\textit{SET NULL}), de forma que la conversación permanece visible para el otro participante bajo la etiqueta \emph{Usuario eliminado}. Borrar el hilo completo perjudicaría al otro usuario, que perdería su historial de conversación.
+    \item \textbf{Mensajes privados}: el hilo completo de la conversación se elimina en cascada junto con el usuario eliminado, incluidos todos los mensajes intercambiados. Dado que la conversación privada es una relación bilateral, no tiene sentido conservar un hilo sin uno de sus dos participantes.
     \item \textbf{Resto de relaciones} (notificaciones, reseñas, recomendaciones, calificaciones de rutas): se eliminan en cascada.
     \item \textbf{Tablas de unión M:N} (\texttt{user\_seguidores}, \texttt{user\_saved\_events}, \texttt{user\_shared\_events}, \texttt{user\_visited\_events}, \texttt{event\_asistentes}): se limpian manualmente antes del \texttt{DELETE} en el servicio de usuarios, ya que TypeORM no propaga \texttt{onDelete} automáticamente sobre relaciones \texttt{@JoinTable}.
 \end{itemize}
