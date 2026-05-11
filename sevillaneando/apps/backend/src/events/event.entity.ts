@@ -36,7 +36,10 @@ export class Event {
   @Column({ type: 'varchar', length: 255, nullable: false })
   address!: string;
 
-  @ApiProperty({ description: 'Ubicación GeoJSON (Point)', example: { type: 'Point', coordinates: [-5.9845, 37.3891] } })
+  @ApiProperty({
+    description: 'Ubicación GeoJSON (Point)',
+    example: { type: 'Point', coordinates: [-5.9845, 37.3891] },
+  })
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
   location!: GeoJsonPoint;
 

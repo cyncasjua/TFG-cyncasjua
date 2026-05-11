@@ -13,7 +13,11 @@ export class SchedulerController {
 
   @Get('health')
   @ApiOperation({ summary: 'Health check del scheduler' })
-  @ApiResponse({ status: 200, description: 'Estado del scheduler', schema: { example: { status: 'ok' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado del scheduler',
+    schema: { example: { status: 'ok' } },
+  })
   health() {
     return { status: 'ok' };
   }
@@ -21,7 +25,11 @@ export class SchedulerController {
   @Post('run-scraping')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Lanzar el scraping manualmente (trigger HTTP para Cloud Scheduler)' })
-  @ApiResponse({ status: 200, description: 'Scraping lanzado', schema: { example: { status: 'ok', job: 'scraping' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Scraping lanzado',
+    schema: { example: { status: 'ok', job: 'scraping' } },
+  })
   runScraping() {
     this.scrapingScheduler.handleDailyScraping().catch(() => {});
     return { status: 'ok', job: 'scraping' };
@@ -29,8 +37,14 @@ export class SchedulerController {
 
   @Post('run-notifications')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Lanzar el envío de notificaciones manualmente (trigger HTTP para Cloud Scheduler)' })
-  @ApiResponse({ status: 200, description: 'Notificaciones lanzadas', schema: { example: { status: 'ok', job: 'notifications' } } })
+  @ApiOperation({
+    summary: 'Lanzar el envío de notificaciones manualmente (trigger HTTP para Cloud Scheduler)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Notificaciones lanzadas',
+    schema: { example: { status: 'ok', job: 'notifications' } },
+  })
   runNotifications() {
     Promise.all([
       this.notificacionesScheduler.notificarEventosCercanos(),

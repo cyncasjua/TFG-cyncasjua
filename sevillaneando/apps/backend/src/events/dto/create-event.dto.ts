@@ -45,12 +45,18 @@ export class CreateEventDto {
   @IsNotEmpty({ message: 'La ubicación es obligatoria.' })
   location!: GeoJsonPoint;
 
-  @ApiPropertyOptional({ description: 'Fecha de inicio (ISO 8601)', example: '2025-06-15T18:00:00Z' })
+  @ApiPropertyOptional({
+    description: 'Fecha de inicio (ISO 8601)',
+    example: '2025-06-15T18:00:00Z',
+  })
   @IsDateString({}, { message: 'La fecha de inicio debe tener un formato válido.' })
   @IsOptional()
   fechaInicio?: string;
 
-  @ApiPropertyOptional({ description: 'Fecha de fin (ISO 8601, posterior a fechaInicio)', example: '2025-06-15T22:00:00Z' })
+  @ApiPropertyOptional({
+    description: 'Fecha de fin (ISO 8601, posterior a fechaInicio)',
+    example: '2025-06-15T22:00:00Z',
+  })
   @IsDateString({}, { message: 'La fecha de fin debe tener un formato válido.' })
   @IsOptional()
   @IsEndDateAfterStartDate('fechaInicio', {
@@ -119,7 +125,10 @@ export class CreateEventDto {
   @IsOptional()
   recurrencia?: RecurrenciaEnum;
 
-  @ApiPropertyOptional({ description: 'Fecha de fin de la recurrencia (ISO 8601)', example: '2025-12-31T00:00:00Z' })
+  @ApiPropertyOptional({
+    description: 'Fecha de fin de la recurrencia (ISO 8601)',
+    example: '2025-12-31T00:00:00Z',
+  })
   @IsDateString({}, { message: 'La fecha fin de recurrencia debe tener un formato válido.' })
   @IsOptional()
   recurrenciaFin?: string;

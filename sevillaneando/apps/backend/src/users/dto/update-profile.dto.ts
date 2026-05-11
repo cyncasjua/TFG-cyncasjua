@@ -27,7 +27,10 @@ export class UpdateProfileDto {
   @MaxLength(180, { message: 'El email no puede superar los 180 caracteres.' })
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Ubicación GeoJSON del usuario', type: () => GeoJsonPointDto })
+  @ApiPropertyOptional({
+    description: 'Ubicación GeoJSON del usuario',
+    type: () => GeoJsonPointDto,
+  })
   @IsOptional()
   @ValidateNested({ message: 'La ubicación debe ser un punto GeoJSON válido.' })
   @Type(() => GeoJsonPointDto)

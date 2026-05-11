@@ -363,7 +363,9 @@ async function bootstrap() {
         });
 
         if (!message || !message.emisor || !message.receptor) {
-          logger.warn(`delete_dm: mensaje o relaciones no encontradas ${JSON.stringify({ messageId })}`);
+          logger.warn(
+            `delete_dm: mensaje o relaciones no encontradas ${JSON.stringify({ messageId })}`
+          );
           return;
         }
 
@@ -432,12 +434,11 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Sevillaneando API')
-    .setDescription('API REST de la plataforma Sevillaneando para gestión de eventos culturales en Sevilla')
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'Firebase JWT' },
-      'firebase-jwt'
+    .setDescription(
+      'API REST de la plataforma Sevillaneando para gestión de eventos culturales en Sevilla'
     )
+    .setVersion('1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'Firebase JWT' }, 'firebase-jwt')
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);

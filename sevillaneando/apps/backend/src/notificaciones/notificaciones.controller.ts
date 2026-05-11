@@ -14,7 +14,11 @@ export class NotificacionesController {
   @Get('usuario/:usuarioId')
   @ApiOperation({ summary: 'Obtener notificaciones de un usuario' })
   @ApiParam({ name: 'usuarioId', description: 'UUID del usuario' })
-  @ApiResponse({ status: 200, description: 'Lista de notificaciones del usuario', type: [Notificacion] })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de notificaciones del usuario',
+    type: [Notificacion],
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async obtenerParaUsuario(@Param('usuarioId') usuarioId: string) {
     return this.notificacionesService.obtenerParaUsuario(usuarioId);
@@ -23,7 +27,11 @@ export class NotificacionesController {
   @Patch(':id/leida')
   @ApiOperation({ summary: 'Marcar una notificación como leída' })
   @ApiParam({ name: 'id', description: 'UUID de la notificación' })
-  @ApiResponse({ status: 200, description: 'Notificación marcada como leída', schema: { example: { ok: true } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Notificación marcada como leída',
+    schema: { example: { ok: true } },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 404, description: 'Notificación no encontrada' })
   async marcarLeida(@Param('id') id: string) {
@@ -34,7 +42,11 @@ export class NotificacionesController {
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una notificación' })
   @ApiParam({ name: 'id', description: 'UUID de la notificación' })
-  @ApiResponse({ status: 200, description: 'Notificación eliminada', schema: { example: { ok: true } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Notificación eliminada',
+    schema: { example: { ok: true } },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 404, description: 'Notificación no encontrada' })
   async delete(@Param('id') id: string) {

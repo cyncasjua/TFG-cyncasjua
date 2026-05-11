@@ -16,7 +16,14 @@ import { UsersService } from '../users/users.service';
 import { RecomendacionesService } from './recomendaciones.service';
 import { RateEventDto } from './dto/rate-event.dto';
 import type { Request } from 'express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 type AuthRequest = Request & { user: { uid: string } };
 
@@ -95,7 +102,11 @@ export class RecomendacionesController {
   @Get('events/:eventId/valorar/me')
   @ApiOperation({ summary: 'Obtener la valoración propia del usuario para un evento' })
   @ApiParam({ name: 'eventId', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Valoración propia (null si no ha valorado)', schema: { example: { puntuacion: 4, comentario: 'Muy bien' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Valoración propia (null si no ha valorado)',
+    schema: { example: { puntuacion: 4, comentario: 'Muy bien' } },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async getMyEventRating(
     @Req() req: AuthRequest,
@@ -107,7 +118,10 @@ export class RecomendacionesController {
 
   @Get('me/events')
   @ApiOperation({ summary: 'Obtener eventos recomendados para el usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos recomendados ordenados por puntuación' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de eventos recomendados ordenados por puntuación',
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiQuery({ name: 'lat', required: false, description: 'Latitud del usuario' })
   @ApiQuery({ name: 'lng', required: false, description: 'Longitud del usuario' })
@@ -146,7 +160,10 @@ export class RecomendacionesController {
 
   @Get('me/rutas')
   @ApiOperation({ summary: 'Obtener rutas recomendadas para el usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Lista de rutas recomendadas generadas automáticamente' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de rutas recomendadas generadas automáticamente',
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiQuery({ name: 'lat', required: false, description: 'Latitud del usuario' })
   @ApiQuery({ name: 'lng', required: false, description: 'Longitud del usuario' })
@@ -154,12 +171,36 @@ export class RecomendacionesController {
   @ApiQuery({ name: 'from', required: false, description: 'Fecha inicio del filtro (ISO 8601)' })
   @ApiQuery({ name: 'to', required: false, description: 'Fecha fin del filtro (ISO 8601)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Número máximo de eventos candidatos' })
-  @ApiQuery({ name: 'routesLimit', required: false, description: 'Número máximo de rutas devueltas' })
-  @ApiQuery({ name: 'minEventsPerRoute', required: false, description: 'Mínimo de eventos por ruta' })
-  @ApiQuery({ name: 'maxEventsPerRoute', required: false, description: 'Máximo de eventos por ruta' })
-  @ApiQuery({ name: 'strategy', required: false, description: 'Estrategia: walkable | score | balanced' })
-  @ApiQuery({ name: 'maxGapMinutes', required: false, description: 'Tiempo máximo entre eventos (minutos)' })
-  @ApiQuery({ name: 'maxOverlapMinutes', required: false, description: 'Solapamiento máximo permitido (minutos)' })
+  @ApiQuery({
+    name: 'routesLimit',
+    required: false,
+    description: 'Número máximo de rutas devueltas',
+  })
+  @ApiQuery({
+    name: 'minEventsPerRoute',
+    required: false,
+    description: 'Mínimo de eventos por ruta',
+  })
+  @ApiQuery({
+    name: 'maxEventsPerRoute',
+    required: false,
+    description: 'Máximo de eventos por ruta',
+  })
+  @ApiQuery({
+    name: 'strategy',
+    required: false,
+    description: 'Estrategia: walkable | score | balanced',
+  })
+  @ApiQuery({
+    name: 'maxGapMinutes',
+    required: false,
+    description: 'Tiempo máximo entre eventos (minutos)',
+  })
+  @ApiQuery({
+    name: 'maxOverlapMinutes',
+    required: false,
+    description: 'Solapamiento máximo permitido (minutos)',
+  })
   async recommendRoutes(
     @Req() req: AuthRequest,
     @Query('lat') lat?: string,

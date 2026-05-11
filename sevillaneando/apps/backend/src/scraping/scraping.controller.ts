@@ -18,7 +18,11 @@ export class ScrapingController {
   @Roles('admin')
   @ThrottleStrict()
   @ApiOperation({ summary: 'Ejecutar todos los scrapers (admin)' })
-  @ApiResponse({ status: 200, description: 'Scrapers ejecutados', schema: { example: { message: 'Scraping completado' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Scrapers ejecutados',
+    schema: { example: { message: 'Scraping completado' } },
+  })
   async runAllScrapers() {
     const result = await this.scrapingService.scrapeAll();
     return {
@@ -31,7 +35,13 @@ export class ScrapingController {
   @Roles('admin')
   @ThrottleStrict()
   @ApiOperation({ summary: 'Eliminar y regenerar todos los eventos scrapeados (admin)' })
-  @ApiResponse({ status: 200, description: 'Reset completado', schema: { example: { message: 'Reset completado: eventos scrapeados eliminados y regenerados' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Reset completado',
+    schema: {
+      example: { message: 'Reset completado: eventos scrapeados eliminados y regenerados' },
+    },
+  })
   @ApiResponse({ status: 500, description: 'Error durante el reset' })
   async resetScrapedEvents() {
     this.logger.log('POST /scraping/reset llamado');
@@ -53,7 +63,11 @@ export class ScrapingController {
   @ThrottleStrict()
   @ApiOperation({ summary: 'Ejecutar un scraper concreto por nombre (admin)' })
   @ApiParam({ name: 'scraperName', description: 'Nombre del scraper a ejecutar' })
-  @ApiResponse({ status: 200, description: 'Scraper ejecutado', schema: { example: { message: 'Scraper "example" ejecutado' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Scraper ejecutado',
+    schema: { example: { message: 'Scraper "example" ejecutado' } },
+  })
   async runScraper(@Param('scraperName') scraperName: string) {
     const result = await this.scrapingService.scrapeByName(scraperName);
     return {
@@ -65,7 +79,11 @@ export class ScrapingController {
   @Get('scrapers')
   @Roles('admin')
   @ApiOperation({ summary: 'Listar scrapers disponibles (admin)' })
-  @ApiResponse({ status: 200, description: 'Lista de scrapers', schema: { example: { scrapers: ['scraperA', 'scraperB'] } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de scrapers',
+    schema: { example: { scrapers: ['scraperA', 'scraperB'] } },
+  })
   getScrapers() {
     return {
       scrapers: this.scrapingService.getAvailableScrapers(),
@@ -74,7 +92,11 @@ export class ScrapingController {
 
   @Post('delete-all-events')
   @ApiOperation({ summary: 'Eliminar todos los eventos (solo entorno no-producción)' })
-  @ApiResponse({ status: 200, description: 'Eventos eliminados', schema: { example: { message: 'Todos los eventos han sido eliminados' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Eventos eliminados',
+    schema: { example: { message: 'Todos los eventos han sido eliminados' } },
+  })
   @ApiResponse({ status: 403, description: 'No disponible en producción' })
   async deleteAllEvents() {
     if (process.env.NODE_ENV === 'production') {
