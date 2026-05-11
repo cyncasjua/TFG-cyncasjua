@@ -108,7 +108,7 @@ También se ha seguido un versionado semántico de tres niveles (X.Y.Z) para la 
 
 \subsection{Metodología de seguimiento del tiempo}
 
-El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en cada fase y mantener la coherencia entre la planificación estimada y el trabajo efectivamente realizado. El informe detallado de horas se recoge en el Anexo correspondiente.
+El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en las distintas actividades del trabajo y contrastarlo posteriormente con las fases de planificación. El informe detallado de horas se recoge en el Anexo~\ref{anexo:reporte_horas}.
 
 \section{Planificación}
 
@@ -135,18 +135,18 @@ La planificación del proyecto se ha estructurado en varias fases, siguiendo un 
 A lo largo del proyecto se han producido algunas desviaciones respecto a la planificación inicial, motivadas principalmente por la aparición de nuevas necesidades técnicas y por el ajuste del alcance en función del tiempo disponible.
 
 \begin{itemize}
-    \item \textbf{Incorporación de flujos de CI/CD} \textit{(Fase 6 – Sprint 6)}: inicialmente no estaba prevista la configuración de pipelines de integración continua. Sin embargo, durante el Sprint 6 se consideró conveniente automatizar las comprobaciones de calidad del código mediante GitHub Actions. La configuración del pipeline, incluyendo la integración del linter, las comprobaciones de formato y los flujos de despliegue, supuso una dedicación de aproximadamente 6 horas, no contempladas en la estimación original de cierre del proyecto.
+    \item \textbf{Incorporación de flujos de CI/CD y ajustes de calidad} \textit{(Fase 6 – Sprint 6)}: inicialmente no estaba prevista la configuración de pipelines de integración continua. Sin embargo, durante el Sprint 6 se consideró conveniente automatizar las comprobaciones de calidad del código mediante GitHub Actions. La configuración del pipeline, la guía de estilo, la integración del linter, las comprobaciones de formato y los ajustes derivados del despliegue supusieron una dedicación aproximada de 9--10 horas, no contempladas en la estimación original de cierre del proyecto.
 
     \item \textbf{No implementación de funcionalidades opcionales} \textit{(Fase 5)}: la Fase 5 del proyecto (ampliaciones y extras) estaba condicionada a la disponibilidad de tiempo una vez completadas las fases principales. Finalmente, la generación de carteles con IA y la moderación automática de imágenes mediante NSFWJS no pudieron implementarse, ya que el desarrollo de las funcionalidades core del sistema (especialmente rutas de eventos, sistema de recomendaciones y scraping) requirió más esfuerzo del estimado inicialmente.
 
-    \item \textbf{Mayor complejidad en el scraping} \textit{(Fase 3 – Sprint 4)}: la integración del motor de scraping implicó una complejidad técnica superior a la prevista. Se estimaban entre 10 y 15 horas de desarrollo, pero el trabajo real ascendió a aproximadamente 20--22 horas. La desviación se debió principalmente a la gestión de errores 429 (límite de peticiones) y la variabilidad en la estructura de las fuentes externas, lo que requirió iteraciones adicionales de corrección y ajuste. A ello se sumaron tres dificultades no previstas: en primer lugar, la clasificación de los eventos extraídos en las categorías existentes del sistema resultó especialmente laboriosa, ya que los títulos y descripciones de las fuentes externas no siguen ninguna taxonomía estándar; fue necesario diseñar y refinar iterativamente una lista de palabras clave por categoría hasta lograr una asignación razonablemente precisa. En segundo lugar, la extracción de direcciones reales presentó dificultades por la falta de uniformidad en cómo cada fuente representa la ubicación, mezclando nombres de recintos, barrios, referencias parciales y formatos libres. En tercer lugar, el tratamiento de fechas supuso un reto significativo: muchas fuentes presentan sus calendarios de eventos en formatos no lineales (calendarios visuales, rangos de fechas, sesiones múltiples), lo que obligó a reajustar en varias ocasiones la lógica de extracción y normalización de fechas para cubrir los distintos casos encontrados.
+    \item \textbf{Mayor complejidad en el scraping} \textit{(Fase 3 – Sprint 4)}: la integración del motor de scraping implicó una complejidad técnica superior a la prevista. Se estimaban entre 10 y 15 horas de desarrollo, pero el trabajo real se situó finalmente en torno a 30 horas. La desviación se debió principalmente a la gestión de errores 429 (límite de peticiones) y la variabilidad en la estructura de las fuentes externas, lo que requirió iteraciones adicionales de corrección y ajuste. A ello se sumaron tres dificultades no previstas: en primer lugar, la clasificación de los eventos extraídos en las categorías existentes del sistema resultó especialmente laboriosa, ya que los títulos y descripciones de las fuentes externas no siguen ninguna taxonomía estándar; fue necesario diseñar y refinar iterativamente una lista de palabras clave por categoría hasta lograr una asignación razonablemente precisa. En segundo lugar, la extracción de direcciones reales presentó dificultades por la falta de uniformidad en cómo cada fuente representa la ubicación, mezclando nombres de recintos, barrios, referencias parciales y formatos libres. En tercer lugar, el tratamiento de fechas supuso un reto significativo: muchas fuentes presentan sus calendarios de eventos en formatos no lineales (calendarios visuales, rangos de fechas, sesiones múltiples), lo que obligó a reajustar en varias ocasiones la lógica de extracción y normalización de fechas para cubrir los distintos casos encontrados.
 
     \item \textbf{Impacto de las fechas del scraping en el sistema de rutas} \textit{(Fase 3 – Sprint 5)}: los problemas de normalización de fechas descritos en el punto anterior tuvieron también un efecto directo sobre el sistema de rutas recomendadas, cuyo desarrollo se concentró en el Sprint 5. Las rutas agrupan eventos por fecha como criterio de organización, por lo que los eventos del scraping que presentaban un calendario de fechas múltiples o indeterminadas no podían tratarse del mismo modo que los eventos con fecha única. Como solución, se decidió que cuando un evento procedente del scraping viene asociado a un calendario de sesiones, la fecha deja de usarse como factor de puntuación en la construcción de la ruta; en su lugar, se indica que existen varias fechas disponibles y el criterio de ordenación pasa a ser principalmente la distancia entre eventos. Fue necesario adaptar la lógica del algoritmo para detectar este caso y aplicar la estrategia adecuada. Esta incidencia supuso una desviación de aproximadamente 4--5 horas adicionales sobre las 12--14 horas estimadas para el algoritmo de rutas.
 
     \item \textbf{Problemas de compatibilidad con Android} \textit{(Fases 5 y 6 – Sprints 5 y 6)}: durante la fase de pruebas con usuarios piloto, llevada a cabo en el Sprint 5, se detectaron incidencias significativas en dispositivos Android que no habían aparecido durante el desarrollo, realizado íntegramente sobre iOS. Los principales problemas fueron la no visualización del mapa (OpenStreetMap) en Android y varios descuadres en la disposición de elementos de pantalla. La corrección de estas incidencias se extendió hasta el Sprint 6 y supuso una dedicación adicional de aproximadamente 7--8 horas no previstas en la planificación original. Esta desviación pone de manifiesto la importancia de incorporar pruebas sobre ambas plataformas desde las primeras fases del desarrollo.
 \end{itemize}
 
-En términos generales, el proyecto se ha completado dentro del plazo establecido y con el alcance funcional definido como prioritario, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance. El esfuerzo total registrado ha sido de aproximadamente 300 horas de trabajo, distribuidas a lo largo de 29 semanas de desarrollo, lo que supone una media de algo más de 10 horas semanales. El detalle del registro de horas por fase y actividad se recoge en el informe de Clockify incluido como Anexo.
+En términos generales, el proyecto se ha completado dentro del plazo establecido y con el alcance funcional definido como prioritario, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance. El seguimiento realizado con Clockify se recoge en el Anexo~\ref{anexo:reporte_horas} y sirve como evidencia del orden de magnitud del trabajo, aunque para el presupuesto se emplea una estimación redondeada por fases, definida en la Sección de Presupuesto.
 
 \subsection{Estructura de Desglose del Trabajo inicial}
 
@@ -277,9 +277,11 @@ Sprint 6 & 3 semanas & Cierre del proyecto & Refactorización, testing, validaci
 
 \end{longtable}
 
+La duración de los sprints no implica una dedicación homogénea en horas. El seguimiento posterior mostró que algunas actividades concentraron una carga de trabajo superior a la prevista, especialmente la redacción de la memoria, el scraping, el sistema de recomendaciones y rutas, la integración de mapas y los ajustes finales de despliegue y calidad.
+
 \subsection{Diagrama de planificación}
 
-A continuación, se presenta un diagrama de Gantt simplificado que refleja la planificación temporal del proyecto, ajustada a la duración real de los sprints:
+A continuación, se presenta un diagrama de Gantt simplificado que refleja la planificación temporal del proyecto por fases, ajustada a la duración real de los sprints:
 
 \begin{center}
 \resizebox{\textwidth}{!}{%
@@ -297,14 +299,13 @@ A continuación, se presenta un diagrama de Gantt simplificado que refleja la pl
 \gantttitle{Planificación del proyecto (semanas)}{29} \\
 \gantttitlelist{1,...,29}{1} \\
 
-\ganttbar{Análisis y planificación}{1}{3} \\
-\ganttbar{Diseño}{4}{6} \\
-\ganttbar{Sprint 1 (MVP)}{7}{10} \\
-\ganttbar{Sprint 2 (Eventos)}{11}{14} \\
-\ganttbar{Sprint 3 (Social)}{15}{18} \\
-\ganttbar{Sprint 4 (Ampliaciones)}{19}{22} \\
-\ganttbar{Sprint 5 (Rutas)}{23}{25} \\
-\ganttbar{Sprint 6 (Cierre)}{26}{28} \\
+\ganttbar{Fase 0: alcance}{1}{2} \\
+\ganttbar{Fase 1: análisis y planificación}{2}{4} \\
+\ganttbar{Fase 2: diseño}{4}{6} \\
+\ganttbar{Fase 3: desarrollo}{7}{22} \\
+\ganttbar{Fase 4: pruebas y validación}{23}{26} \\
+\ganttbar{Fase 5: ampliaciones}{23}{25} \\
+\ganttbar{Fase 6: despliegue y cierre}{26}{29} \\
 
 \end{ganttchart}%
 }
@@ -316,110 +317,154 @@ El proyecto ha sido desarrollado en un contexto académico, por lo que no ha req
 
 \subsection{Recursos humanos}
 
-El desarrollo ha sido llevado a cabo por una única persona asumiendo todos los roles del equipo. El coste unitario se estima a partir de las tablas salariales oficiales de referencia para el sector TIC en España, considerando un perfil de \textbf{Analista-Programadora junior}:
+El desarrollo ha sido llevado a cabo por una única persona asumiendo todos los roles del equipo. El coste unitario se estima a partir del informe de la Junta de Andalucía sobre precios/hora de perfiles profesionales del ámbito informático, tomando como referencia la columna \textit{Media acotada todos}, que es la indicada en el propio informe para determinar importes de licitación~\cite{junta2018perfiles}. Por la naturaleza del proyecto, se considera el perfil de \textbf{Analista programador J2EE / Web (Junior)}:
 
-\begin{itemize}
-    \item Coste hora base: \textbf{25 €/h}
-    \item Total de horas: \textbf{300 h}
-    \item Coste base de personal: 300 h $\times$ 25 €/h = \textbf{7.500 €}
-\end{itemize}
+\begin{table}[H]
+\centering
+\caption{Estimación del coste base de personal}
+\label{tab:coste_base_personal}
+\begin{tabular}{p{7cm}p{5cm}}
+\toprule
+\textbf{Concepto} & \textbf{Valor} \\
+\midrule
+Coste hora base & \textbf{30,52 €/h} \\
+Horas presupuestadas & \textbf{300 h} \\
+Coste base de personal & 300 h $\times$ 30,52 €/h = \textbf{9.156 €} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 Sobre el coste base de personal se aplican los \textbf{costes sociales} a cargo de la empresa (Seguridad Social, formación, contingencias), estimados en un 30\% del coste base:
 
-\begin{itemize}
-    \item Costes sociales: 7.500 € $\times$ 30\% = \textbf{2.250 €}
-    \item Coste total de personal (base + sociales): \textbf{9.750 €}
-\end{itemize}
+\begin{table}[H]
+\centering
+\caption{Costes sociales y coste total de personal}
+\label{tab:costes_sociales_personal}
+\begin{tabular}{p{7cm}p{5cm}}
+\toprule
+\textbf{Concepto} & \textbf{Importe} \\
+\midrule
+Costes sociales & 9.156 € $\times$ 30\% = \textbf{2.747 €} \\
+Coste total de personal (base + sociales) & \textbf{11.903 €} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Distribución del esfuerzo}
 
-El esfuerzo total del proyecto se ha estimado en aproximadamente 300 horas de trabajo. Esta distribución no es uniforme, ya que la mayor parte del esfuerzo se ha concentrado en el desarrollo frontend y backend.
+El esfuerzo total presupuestado se ha estimado en aproximadamente 300 horas de trabajo. Esta cifra se plantea como una valoración profesional redondeada por fases, no como una transcripción exacta del informe de seguimiento temporal. El registro de Clockify se ha utilizado como referencia para agrupar el esfuerzo por bloques de trabajo y ajustar el peso relativo de cada fase.
 
-\begin{longtable}{|p{6cm}|p{4cm}|}
-\hline
-\textbf{Fase} & \textbf{Horas estimadas} \\
-\hline
-Análisis y planificación & 25 h \\
-\hline
-Diseño del sistema & 30 h \\
-\hline
-Desarrollo frontend & 65 h \\
-\hline
-Desarrollo backend & 80 h \\
-\hline
-Refactorización y ajustes finales & 20 h \\
-\hline
-Testing y validación & 25 h \\
-\hline
-Despliegue & 15 h \\
-\hline
-Documentación y memoria & 60 h \\
-\hline
-\textbf{Total} & \textbf{300 h} \\
-\hline
+La distribución se ha alineado con la planificación y la EDT definidas anteriormente, evitando repetir aquí el detalle de tareas ya descrito. Únicamente se separa la Fase 3 entre frontend y backend por ser el bloque de mayor peso técnico. Además, se incrementa el peso de la Fase 6 porque el informe refleja una dedicación notable a memoria, manuales, anexos, revisión final y preparación de la defensa.
+
+\begin{longtable}{p{6.5cm}p{3cm}p{3.5cm}}
+\caption{Distribución estimada del esfuerzo y coste base por fase}\label{tab:distribucion_esfuerzo}\\
+\toprule
+\textbf{Fase} & \textbf{Horas estimadas} & \textbf{Coste base} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Fase} & \textbf{Horas estimadas} & \textbf{Coste base} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Fase 0 -- Determinación del alcance & 5 h & 153 € \\
+Fase 1 -- Análisis y planificación & 15 h & 458 € \\
+Fase 2 -- Diseño del sistema & 25 h & 763 € \\
+Fase 3A -- Desarrollo frontend & 75 h & 2.289 € \\
+Fase 3B -- Desarrollo backend & 75 h & 2.289 € \\
+Fase 4 -- Pruebas y validación & 15 h & 458 € \\
+Fase 5 -- Ampliaciones y extras & 10 h & 305 € \\
+Fase 6 -- Despliegue, documentación y cierre & 80 h & 2.442 € \\
+\midrule
+\textbf{Total} & \textbf{300 h} & \textbf{9.156 €} \\
 \end{longtable}
+
+Los importes de la tabla anterior se calculan aplicando el coste horario base de 30,52 €/h y redondeando al euro más cercano. La Fase 2 incluye la elaboración de mockups, modelo conceptual y diagramas técnicos; la Fase 5 se mantiene como partida reducida porque incluye únicamente las ampliaciones finalmente abordadas o evaluadas dentro del alcance disponible.
 
 \subsection{Infraestructura y costes indirectos}
 
 Para el desarrollo del proyecto han sido necesarios los siguientes recursos materiales e infraestructura, cuyos costes se imputan mediante amortización durante la vida útil estimada:
 
-\begin{longtable}{|p{5cm}|p{2.5cm}|p{2cm}|p{2.5cm}|p{2.5cm}|}
-\hline
+\begin{longtable}{p{4.5cm}p{2.5cm}p{2cm}p{2.5cm}p{2.5cm}}
+\caption{Infraestructura y costes indirectos}\label{tab:costes_indirectos}\\
+\toprule
 \textbf{Recurso} & \textbf{Coste total} & \textbf{Vida útil} & \textbf{Duración proyecto} & \textbf{Coste imputable} \\
-\hline
+\midrule
+\endfirsthead
+\toprule
+\textbf{Recurso} & \textbf{Coste total} & \textbf{Vida útil} & \textbf{Duración proyecto} & \textbf{Coste imputable} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
 Ordenador portátil & 900 € & 4 años & 7 meses & 131 € \\
-\hline
 Conexión a internet & 40 €/mes & — & 7 meses & 280 € \\
-\hline
 Licencias y software & 0 € & — & — & 0 € \\
-\hline
 Herramientas en la nube (plan gratuito: Render, Supabase, Cloudinary, Firebase, GitHub) & 0 € & — & — & 0 € \\
-\hline
+\midrule
 \textbf{Total costes indirectos} & & & & \textbf{411 €} \\
-\hline
 \end{longtable}
 
 \subsection{Coste total del proyecto}
 
-\begin{longtable}{|p{8cm}|p{4cm}|}
-\hline
+\begin{longtable}{p{8cm}p{4cm}}
+\caption{Coste total del proyecto}\label{tab:coste_total_proyecto}\\
+\toprule
 \textbf{Concepto} & \textbf{Importe} \\
-\hline
-Coste de personal (base) & 7.500 € \\
-\hline
-Costes sociales (30\%) & 2.250 € \\
-\hline
+\midrule
+\endfirsthead
+\toprule
+\textbf{Concepto} & \textbf{Importe} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Coste de personal (base) & 9.156 € \\
+Costes sociales (30\%) & 2.747 € \\
 Costes indirectos (infraestructura) & 411 € \\
-\hline
-\textbf{Coste total del proyecto} & \textbf{10.161 €} \\
-\hline
+\midrule
+\textbf{Coste total del proyecto} & \textbf{12.314 €} \\
 \end{longtable}
 
 \subsection{Presupuesto}
 
 El presupuesto es la cantidad que se cobraría al cliente por la realización del proyecto. A los costes totales se suman dos partidas adicionales:
 
-\begin{itemize}
-    \item \textbf{Margen de contingencia (12\%)}: cubre desviaciones razonables respecto a la estimación inicial. 10.161 € $\times$ 12\% = 1.219 €
-    \item \textbf{Beneficio industrial (20\%)}: margen de beneficio habitual en el sector para proyectos de desarrollo de software. (10.161 € + 1.219 €) $\times$ 20\% = 2.276 €
-\end{itemize}
+\begin{table}[H]
+\centering
+\caption{Partidas adicionales del presupuesto}
+\label{tab:partidas_adicionales_presupuesto}
+\begin{tabular}{p{5cm}p{5.5cm}p{3cm}}
+\toprule
+\textbf{Partida} & \textbf{Descripción} & \textbf{Cálculo} \\
+\midrule
+\textbf{Margen de contingencia (12\%)} & Cubre desviaciones razonables respecto a la estimación inicial. & 12.314 € $\times$ 12\% = 1.478 € \\
+\textbf{Beneficio industrial (20\%)} & Margen de beneficio habitual en el sector para proyectos de desarrollo de software. & (12.314 € + 1.478 €) $\times$ 20\% = 2.758 € \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{longtable}{|p{8cm}|p{4cm}|}
-\hline
+\begin{longtable}{p{8cm}p{4cm}}
+\caption{Presupuesto final del proyecto}\label{tab:presupuesto_final}\\
+\toprule
 \textbf{Concepto} & \textbf{Importe} \\
-\hline
-Coste total del proyecto & 10.161 € \\
-\hline
-Margen de contingencia (12\%) & 1.219 € \\
-\hline
-Beneficio industrial (20\%) & 2.276 € \\
-\hline
-\textbf{Presupuesto total (sin IVA)} & \textbf{13.656 €} \\
-\hline
-\textbf{IVA (21\%)} & \textbf{2.868 €} \\
-\hline
-\textbf{Presupuesto total (con IVA)} & \textbf{16.524 €} \\
-\hline
+\midrule
+\endfirsthead
+\toprule
+\textbf{Concepto} & \textbf{Importe} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Coste total del proyecto & 12.314 € \\
+Margen de contingencia (12\%) & 1.478 € \\
+Beneficio industrial (20\%) & 2.758 € \\
+\midrule
+\textbf{Presupuesto total (sin IVA)} & \textbf{16.550 €} \\
+\textbf{IVA (21\%)} & \textbf{3.475 €} \\
+\midrule
+\textbf{Presupuesto total (con IVA)} & \textbf{20.025 €} \\
 \end{longtable}
 
 Este presupuesto representa el valor de mercado del trabajo realizado. En el contexto del TFG no ha supuesto un gasto económico real, ya que las herramientas y servicios utilizados están disponibles en planes gratuitos y el trabajo ha sido realizado por la propia estudiante.

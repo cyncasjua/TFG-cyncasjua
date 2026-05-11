@@ -215,13 +215,13 @@ Este bloque valida el acceso al sistema y la correcta gestión de la informació
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-01 & HU-10 / RF-01 & Correo válido, contraseña válida y datos mínimos de registro & Crear una nueva cuenta e iniciar sesión con las credenciales registradas & El sistema autentica al usuario y muestra la pantalla principal sin errores. La sesión queda iniciada correctamente. \\
+\phantomsection\label{cp:01}CP-01 & HU-10 / RF-01 & Correo válido, contraseña válida y datos mínimos de registro & Crear una nueva cuenta e iniciar sesión con las credenciales registradas & El sistema autentica al usuario y muestra la pantalla principal sin errores. La sesión queda iniciada correctamente. \\
 \hline
-CP-02 & HU-10 / RF-01 & Correo o contraseña incorrectos & Intentar iniciar sesión con credenciales inválidas & El sistema deniega el acceso y muestra un mensaje de error, sin permitir entrar. \\
+\phantomsection\label{cp:02}CP-02 & HU-10 / RF-01 & Correo o contraseña incorrectos & Intentar iniciar sesión con credenciales inválidas & El sistema deniega el acceso y muestra un mensaje de error, sin permitir entrar. \\
 \hline
-CP-03 & HU-10 / RF-02 & Nombre, intereses, ubicación e imagen de perfil modificados & Editar los datos del perfil desde el menú lateral & Los cambios se reflejan tras guardar y persisten al volver a abrir el perfil. \\
+\phantomsection\label{cp:03}CP-03 & HU-10 / RF-02 & Nombre, intereses, ubicación e imagen de perfil modificados & Editar los datos del perfil desde el menú lateral & Los cambios se reflejan tras guardar y persisten al volver a abrir el perfil. \\
 \hline
-CP-04 & HU-10 / RF-01 & Correo electrónico asociado a la cuenta & Solicitar recuperación de contraseña & El sistema inicia el flujo de recuperación y acepta el correo indicado. \\
+\phantomsection\label{cp:04}CP-04 & HU-10 / RF-01 & Correo electrónico asociado a la cuenta & Solicitar recuperación de contraseña & El sistema inicia el flujo de recuperación y acepta el correo indicado. \\
 \hline
 \end{longtable}
 
@@ -233,15 +233,15 @@ Verifican el núcleo principal de la aplicación: listado, filtrado y detalle de
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-05 & HU-1 / RF-03 & Aplicación autenticada con eventos en BD & Acceder a la página principal & Se muestra el listado con imagen, nombre, categoría y fecha, sin errores de carga. \\
+\phantomsection\label{cp:05}CP-05 & HU-1 / RF-03 & Aplicación autenticada con eventos en BD & Acceder a la página principal & Se muestra el listado con imagen, nombre, categoría y fecha, sin errores de carga. \\
 \hline
-CP-06 & HU-2 / RF-03 & Evento existente con datos completos & Seleccionar un evento del listado & Se abre la ficha detallada con descripción, ubicación, precio, asistentes, valoraciones y acciones disponibles. \\
+\phantomsection\label{cp:06}CP-06 & HU-2 / RF-03 & Evento existente con datos completos & Seleccionar un evento del listado & Se abre la ficha detallada con descripción, ubicación, precio, asistentes, valoraciones y acciones disponibles. \\
 \hline
-CP-07 & HU-14 / RF-04 & Categoría, texto de búsqueda, radio y estado & Aplicar filtros desde el buscador avanzado & El listado muestra únicamente los eventos que cumplen los filtros seleccionados. \\
+\phantomsection\label{cp:07}CP-07 & HU-14 / RF-04 & Categoría, texto de búsqueda, radio y estado & Aplicar filtros desde el buscador avanzado & El listado muestra únicamente los eventos que cumplen los filtros seleccionados. \\
 \hline
-CP-08 & HU-15 / RF-08 & Evento público activo & Pulsar la acción de apuntarse en el detalle & El usuario queda como asistente y el cambio se refleja en el detalle y en el listado de apuntados. \\
+\phantomsection\label{cp:08}CP-08 & HU-15 / RF-08 & Evento público activo & Pulsar la acción de apuntarse en el detalle & El usuario queda como asistente y el cambio se refleja en el detalle y en el listado de apuntados. \\
 \hline
-CP-09 & HU-15 / RF-08 & Evento finalizado & Acceder al detalle desde el listado de finalizados & La información del evento es visible pero la acción de apuntarse aparece deshabilitada. \\
+\phantomsection\label{cp:09}CP-09 & HU-15 / RF-08 & Evento finalizado & Acceder al detalle desde el listado de finalizados & La información del evento es visible pero la acción de apuntarse aparece deshabilitada. \\
 \hline
 \end{longtable}
 
@@ -253,11 +253,11 @@ Validan el uso de la ubicación del usuario y el mapa de eventos. Corresponden a
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-10 & HU-6 / RF-05 & Perfil con ubicación y eventos geolocalizados & Acceder al mapa de eventos & El mapa se carga correctamente con los eventos posicionados según su ubicación. \\
+\phantomsection\label{cp:10}CP-10 & HU-6 / RF-05 & Perfil con ubicación y eventos geolocalizados & Acceder al mapa de eventos & El mapa se carga correctamente con los eventos posicionados según su ubicación. \\
 \hline
-CP-11 & HU-6 / RF-05 & Distintos radios configurables & Cambiar el radio de búsqueda en el mapa & Los eventos visibles se ajustan al radio seleccionado. \\
+\phantomsection\label{cp:11}CP-11 & HU-6 / RF-05 & Distintos radios configurables & Cambiar el radio de búsqueda en el mapa & Los eventos visibles se ajustan al radio seleccionado. \\
 \hline
-CP-12 & HU-6 / RF-05 & Evento con coordenadas válidas & Seleccionar un marcador en el mapa & Se muestra el resumen del evento y al pulsarlo se accede a su ficha completa. \\
+\phantomsection\label{cp:12}CP-12 & HU-6 / RF-05 & Evento con coordenadas válidas & Seleccionar un marcador en el mapa & Se muestra el resumen del evento y al pulsarlo se accede a su ficha completa. \\
 \hline
 \end{longtable}
 
@@ -269,11 +269,11 @@ Verifican el chat de evento, los mensajes privados y el sistema de reseñas. Cor
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-13 & HU-8 / RF-09 & Texto de mensaje e imagen opcional & Enviar mensaje en el chat de un evento & El mensaje aparece en el chat y queda visible para los participantes. \\
+\phantomsection\label{cp:13}CP-13 & HU-8 / RF-09 & Texto de mensaje e imagen opcional & Enviar mensaje en el chat de un evento & El mensaje aparece en el chat y queda visible para los participantes. \\
 \hline
-CP-14 & HU-8 / RF-09 & Dos cuentas autenticadas en el mismo evento & Iniciar conversación privada desde la lista de asistentes & El chat privado se abre correctamente y los mensajes son visibles para ambas cuentas. \\
+\phantomsection\label{cp:14}CP-14 & HU-8 / RF-09 & Dos cuentas autenticadas en el mismo evento & Iniciar conversación privada desde la lista de asistentes & El chat privado se abre correctamente y los mensajes son visibles para ambas cuentas. \\
 \hline
-CP-15 & HU-9 / RF-11 & Puntuación entre 1 y 5 y comentario opcional & Valorar un evento desde su ficha de detalle & La valoración se registra y se refleja en la puntuación media del evento. \\
+\phantomsection\label{cp:15}CP-15 & HU-9 / RF-11 & Puntuación entre 1 y 5 y comentario opcional & Valorar un evento desde su ficha de detalle & La valoración se registra y se refleja en la puntuación media del evento. \\
 \hline
 \end{longtable}
 
@@ -285,11 +285,11 @@ Validan el sistema de personalización, las recomendaciones y la generación de 
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-16 & HU-11 / RF-12 & Usuario con intereses configurados y actividad previa & Abrir la sección ``Para ti'' & El sistema muestra recomendaciones coherentes con los intereses y la actividad del usuario. \\
+\phantomsection\label{cp:16}CP-16 & HU-11 / RF-12 & Usuario con intereses configurados y actividad previa & Abrir la sección ``Para ti'' & El sistema muestra recomendaciones coherentes con los intereses y la actividad del usuario. \\
 \hline
-CP-17 & HU-11 / RF-13 & Preferencias del usuario y eventos con fecha & Abrir la sección de rutas recomendadas & Se genera al menos una ruta con una agrupación coherente de eventos. \\
+\phantomsection\label{cp:17}CP-17 & HU-11 / RF-13 & Preferencias del usuario y eventos con fecha & Abrir la sección de rutas recomendadas & Se genera al menos una ruta con una agrupación coherente de eventos. \\
 \hline
-CP-18 & HU-11 / RF-13 & Datos mínimos de una ruta nueva & Crear una ruta manual y consultarla & La ruta queda almacenada y es visible en el listado con su vista de detalle. \\
+\phantomsection\label{cp:18}CP-18 & HU-11 / RF-13 & Datos mínimos de una ruta nueva & Crear una ruta manual y consultarla & La ruta queda almacenada y es visible en el listado con su vista de detalle. \\
 \hline
 \end{longtable}
 
@@ -301,15 +301,15 @@ Validan el flujo de eventos privados con enlace de acceso restringido. Correspon
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-19 & HU-3 / RF-06 & Datos válidos para evento privado & Crear un evento privado & El sistema genera el evento y muestra un enlace de acceso compartible. El evento no aparece en el listado público. \\
+\phantomsection\label{cp:19}CP-19 & HU-3 / RF-06 & Datos válidos para evento privado & Crear un evento privado & El sistema genera el evento y muestra un enlace de acceso compartible. El evento no aparece en el listado público. \\
 \hline
-CP-20 & HU-15 / RF-21 & Enlace privado válido & Acceder con otra cuenta usando el enlace & El usuario accede al evento y pasa a sus eventos visibles. \\
+\phantomsection\label{cp:20}CP-20 & HU-15 / RF-21 & Enlace privado válido & Acceder con otra cuenta usando el enlace & El usuario accede al evento y pasa a sus eventos visibles. \\
 \hline
-CP-21 & HU-15 / RF-21 & Sin enlace válido & Intentar acceder al evento sin enlace & El sistema deniega el acceso y el evento no aparece en ningún listado. \\
+\phantomsection\label{cp:21}CP-21 & HU-15 / RF-21 & Sin enlace válido & Intentar acceder al evento sin enlace & El sistema deniega el acceso y el evento no aparece en ningún listado. \\
 \hline
-CP-22 & HU-3 / RF-20 & Evento privado ya creado & Acceder a ``Eventos privados'' y ``Mis eventos'' & El evento aparece en la sección correcta y puede editarse según las restricciones definidas. \\
+\phantomsection\label{cp:22}CP-22 & HU-3 / RF-20 & Evento privado ya creado & Acceder a ``Eventos privados'' y ``Mis eventos'' & El evento aparece en la sección correcta y puede editarse según las restricciones definidas. \\
 \hline
-CP-23 & HU-3 / RF-20 & Evento privado editado a público & Editar y cambiar visibilidad a pública & El evento pasa a estado pendiente y entra en cola de moderación, sin hacerse visible de inmediato. \\
+\phantomsection\label{cp:23}CP-23 & HU-3 / RF-20 & Evento privado editado a público & Editar y cambiar visibilidad a pública & El evento pasa a estado pendiente y entra en cola de moderación, sin hacerse visible de inmediato. \\
 \hline
 \end{longtable}
 
@@ -321,15 +321,15 @@ Validan que cada rol accede únicamente a sus opciones y puede realizar sus oper
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-24 & HU-12 / RF-17 & Cuenta con rol administrador & Acceder al panel de administración & Se muestra la gestión de usuarios y se pueden modificar roles o eliminar cuentas. \\
+\phantomsection\label{cp:24}CP-24 & HU-12 / RF-17 & Cuenta con rol administrador & Acceder al panel de administración & Se muestra la gestión de usuarios y se pueden modificar roles o eliminar cuentas. \\
 \hline
-CP-25 & HU-12 / RF-16 & Cuenta con rol administrador & Crear, editar o eliminar una categoría & Los cambios se reflejan en el sistema y la categoría queda disponible en filtros y formularios. \\
+\phantomsection\label{cp:25}CP-25 & HU-12 / RF-16 & Cuenta con rol administrador & Crear, editar o eliminar una categoría & Los cambios se reflejan en el sistema y la categoría queda disponible en filtros y formularios. \\
 \hline
-CP-26 & HU-4 / RF-07 & Cuenta moderador y evento pendiente & Acceder al panel de moderación & Se muestra la lista de eventos pendientes y se puede aprobar, rechazar o editar cada uno. \\
+\phantomsection\label{cp:26}CP-26 & HU-4 / RF-07 & Cuenta moderador y evento pendiente & Acceder al panel de moderación & Se muestra la lista de eventos pendientes y se puede aprobar, rechazar o editar cada uno. \\
 \hline
-CP-27 & HU-3 / RF-07 & Evento del CP-23 en moderación & Verificar visibilidad del evento durante moderación & El evento no aparece en el listado público hasta que el moderador lo aprueba. \\
+\phantomsection\label{cp:27}CP-27 & HU-3 / RF-07 & Evento del CP-23 en moderación & Verificar visibilidad del evento durante moderación & El evento no aparece en el listado público hasta que el moderador lo aprueba. \\
 \hline
-CP-28 & HU-12 / RF-15 & Cuenta con rol usuario estándar & Intentar acceder al panel de administración o moderación & El sistema deniega el acceso y no muestra esas opciones en la interfaz. \\
+\phantomsection\label{cp:28}CP-28 & HU-12 / RF-15 & Cuenta con rol usuario estándar & Intentar acceder al panel de administración o moderación & El sistema deniega el acceso y no muestra esas opciones en la interfaz. \\
 \hline
 \end{longtable}
 
@@ -341,9 +341,9 @@ Validan las notificaciones de moderación y de eventos cercanos. Corresponden a 
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-CP-29 & HU-5 / RF-14 & Evento moderado por un moderador & Abrir la pantalla de notificaciones tras la resolución & El sistema muestra una notificación con el resultado de la moderación (aprobado o rechazado). \\
+\phantomsection\label{cp:29}CP-29 & HU-5 / RF-14 & Evento moderado por un moderador & Abrir la pantalla de notificaciones tras la resolución & El sistema muestra una notificación con el resultado de la moderación (aprobado o rechazado). \\
 \hline
-CP-30 & HU-7 / RF-14 & Perfil con ubicación y eventos cercanos & Revisar las notificaciones con la app activa & El sistema muestra avisos de eventos próximos a la ubicación del usuario. \\
+\phantomsection\label{cp:30}CP-30 & HU-7 / RF-14 & Perfil con ubicación y eventos cercanos & Revisar las notificaciones con la app activa & El sistema muestra avisos de eventos próximos a la ubicación del usuario. \\
 \hline
 \end{longtable}
 

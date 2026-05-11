@@ -61,17 +61,24 @@
     \input{sections/04_Diseño}
     \input{sections/05_Implementacion}
     \input{sections/06_Pruebas}
-    \input{sections/07_Manual_de_desarrollo}
-    \input{sections/08_Manual_de_despliegue}
-    \input{sections/09_Manual_de_usuario}
     \input{sections/XX_Conclusiones}
 
     % Bibliografía
-    \bibliographystyle{unsrtnat}
+    \bibliographystyle{unsrt}
     \bibliography{bibliografia.bib}
 
     % Anexos
     \appendix
+    \clearpage
+    \phantomsection
+    \addcontentsline{toc}{chapter}{Anexos}
+    \chapter*{Anexos}
+    \input{sections/anexo_glosario}
+    \input{sections/07_Manual_de_desarrollo}
+    \input{sections/08_Manual_de_despliegue}
+    \input{sections/09_Manual_de_usuario}
+    \input{sections/anexo_reporte_horas}
+    \input{sections/anexo_informes_avance_cambios}
     \input{sections/anexo_autoria}
     \input{sections/anexo_usuarios_piloto}
     \input{sections/anexo_actas_de_reunion}
