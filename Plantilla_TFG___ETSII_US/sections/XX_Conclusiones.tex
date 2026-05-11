@@ -41,7 +41,7 @@ El objetivo principal del sistema era desarrollar una aplicación móvil multipl
 
     \item \textbf{Geolocalización y mapa interactivo}: implementado completamente mediante OpenStreetMap y \texttt{react-native-maps}, con filtrado por radio y visualización de marcadores en mapa.
 
-    \item \textbf{Interacción social}: implementado completamente. El sistema incluye chat de evento (sala grupal por evento), mensajería privada entre usuarios, valoraciones con puntuación y comentario, y sistema de seguidores.
+    \item \textbf{Interacción social}: implementado completamente. El sistema incluye chat de evento (sala grupal por evento), mensajería privada entre usuarios, valoraciones con puntuación y comentario, y módulo de amistad basado en seguimiento entre usuarios.
 
     \item \textbf{Sistema de recomendaciones personalizado}: implementado completamente. El motor aplica un algoritmo multifactorial ponderado que tiene en cuenta categorías de interés, historial de interacciones (guardar, asistir, compartir, ver, valorar), proximidad geográfica y temporal.
 
@@ -60,9 +60,9 @@ En cuanto a los objetivos del sistema no alcanzados, la generación automática 
 
 El resultado principal del proyecto es una aplicación móvil multiplataforma funcional para el descubrimiento, creación y gestión de eventos en Sevilla. La solución final integra una aplicación cliente desarrollada con React Native y Expo, un backend basado en NestJS, una base de datos PostgreSQL con extensión PostGIS y distintos servicios externos para autenticación, almacenamiento de imágenes, mapas, geocodificación y obtención de eventos desde fuentes externas.
 
-Desde el punto de vista funcional, el sistema permite consultar eventos, filtrarlos por criterios relevantes, visualizarlos en un mapa, crear eventos públicos y privados, moderar contenido, participar en chats, enviar mensajes privados, seguir a otros usuarios, valorar eventos, recibir notificaciones y obtener recomendaciones personalizadas. Además, se han incorporado rutas de eventos recomendadas y rutas creadas por los propios usuarios, ampliando el alcance de la aplicación más allá de un listado convencional de actividades.
+Desde el punto de vista funcional, el sistema permite consultar eventos, filtrarlos por criterios relevantes, visualizarlos en un mapa, crear eventos públicos y privados, moderar contenido, participar en chats, enviar mensajes privados, buscar usuarios, consultar sus perfiles, seguir o dejar de seguir a otras personas, ver los eventos a los que asisten, valorar eventos, recibir notificaciones y obtener recomendaciones personalizadas. Además, se han incorporado rutas de eventos recomendadas y rutas creadas por los propios usuarios, ampliando el alcance de la aplicación más allá de un listado convencional de actividades.
 
-Desde el punto de vista documental, el proyecto ha generado una memoria completa, un manual de usuario, un manual de desarrollo, un manual de despliegue, actas de reunión, informes de avance y cambio, y la declaración de autoría correspondiente. Todo ello permite presentar el trabajo no solo como una aplicación terminada, sino como un proyecto de ingeniería documentado, planificado, probado y preparado para su mantenimiento o evolución futura.
+Desde el punto de vista documental, el proyecto ha generado una memoria completa, un manual de usuario, un manual de desarrollo, un manual de despliegue, actas de reunión, informes de avance y cambio, el reporte de horas de Clockify y la declaración de autoría correspondiente. Todo ello permite presentar el trabajo no solo como una aplicación terminada, sino como un proyecto de ingeniería documentado, planificado, probado y preparado para su mantenimiento o evolución futura.
 
 \section{Lecciones aprendidas}
 
@@ -78,7 +78,7 @@ El uso de PostGIS para las consultas geográficas demostró ser más eficiente q
 
 \subsection{Desarrollo unipersonal con metodología ágil}
 
-Asumir simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora exigió una autodisciplina especial en la priorización del backlog. La técnica de tallas de camiseta para la estimación, combinada con el seguimiento real de horas mediante Clockify, permitió detectar a tiempo los desvíos de esfuerzo y ajustar el alcance de forma razonada.
+Asumir simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora exigió una autodisciplina especial en la priorización del backlog. La técnica de tallas de camiseta para la estimación, combinada con el seguimiento real de horas mediante Clockify (Anexo~\ref{anexo:reporte_horas}), permitió detectar a tiempo los desvíos de esfuerzo y ajustar el alcance de forma razonada.
 
 \subsection{Calidad del código}
 
@@ -93,9 +93,9 @@ El desarrollo en React Native con Expo promete una única base de código para i
 Las desviaciones respecto a la planificación inicial se describen a continuación, junto con su impacto cuantitativo estimado y la justificación de la decisión adoptada.
 
 \begin{itemize}
-    \item \textbf{Incorporación de CI/CD} (+10 h): la configuración de GitHub Actions no estaba prevista en la estimación original. Se decidió incorporarla al detectar que la base de código había alcanzado una complejidad suficiente como para justificar la automatización del linter y las comprobaciones de formato. El coste adicional se compensó con la reducción de tiempo dedicado a revisiones manuales en sprints posteriores.
+    \item \textbf{Incorporación de CI/CD y ajustes de calidad} (+9--10 h): la configuración de GitHub Actions no estaba prevista en la estimación original. Se decidió incorporarla al detectar que la base de código había alcanzado una complejidad suficiente como para justificar la automatización del linter, las comprobaciones de formato, la guía de estilo y los ajustes derivados del despliegue. El coste adicional se compensó con la reducción de tiempo dedicado a revisiones manuales en sprints posteriores.
 
-    \item \textbf{Mayor complejidad del scraping} (+15 h): la gestión de errores 429, la variabilidad en la estructura de las respuestas externas y la necesidad de implementar reintentos con retroceso exponencial superaron la estimación inicial. Esta desviación fue la principal causa de que las funcionalidades opcionales de la Fase 5 no pudieran completarse.
+    \item \textbf{Mayor complejidad del scraping} (+15--20 h): la gestión de errores 429, la variabilidad en la estructura de las respuestas externas, la extracción de direcciones, el tratamiento de fechas y la necesidad de implementar reintentos superaron la estimación inicial. El esfuerzo total se situó en torno a 30 horas, lo que convirtió esta desviación en una de las principales causas de que las funcionalidades opcionales de la Fase 5 no pudieran completarse.
 
     \item \textbf{No implementación de NSFWJS y generación de carteles con IA} ($-$20 h, reducción de alcance): ambas funcionalidades estaban condicionadas a la disponibilidad de tiempo al concluir las fases principales. El esfuerzo adicional absorbido por el scraping y el sistema de rutas hizo inviable abordarlas dentro del plazo del proyecto. Se documentan en la sección de trabajo futuro.
 
@@ -115,7 +115,7 @@ Durante el desarrollo se han aplicado medidas de seguridad a distintos niveles d
     \item \textbf{Validación de entrada}: los DTOs del backend utilizan \texttt{class-validator} para validar y sanear todos los datos recibidos del cliente antes de procesarlos.
     \item \textbf{Privacidad de datos}: la aplicación no almacena contraseñas (delegadas en Firebase) ni datos de pago. Los datos de ubicación del usuario solo se utilizan para consultas espaciales y no se registran con seguimiento histórico.
     \item \textbf{Eventos privados}: el acceso a eventos privados requiere un enlace de invitación único generado en el backend, que no es predecible ni enumerable.
-    \item \textbf{Row-Level Security en Supabase}: tras recibir un aviso de seguridad crítico de Supabase, se activó la política de \textit{Row-Level Security} (RLS) en las 18 tablas del esquema público de la base de datos. Sin esta medida, cualquier persona con la URL del proyecto y la clave anónima podía leer, modificar y eliminar datos directamente a través de la API REST de Supabase, sin pasar por el backend. El backend NestJS no se ve afectado, ya que se conecta como \textit{service role}, que bypasea el RLS por diseño.
+    \item \textbf{Row-Level Security en Supabase}: tras recibir un aviso de seguridad crítico de Supabase, se activó la política de \textit{Row-Level Security} (RLS) en las 18 tablas del esquema público de la base de datos. Sin esta medida, cualquier persona con la URL del proyecto y la clave anónima podía leer, modificar y eliminar datos directamente a través de la API REST de Supabase, sin pasar por el backend. El backend NestJS no se ve afectado, ya que se conecta como \textit{service role}, que omite las políticas RLS por diseño.
 \end{itemize}
 
 
@@ -141,6 +141,8 @@ A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades q
     \item \textbf{Modo sin conexión básico}: actualmente no existe detección de red ni caché local. Mediante \texttt{AsyncStorage} o React Query se podrían almacenar localmente los últimos eventos cargados y mostrarlos sin conexión, mejorando la experiencia de usuario en entornos con conectividad intermitente.
 
     \item \textbf{Achievements y gamificación}: dado que el sistema ya registra visitas, asistencias, guardados y compartidos, sería natural introducir un sistema de insignias: \textit{Explorador} (10 eventos distintos visitados), \textit{Foodie} (5 eventos de gastronomía asistidos), \textit{Organizador} (3 eventos propios aprobados), entre otras. Este mecanismo aumentaría la retención y la participación activa de los usuarios.
+
+    \item \textbf{Módulo avanzado de amigos}: actualmente el sistema dispone de un módulo de amistad basado en seguimiento, con búsqueda de usuarios, perfiles públicos, opción de seguir o dejar de seguir, mensajería privada y consulta de eventos a los que asisten otros usuarios. Como ampliación futura, se podría incorporar una gestión más explícita de contactos cercanos o amistades confirmadas, invitaciones directas a eventos y recomendaciones sociales basadas en intereses compartidos.
 
     \item \textbf{Integración con el calendario nativo del dispositivo}: la pantalla \texttt{CalendarEventsScreen} ya existe pero no hay integración con el calendario nativo del teléfono. Mediante \texttt{expo-calendar} sería posible añadir directamente los eventos a los que el usuario se apunta en Google Calendar o Apple Calendar, sin salir de la aplicación.
 

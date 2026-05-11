@@ -46,7 +46,7 @@ El sistema \textbf{Sevillaneando} se despliega mediante una arquitectura distrib
     \node[box, below=of client] (backend) {\textbf{Backend API}\\NestJS + HTTPS + WebSockets\\Render (Web Service)};
     \node[box, below=of backend] (db) {\textbf{Base de datos}\\PostgreSQL 15 + PostGIS 3.3\\Servicio gestionado};
 
-    \node[svcbox, right=2cm of backend] (firebase) {Firebase\\Auth + Storage};
+    \node[svcbox, right=2cm of backend] (firebase) {Firebase\\Auth};
     \node[svcbox, right=2cm of client] (cloudinary) {Cloudinary\\Imágenes};
 
     \draw[arrow] (client) -- node[right]{HTTPS / WSS} (backend);
@@ -68,9 +68,9 @@ El sistema \textbf{Sevillaneando} se despliega mediante una arquitectura distrib
 
     \item \textbf{Base de datos}: se despliega como instancia independiente de PostgreSQL 15 con la extensión PostGIS, preferiblemente como servicio gestionado para garantizar persistencia, disponibilidad y backups automáticos.
 
-    \item \textbf{Firebase}: servicio externo de Google que gestiona la autenticación de usuarios y el almacenamiento de imágenes de perfil. No requiere despliegue propio.
+    \item \textbf{Firebase}: servicio externo de Google que gestiona la autenticación de usuarios. No requiere despliegue propio.
 
-    \item \textbf{Cloudinary}: servicio externo para el almacenamiento y transformación de imágenes de eventos. No requiere despliegue propio.
+    \item \textbf{Cloudinary}: servicio externo para el almacenamiento y transformación de imágenes de eventos, perfiles y chats. No requiere despliegue propio.
 \end{itemize}
 
 %--------------------------------------------------
@@ -313,7 +313,7 @@ La respuesta esperada es un JSON con el estado del sistema:
     \item \textbf{Creación de eventos}: flujo completo de creación con imágenes (verifica Cloudinary).
     \item \textbf{Chat}: envío y recepción de mensajes en tiempo real (verifica WebSockets).
     \item \textbf{Notificaciones}: recepción de notificaciones en la aplicación.
-    \item \textbf{Carga de imágenes}: subida de foto de perfil (verifica Firebase Storage).
+    \item \textbf{Carga de imágenes}: subida de foto de perfil (verifica Cloudinary).
     \item \textbf{Mapas}: visualización de eventos en el mapa interactivo (verifica OpenStreetMap).
     \item \textbf{Geolocalización}: búsqueda de eventos cercanos (verifica PostGIS).
 \end{itemize}

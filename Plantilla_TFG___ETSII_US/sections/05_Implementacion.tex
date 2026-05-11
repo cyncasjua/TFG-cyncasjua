@@ -298,9 +298,11 @@ Al autenticarse por primera vez, el backend crea automáticamente el registro de
 
 El perfil almacena, además de los datos básicos, la ubicación geográfica del usuario (utilizada por las notificaciones de cercanía y las recomendaciones), una foto de perfil, un array de categorías de interés (\texttt{intereses}), un orden de categorías preferido (\texttt{categoryOrder}) y los radios de búsqueda configurados por el usuario (\texttt{radiusOptions}).
 
-\subsection{Sistema de seguidores}
+\subsection{Módulo de amistad y seguimiento}
 
-El sistema implementa una red social básica de seguidores. Un usuario puede seguir a otros usuarios y dejar de seguirlos. La relación se almacena en la tabla intermedia \texttt{user\_seguidores} como una relación muchos a muchos reflexiva sobre la entidad \texttt{User}, distinguiendo entre \texttt{seguidores} (quienes siguen al usuario) y \texttt{seguidos} (a quienes sigue el usuario).
+El sistema implementa un módulo de amistad basado en seguimiento entre usuarios. Un usuario puede buscar a otras personas, acceder a su perfil público, seguirlas o dejar de seguirlas, iniciar una conversación privada y consultar los eventos a los que asisten. La relación se almacena en la tabla intermedia \texttt{user\_seguidores} como una relación muchos a muchos reflexiva sobre la entidad \texttt{User}, distinguiendo entre \texttt{seguidores} (quienes siguen al usuario) y \texttt{seguidos} (a quienes sigue el usuario).
+
+En la interfaz se muestra una pestaña de \textit{Siguiendo} con los usuarios seguidos por la cuenta actual y una pestaña de \textit{Seguidores} que actúa como lista de usuarios pendientes de correspondencia: incluye a quienes siguen al usuario actual pero desaparecen de esa pestaña cuando el usuario empieza a seguirlos, pasando entonces a mostrarse en \textit{Siguiendo}.
 
 Cuando un usuario empieza a seguir a otro, el sistema genera automáticamente una notificación de tipo \textbf{NuevoSeguidor} para el destinatario.
 

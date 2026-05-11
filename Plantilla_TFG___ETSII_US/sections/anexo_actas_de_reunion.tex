@@ -1,5 +1,7 @@
 \chapter{Actas de reunión}\label{anexo:actas}
 
+Las actas recogidas en este anexo reflejan el estado del proyecto y las decisiones discutidas en el momento de cada reunión. Algunas decisiones técnicas iniciales evolucionaron durante el desarrollo, por lo que la solución final válida es la descrita en los capítulos de diseño, implementación y despliegue.
+
 \section*{Acta de Reunión 1}
 \addcontentsline{toc}{section}{Acta de Reunión 1}
 
@@ -100,7 +102,7 @@ Se revisa la descripción del proyecto, centrada en una aplicación móvil para 
 El tutor considera adecuada la motivación y confirma que la propuesta encaja con el ámbito de Ingeniería del Software y con la línea de proyectos de aplicaciones móviles.
 
 \subsubsection*{2. Alcance funcional y funcionalidades iniciales}
-Se comentan los objetivos del anteproyecto, que incluyen: listado de eventos con información detallada, posibilidad de que los usuarios añadan eventos sujetos a moderación, integración de mapa, subida de imágenes en vivo, reseñas y valoraciones, recomendaciones personalizadas y notificaciones push.
+Se comentan los objetivos del anteproyecto, que incluyen: listado de eventos con información detallada, posibilidad de que los usuarios añadan eventos sujetos a moderación, integración de mapa, subida de imágenes en vivo, reseñas y valoraciones, recomendaciones personalizadas y notificaciones dentro de la aplicación.
 
 A partir de estos objetivos, se acuerda estructurar el alcance en bloques funcionales (búsqueda/listado, detalle de evento, propuesta y moderación, mapa, interacción social, recomendaciones y notificaciones), para facilitar su futura transformación en historias de usuario.
 
@@ -112,7 +114,7 @@ Durante la reunión se decide:
 \end{itemize}
 
 \subsubsection*{4. Validación de tecnologías iniciales}
-Se revisan las decisiones tecnológicas recogidas en el anteproyecto: React Native para el frontend móvil, backend con Node.js y NestJS, PostgreSQL con PostGIS para datos geoespaciales, Firebase Auth y Firebase Storage, y Google Maps SDK para mapas.
+Se revisan las decisiones tecnológicas recogidas en el anteproyecto: React Native para el frontend móvil, backend con Node.js y NestJS, PostgreSQL con PostGIS para datos geoespaciales, Firebase Authentication para la autenticación, Cloudinary para la gestión de imágenes y OpenStreetMap integrado mediante \texttt{react-native-maps} para mapas.
 
 El tutor valida estas decisiones como técnicamente coherentes y adecuadas para el tipo de aplicación propuesta, recomendando documentar claramente las razones de elección en la memoria del TFG.
 
@@ -126,7 +128,7 @@ El tutor valida estas decisiones como técnicamente coherentes y adecuadas para 
         \item Integración de mapa con búsqueda por proximidad.
         \item Subida de imágenes en vivo con moderación automática.
         \item Sistema de reseñas y valoraciones.
-        \item Módulo de recomendaciones personalizadas y notificaciones push.
+        \item Módulo de recomendaciones personalizadas y notificaciones dentro de la aplicación.
     \end{itemize}
     \item Se acuerda utilizar este alcance como base para derivar el backlog inicial de épicas e historias de usuario.
 \end{enumerate}
@@ -461,7 +463,7 @@ Se validó la implementación de las funcionalidades acordadas en el sprint de c
     \item \textbf{Gestión de Categorías:} Finalizada. Solo los administradores pueden crearlas, aunque los usuarios pueden asociarlas a sus eventos.
     \item \textbf{Edición de Eventos por Moderadores:} Finalizada. Los moderadores pueden editar campos y aceptar o rechazar eventos.
     \item \textbf{Gestión de Imágenes:} Implementada la subida de una imagen de portada. Se discutió la migración a una tabla adicional para permitir múltiples imágenes por evento.
-    \item \textbf{Búsqueda y Visualización Geográfica:} Implementado el mapa con filtros de proximidad codificados por colores (verde, amarillo, rojo) y enlace directo a Google Maps/Mapas, además de filtrados fuera del mapa interactivo por proximidad.
+    \item \textbf{Búsqueda y Visualización Geográfica:} Implementado el mapa con filtros de proximidad codificados por colores (verde, amarillo, rojo) y enlace directo a aplicaciones externas de mapas, además de filtrados fuera del mapa interactivo por proximidad.
 \end{itemize}
 
 \subsubsection*{2. Sistema de chat}
@@ -576,7 +578,7 @@ Se acuerda priorizar el objetivo principal y ajustar el alcance si el tiempo es 
 \subsubsection*{4. Organización del tiempo y entrega}
 \begin{itemize}
     \item Se recomienda realizar un sprint aproximado de 3 semanas, ajustado por la feria (21--26 de abril).
-    \item Próxima reunión propuesta: 17 de abril de 2026 (hora por confirmar).
+    \item Próxima reunión propuesta: 17 de abril de 2026.
 \end{itemize}
 
 \subsubsection*{5. Memoria y documentación}
@@ -624,7 +626,7 @@ Se enfatiza la importancia de comenzar la redacción de la memoria. Se identific
 
 \subsection*{Próxima reunión}
 \begin{itemize}
-    \item \textbf{Fecha:} 17 de abril de 2026 (por confirmar hora).
+    \item \textbf{Fecha:} 17 de abril de 2026.
     \item \textbf{Objetivos:} Revisión del sistema de rutas, evaluación del estado de la memoria y decisión sobre cierre de desarrollo o continuación.
 \end{itemize}
 
@@ -794,7 +796,7 @@ Revisión detallada del borrador completo de la memoria del TFG, identificación
 
 \textbf{Observaciones:}
 \begin{itemize}
-    \item Falta un apartado específico de actores del sistema (tipos de usuarios y diagrama de actores).
+    \item Se solicita añadir un apartado específico de actores del sistema (tipos de usuarios y diagrama de actores).
     \item Se deben añadir mockups como parte del análisis.
     \item Los requisitos funcionales deben reestructurarse en formato estándar: ``Como [usuario], quiero [funcionalidad], para [objetivo]''.
 \end{itemize}
@@ -817,7 +819,7 @@ El coste actual es demasiado bajo y debe recalcularse utilizando datos oficiales
 
 \subsubsection*{8. Diseño del sistema}
 \begin{itemize}
-    \item Falta un diagrama conceptual independiente del tecnológico.
+    \item Se solicita añadir un diagrama conceptual independiente del tecnológico.
     \item Se debe crear un diagrama conceptual (sin detalles técnicos) junto al diagrama de diseño ya existente.
     \item Añadir sección de patrones de diseño y justificación de tecnologías utilizadas.
 \end{itemize}
@@ -832,7 +834,7 @@ Se recomienda incluir un diagrama de clases conceptual y diagramas UML claros, m
 \end{itemize}
 
 \subsubsection*{11. Anexos}
-Se identifican elementos pendientes: actas de reuniones, informe de horas, resultados de pruebas y uso por usuarios piloto. Se recomienda incluir feedback de usuarios y evidencias del sistema en uso.
+Se identifican elementos a completar antes de la entrega: actas de reuniones, reporte de horas, resultados de pruebas y uso por usuarios piloto. Se recomienda incluir feedback de usuarios y evidencias del sistema en uso.
 
 \subsubsection*{12. Entrega final}
 Elementos necesarios para la entrega:
@@ -848,7 +850,7 @@ Elementos necesarios para la entrega:
     \item Reestructurar la memoria para mejorar claridad y separación de conceptos.
     \item Incluir actores, mockups y diagramas conceptuales.
     \item Recalcular completamente el presupuesto.
-    \item Añadir métricas, datos reales y anexos faltantes.
+    \item Añadir métricas, datos reales y anexos pendientes de completar en ese momento.
     \item Reforzar la introducción con contexto económico.
 \end{itemize}
 
@@ -861,7 +863,7 @@ Elementos necesarios para la entrega:
     \item Añadir actores, mockups y diagramas conceptuales.
     \item Reestructurar la metodología.
     \item Recalcular el presupuesto.
-    \item Completar anexos (actas, horas, pruebas, feedback usuarios).
+    \item Completar anexos (actas, reporte de horas, pruebas y feedback de usuarios).
     \item Preparar vídeo demostrativo.
     \item Finalizar documentación y presentación.
 \end{itemize}

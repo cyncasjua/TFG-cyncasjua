@@ -54,7 +54,7 @@ El sistema de recomendaciones tiene como propósito adaptar la experiencia de us
 \begin{itemize}[leftmargin=1.5em]
 \item Recomendación de eventos según intereses del perfil.
 \item Aprendizaje basado en la interacción del usuario.
-\item Influencia de proximidad, valoraciones (propias y media global), eventos guardados, eventos apuntados, eventos vistos, eventos compartidos. .
+\item Influencia de proximidad, valoraciones (propias y media global), eventos guardados, eventos apuntados, eventos vistos y eventos compartidos.
 \item Consideración de fechas y disponibilidad.
 \item Generación de rutas recomendadas.
 \end{itemize}
@@ -109,6 +109,19 @@ Sistema de comunicación entre usuarios. Este módulo resulta fundamental dentro
 \item Mensajes privados.
 \item Acceso desde asistentes o perfiles de usuario.
 \item Envío de texto e imágenes.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Amistad}]
+El módulo de amistad permite descubrir y mantener contacto con otros usuarios de la plataforma. Aunque se apoya técnicamente en relaciones de seguimiento, la interfaz lo presenta como una sección social desde la que se pueden buscar usuarios, consultar perfiles, seguir o dejar de seguir a otras personas, enviar mensajes privados y ver los eventos a los que asisten.
+
+\vspace{0.4em}
+\textbf{Funcionalidades}
+\begin{itemize}[leftmargin=1.5em]
+\item Búsqueda de usuarios.
+\item Listado de usuarios seguidos en la pestaña \textit{Siguiendo}.
+\item Listado de seguidores pendientes de correspondencia en la pestaña \textit{Seguidores}.
+\item Acceso al perfil de otros usuarios, con opción de seguir, dejar de seguir, enviar mensaje y consultar eventos a los que asisten.
 \end{itemize}
 \end{tcolorbox}
 
@@ -341,7 +354,7 @@ Las acciones realizadas en esta pantalla tienen un efecto directo en el comporta
 \begin{itemize}[leftmargin=1.5em]
 \item Algunas acciones solo están disponibles en eventos activos (inscribirse) y públicos (compartir).
 \item La interacción con el evento influye en futuras recomendaciones.
-\item Desde asistentes y perfiles del chat puede iniciarse mensajería privada.
+\item Desde asistentes, perfiles del chat y perfiles de usuario puede iniciarse mensajería privada.
 \end{itemize}
 
 \begin{figure}[H]
@@ -794,9 +807,11 @@ Este sistema mejora la comunicación entre la plataforma y el usuario, y contrib
 
 \clearpage
 
-\subsection{Mensajería privada (todos los roles)}
+\subsection{Amistad y mensajería privada (todos los roles)}
 
-Además del chat asociado a eventos, la aplicación incorpora mensajería privada entre usuarios. Esta funcionalidad permite establecer conversaciones directas pulsando el usuario en el chat del evento o en los asistentes. Se podrán enviar mensajes, imágenes y si se dejan pulsados estos, se podrán eliminar.
+Además del chat asociado a eventos, la aplicación incorpora un módulo de amistad y mensajería privada entre usuarios. Desde la sección de amigos se pueden buscar usuarios y consultar dos listados: \textit{Siguiendo}, con las personas a las que sigue el usuario, y \textit{Seguidores}, con las personas que le siguen pero a las que todavía no sigue. Si el usuario empieza a seguir a alguien que aparecía en \textit{Seguidores}, esa persona pasa a mostrarse en \textit{Siguiendo}.
+
+Al acceder al perfil de otro usuario se puede seguirlo o dejar de seguirlo, iniciar una conversación privada y consultar los eventos a los que asiste. La mensajería privada también puede iniciarse pulsando sobre un usuario desde el chat del evento o desde la lista de asistentes. Se podrán enviar mensajes, imágenes y, si se dejan pulsados, eliminarlos.
 
 Las conversaciones privadas pueden consultarse posteriormente desde la sección de mensajes, favoreciendo la continuidad del contacto entre usuarios.
 

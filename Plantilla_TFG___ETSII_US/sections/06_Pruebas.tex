@@ -74,7 +74,7 @@ Se han implementado \textbf{5 pruebas unitarias} sobre \texttt{recomendaciones.s
 
 \subsubsection{UsersService}
 
-Se han implementado \textbf{17 pruebas unitarias} sobre \texttt{users.service.ts}, cubriendo la creación y actualización de usuarios, el sistema de seguimiento social y la gestión de roles:
+Se han implementado \textbf{17 pruebas unitarias} sobre \texttt{users.service.ts}, cubriendo la creación y actualización de usuarios, el módulo de amistad basado en seguimiento social y la gestión de roles:
 
 \begin{longtable}{|p{0.5cm}|p{5.5cm}|p{3.8cm}|p{4.5cm}|}
 \hline
@@ -195,10 +195,10 @@ En ambos entornos se comprobó el correcto funcionamiento de la interfaz, la nav
 
 \subsection{Incidencias de compatibilidad con Android}
 
-Durante la fase de pruebas con usuarios piloto (véase el Anexo de Usuarios Piloto), se detectaron problemas de compatibilidad en dispositivos Android reales que no habían aparecido en el emulador ni en las pruebas sobre iOS. Los principales problemas identificados fueron:
+Durante la fase de pruebas con usuarios piloto (véase el Anexo~\ref{anexo:usuarios_piloto}), se detectaron problemas de compatibilidad en dispositivos Android reales que no habían aparecido en el emulador ni en las pruebas sobre iOS. Los principales problemas identificados fueron:
 
 \begin{itemize}
-    \item \textbf{Mapa no visible}: el componente de mapa (OpenStreetMap mediante \texttt{react-native-maps}) no se renderizaba correctamente en algunos dispositivos Android, mostrando una pantalla en blanco. El problema estaba relacionado con la configuración del proveedor de tiles y la gestión del token de acceso en la compilación de Expo Go para Android.
+    \item \textbf{Mapa no visible}: el componente de mapa (OpenStreetMap mediante \texttt{react-native-maps}) no se renderizaba correctamente en algunos dispositivos Android, mostrando una pantalla en blanco. El problema estaba relacionado con la configuración del proveedor de tiles en la compilación de Expo Go para Android.
 
     \item \textbf{Descuadres de pantalla}: varios elementos de la interfaz (modales, cabeceras, botones flotantes) presentaban desajustes de posicionamiento en Android debido a diferencias en el comportamiento del \textit{safe area} y el teclado virtual respecto a iOS.
 \end{itemize}

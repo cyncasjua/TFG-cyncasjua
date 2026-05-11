@@ -67,7 +67,7 @@ Cada petición HTTP entrante pasa por la siguiente cadena de responsabilidades:
 \begin{enumerate}
     \item \textbf{Guards}: \texttt{FirebaseAuthGuard} intercepta la petición, extrae el token \texttt{Bearer} de la cabecera \texttt{Authorization} y lo verifica con el SDK de administración de Firebase. Si el token es inválido o ha expirado, la petición es rechazada con \texttt{401 Unauthorized} antes de llegar al controlador.
     \item \textbf{Controlador}: recibe la petición validada, extrae los parámetros de ruta, \textit{query} y cuerpo, y delega la lógica de negocio en el servicio correspondiente.
-    \item \textbf{Servicio}: ejecuta la lógica de negocio, interactúa con TypeORM para consultar o modificar la base de datos, y si es necesario llama a servicios externos (Cloudinary para imágenes, Firebase Admin para notificaciones).
+    \item \textbf{Servicio}: ejecuta la lógica de negocio, interactúa con TypeORM para consultar o modificar la base de datos, y si es necesario llama a servicios externos (por ejemplo, Cloudinary para imágenes).
     \item \textbf{TypeORM}: traduce las operaciones del servicio en consultas SQL optimizadas y gestiona la conexión con PostgreSQL.
 \end{enumerate}
 
@@ -399,8 +399,8 @@ Crear ruta & Formulario para crear una ruta propia & Todos \\
 Notificaciones & Listado de notificaciones del usuario & Todos \\
 Mensajes & Lista de conversaciones privadas & Todos \\
 Mensaje directo & Chat privado entre dos usuarios & Todos \\
-Perfil de usuario & Vista del perfil de otro usuario & Todos \\
-Amigos & Seguidores y seguidos del usuario & Todos \\
+Perfil de usuario & Vista del perfil de otro usuario, con acciones sociales y eventos a los que asiste & Todos \\
+Amigos & Módulo de amistad con búsqueda de usuarios, siguiendo y seguidores no seguidos & Todos \\
 Editar perfil & Modificación de datos personales e intereses & Todos \\
 Cambiar contraseña & Modificación de la contraseña de la cuenta & Todos \\
 Panel de administración & Gestión de usuarios y roles & Administrador \\
@@ -907,12 +907,18 @@ El sistema de rutas tiene dos orígenes bien diferenciados que responden a neces
 
 Ofrecer solo rutas automáticas habría eliminado el componente social y la fiabilidad que aporta la experiencia de otro usuario. Ofrecer solo rutas de usuarios habría dejado sin servicio a quienes no tienen referencias previas. La combinación de ambas cubre el espectro completo: desde el usuario que confía en las recomendaciones del sistema hasta quien prefiere fiarse de alguien que ya lo ha hecho.
 
-\subsection{Por qué los usuarios pueden seguirse entre sí}
+\subsection{Por qué existe un módulo de amistad basado en seguimiento}
 
-El sistema implementa un grafo de seguimiento unidireccional entre usuarios: una persona puede seguir a otra sin que esa otra deba aceptar ni corresponder. Esta funcionalidad refuerza el carácter social de la aplicación al permitir descubrir planes a través de otras personas:
+El sistema implementa un módulo de amistad apoyado en un grafo de seguimiento unidireccional entre usuarios: una persona puede seguir a otra sin que esa otra deba aceptar ni corresponder. En la interfaz, esta funcionalidad se presenta como un módulo de \textit{Amigos}, aunque internamente diferencia entre usuarios a los que se sigue y usuarios que siguen al usuario actual.
+
+La pantalla muestra una pestaña de \textit{Siguiendo} con las personas que el usuario sigue y una pestaña de \textit{Seguidores} con las personas que le siguen pero a las que todavía no sigue. Cuando el usuario empieza a seguir a una persona que aparecía en seguidores, deja de mostrarse en esa pestaña y pasa a aparecer en \textit{Siguiendo}. Este comportamiento evita duplicidades visuales y convierte la pantalla en una herramienta práctica para descubrir contactos pendientes, no en un simple listado simétrico de seguidores y seguidos.
+
+Esta funcionalidad refuerza el carácter social de la aplicación al permitir descubrir planes a través de otras personas:
 
 \begin{itemize}
-    \item Desde el perfil de un usuario seguido se pueden consultar los eventos a los que va a asistir, lo que facilita coordinarse o descubrir planes que de otro modo no habrían aparecido en el listado general.
+    \item El usuario puede buscar a otras personas y acceder a su perfil público.
+    \item Desde el perfil de otro usuario se pueden consultar los eventos a los que va a asistir, lo que facilita coordinarse o descubrir planes que de otro modo no habrían aparecido en el listado general.
+    \item El perfil permite seguir o dejar de seguir a esa persona según el estado actual de la relación.
     \item El perfil de otro usuario es también el punto de entrada para iniciar una conversación privada, lo que permite ponerse en contacto con alguien para quedar o resolver dudas sobre un evento concreto.
 \end{itemize}
 

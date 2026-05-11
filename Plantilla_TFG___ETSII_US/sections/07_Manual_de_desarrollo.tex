@@ -72,7 +72,7 @@ Sus responsabilidades son:
     \item Autenticación delegada en Firebase Authentication.
     \item Control de roles (usuario, moderador y administrador).
     \item Gestión de comunicación en tiempo real con Socket.IO.
-    \item Web scraping de eventos externos (Ticketmaster, Gemini AI).
+    \item Web scraping de eventos externos (Eventbrite, Ticketmaster y webs procesadas con Gemini AI).
     \item Ejecución de tareas programadas (cron jobs) para scraping y notificaciones.
 \end{itemize}
 
@@ -95,9 +95,10 @@ El sistema integra los siguientes servicios externos:
 
 \begin{itemize}
     \item \textbf{Firebase Authentication}: autenticación de usuarios (login, registro, gestión de sesión).
-    \item \textbf{Firebase Storage}: almacenamiento de imágenes de usuarios.
-    \item \textbf{Cloudinary}: almacenamiento y transformación de imágenes de eventos.
+    \item \textbf{Cloudinary}: almacenamiento y transformación de imágenes de eventos, perfiles y chats.
     \item \textbf{OpenStreetMap + react-native-maps}: visualización de mapas interactivos.
+    \item \textbf{Nominatim}: geocodificación de direcciones cuando las fuentes externas no proporcionan coordenadas.
+    \item \textbf{Eventbrite}: importación de eventos mediante extracción HTML y JSON-LD.
     \item \textbf{Google Gemini AI}: extracción inteligente de eventos mediante IA.
     \item \textbf{Ticketmaster API}: importación de eventos desde la plataforma Ticketmaster.
 \end{itemize}
@@ -273,7 +274,7 @@ sevillaneando/
 |   |   |   |-- notificaciones/ (sistema de notificaciones)
 |   |   |   |-- recomendaciones/(motor de recomendaciones)
 |   |   |   |-- categorias/     (categorias de eventos)
-|   |   |   |-- scraping/       (scrapers Ticketmaster, Gemini)
+|   |   |   |-- scraping/       (scrapers Eventbrite, Ticketmaster, Gemini)
 |   |   |   |-- scheduler/      (cron jobs scraping/notificaciones)
 |   |   |   |-- database/       (configuracion y seed de datos)
 |   |   |   |-- common/         (utilidades, filtros, cloudinary)
@@ -304,12 +305,12 @@ El backend sigue la convención de módulos de NestJS. Cada módulo contiene su 
 \begin{itemize}
     \item \textbf{auth}: integración con Firebase Admin SDK para validar tokens JWT. Incluye \texttt{FirebaseGuard} y \texttt{RolesGuard} aplicados globalmente.
     \item \textbf{events}: módulo principal. Gestiona el ciclo de vida de eventos (creación, aprobación por moderadores, edición, eliminación), reseñas y solicitudes de edición.
-    \item \textbf{users}: gestión de perfiles, cambio de contraseña, asignación de roles y lista de amigos.
+    \item \textbf{users}: gestión de perfiles, cambio de contraseña, asignación de roles y módulo de amistad basado en seguimiento entre usuarios.
     \item \textbf{rutas}: rutas turísticas con puntos de interés y sistema de calificación.
     \item \textbf{chat}: mensajería en tiempo real implementada con Socket.IO. Incluye mensajes públicos en eventos y mensajes privados entre usuarios.
     \item \textbf{notificaciones}: generación y entrega de notificaciones en tiempo real mediante WebSockets.
     \item \textbf{recomendaciones}: motor de recomendaciones basado en preferencias de categoría y valoraciones previas.
-    \item \textbf{scraping}: scrapers para importar eventos de Ticketmaster y mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
+    \item \textbf{scraping}: scrapers para importar eventos de Eventbrite, Ticketmaster y webs procesadas mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
     \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente y envía recordatorios de eventos próximos.
 \end{itemize}
 
