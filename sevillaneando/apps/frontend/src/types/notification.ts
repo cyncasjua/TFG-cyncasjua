@@ -13,4 +13,6 @@ export interface Notification {
   leido: boolean;
   fechaCreacion: string;
   eventoId?: string;
+  targetUserId?: string | null;
+  targetEventId?: string | null;
 }

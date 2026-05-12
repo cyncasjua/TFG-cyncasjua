@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  View,
+  Alert,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api, getErrorMessage } from '../services';
@@ -9,15 +16,17 @@ import { useNotificaciones } from '../context/NotificacionesContext';
 import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import type { RootStackParamList } from '../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Alert } from 'react-native';
 import { reportError } from '../utils/telemetry';
 import { formatSevillaDateTime } from '../utils/sevillaTime';
 
 type Notificacion = {
   id: string;
   mensaje: string;
+  tipo: string;
   fecha: string;
   leida: boolean;
+  targetUserId?: string | null;
+  targetEventId?: string | null;
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
@@ -56,6 +65,28 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const marcarLeida = async (id: string) => {
     await api.patch(`/notificaciones/${id}/leida`);
     await Promise.all([fetchNotificaciones(), refresh()]);
+  };
+
+  const abrirDestino = async (item: Notificacion) => {
+    if (!item.leida) {
+      await api.patch(`/notificaciones/${item.id}/leida`);
+      await refresh();
+    }
+
+    if (item.targetUserId) {
+      navigation.navigate('UserProfile', { userId: item.targetUserId });
+      return;
+    }
+
+    if (item.targetEventId) {
+      navigation.navigate('EventDetailLink', { eventId: item.targetEventId });
+    }
+  };
+
+  const getActionLabel = (item: Notificacion) => {
+    if (item.targetUserId) return 'Ver perfil';
+    if (item.targetEventId) return 'Ver evento';
+    return null;
   };
 
   const marcarTodasLeidas = async () => {
@@ -134,35 +165,57 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       <FlatList
         data={notificaciones}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ThemedView
-            style={[
-              styles.card,
-              { backgroundColor: theme === 'dark' ? '#222' : '#f9f9f9' },
-              !item.leida && { borderColor: colors.primary, borderWidth: 2 },
-            ]}
-          >
-            <TouchableOpacity
-              onPress={() => confirmarBorrado(item.id)}
-              style={styles.trashButton}
-              accessibilityLabel="Eliminar notificación"
-            >
-              <Icon name="trash-can-outline" size={20} color="#6c2eb7" />
-            </TouchableOpacity>
+        renderItem={({ item }) => {
+          const actionLabel = getActionLabel(item);
 
-            <TouchableOpacity onPress={() => marcarLeida(item.id)}>
-              <ThemedText style={styles.mensaje}>{item.mensaje}</ThemedText>
-              <ThemedTextSecondary style={styles.fecha}>
-                {formatSevillaDateTime(item.fecha)}
-              </ThemedTextSecondary>
-              {!item.leida && (
-                <ThemedText style={[styles.badge, { backgroundColor: colors.primary }]}>
-                  Nueva
-                </ThemedText>
-              )}
-            </TouchableOpacity>
-          </ThemedView>
-        )}
+          return (
+            <ThemedView
+              style={[
+                styles.card,
+                { backgroundColor: theme === 'dark' ? '#222' : '#f9f9f9' },
+                !item.leida && { borderColor: colors.primary, borderWidth: 2 },
+              ]}
+            >
+              <TouchableOpacity
+                onPress={() => confirmarBorrado(item.id)}
+                style={styles.trashButton}
+                accessibilityLabel="Eliminar notificación"
+              >
+                <Icon name="trash-can-outline" size={20} color="#6c2eb7" />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => marcarLeida(item.id)}>
+                <ThemedText style={styles.mensaje}>{item.mensaje}</ThemedText>
+                <ThemedTextSecondary style={styles.fecha}>
+                  {formatSevillaDateTime(item.fecha)}
+                </ThemedTextSecondary>
+              </TouchableOpacity>
+
+              <View style={styles.cardFooter}>
+                {!item.leida && (
+                  <ThemedText style={[styles.badge, { backgroundColor: colors.primary }]}>
+                    Nueva
+                  </ThemedText>
+                )}
+                {actionLabel && (
+                  <TouchableOpacity
+                    style={[styles.actionButton, { borderColor: colors.primary }]}
+                    onPress={() => abrirDestino(item)}
+                  >
+                    <Icon
+                      name={item.targetUserId ? 'account-arrow-right-outline' : 'calendar-search'}
+                      size={16}
+                      color={colors.primary}
+                    />
+                    <ThemedText style={[styles.actionText, { color: colors.primary }]}>
+                      {actionLabel}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </ThemedView>
+          );
+        }}
         ListEmptyComponent={<ThemedTextSecondary>No tienes notificaciones.</ThemedTextSecondary>}
       />
     </ThemedView>
@@ -187,21 +240,39 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: 16,
-    borderRadius: 45,
+    borderRadius: 28,
     marginBottom: 12,
   },
-  mensaje: { fontSize: 16 },
+  mensaje: { fontSize: 16, paddingRight: 36 },
   fecha: { fontSize: 12, marginTop: 4 },
   badge: {
     color: '#fff',
     borderRadius: 16,
     paddingHorizontal: 8,
+    paddingVertical: 2,
     alignSelf: 'flex-start',
-    marginTop: 6,
     overflow: 'hidden',
     fontWeight: 'bold',
     fontSize: 12,
   },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 8,
+    paddingRight: 32,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  actionText: { fontSize: 12, fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   trashButton: {
     position: 'absolute',

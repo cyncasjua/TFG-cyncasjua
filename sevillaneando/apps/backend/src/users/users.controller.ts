@@ -232,7 +232,8 @@ export class UsersController {
         await this.notificacionesService.crearParaUsuario(
           seguido,
           `${yo.nombre} ha empezado a seguirte.`,
-          TipoEnum.NuevoSeguidor
+          TipoEnum.NuevoSeguidor,
+          { userId: yo.id }
         );
       }
     }

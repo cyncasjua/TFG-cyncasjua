@@ -22,14 +22,17 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
 
-type Tab = 'seguidos' | 'seguidores' | 'buscar';
+type Tab = 'seguidores' | 'seguidos' | 'amigos' | 'buscar';
 
-export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
+export const FriendsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const [tab, setTab] = useState<Tab>('seguidos');
+  const targetUserId = route.params?.userId ?? user?.id;
+  const isOwnList = targetUserId === user?.id;
+  const [tab, setTab] = useState<Tab>(route.params?.initialTab ?? 'seguidores');
+  const [seguidores, setSeguidores] = useState<PublicUser[]>([]);
   const [seguidos, setSeguidos] = useState<PublicUser[]>([]);
-  const [seguidoresNoSeguidos, setSeguidoresNoSeguidos] = useState<PublicUser[]>([]);
+  const [amigos, setAmigos] = useState<PublicUser[]>([]);
   const [loadingSeguidos, setLoadingSeguidos] = useState(true);
   const [loadingSeguidores, setLoadingSeguidores] = useState(true);
   const [followingBack, setFollowingBack] = useState<Set<string>>(new Set());
@@ -38,10 +41,10 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
   const [searching, setSearching] = useState(false);
 
   const loadSeguidos = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return [] as PublicUser[];
     setLoadingSeguidos(true);
     try {
-      const list = await getSeguidos(user.id);
+      const list = await getSeguidos(targetUserId);
       setSeguidos(list);
       return list;
     } catch {
@@ -50,26 +53,28 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
     } finally {
       setLoadingSeguidos(false);
     }
-  }, [user?.id]);
+  }, [targetUserId]);
 
   const loadSeguidores = useCallback(
     async (seguidosList?: PublicUser[]) => {
-      if (!user?.id) return;
+      if (!targetUserId) return;
       setLoadingSeguidores(true);
       try {
-        const [allFollowers, currentSeguidos] = await Promise.all([
-          getSeguidores(user.id),
-          seguidosList ? Promise.resolve(seguidosList) : getSeguidos(user.id),
+        const [followers, followed] = await Promise.all([
+          getSeguidores(targetUserId),
+          seguidosList ? Promise.resolve(seguidosList) : getSeguidos(targetUserId),
         ]);
-        const seguidosIds = new Set(currentSeguidos.map((s) => s.id));
-        setSeguidoresNoSeguidos(allFollowers.filter((f) => !seguidosIds.has(f.id)));
+        const followedIds = new Set(followed.map((s) => s.id));
+        setSeguidores(followers);
+        setAmigos(followers.filter((f) => followedIds.has(f.id)));
       } catch {
-        setSeguidoresNoSeguidos([]);
+        setSeguidores([]);
+        setAmigos([]);
       } finally {
         setLoadingSeguidores(false);
       }
     },
-    [user?.id]
+    [targetUserId]
   );
 
   useFocusEffect(
@@ -78,15 +83,22 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
     }, [loadSeguidos, loadSeguidores])
   );
 
+  const isFollowedByCurrentUser = (id: string) => seguidos.some((u) => u.id === id);
+
   const handleFollowBack = async (targetId: string) => {
     setFollowingBack((prev) => new Set(prev).add(targetId));
     try {
       await seguirUsuario(targetId);
-      setSeguidoresNoSeguidos((prev) => prev.filter((u) => u.id !== targetId));
       setSeguidos((prev) => {
         const alreadyIn = prev.some((u) => u.id === targetId);
         if (alreadyIn) return prev;
-        const followed = seguidoresNoSeguidos.find((u) => u.id === targetId);
+        const followed = seguidores.find((u) => u.id === targetId);
+        return followed ? [...prev, followed] : prev;
+      });
+      setAmigos((prev) => {
+        const alreadyIn = prev.some((u) => u.id === targetId);
+        if (alreadyIn) return prev;
+        const followed = seguidores.find((u) => u.id === targetId);
         return followed ? [...prev, followed] : prev;
       });
     } finally {
@@ -131,8 +143,12 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const renderFollowerBack = ({ item }: { item: PublicUser }) => {
+  const renderFollower = ({ item }: { item: PublicUser }) => {
     const loading = followingBack.has(item.id);
+    const canFollowBack = isOwnList && !isFollowedByCurrentUser(item.id);
+
+    if (!canFollowBack) return renderUser({ item });
+
     return (
       <View style={[styles.userRow, { backgroundColor: colors.card }]}>
         <TouchableOpacity
@@ -167,36 +183,41 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedView style={styles.header}>
         <ThemedTitle>Amigos</ThemedTitle>
         <View style={[styles.tabs, { backgroundColor: colors.card }]}>
-          <TouchableOpacity
-            style={[styles.tab, tab === 'seguidos' && { backgroundColor: colors.primary }]}
-            onPress={() => setTab('seguidos')}
-          >
-            <ThemedText style={[styles.tabText, tab === 'seguidos' && { color: '#fff' }]}>
-              Siguiendo
-            </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, tab === 'seguidores' && { backgroundColor: colors.primary }]}
-            onPress={() => setTab('seguidores')}
-          >
-            <ThemedText style={[styles.tabText, tab === 'seguidores' && { color: '#fff' }]}>
-              {seguidoresNoSeguidos.length > 0
-                ? `Seguidores (${seguidoresNoSeguidos.length})`
-                : 'Seguidores'}
-            </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, tab === 'buscar' && { backgroundColor: colors.primary }]}
-            onPress={() => setTab('buscar')}
-          >
-            <ThemedText style={[styles.tabText, tab === 'buscar' && { color: '#fff' }]}>
-              Buscar
-            </ThemedText>
-          </TouchableOpacity>
+          {(['seguidores', 'seguidos', 'amigos', 'buscar'] as Tab[]).map((item) => (
+            <TouchableOpacity
+              key={item}
+              style={[styles.tab, tab === item && { backgroundColor: colors.primary }]}
+              onPress={() => setTab(item)}
+            >
+              <ThemedText style={[styles.tabText, tab === item && { color: '#fff' }]}>
+                {item === 'seguidores'
+                  ? 'Seguidores'
+                  : item === 'seguidos'
+                  ? 'Seguidos'
+                  : item === 'amigos'
+                  ? 'Amigos'
+                  : 'Buscar'}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
         </View>
       </ThemedView>
 
-      {tab === 'seguidos' ? (
+      {tab === 'seguidores' ? (
+        loadingSeguidores ? (
+          <ActivityIndicator color={colors.primary} style={{ marginTop: 32 }} />
+        ) : (
+          <FlatList
+            data={seguidores}
+            keyExtractor={(item) => item.id}
+            renderItem={renderFollower}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={
+              <ThemedText style={styles.empty}>Aún no hay seguidores.</ThemedText>
+            }
+          />
+        )
+      ) : tab === 'seguidos' ? (
         loadingSeguidos ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 32 }} />
         ) : (
@@ -205,24 +226,20 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             keyExtractor={(item) => item.id}
             renderItem={renderUser}
             contentContainerStyle={styles.list}
-            ListEmptyComponent={
-              <ThemedText style={styles.empty}>Aún no sigues a nadie.</ThemedText>
-            }
+            ListEmptyComponent={<ThemedText style={styles.empty}>Aún no sigue a nadie.</ThemedText>}
           />
         )
-      ) : tab === 'seguidores' ? (
+      ) : tab === 'amigos' ? (
         loadingSeguidores ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 32 }} />
         ) : (
           <FlatList
-            data={seguidoresNoSeguidos}
+            data={amigos}
             keyExtractor={(item) => item.id}
-            renderItem={renderFollowerBack}
+            renderItem={renderUser}
             contentContainerStyle={styles.list}
             ListEmptyComponent={
-              <ThemedText style={styles.empty}>
-                No hay nadie que te siga sin que tú les sigas.
-              </ThemedText>
+              <ThemedText style={styles.empty}>No hay amigos todavía.</ThemedText>
             }
           />
         )
@@ -271,7 +288,7 @@ const styles = StyleSheet.create({
   header: { padding: 16, paddingBottom: 0, gap: 12 },
   tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, gap: 4, marginBottom: 4 },
   tab: { flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: 'center' },
-  tabText: { fontWeight: '600', fontSize: 13 },
+  tabText: { fontWeight: '600', fontSize: 12 },
   list: { padding: 16, gap: 8 },
   userRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 999, padding: 12, gap: 12 },
   userRowInner: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },

@@ -127,18 +127,18 @@ export class User {
   })
   eventosVisitados!: Event[];
 
-  @ManyToMany(() => User, (user) => user.seguidos)
+  @ManyToMany(() => User, (user) => user.seguidores)
   @JoinTable({
     name: 'user_seguidores',
     joinColumn: { name: 'seguidor_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'seguido_id', referencedColumnName: 'id' },
   })
-  @ApiPropertyOptional({ description: 'Usuarios seguidores', type: () => User, isArray: true })
-  seguidores!: User[];
-
-  @ManyToMany(() => User, (user) => user.seguidores)
   @ApiPropertyOptional({ description: 'Usuarios seguidos', type: () => User, isArray: true })
   seguidos!: User[];
+
+  @ManyToMany(() => User, (user) => user.seguidos)
+  @ApiPropertyOptional({ description: 'Usuarios seguidores', type: () => User, isArray: true })
+  seguidores!: User[];
 
   iniciarSesion() {}
   cerrarSesion() {}

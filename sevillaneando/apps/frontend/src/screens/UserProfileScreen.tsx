@@ -116,15 +116,21 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             <ThemedTitle style={{ marginTop: 8 }}>{profile?.nombre ?? 'Usuario'}</ThemedTitle>
 
             <View style={styles.statsRow}>
-              <View style={styles.stat}>
+              <TouchableOpacity
+                style={styles.stat}
+                onPress={() => navigation.navigate('Friends', { userId, initialTab: 'seguidores' })}
+              >
                 <ThemedText style={styles.statNumber}>{numSeguidores}</ThemedText>
                 <ThemedText style={styles.statLabel}>seguidores</ThemedText>
-              </View>
+              </TouchableOpacity>
               <View style={[styles.statDivider, { backgroundColor: colors.border ?? '#ccc' }]} />
-              <View style={styles.stat}>
+              <TouchableOpacity
+                style={styles.stat}
+                onPress={() => navigation.navigate('Friends', { userId, initialTab: 'seguidos' })}
+              >
                 <ThemedText style={styles.statNumber}>{numSeguidos}</ThemedText>
                 <ThemedText style={styles.statLabel}>seguidos</ThemedText>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {!!profile?.intereses?.length && (

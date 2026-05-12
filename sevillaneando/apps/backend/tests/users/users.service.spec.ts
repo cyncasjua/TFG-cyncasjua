@@ -2,6 +2,8 @@ import { DeepPartial, Repository } from 'typeorm';
 import { UsersService } from '../../src/users/users.service';
 import { User } from '../../src/users/user.entity';
 import { RolEnum } from '../../src/users/enums/rol.enum';
+import { Categoria } from '../../src/categorias/categoria.entity';
+import { FirebaseService } from '../../src/auth/firebase.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 const makeUser = (overrides: DeepPartial<User> = {}): User => {
@@ -61,6 +63,9 @@ const createUserRepo = () =>
     delete: jest.fn(),
   } as unknown as Repository<User>);
 
+const createService = (repo: Repository<User>) =>
+  new UsersService(repo, {} as Repository<Categoria>, {} as FirebaseService);
+
 describe('UsersService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -68,7 +73,7 @@ describe('UsersService', () => {
 
   it('creates a user from firebase when not found', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const findOneMock = repo.findOne as jest.MockedFunction<Repository<User>['findOne']>;
     const createMock = repo.create as jest.MockedFunction<Repository<User>['create']>;
@@ -88,7 +93,7 @@ describe('UsersService', () => {
 
   it('updates existing user data when changed', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const existing = makeUser({
       id: 'user-2',
@@ -112,7 +117,7 @@ describe('UsersService', () => {
 
   it('skips follow when same user', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     await service.seguir('user-1', 'user-1');
 
@@ -122,7 +127,7 @@ describe('UsersService', () => {
 
   it('adds follow when not already following', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const seguidor = makeUser({ id: 'user-1', seguidos: [] });
     const seguido = makeUser({ id: 'user-2' });
@@ -143,7 +148,7 @@ describe('UsersService', () => {
 
   it('does not add duplicate follow', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const seguido = makeUser({ id: 'user-2' });
     const seguidor = makeUser({ id: 'user-1', seguidos: [seguido] });
@@ -163,7 +168,7 @@ describe('UsersService', () => {
 
   it('removes follow when unfollowing', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const seguido = makeUser({ id: 'user-2' });
     const seguidor = makeUser({ id: 'user-1', seguidos: [seguido] });
@@ -182,7 +187,7 @@ describe('UsersService', () => {
 
   it('returns seguidos list for a user', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const seguido = makeUser({ id: 'user-2' });
     const user = makeUser({ id: 'user-1', seguidos: [seguido] });
@@ -198,7 +203,7 @@ describe('UsersService', () => {
 
   it('returns empty array when user not found in getSeguidos', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const findOneMock = repo.findOne as jest.MockedFunction<Repository<User>['findOne']>;
     findOneMock.mockResolvedValueOnce(null);
@@ -209,7 +214,7 @@ describe('UsersService', () => {
 
   it('returns true when user is following another', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const seguido = makeUser({ id: 'user-2' });
     const user = makeUser({ id: 'user-1', seguidos: [seguido] });
@@ -223,7 +228,7 @@ describe('UsersService', () => {
 
   it('returns false when user is not following another', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const user = makeUser({ id: 'user-1', seguidos: [] });
 
@@ -236,7 +241,7 @@ describe('UsersService', () => {
 
   it('updates role for existing user', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const user = makeUser({ id: 'user-1', rol: RolEnum.USER });
 
@@ -254,7 +259,7 @@ describe('UsersService', () => {
 
   it('updates profile fields for existing user', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const user = makeUser({ firebaseUid: 'uid-1', nombre: 'Old', email: 'old@ex.com' });
 
@@ -273,7 +278,7 @@ describe('UsersService', () => {
 
   it('skips unchanged profile fields', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const user = makeUser({ firebaseUid: 'uid-1', nombre: 'Same', email: 'same@ex.com' });
 
@@ -292,7 +297,7 @@ describe('UsersService', () => {
 
   it('does not create user when firebase uid exists but email also matches existing', async () => {
     const repo = createUserRepo();
-    const service = new UsersService(repo);
+    const service = createService(repo);
 
     const existing = makeUser({ firebaseUid: 'uid-3', email: 'match@ex.com', nombre: 'Match' });
 

@@ -41,7 +41,8 @@ export class NotificacionesScheduler {
             await this.notificacionesService.crearParaUsuario(
               usuario,
               `Nuevo evento cerca de ti: "${evento.title}"`,
-              TipoEnum.EventoCercano
+              TipoEnum.EventoCercano,
+              { eventId: evento.id }
             );
           }
         }
@@ -84,7 +85,8 @@ export class NotificacionesScheduler {
             await this.notificacionesService.crearParaUsuario(
               usuario,
               `Recuerda: el evento "${evento.title}" al que te apuntaste es esta semana (${fechaEvento.toLocaleDateString()})`,
-              TipoEnum.EventoProximo
+              TipoEnum.EventoProximo,
+              { eventId: evento.id }
             );
           }
         }
@@ -126,7 +128,8 @@ export class NotificacionesScheduler {
             await this.notificacionesService.crearParaUsuario(
               usuario,
               `Recuerda: el evento "${evento.title}" al que te apuntaste es mañana a las ${hora}`,
-              TipoEnum.EventoProximo
+              TipoEnum.EventoProximo,
+              { eventId: evento.id }
             );
           }
         }

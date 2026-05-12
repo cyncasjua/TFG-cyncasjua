@@ -12,12 +12,19 @@ export class NotificacionesService {
     private readonly notificacionesRepo: Repository<Notificacion>
   ) {}
 
-  async crearParaUsuario(usuario: User, mensaje: string, tipo: TipoEnum) {
+  async crearParaUsuario(
+    usuario: User,
+    mensaje: string,
+    tipo: TipoEnum,
+    target?: { userId?: string; eventId?: string }
+  ) {
     const noti = this.notificacionesRepo.create({
       usuario,
       mensaje,
       tipo,
       fecha: new Date(),
+      targetUserId: target?.userId ?? null,
+      targetEventId: target?.eventId ?? null,
     });
     return this.notificacionesRepo.save(noti);
   }

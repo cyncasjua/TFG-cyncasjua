@@ -35,6 +35,14 @@ export class Notificacion {
   @Column({ default: false })
   leida!: boolean;
 
+  @ApiProperty({ description: 'Usuario relacionado con la notificación', required: false })
+  @Column({ type: 'uuid', nullable: true })
+  targetUserId!: string | null;
+
+  @ApiProperty({ description: 'Evento relacionado con la notificación', required: false })
+  @Column({ type: 'uuid', nullable: true })
+  targetEventId!: string | null;
+
   enviarNotificacion() {
     this.fecha = new Date();
   }

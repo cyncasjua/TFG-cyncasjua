@@ -157,7 +157,8 @@ export class EventsController {
       await this.notificacionesService.crearParaUsuario(
         event.creador,
         `Tu evento "${event.title}" ha sido aprobado y ya es visible para todos.`,
-        TipoEnum.Aprobacion
+        TipoEnum.Aprobacion,
+        { eventId: event.id }
       );
     }
     return updated;
@@ -185,7 +186,8 @@ export class EventsController {
       await this.notificacionesService.crearParaUsuario(
         event.creador,
         `Tu evento "${event.title}" ha sido rechazado.`,
-        TipoEnum.Rechazado
+        TipoEnum.Rechazado,
+        { eventId: event.id }
       );
     }
     return updated;
