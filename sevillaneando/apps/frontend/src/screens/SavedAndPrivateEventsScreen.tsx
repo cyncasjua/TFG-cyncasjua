@@ -289,7 +289,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       {(mode === 'both' || mode === 'saved') && renderList('Eventos guardados', savedEvents)}
       {(mode === 'both' || mode === 'private') &&
         renderPrivateList('Eventos privados', privateEvents)}
-      {mode === 'joined' && renderPrivateList('Eventos a los que estas apuntado', joinedEvents)}
+      {mode === 'joined' && renderPrivateList('Eventos a los que estás apuntado', joinedEvents)}
     </ScrollView>
   );
 };

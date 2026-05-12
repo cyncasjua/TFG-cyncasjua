@@ -180,7 +180,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!token) {
-      setChatError('Necesitas iniciar sesion para subir imagenes');
+      setChatError('Necesitas iniciar sesión para subir imágenes');
       return;
     }
     if (!asset?.uri) return;
@@ -237,7 +237,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handlePickImage = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesion para subir imagenes');
+      setChatError('Necesitas iniciar sesión para subir imágenes');
       return;
     }
 
@@ -265,7 +265,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleTakePhoto = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesion para subir imagenes');
+      setChatError('Necesitas iniciar sesión para subir imágenes');
       return;
     }
 

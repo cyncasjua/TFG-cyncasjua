@@ -631,7 +631,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const hour = dayjs().hour();
     const name = user?.nombre || 'sevillaneante';
 
-    if (hour < 13) return `Buenos dias, ${name}`;
+    if (hour < 13) return `Buenos días, ${name}`;
     if (hour < 21) return `Buenas tardes, ${name}`;
     return `Buenas noches, ${name}`;
   }, [user?.nombre]);
@@ -918,7 +918,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     </ThemedTextSecondary>
                   ) : recommendedEvents.length === 0 ? (
                     <ThemedTextSecondary>
-                      Aun no hay suficientes señales para recomendarte eventos.
+                      Aún no hay suficientes señales para recomendarte eventos.
                     </ThemedTextSecondary>
                   ) : (
                     <>
@@ -2234,7 +2234,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="category" size={20} color={colors.primary} />
-                      <ThemedText style={styles.menuActionLabel}>Gestionar categorias</ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>Gestionar categorías</ThemedText>
                     </TouchableOpacity>
                   </ThemedView>
                 )}

@@ -388,8 +388,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         : `Te recomiendo este plan en Sevillaneando: ${event.title}`,
       '',
       `Cuando: ${startText}`,
-      `Donde: ${event.address}`,
-      `Categoria: ${event.categoria?.nombre || 'General'}`,
+      `Dónde: ${event.address}`,
+      `Categoría: ${event.categoria?.nombre || 'General'}`,
       `Precio: ${priceText}`,
       '',
       `Acceso directo: ${eventLink}`,
@@ -546,7 +546,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!token) {
-      setChatError('Necesitas iniciar sesion para subir imagenes');
+      setChatError('Necesitas iniciar sesión para subir imágenes');
       return;
     }
     if (!asset?.uri) return;
@@ -607,7 +607,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handlePickImage = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesion para subir imagenes');
+      setChatError('Necesitas iniciar sesión para subir imágenes');
       return;
     }
 
@@ -639,7 +639,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleTakePhoto = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesion para subir imagenes');
+      setChatError('Necesitas iniciar sesión para subir imágenes');
       return;
     }
 

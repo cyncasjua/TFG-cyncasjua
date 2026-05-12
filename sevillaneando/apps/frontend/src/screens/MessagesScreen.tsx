@@ -195,7 +195,7 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <ThemedText>Cargando mensajes...</ThemedText>
+        <ThemedText>Cargando mensajes…</ThemedText>
       </View>
     );
   }
