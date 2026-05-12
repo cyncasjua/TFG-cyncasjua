@@ -304,11 +304,11 @@ El backend sigue la convención de módulos de NestJS. Cada módulo contiene su 
 
 \begin{itemize}
     \item \textbf{auth}: integración con Firebase Admin SDK para validar tokens JWT. Incluye \texttt{FirebaseGuard} y \texttt{RolesGuard} aplicados globalmente.
-    \item \textbf{events}: módulo principal. Gestiona el ciclo de vida de eventos (creación, aprobación por moderadores, edición, eliminación), reseñas y solicitudes de edición.
-    \item \textbf{users}: gestión de perfiles, cambio de contraseña, asignación de roles y módulo de amistad basado en seguimiento entre usuarios.
+    \item \textbf{events}: módulo principal. Gestiona el ciclo de vida de eventos (creación, aprobación por moderadores, edición, eliminación) y reseñas. La autorización distingue entre creadores y moderadores: los creadores pueden modificar y eliminar sus propios eventos, mientras que los moderadores pueden actuar sobre eventos públicos, incluidos los ya aprobados, pero no sobre eventos privados ajenos.
+    \item \textbf{users}: gestión de perfiles, cambio de contraseña, asignación de roles y módulo social basado en seguimiento entre usuarios, con seguidores, seguidos y amistades mutuas.
     \item \textbf{rutas}: rutas turísticas con puntos de interés y sistema de calificación.
     \item \textbf{chat}: mensajería en tiempo real implementada con Socket.IO. Incluye mensajes públicos en eventos y mensajes privados entre usuarios.
-    \item \textbf{notificaciones}: generación y entrega de notificaciones en tiempo real mediante WebSockets.
+    \item \textbf{notificaciones}: generación y entrega de notificaciones en tiempo real mediante WebSockets, incluyendo referencias contextuales a usuarios o eventos cuando la notificación permite navegar al contenido relacionado.
     \item \textbf{recomendaciones}: motor de recomendaciones basado en preferencias de categoría y valoraciones previas.
     \item \textbf{scraping}: scrapers para importar eventos de Eventbrite, Ticketmaster y webs procesadas mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
     \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente y envía recordatorios de eventos próximos.

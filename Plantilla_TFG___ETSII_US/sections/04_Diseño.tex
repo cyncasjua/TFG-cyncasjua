@@ -204,9 +204,9 @@ Registra la valoración que un usuario otorga a una ruta. Almacena la puntuació
 
 Almacena las sugerencias personalizadas generadas por el motor de recomendaciones para cada usuario, incluyendo los eventos recomendados, los criterios aplicados y si ya han sido visualizadas.
 
-\subsection{Solicitud de edición (\texttt{EventEditRequest})}
+\subsection{Edición de eventos por moderación}
 
-Registra los cambios que un moderador realiza directamente sobre un evento pendiente antes de aprobarlo. Almacena los campos modificados y el estado final de la solicitud (\texttt{pendiente}, \texttt{aprobada} o \texttt{rechazada}).
+El moderador puede editar directamente los eventos públicos pendientes antes de aprobarlos o rechazarlos, y también cualquier evento público desde un listado específico de supervisión. Esta operación no se aplica a eventos privados ajenos, ya que estos quedan bajo control de su creador y de las personas que reciben el enlace de acceso.
 
 \subsection{Diagrama entidad-relación}
 
@@ -226,12 +226,11 @@ Las relaciones principales entre entidades son las siguientes:
     \item Un usuario mantiene cuatro relaciones M:N independientes con los eventos: asistencia (\texttt{event\_asistentes}), guardado (\texttt{user\_saved\_events}), compartición (\texttt{user\_shared\_events}) y visita (\texttt{user\_visited\_events}).
     \item Un usuario puede seguir a otros usuarios mediante una relación reflexiva M:N (\texttt{user\_seguidores}).
     \item Un evento pertenece a una categoría (N:1).
-    \item Un evento puede tener múltiples reseñas (1:N), múltiples mensajes de chat grupal (1:N) y múltiples solicitudes de edición (1:N).
+    \item Un evento puede tener múltiples reseñas (1:N) y múltiples mensajes de chat grupal (1:N).
     \item Dos usuarios cualesquiera pueden intercambiar mensajes privados: cada \texttt{MensajePrivado} referencia a un emisor y a un receptor (N:1 hacia \texttt{User} en ambos extremos).
     \item Una notificación pertenece a un único usuario (N:1).
     \item Una ruta contiene una secuencia ordenada de eventos (M:N mediante \texttt{ruta\_eventos}) y puede recibir múltiples calificaciones de usuarios (1:N a \texttt{CalificacionRuta}); cada calificación referencia también al usuario autor (N:1).
     \item Una recomendación pertenece a un usuario (N:1) y agrupa múltiples eventos recomendados para ese usuario (M:N).
-    \item Una solicitud de edición (\texttt{EventEditRequest}) referencia al evento sobre el que se proponen cambios (N:1) y al moderador que la realiza (N:1).
 \end{itemize}
 
 \section{Diseño de la API REST}
@@ -247,12 +246,14 @@ El backend expone una API REST cuya organización sigue la estructura modular de
 \hline
 \textbf{Módulo} & \textbf{Método / Ruta} & \textbf{Descripción} \\
 \hline
-\multirow{8}{*}{Eventos} & POST /events & Crear evento \\
+\multirow{10}{*}{Eventos} & POST /events & Crear evento \\
  & GET /events & Listar eventos (con filtros) \\
  & GET /events/:id & Detalle de evento \\
  & PUT /events/:id & Editar evento \\
  & DELETE /events/:id & Eliminar evento \\
  & PATCH /events/:id/aprobar & Aprobar evento (moderador/admin) \\
+ & GET /events/moderacion/list & Listar eventos pendientes de moderación \\
+ & GET /events/moderacion/publicos & Listar eventos públicos para moderación \\
  & GET /events/acceso/:linkAcceso & Acceder a evento privado por enlace \\
  & GET /events/:id/private-share-link & Generar enlace de acceso privado \\
 \hline
@@ -300,7 +301,7 @@ El usuario ordinario puede registrarse, iniciar sesión, explorar eventos, crear
 % ═══════════════════════════════════════════════════════════════
 \section{Diseño del sistema de moderación}
 
-La moderación de eventos públicos es una de las piezas centrales del sistema. El moderador accede al panel de moderación, revisa los eventos en estado \textbf{Pendiente}, puede editarlos directamente antes de tomar una decisión, y los aprueba o rechaza. La notificación correspondiente se envía al creador en todos los casos. La figura~\ref{fig:seq_moderador} muestra este flujo.
+La moderación de eventos públicos es una de las piezas centrales del sistema. El moderador accede al panel de moderación, revisa los eventos en estado \textbf{Pendiente}, puede editarlos directamente antes de tomar una decisión, y los aprueba o rechaza. Además, dispone de un listado independiente con los eventos públicos, que puede editar o eliminar si detecta errores, información desactualizada o contenido inadecuado. La notificación correspondiente se envía al creador cuando el evento pendiente se aprueba o rechaza. La figura~\ref{fig:seq_moderador} muestra este flujo.
 
 \begin{figure}[H]
 \centering
@@ -315,15 +316,16 @@ El flujo de estados de un evento sigue las siguientes reglas de negocio:
     \item Al crear un evento público, su estado inicial es \textbf{Pendiente}.
     \item Un evento privado se aprueba automáticamente y es accesible solo mediante enlace.
     \item Un moderador puede aprobar (\textbf{Aprobado}) o rechazar (\textbf{Rechazado}) un evento pendiente.
-    \item Al editar un evento público ya aprobado, este vuelve a estado \textbf{Pendiente} y desaparece del listado público hasta ser revisado de nuevo.
+    \item Al editar un evento público ya aprobado, si la edición la realiza su creador, este vuelve a estado \textbf{Pendiente} y desaparece del listado público hasta ser revisado de nuevo.
+    \item Si la edición de un evento público ya aprobado la realiza un moderador, el evento conserva su estado \textbf{Aprobado}.
     \item Si un evento privado se cambia a público, pasa a \textbf{Pendiente} y entra en el flujo de moderación.
     \item Si un evento público se cambia a privado, se aprueba automáticamente y se genera un enlace de acceso.
     \item Los eventos privados que se editan sin cambiar de visibilidad se actualizan directamente sin pasar por moderación.
 \end{itemize}
 
-El listado general de eventos solo muestra eventos públicos aprobados y eventos privados únicamente al creador o a quien disponga del enlace. El listado de edición del usuario muestra sus eventos creados que no están en moderación. El listado de moderación muestra los eventos públicos pendientes.
+El listado general de eventos solo muestra eventos públicos aprobados y eventos privados únicamente al creador o a quien disponga del enlace. El listado de edición del usuario muestra sus eventos creados, incluidos aquellos que se encuentran pendientes de moderación. El listado de moderación se divide entre eventos públicos pendientes de aprobación y un listado independiente con todos los eventos públicos editables.
 
-El moderador recibe en su panel los eventos en estado pendiente y puede editarlos, aprobarlos o rechazarlos directamente, sin necesidad de solicitar permiso al creador. Al aprobar o rechazar un evento, este desaparece del listado de moderación.
+El moderador recibe en su panel los eventos en estado pendiente y puede editarlos, aprobarlos o rechazarlos directamente, sin necesidad de solicitar permiso al creador. Al aprobar o rechazar un evento, este desaparece del listado de pendientes. Los eventos públicos permanecen disponibles en un listado aparte para su edición o eliminación posterior.
 
 En cuanto al comportamiento del botón de compartir, en eventos públicos cualquier usuario puede compartirlo. En eventos privados, el botón de compartir se sustituye por uno de \textit{invitar}, que solo está activo para el creador del evento; el resto de usuarios lo ven desactivado.
 
@@ -579,17 +581,17 @@ El sistema define tres roles: \textbf{usuario}, \textbf{moderador} y \textbf{adm
 
 Añadir más roles (por ejemplo, un \textit{superadmin} o un \textit{editor}) habría incrementado la complejidad de la gestión de permisos sin aportar valor real al caso de uso concreto de la aplicación. Un único rol con todos los permisos habría eliminado la separación de responsabilidades que protege la integridad del contenido y del sistema.
 
-\subsection{Por qué los eventos no se pueden eliminar}
+\subsection{Por qué la eliminación de eventos es explícita y restringida}
 
-Los eventos no se eliminan físicamente del sistema. Esta decisión responde a tres motivos concretos:
+La eliminación de eventos es una acción explícita disponible solo para el creador del evento y, en el caso de eventos públicos, para moderadores o administradores. No se ejecuta de forma automática ni está disponible para usuarios sin relación con el evento. Esta decisión responde a tres motivos concretos:
 
 \begin{itemize}
-    \item \textbf{Consistencia de rutas}: una ruta puede referenciar eventos ya finalizados como parte de un itinerario. Eliminar el evento invalidaría silenciosamente cualquier ruta que lo contenga.
-    \item \textbf{Valor social acumulado}: las reseñas y el chat del evento siguen siendo útiles después de que este haya terminado. Otros usuarios pueden descubrir el evento, consultar las valoraciones de quienes asistieron e informarse de cara a futuras ediciones del mismo o de eventos de la misma compañía o organizador.
-    \item \textbf{Recomendaciones}: el historial de asistencia y las interacciones con eventos pasados alimentan el motor de recomendaciones. Sin esos registros, el algoritmo perdería señales de comportamiento relevantes para sugerir contenido afín.
+    \item \textbf{Control de autoría}: el creador conserva la capacidad de retirar un evento que ya no desea mantener publicado o accesible.
+    \item \textbf{Control de calidad}: el moderador puede eliminar eventos públicos cuando detecta contenido inadecuado, duplicado o incorrecto.
+    \item \textbf{Reducción de riesgo}: los eventos privados ajenos quedan fuera del alcance del moderador para preservar su naturaleza restringida.
 \end{itemize}
 
-En lugar de eliminar, el sistema permite \textbf{ocultar} eventos (cambiándolos a privado o rechazándolos), lo que preserva la información sin hacerla visible al público general.
+Por este motivo, la interfaz solicita confirmación antes de eliminar y el backend vuelve a comprobar los permisos con el token autenticado. La eliminación limpia también relaciones asociadas, como asistentes, mensajes y reseñas del evento.
 
 \subsection{Por qué los eventos finalizados no se borran}
 

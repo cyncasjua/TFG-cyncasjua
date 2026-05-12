@@ -69,7 +69,7 @@
 \contentsline {subsection}{\numberline {4.3.8}Ruta (\texttt {Ruta})}{43}{subsection.4.3.8}%
 \contentsline {subsection}{\numberline {4.3.9}Calificación de ruta (\texttt {CalificacionRuta})}{44}{subsection.4.3.9}%
 \contentsline {subsection}{\numberline {4.3.10}Recomendación (\texttt {Recomendacion})}{44}{subsection.4.3.10}%
-\contentsline {subsection}{\numberline {4.3.11}Solicitud de edición (\texttt {EventEditRequest})}{44}{subsection.4.3.11}%
+\contentsline {subsection}{\numberline {4.3.11}Edición de eventos por moderación}{44}{subsection.4.3.11}%
 \contentsline {subsection}{\numberline {4.3.12}Diagrama entidad-relación}{44}{subsection.4.3.12}%
 \contentsline {section}{\numberline {4.4}Diseño de la API REST}{46}{section.4.4}%
 \contentsline {section}{\numberline {4.5}Flujo de interacción del usuario}{47}{section.4.5}%
@@ -94,15 +94,15 @@
 \contentsline {subsection}{\numberline {4.11.9}Patrón Estado (flujo de moderación)}{58}{subsection.4.11.9}%
 \contentsline {section}{\numberline {4.12}Decisiones de diseño relevantes}{58}{section.4.12}%
 \contentsline {subsection}{\numberline {4.12.1}Por qué tres roles y no más ni menos}{58}{subsection.4.12.1}%
-\contentsline {subsection}{\numberline {4.12.2}Por qué los eventos no se pueden eliminar}{59}{subsection.4.12.2}%
+\contentsline {subsection}{\numberline {4.12.2}Por qué la eliminación de eventos es explícita y restringida}{59}{subsection.4.12.2}%
 \contentsline {subsection}{\numberline {4.12.3}Por qué los eventos finalizados no se borran}{59}{subsection.4.12.3}%
 \contentsline {subsection}{\numberline {4.12.4}Por qué el moderador puede editar un evento directamente antes de aprobarlo}{60}{subsection.4.12.4}%
 \contentsline {subsection}{\numberline {4.12.5}Por qué el administrador solo gestiona roles y categorías}{60}{subsection.4.12.5}%
 \contentsline {subsection}{\numberline {4.12.6}Por qué el chat incluye persistencia y no es solo en tiempo real}{61}{subsection.4.12.6}%
 \contentsline {subsection}{\numberline {4.12.7}Por qué los eventos privados se aprueban automáticamente}{61}{subsection.4.12.7}%
-\contentsline {subsection}{\numberline {4.12.8}Por qué los eventos privados usan un enlace UUID en lugar de una lista de control de acceso}{62}{subsection.4.12.8}%
+\contentsline {subsection}{\numberline {4.12.8}Por qué los eventos privados usan un enlace UUID en lugar de una lista de control de acceso}{61}{subsection.4.12.8}%
 \contentsline {subsection}{\numberline {4.12.9}Por qué los eventos recurrentes generan instancias independientes en base de datos}{62}{subsection.4.12.9}%
-\contentsline {subsection}{\numberline {4.12.10}Por qué se usa PostGIS con tipo \textit {geography} y SRID 4326}{63}{subsection.4.12.10}%
+\contentsline {subsection}{\numberline {4.12.10}Por qué se usa PostGIS con tipo \textit {geography} y SRID 4326}{62}{subsection.4.12.10}%
 \contentsline {subsection}{\numberline {4.12.11}Por qué hay tres schedulers de notificaciones independientes}{63}{subsection.4.12.11}%
 \contentsline {subsection}{\numberline {4.12.12}Por qué el scraping se ejecuta a las 3:00 AM}{63}{subsection.4.12.12}%
 \contentsline {subsection}{\numberline {4.12.13}Por qué el cron job es externo y no interno al backend}{63}{subsection.4.12.13}%
@@ -204,16 +204,16 @@
 \contentsline {subsection}{\numberline {7.4.2}Consultas espaciales}{104}{subsection.7.4.2}%
 \contentsline {subsection}{\numberline {7.4.3}Desarrollo unipersonal con metodología ágil}{104}{subsection.7.4.3}%
 \contentsline {subsection}{\numberline {7.4.4}Calidad del código}{104}{subsection.7.4.4}%
-\contentsline {subsection}{\numberline {7.4.5}Compatibilidad multiplataforma}{104}{subsection.7.4.5}%
+\contentsline {subsection}{\numberline {7.4.5}Compatibilidad multiplataforma}{105}{subsection.7.4.5}%
 \contentsline {section}{\numberline {7.5}Desviaciones respecto a la planificación}{105}{section.7.5}%
 \contentsline {section}{\numberline {7.6}Consideraciones de seguridad y privacidad}{106}{section.7.6}%
 \contentsline {section}{\numberline {7.7}Trabajo futuro}{106}{section.7.7}%
-\contentsline {subsection}{\numberline {7.7.1}Mejoras sobre funcionalidades existentes}{106}{subsection.7.7.1}%
+\contentsline {subsection}{\numberline {7.7.1}Mejoras sobre funcionalidades existentes}{107}{subsection.7.7.1}%
 \contentsline {subsection}{\numberline {7.7.2}Nuevas funcionalidades}{107}{subsection.7.7.2}%
 \contentsline {section}{\numberline {7.8}Uso de herramientas de inteligencia artificial}{109}{section.7.8}%
 \contentsline {subsection}{\numberline {7.8.1}Herramientas utilizadas}{109}{subsection.7.8.1}%
 \contentsline {subsection}{\numberline {7.8.2}Alcance del uso}{109}{subsection.7.8.2}%
-\contentsline {subsection}{\numberline {7.8.3}Verificación}{109}{subsection.7.8.3}%
+\contentsline {subsection}{\numberline {7.8.3}Verificación}{110}{subsection.7.8.3}%
 \contentsline {section}{\numberline {7.9}Conclusión final}{110}{section.7.9}%
 \contentsline {chapter}{Bibliograf\'{\i }a}{111}{chapter*.73}%
 \contentsline {chapter}{Anexos}{112}{section*.74}%
@@ -303,50 +303,50 @@
 \contentsline {subsection}{\numberline {D.4.11}Eventos privados (todos los roles)}{157}{subsection.Alph4.4.11}%
 \contentsline {subsection}{\numberline {D.4.12}Gestión de eventos privados (todos los roles)}{159}{subsection.Alph4.4.12}%
 \contentsline {subsection}{\numberline {D.4.13}Mis eventos (rol de usuario)}{160}{subsection.Alph4.4.13}%
-\contentsline {subsection}{\numberline {D.4.14}Moderación (rol de moderador)}{161}{subsection.Alph4.4.14}%
-\contentsline {subsection}{\numberline {D.4.15}Notificaciones (todos los roles)}{162}{subsection.Alph4.4.15}%
-\contentsline {subsection}{\numberline {D.4.16}Amistad y mensajería privada (todos los roles)}{163}{subsection.Alph4.4.16}%
-\contentsline {subsection}{\numberline {D.4.17}Eventos finalizados}{165}{subsection.Alph4.4.17}%
-\contentsline {section}{\numberline {D.5}Grafo de navegabilidad}{166}{section.Alph4.5}%
-\contentsline {section}{\numberline {D.6}Errores frecuentes}{166}{section.Alph4.6}%
-\contentsline {chapter}{\numberline {E}Reporte de horas}{168}{appendix.Alph5}%
-\contentsline {chapter}{\numberline {F}Informes de avance y cambios}{174}{appendix.Alph6}%
-\contentsline {section}{\numberline {F.1}Informe de avance 1: definición del alcance y análisis inicial}{174}{section.Alph6.1}%
-\contentsline {subsection}{\numberline {F.1.1}Trabajo realizado}{174}{subsection.Alph6.1.1}%
-\contentsline {subsection}{\numberline {F.1.2}Cambios y decisiones}{174}{subsection.Alph6.1.2}%
-\contentsline {section}{\numberline {F.2}Informe de avance 2: requisitos, planificación y diseño conceptual}{174}{section.Alph6.2}%
-\contentsline {subsection}{\numberline {F.2.1}Trabajo realizado}{174}{subsection.Alph6.2.1}%
-\contentsline {subsection}{\numberline {F.2.2}Cambios y decisiones}{175}{subsection.Alph6.2.2}%
-\contentsline {section}{\numberline {F.3}Informe de avance 3: arquitectura e implementación base}{175}{section.Alph6.3}%
-\contentsline {subsection}{\numberline {F.3.1}Trabajo realizado}{175}{subsection.Alph6.3.1}%
-\contentsline {subsection}{\numberline {F.3.2}Cambios y decisiones}{175}{subsection.Alph6.3.2}%
-\contentsline {section}{\numberline {F.4}Informe de avance 4: funcionalidades sociales, mapas y recomendaciones}{175}{section.Alph6.4}%
-\contentsline {subsection}{\numberline {F.4.1}Trabajo realizado}{175}{subsection.Alph6.4.1}%
-\contentsline {subsection}{\numberline {F.4.2}Cambios y decisiones}{176}{subsection.Alph6.4.2}%
-\contentsline {section}{\numberline {F.5}Informe de avance 5: scraping, moderación y despliegue}{176}{section.Alph6.5}%
-\contentsline {subsection}{\numberline {F.5.1}Trabajo realizado}{176}{subsection.Alph6.5.1}%
-\contentsline {subsection}{\numberline {F.5.2}Cambios y decisiones}{176}{subsection.Alph6.5.2}%
-\contentsline {section}{\numberline {F.6}Informe de avance 6: pruebas, validación y cierre}{176}{section.Alph6.6}%
-\contentsline {subsection}{\numberline {F.6.1}Trabajo realizado}{176}{subsection.Alph6.6.1}%
-\contentsline {subsection}{\numberline {F.6.2}Cambios y decisiones}{177}{subsection.Alph6.6.2}%
-\contentsline {section}{\numberline {F.7}Resumen de cambios relevantes}{177}{section.Alph6.7}%
-\contentsline {chapter}{\numberline {G}Declaración de autoría}{178}{appendix.Alph7}%
-\contentsline {chapter}{\numberline {H}Usuarios piloto}{181}{appendix.Alph8}%
-\contentsline {section}{\numberline {H.1}Introducción}{181}{section.Alph8.1}%
-\contentsline {section}{\numberline {H.2}Perfil de los usuarios}{181}{section.Alph8.2}%
-\contentsline {section}{\numberline {H.3}Metodología de recogida de feedback}{181}{section.Alph8.3}%
-\contentsline {section}{\numberline {H.4}Resultados e incidencias detectadas}{182}{section.Alph8.4}%
-\contentsline {subsection}{\numberline {H.4.1}Problemas de compatibilidad con Android}{182}{subsection.Alph8.4.1}%
-\contentsline {subsection}{\numberline {H.4.2}Sugerencias de mejora visual y de interacción}{182}{subsection.Alph8.4.2}%
-\contentsline {subsection}{\numberline {H.4.3}Ideas de nuevas funcionalidades}{183}{subsection.Alph8.4.3}%
-\contentsline {section}{\numberline {H.5}Valoración general de los usuarios}{183}{section.Alph8.5}%
-\contentsline {section}{\numberline {H.6}Conclusiones del proceso piloto}{183}{section.Alph8.6}%
-\contentsline {chapter}{\numberline {I}Actas de reunión}{185}{appendix.Alph9}%
-\contentsline {section}{Acta de Reunión 1}{185}{section*.108}%
-\contentsline {section}{Acta de Reunión 2}{188}{Item.26}%
-\contentsline {section}{Acta de Reunión 3}{191}{Item.29}%
-\contentsline {section}{Acta de Reunión 4}{195}{Item.38}%
-\contentsline {section}{Acta de Reunión 5}{199}{Item.38}%
-\contentsline {section}{Acta de Reunión 6}{202}{Item.38}%
-\contentsline {section}{Acta de Reunión 7}{205}{Item.38}%
-\contentsline {section}{Acta de Reunión 8}{209}{Item.38}%
+\contentsline {subsection}{\numberline {D.4.14}Moderación (rol de moderador)}{162}{subsection.Alph4.4.14}%
+\contentsline {subsection}{\numberline {D.4.15}Notificaciones (todos los roles)}{163}{subsection.Alph4.4.15}%
+\contentsline {subsection}{\numberline {D.4.16}Amistad y mensajería privada (todos los roles)}{164}{subsection.Alph4.4.16}%
+\contentsline {subsection}{\numberline {D.4.17}Eventos finalizados}{166}{subsection.Alph4.4.17}%
+\contentsline {section}{\numberline {D.5}Grafo de navegabilidad}{167}{section.Alph4.5}%
+\contentsline {section}{\numberline {D.6}Errores frecuentes}{167}{section.Alph4.6}%
+\contentsline {chapter}{\numberline {E}Reporte de horas}{169}{appendix.Alph5}%
+\contentsline {chapter}{\numberline {F}Informes de avance y cambios}{175}{appendix.Alph6}%
+\contentsline {section}{\numberline {F.1}Informe de avance 1: definición del alcance y análisis inicial}{175}{section.Alph6.1}%
+\contentsline {subsection}{\numberline {F.1.1}Trabajo realizado}{175}{subsection.Alph6.1.1}%
+\contentsline {subsection}{\numberline {F.1.2}Cambios y decisiones}{175}{subsection.Alph6.1.2}%
+\contentsline {section}{\numberline {F.2}Informe de avance 2: requisitos, planificación y diseño conceptual}{175}{section.Alph6.2}%
+\contentsline {subsection}{\numberline {F.2.1}Trabajo realizado}{175}{subsection.Alph6.2.1}%
+\contentsline {subsection}{\numberline {F.2.2}Cambios y decisiones}{176}{subsection.Alph6.2.2}%
+\contentsline {section}{\numberline {F.3}Informe de avance 3: arquitectura e implementación base}{176}{section.Alph6.3}%
+\contentsline {subsection}{\numberline {F.3.1}Trabajo realizado}{176}{subsection.Alph6.3.1}%
+\contentsline {subsection}{\numberline {F.3.2}Cambios y decisiones}{176}{subsection.Alph6.3.2}%
+\contentsline {section}{\numberline {F.4}Informe de avance 4: funcionalidades sociales, mapas y recomendaciones}{176}{section.Alph6.4}%
+\contentsline {subsection}{\numberline {F.4.1}Trabajo realizado}{176}{subsection.Alph6.4.1}%
+\contentsline {subsection}{\numberline {F.4.2}Cambios y decisiones}{177}{subsection.Alph6.4.2}%
+\contentsline {section}{\numberline {F.5}Informe de avance 5: scraping, moderación y despliegue}{177}{section.Alph6.5}%
+\contentsline {subsection}{\numberline {F.5.1}Trabajo realizado}{177}{subsection.Alph6.5.1}%
+\contentsline {subsection}{\numberline {F.5.2}Cambios y decisiones}{177}{subsection.Alph6.5.2}%
+\contentsline {section}{\numberline {F.6}Informe de avance 6: pruebas, validación y cierre}{177}{section.Alph6.6}%
+\contentsline {subsection}{\numberline {F.6.1}Trabajo realizado}{177}{subsection.Alph6.6.1}%
+\contentsline {subsection}{\numberline {F.6.2}Cambios y decisiones}{178}{subsection.Alph6.6.2}%
+\contentsline {section}{\numberline {F.7}Resumen de cambios relevantes}{178}{section.Alph6.7}%
+\contentsline {chapter}{\numberline {G}Declaración de autoría}{179}{appendix.Alph7}%
+\contentsline {chapter}{\numberline {H}Usuarios piloto}{182}{appendix.Alph8}%
+\contentsline {section}{\numberline {H.1}Introducción}{182}{section.Alph8.1}%
+\contentsline {section}{\numberline {H.2}Perfil de los usuarios}{182}{section.Alph8.2}%
+\contentsline {section}{\numberline {H.3}Metodología de recogida de feedback}{182}{section.Alph8.3}%
+\contentsline {section}{\numberline {H.4}Resultados e incidencias detectadas}{183}{section.Alph8.4}%
+\contentsline {subsection}{\numberline {H.4.1}Problemas de compatibilidad con Android}{183}{subsection.Alph8.4.1}%
+\contentsline {subsection}{\numberline {H.4.2}Sugerencias de mejora visual y de interacción}{183}{subsection.Alph8.4.2}%
+\contentsline {subsection}{\numberline {H.4.3}Ideas de nuevas funcionalidades}{184}{subsection.Alph8.4.3}%
+\contentsline {section}{\numberline {H.5}Valoración general de los usuarios}{184}{section.Alph8.5}%
+\contentsline {section}{\numberline {H.6}Conclusiones del proceso piloto}{184}{section.Alph8.6}%
+\contentsline {chapter}{\numberline {I}Actas de reunión}{186}{appendix.Alph9}%
+\contentsline {section}{Acta de Reunión 1}{186}{section*.108}%
+\contentsline {section}{Acta de Reunión 2}{189}{Item.26}%
+\contentsline {section}{Acta de Reunión 3}{192}{Item.29}%
+\contentsline {section}{Acta de Reunión 4}{196}{Item.38}%
+\contentsline {section}{Acta de Reunión 5}{200}{Item.38}%
+\contentsline {section}{Acta de Reunión 6}{203}{Item.38}%
+\contentsline {section}{Acta de Reunión 7}{206}{Item.38}%
+\contentsline {section}{Acta de Reunión 8}{210}{Item.38}%

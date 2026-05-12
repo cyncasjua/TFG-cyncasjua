@@ -8,7 +8,6 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import dayjs from 'dayjs';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api, getErrorMessage } from '../services';
@@ -27,13 +26,19 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
   const { colors, theme } = useTheme();
 
   const [pendingEvents, setPendingEvents] = useState<Event[]>([]);
+  const [publicEvents, setPublicEvents] = useState<Event[]>([]);
+  const [activeList, setActiveList] = useState<'pending' | 'public'>('pending');
   const [loading, setLoading] = useState(true);
 
-  const fetchPendingEvents = useCallback(async () => {
+  const fetchModeratorEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get('/events/moderacion/list');
-      setPendingEvents(res.data);
+      const [pendingRes, publicRes] = await Promise.all([
+        api.get('/events/moderacion/list'),
+        api.get('/events/moderacion/publicos'),
+      ]);
+      setPendingEvents(pendingRes.data);
+      setPublicEvents(publicRes.data);
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));
     } finally {
@@ -43,15 +48,15 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (role === 'moderator') fetchPendingEvents();
-    }, [role, fetchPendingEvents])
+      if (role === 'moderator') fetchModeratorEvents();
+    }, [role, fetchModeratorEvents])
   );
 
   const handleAprobar = async (id: string) => {
     try {
       await api.patch(`/events/${id}/aprobar`);
       Alert.alert('Evento aprobado');
-      fetchPendingEvents();
+      fetchModeratorEvents();
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));
     }
@@ -61,7 +66,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await api.patch(`/events/${id}/rechazar`);
       Alert.alert('Evento rechazado');
-      fetchPendingEvents();
+      fetchModeratorEvents();
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));
     }
@@ -80,7 +85,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
         <ThemedTextSecondary style={{ marginTop: 8 }}>
-          Cargando eventos pendientes...
+          Cargando eventos de moderacion...
         </ThemedTextSecondary>
       </ThemedView>
     );
@@ -88,9 +93,27 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Eventos pendientes de aprobación</ThemedTitle>
+      <ThemedTitle style={styles.title}>Moderacion de eventos</ThemedTitle>
+      <View style={[styles.tabs, { borderColor: colors.border }]}>
+        <TouchableOpacity
+          style={[styles.tab, activeList === 'pending' && { backgroundColor: colors.primary }]}
+          onPress={() => setActiveList('pending')}
+        >
+          <ThemedText style={[styles.tabText, activeList === 'pending' && styles.activeTabText]}>
+            Pendientes de aprobacion
+          </ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeList === 'public' && { backgroundColor: colors.primary }]}
+          onPress={() => setActiveList('public')}
+        >
+          <ThemedText style={[styles.tabText, activeList === 'public' && styles.activeTabText]}>
+            Publicos editables
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
       <FlatList
-        data={pendingEvents}
+        data={activeList === 'pending' ? pendingEvents : publicEvents}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -123,26 +146,39 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedTextSecondary style={styles.eventInfo}>
                 Ubicación: {item.address}
               </ThemedTextSecondary>
-              <View style={styles.actions}>
-                <TouchableOpacity
-                  style={[styles.button, styles.aprobarBtn]}
-                  onPress={() => handleAprobar(item.id)}
-                >
-                  <ThemedText style={styles.buttonText}>Aprobar</ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.rechazarBtn]}
-                  onPress={() => handleRechazar(item.id)}
-                >
-                  <ThemedText style={styles.buttonText}>Rechazar</ThemedText>
-                </TouchableOpacity>
-              </View>
+              {activeList === 'pending' ? (
+                <View style={styles.actions}>
+                  <TouchableOpacity
+                    style={[styles.button, styles.aprobarBtn]}
+                    onPress={() => handleAprobar(item.id)}
+                  >
+                    <ThemedText style={styles.buttonText}>Aprobar</ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.rechazarBtn]}
+                    onPress={() => handleRechazar(item.id)}
+                  >
+                    <ThemedText style={styles.buttonText}>Rechazar</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.actions}>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: colors.primary }]}
+                    onPress={() => navigation.navigate('ModeratorEditEvent', { event: item })}
+                  >
+                    <ThemedText style={styles.buttonText}>Editar evento</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
             </ThemedView>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
           <ThemedTextSecondary style={{ textAlign: 'center', marginTop: 40 }}>
-            No hay eventos pendientes.
+            {activeList === 'pending'
+              ? 'No hay eventos pendientes.'
+              : 'No hay eventos publicos editables.'}
           </ThemedTextSecondary>
         }
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -154,6 +190,21 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
+  tabs: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  tabText: { fontWeight: 'bold' },
+  activeTabText: { color: '#fff' },
   card: {
     borderRadius: 18,
     padding: 16,

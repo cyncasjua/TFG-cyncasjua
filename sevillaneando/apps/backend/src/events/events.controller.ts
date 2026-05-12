@@ -26,6 +26,7 @@ import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
 import { FirebaseAuthGuard } from '../auth/firebase.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -118,8 +119,13 @@ export class EventsController {
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
-  async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<Event> {
-    return this.eventsService.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateEventDto,
+    @Req() req: { user: { uid: string } }
+  ): Promise<Event> {
+    const requester = await this.getRequester(req.user.uid);
+    return this.eventsService.update(id, dto, requester);
   }
 
   @Delete(':id')
@@ -131,8 +137,9 @@ export class EventsController {
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'No autorizado' })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.eventsService.remove(id);
+  async remove(@Param('id') id: string, @Req() req: { user: { uid: string } }): Promise<void> {
+    const requester = await this.getRequester(req.user.uid);
+    return this.eventsService.remove(id, requester);
   }
 
   @Patch(':id/aprobar')
@@ -354,10 +361,23 @@ export class EventsController {
   }
 
   @Get('moderacion/list')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
+  @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Listar eventos pendientes de moderación' })
   @ApiResponse({ status: 200, description: 'Lista de eventos pendientes', type: [Event] })
   async findEventsToModerate(): Promise<Event[]> {
     return this.eventsService.findEventsToModerate();
+  }
+
+  @Get('moderacion/publicos')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
+  @ApiBearerAuth('firebase-jwt')
+  @ApiOperation({ summary: 'Listar eventos publicos editables por moderacion' })
+  @ApiResponse({ status: 200, description: 'Lista de eventos publicos', type: [Event] })
+  async findPublicEventsForModeration(): Promise<Event[]> {
+    return this.eventsService.findPublicEventsForModeration();
   }
 
   @Get('attending/:userId')
@@ -370,5 +390,11 @@ export class EventsController {
   })
   async findEventsAttending(@Param('userId') userId: string): Promise<Event[]> {
     return this.eventsService.findEventsAttending(userId);
+  }
+
+  private async getRequester(firebaseUid: string): Promise<User> {
+    const user = await this.usersService.findByFirebaseUid(firebaseUid);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    return user;
   }
 }

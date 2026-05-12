@@ -136,7 +136,7 @@ describe('EventsService', () => {
     findOneMock.mockResolvedValue(null);
 
     await expect(service.getPrivateShareLink('event-3', 'user-1')).rejects.toBeInstanceOf(
-      NotFoundException,
+      NotFoundException
     );
   });
 
@@ -152,7 +152,7 @@ describe('EventsService', () => {
     findOneMock.mockResolvedValue(event);
 
     await expect(service.getPrivateShareLink('event-4', 'user-1')).rejects.toBeInstanceOf(
-      ForbiddenException,
+      ForbiddenException
     );
   });
 
@@ -168,7 +168,7 @@ describe('EventsService', () => {
     findOneMock.mockResolvedValue(event);
 
     await expect(service.getPrivateShareLink('event-5', 'user-1')).rejects.toBeInstanceOf(
-      ForbiddenException,
+      ForbiddenException
     );
   });
 
@@ -219,7 +219,9 @@ describe('EventsService', () => {
     const eventFindMock = eventRepo.findOne as jest.MockedFunction<Repository<Event>['findOne']>;
     eventFindMock.mockResolvedValue(null);
 
-    await expect(service.addAttendee('no-event', 'user-1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.addAttendee('no-event', 'user-1')).rejects.toBeInstanceOf(
+      NotFoundException
+    );
   });
 
   it('throws NotFoundException when adding missing user as attendee', async () => {
@@ -231,7 +233,9 @@ describe('EventsService', () => {
     eventFindMock.mockResolvedValue(event);
     userFindMock.mockResolvedValue(null);
 
-    await expect(service.addAttendee('event-8', 'no-user')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.addAttendee('event-8', 'no-user')).rejects.toBeInstanceOf(
+      NotFoundException
+    );
   });
 
   it('removes an attendee from event', async () => {
@@ -254,7 +258,9 @@ describe('EventsService', () => {
     const eventFindMock = eventRepo.findOne as jest.MockedFunction<Repository<Event>['findOne']>;
     eventFindMock.mockResolvedValue(null);
 
-    await expect(service.removeAttendee('no-event', 'user-1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.removeAttendee('no-event', 'user-1')).rejects.toBeInstanceOf(
+      NotFoundException
+    );
   });
 
   it('returns event when found by id', async () => {
@@ -311,5 +317,65 @@ describe('EventsService', () => {
 
     const result = await service.isAttending('event-13', 'user-1');
     expect(result).toBe(false);
+  });
+
+  it('throws ForbiddenException when a non creator user updates an event', async () => {
+    const event = makeEvent({
+      id: 'event-14',
+      creador: makeUser({ id: 'creator-1' }),
+    });
+
+    const eventFindMock = eventRepo.findOne as jest.MockedFunction<Repository<Event>['findOne']>;
+    eventFindMock.mockResolvedValue(event);
+
+    await expect(
+      service.update(
+        'event-14',
+        { title: 'Nuevo titulo' },
+        makeUser({ id: 'user-2', rol: RolEnum.USER })
+      )
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('throws ForbiddenException when a moderator updates a private event they do not own', async () => {
+    const event = makeEvent({
+      id: 'event-15',
+      privado: true,
+      creador: makeUser({ id: 'creator-1' }),
+    });
+
+    const eventFindMock = eventRepo.findOne as jest.MockedFunction<Repository<Event>['findOne']>;
+    eventFindMock.mockResolvedValue(event);
+
+    await expect(
+      service.update(
+        'event-15',
+        { title: 'Nuevo titulo' },
+        makeUser({ id: 'mod-1', rol: RolEnum.MODERATOR })
+      )
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('allows a moderator to update a public event without returning it to pending', async () => {
+    const event = makeEvent({
+      id: 'event-16',
+      privado: false,
+      estado: EstadoEnum.Aprobado,
+      creador: makeUser({ id: 'creator-1' }),
+    });
+
+    const eventFindMock = eventRepo.findOne as jest.MockedFunction<Repository<Event>['findOne']>;
+    const saveMock = eventRepo.save as jest.MockedFunction<Repository<Event>['save']>;
+    eventFindMock.mockResolvedValue(event);
+    saveMock.mockResolvedValue(event);
+
+    const updated = await service.update(
+      'event-16',
+      { title: 'Nuevo titulo publico' },
+      makeUser({ id: 'mod-1', rol: RolEnum.MODERATOR })
+    );
+
+    expect(updated.title).toBe('Nuevo titulo publico');
+    expect(updated.estado).toBe(EstadoEnum.Aprobado);
   });
 });

@@ -342,6 +342,34 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     }
   };
 
+  const handleDeleteEvent = () => {
+    Alert.alert('Eliminar evento', 'Esta accion eliminara el evento definitivamente.', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          setLoading(true);
+          try {
+            await api.delete(`/events/${event.id}`);
+            Alert.alert('Evento eliminado', 'El evento se ha eliminado correctamente.');
+            navigation.goBack();
+          } catch (error: any) {
+            let msg = 'No se pudo eliminar el evento.';
+            if (error?.response?.data?.message) {
+              msg = error.response.data.message;
+            } else if (error?.message) {
+              msg = error.message;
+            }
+            Alert.alert('Error', msg);
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
@@ -846,6 +874,14 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onPress={handleSave}
               disabled={loading}
             />
+            <TouchableOpacity
+              style={[styles.deleteEventButton, { borderColor: '#d32f2f' }]}
+              onPress={handleDeleteEvent}
+              disabled={loading}
+            >
+              <Icon name="trash-can-outline" size={20} color="#d32f2f" />
+              <ThemedText style={styles.deleteEventText}>Eliminar evento</ThemedText>
+            </TouchableOpacity>
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -910,6 +946,20 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 16,
     marginTop: 8,
+  },
+  deleteEventButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingVertical: 12,
+    marginTop: 12,
+    gap: 8,
+  },
+  deleteEventText: {
+    color: '#d32f2f',
+    fontWeight: 'bold',
   },
   removeImageBtn: { backgroundColor: '#f44336', padding: 6, borderRadius: 12 },
 });

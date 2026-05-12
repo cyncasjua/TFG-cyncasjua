@@ -35,13 +35,13 @@ El objetivo principal del sistema era desarrollar una aplicación móvil multipl
 \begin{itemize}
     \item \textbf{Listado y filtrado de eventos}: implementado completamente. La pantalla principal ofrece filtrado por categoría, precio, fecha y radio de distancia, con soporte para geolocalización en tiempo real.
 
-    \item \textbf{Creación de eventos públicos y privados con moderación}: implementado completamente. Los eventos públicos siguen un flujo de moderación con estados \textit{Pendiente}, \textit{Aprobado} y \textit{Rechazado}, y los moderadores pueden proponer ediciones mediante \texttt{EventEditRequest}. Los eventos privados se aprueban automáticamente y son accesibles mediante enlace de invitación.
+    \item \textbf{Creación de eventos públicos y privados con moderación}: implementado completamente. Los eventos públicos siguen un flujo de moderación con estados \textit{Pendiente}, \textit{Aprobado} y \textit{Rechazado}. Los moderadores pueden revisar eventos pendientes en su listado propio y editar o eliminar todos los eventos públicos desde un listado específico, mientras que los eventos privados se aprueban automáticamente y son accesibles mediante enlace de invitación.
 
-    \item \textbf{Edición de eventos propios}: implementado completamente, incluyendo la lógica de vuelta a estado \textit{Pendiente} al editar un evento público aprobado.
+    \item \textbf{Edición y eliminación de eventos propios}: implementado completamente, incluyendo la lógica de vuelta a estado \textit{Pendiente} al editar un evento público aprobado y la posibilidad de eliminar eventos desde la pantalla de edición.
 
     \item \textbf{Geolocalización y mapa interactivo}: implementado completamente mediante OpenStreetMap y \texttt{react-native-maps}, con filtrado por radio y visualización de marcadores en mapa.
 
-    \item \textbf{Interacción social}: implementado completamente. El sistema incluye chat de evento (sala grupal por evento), mensajería privada entre usuarios, valoraciones con puntuación y comentario, y módulo de amistad basado en seguimiento entre usuarios.
+    \item \textbf{Interacción social}: implementado completamente. El sistema incluye chat de evento (sala grupal por evento), mensajería privada entre usuarios, valoraciones con puntuación y comentario, y módulo social basado en seguimiento, con listados diferenciados de seguidores, seguidos y amistades mutuas.
 
     \item \textbf{Sistema de recomendaciones personalizado}: implementado completamente. El motor aplica un algoritmo multifactorial ponderado que tiene en cuenta categorías de interés, historial de interacciones (guardar, asistir, compartir, ver, valorar), proximidad geográfica y temporal.
 
@@ -49,7 +49,7 @@ El objetivo principal del sistema era desarrollar una aplicación móvil multipl
 
     \item \textbf{Creación de rutas propias}: implementado completamente. Los usuarios pueden crear rutas visibles para el resto de la comunidad, que pueden ser valoradas por otros usuarios.
 
-    \item \textbf{Notificaciones}: implementado completamente. El sistema envía notificaciones por aprobación o rechazo de eventos, eventos cercanos, eventos próximos, nuevos mensajes privados, nuevos seguidores y recomendaciones generadas.
+    \item \textbf{Notificaciones}: implementado completamente. El sistema envía notificaciones por aprobación o rechazo de eventos, eventos cercanos, eventos próximos, nuevos mensajes privados, nuevos seguidores y recomendaciones generadas. Además, las notificaciones relacionadas con perfiles o eventos incluyen acciones para navegar directamente al perfil o al evento correspondiente.
 
     \item \textbf{Documentación automática de la API con Swagger}: implementado completamente. El backend expone un contrato OpenAPI completo mediante \texttt{@nestjs/swagger}. La documentación interactiva se genera automáticamente a partir de los decoradores \texttt{@ApiTags}, \texttt{@ApiOperation}, \texttt{@ApiParam}, \texttt{@ApiBearerAuth} y \texttt{@ApiProperty} añadidos a los diez controladores y los DTOs principales, y queda accesible en la ruta \texttt{/api/docs} de la API.
 \end{itemize}
@@ -60,7 +60,7 @@ En cuanto a los objetivos del sistema no alcanzados, la generación automática 
 
 El resultado principal del proyecto es una aplicación móvil multiplataforma funcional para el descubrimiento, creación y gestión de eventos en Sevilla. La solución final integra una aplicación cliente desarrollada con React Native y Expo, un backend basado en NestJS, una base de datos PostgreSQL con extensión PostGIS y distintos servicios externos para autenticación, almacenamiento de imágenes, mapas, geocodificación y obtención de eventos desde fuentes externas.
 
-Desde el punto de vista funcional, el sistema permite consultar eventos, filtrarlos por criterios relevantes, visualizarlos en un mapa, crear eventos públicos y privados, moderar contenido, participar en chats, enviar mensajes privados, buscar usuarios, consultar sus perfiles, seguir o dejar de seguir a otras personas, ver los eventos a los que asisten, valorar eventos, recibir notificaciones y obtener recomendaciones personalizadas. Además, se han incorporado rutas de eventos recomendadas y rutas creadas por los propios usuarios, ampliando el alcance de la aplicación más allá de un listado convencional de actividades.
+Desde el punto de vista funcional, el sistema permite consultar eventos, filtrarlos por criterios relevantes, visualizarlos en un mapa, crear, editar y eliminar eventos públicos y privados, moderar contenido, participar en chats, enviar mensajes privados, buscar usuarios, consultar sus perfiles, seguir o dejar de seguir a otras personas, revisar seguidores, seguidos y amistades mutuas, ver los eventos a los que asisten, valorar eventos, recibir notificaciones accionables y obtener recomendaciones personalizadas. Además, se han incorporado rutas de eventos recomendadas y rutas creadas por los propios usuarios, ampliando el alcance de la aplicación más allá de un listado convencional de actividades.
 
 Desde el punto de vista documental, el proyecto ha generado una memoria completa, un manual de usuario, un manual de desarrollo, un manual de despliegue, actas de reunión, informes de avance y cambio, el reporte de horas de Clockify y la declaración de autoría correspondiente. Todo ello permite presentar el trabajo no solo como una aplicación terminada, sino como un proyecto de ingeniería documentado, planificado, probado y preparado para su mantenimiento o evolución futura.
 
@@ -142,7 +142,7 @@ A lo largo del desarrollo han surgido ideas de mejora y nuevas funcionalidades q
 
     \item \textbf{Achievements y gamificación}: dado que el sistema ya registra visitas, asistencias, guardados y compartidos, sería natural introducir un sistema de insignias: \textit{Explorador} (10 eventos distintos visitados), \textit{Foodie} (5 eventos de gastronomía asistidos), \textit{Organizador} (3 eventos propios aprobados), entre otras. Este mecanismo aumentaría la retención y la participación activa de los usuarios.
 
-    \item \textbf{Módulo avanzado de amigos}: actualmente el sistema dispone de un módulo de amistad basado en seguimiento, con búsqueda de usuarios, perfiles públicos, opción de seguir o dejar de seguir, mensajería privada y consulta de eventos a los que asisten otros usuarios. Como ampliación futura, se podría incorporar una gestión más explícita de contactos cercanos o amistades confirmadas, invitaciones directas a eventos y recomendaciones sociales basadas en intereses compartidos.
+    \item \textbf{Módulo avanzado de amigos}: actualmente el sistema dispone de un módulo social basado en seguimiento, con búsqueda de usuarios, perfiles públicos, opción de seguir o dejar de seguir, distinción entre seguidores, seguidos y amistades mutuas, mensajería privada y consulta de eventos a los que asisten otros usuarios. Como ampliación futura, se podría incorporar una gestión más explícita de contactos cercanos, invitaciones directas a eventos y recomendaciones sociales basadas en intereses compartidos.
 
     \item \textbf{Integración con el calendario nativo del dispositivo}: la pantalla \texttt{CalendarEventsScreen} ya existe pero no hay integración con el calendario nativo del teléfono. Mediante \texttt{expo-calendar} sería posible añadir directamente los eventos a los que el usuario se apunta en Google Calendar o Apple Calendar, sin salir de la aplicación.
 

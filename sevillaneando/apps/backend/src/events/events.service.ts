@@ -14,6 +14,7 @@ import { EstadoEnum } from './enums/estado.enum';
 import { RecurrenciaEnum } from './enums/recurrencia.enum';
 import { Categoria } from '../categorias/categoria.entity';
 import { User } from '../users/user.entity';
+import { RolEnum } from '../users/enums/rol.enum';
 import { v4 as uuidv4 } from 'uuid';
 import { Mensaje } from '../chat/mensaje.entity';
 import { Resena } from './resena.entity';
@@ -28,6 +29,8 @@ type EventVisibilityState = {
   estado: EstadoEnum;
   linkAcceso: string | null;
 };
+
+type EventRequester = Pick<User, 'id' | 'rol'>;
 
 @Injectable()
 export class EventsService {
@@ -316,27 +319,78 @@ export class EventsService {
     return instancias;
   }
 
-  async update(id: string, dto: UpdateEventDto): Promise<Event> {
+  async update(id: string, dto: UpdateEventDto, requester?: EventRequester): Promise<Event> {
     const event = await this.findOne(id);
+    if (requester) {
+      this.assertCanModifyEvent(event, requester);
+      this.assertValidVisibilityChange(event, dto, requester);
+    }
+
     const wasPrivado = event.privado;
     const willBePrivado = dto.privado !== undefined ? dto.privado : event.privado;
+    const isModeratorEditingPublic = requester
+      ? this.canModeratePublicEvent(event, requester)
+      : false;
 
     this.applyEventUpdates(event, dto);
     event.privado = willBePrivado;
     event.asistentes = event.asistentes ?? [];
 
-    const visibilityState = this.resolveVisibilityState(
-      wasPrivado,
-      willBePrivado,
-      event.linkAcceso ?? null
-    );
-    event.estado = visibilityState.estado;
-    event.linkAcceso = visibilityState.linkAcceso;
+    if (isModeratorEditingPublic && !willBePrivado) {
+      event.estado = this.resolveModeratorStatus(dto.estado, event.estado);
+      event.linkAcceso = null;
+    } else {
+      const visibilityState = this.resolveVisibilityState(
+        wasPrivado,
+        willBePrivado,
+        event.linkAcceso ?? null
+      );
+      event.estado = visibilityState.estado;
+      event.linkAcceso = visibilityState.linkAcceso;
+    }
 
     const toSave = this.prepareEventForSave(event);
     const saved = await this.eventRepo.save(toSave);
     this.ensureImagenesCorrectFormat(saved);
     return saved;
+  }
+
+  private assertCanModifyEvent(event: Event, requester: EventRequester): void {
+    if (event.creador?.id === requester.id) return;
+    if (this.canModeratePublicEvent(event, requester)) return;
+
+    throw new ForbiddenException('No tienes permisos para modificar este evento');
+  }
+
+  private canModeratePublicEvent(event: Event, requester: EventRequester): boolean {
+    const canModerate = requester.rol === RolEnum.ADMIN || requester.rol === RolEnum.MODERATOR;
+    return canModerate && event.privado !== true;
+  }
+
+  private assertValidVisibilityChange(
+    event: Event,
+    dto: UpdateEventDto,
+    requester: EventRequester
+  ): void {
+    const isCreator = event.creador?.id === requester.id;
+    if (isCreator) return;
+
+    if (dto.privado !== undefined && dto.privado !== event.privado) {
+      throw new ForbiddenException('El moderador no puede cambiar la privacidad del evento');
+    }
+  }
+
+  private resolveModeratorStatus(
+    rawStatus: string | undefined,
+    currentStatus: EstadoEnum
+  ): EstadoEnum {
+    if (rawStatus === undefined) return currentStatus;
+
+    if (Object.values(EstadoEnum).includes(rawStatus as EstadoEnum)) {
+      return rawStatus as EstadoEnum;
+    }
+
+    throw new BadRequestException('Estado de evento no valido');
   }
 
   private applyEventUpdates(event: Event, dto: UpdateEventDto): void {
@@ -398,13 +452,14 @@ export class EventsService {
     return this.eventRepo.save(event);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, requester?: EventRequester): Promise<void> {
     const event = await this.eventRepo.findOne({
       where: { id },
-      relations: ['asistentes'],
+      relations: ['asistentes', 'creador'],
     });
 
     if (!event) throw new NotFoundException('Evento no encontrado');
+    if (requester) this.assertCanModifyEvent(event, requester);
 
     if (event.asistentes?.length) {
       await this.eventRepo
@@ -513,7 +568,6 @@ export class EventsService {
       .leftJoinAndSelect('event.categoria', 'categoria')
       .leftJoinAndSelect('event.creador', 'creador')
       .where('event.creador = :userId', { userId })
-      .andWhere('event.estado != :pendiente', { pendiente: EstadoEnum.Pendiente })
       .orderBy('event.fechaInicio', 'DESC')
       .getMany();
     return this.processEventArray(events);
@@ -527,6 +581,17 @@ export class EventsService {
       .where('event.privado = false AND event.estado = :pendiente', {
         pendiente: EstadoEnum.Pendiente,
       })
+      .orderBy('event.fechaInicio', 'DESC')
+      .getMany();
+    return this.processEventArray(events);
+  }
+
+  async findPublicEventsForModeration(): Promise<Event[]> {
+    const events = await this.eventRepo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categoria', 'categoria')
+      .leftJoinAndSelect('event.creador', 'creador')
+      .where('event.privado = false')
       .orderBy('event.fechaInicio', 'DESC')
       .getMany();
     return this.processEventArray(events);

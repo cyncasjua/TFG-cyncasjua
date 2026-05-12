@@ -119,8 +119,10 @@ El módulo de amistad permite descubrir y mantener contacto con otros usuarios d
 \textbf{Funcionalidades}
 \begin{itemize}[leftmargin=1.5em]
 \item Búsqueda de usuarios.
-\item Listado de usuarios seguidos en la pestaña \textit{Siguiendo}.
-\item Listado de seguidores pendientes de correspondencia en la pestaña \textit{Seguidores}.
+\item Listado completo de seguidores en la pestaña \textit{Seguidores}.
+\item Listado de usuarios seguidos en la pestaña \textit{Seguidos}.
+\item Listado de amistades mutuas en la pestaña \textit{Amigos}, cuando dos usuarios se siguen entre sí.
+\item Acceso a listas independientes de seguidores y seguidos desde los contadores del perfil público.
 \item Acceso al perfil de otros usuarios, con opción de seguir, dejar de seguir, enviar mensaje y consultar eventos a los que asisten.
 \end{itemize}
 \end{tcolorbox}
@@ -714,7 +716,7 @@ Los participantes que no son creadores pueden seguir visualizando el evento y ac
 
 \subsection{Mis eventos (rol de usuario)}
 
-La sección \textit{Mis eventos} permite al creador consultar y editar las actividades que ha generado. Esta pantalla resulta útil para controlar el estado de los eventos y adaptar su configuración con el tiempo.
+La sección \textit{Mis eventos} permite al creador consultar, editar y eliminar las actividades que ha generado. Esta pantalla resulta útil para controlar el estado de los eventos y adaptar su configuración con el tiempo.
 
 Dependiendo de si un evento es público o privado, y del sentido del cambio realizado, su visibilidad puede variar.
 \bigskip
@@ -724,8 +726,9 @@ Dependiendo de si un evento es público o privado, y del sentido del cambio real
 
 \item Cuando se edita un evento privado se mantiene visible para participantes que accedieron mediante el enlace privado y en \textit{Mis eventos}.
 \item Cuando un evento pasa de público a privado deja de ser visible para todos pero se mantiene visible en \textit{Mis eventos}. Para que sea visible habría que acceder mediante el enlace privado.
-\item Cuando un evento pasa de privado a público se va a moderación, desapareciendo de \textit{Mis eventos} y dejando de ser visible para las personas que habían accedido mediante el enlace y pasaría a ser visible para todos si se aprueba.
-\item Cuando se edita un evento público pasa a moderación, desapareciendo de \textit{Mis eventos} y dejando de ser visible para todos.
+\item Cuando un evento pasa de privado a público se va a moderación, deja de ser visible para las personas que habían accedido mediante el enlace y pasaría a ser visible para todos si se aprueba.
+\item Cuando se edita un evento público vuelve a moderación antes de mostrarse de nuevo en el listado general.
+\item Desde la pantalla de edición puede eliminarse el evento definitivamente mediante el botón correspondiente.
 \end{itemize}
 
 \begin{figure}[H]
@@ -754,9 +757,9 @@ Dependiendo de si un evento es público o privado, y del sentido del cambio real
 
 \subsection{Moderación (rol de moderador)}
 
-El rol de moderador se encarga de revisar aquellos eventos públicos que todavía no han sido validados para su publicación. Esta funcionalidad ayuda a mantener la coherencia y fiabilidad de la plataforma.
+El rol de moderador se encarga de revisar aquellos eventos públicos que todavía no han sido validados para su publicación y de supervisar eventos públicos en un listado independiente. Esta funcionalidad ayuda a mantener la coherencia y fiabilidad de la plataforma.
 
-Desde la pantalla de moderación pueden consultarse los eventos pendientes, editarlos si fuera necesario y aprobarlos o rechazarlos. Una vez aprobados, los eventos pasan a ser visibles para el resto de usuarios.
+Desde la pantalla de moderación pueden consultarse dos listados: los eventos pendientes de aprobación y todos los eventos públicos editables. Los eventos pendientes se mantienen en su listado propio, desde donde pueden editarse si fuera necesario y aprobarse o rechazarse. El listado de eventos públicos permite al moderador editar eventos públicos en cualquier momento, sin afectar a eventos privados. Además, desde la pantalla de edición el moderador puede eliminar eventos públicos cuando sea necesario.
 
 \bigskip
 
@@ -792,7 +795,7 @@ Desde la pantalla de moderación pueden consultarse los eventos pendientes, edit
 
 \subsection{Notificaciones (todos los roles)}
 
-Las notificaciones permiten al usuario recibir información relevante sin necesidad de revisar manualmente el estado de sus eventos o actividades. Estas notificaciones pueden referirse a la aprobación o rechazo de un evento creado, recordatorios previos a la celebración de una actividad o eventos cercanos según la ubicación. Al entrar salen marcadas como nuevas y se pueden pulsar para cambiar su estado y se pueden eliminar mediante el botón.
+Las notificaciones permiten al usuario recibir información relevante sin necesidad de revisar manualmente el estado de sus eventos o actividades. Estas notificaciones pueden referirse a la aprobación o rechazo de un evento creado, recordatorios previos a la celebración de una actividad, eventos cercanos según la ubicación o nuevos seguidores. Al entrar salen marcadas como nuevas, se pueden pulsar para cambiar su estado y se pueden eliminar mediante el botón correspondiente. Además, algunas notificaciones incorporan una acción contextual: las notificaciones de seguidores permiten abrir directamente el perfil de la persona que ha empezado a seguir al usuario, mientras que las notificaciones asociadas a eventos permiten acceder al detalle del evento.
 
 Este sistema mejora la comunicación entre la plataforma y el usuario, y contribuye a mantener una experiencia más activa y personalizada.
 
@@ -809,9 +812,9 @@ Este sistema mejora la comunicación entre la plataforma y el usuario, y contrib
 
 \subsection{Amistad y mensajería privada (todos los roles)}
 
-Además del chat asociado a eventos, la aplicación incorpora un módulo de amistad y mensajería privada entre usuarios. Desde la sección de amigos se pueden buscar usuarios y consultar dos listados: \textit{Siguiendo}, con las personas a las que sigue el usuario, y \textit{Seguidores}, con las personas que le siguen pero a las que todavía no sigue. Si el usuario empieza a seguir a alguien que aparecía en \textit{Seguidores}, esa persona pasa a mostrarse en \textit{Siguiendo}.
+Además del chat asociado a eventos, la aplicación incorpora un módulo de amistad y mensajería privada entre usuarios. Desde la sección de amigos se pueden buscar usuarios y consultar cuatro apartados diferenciados: \textit{Seguidores}, con todas las personas que siguen al usuario; \textit{Seguidos}, con las personas a las que sigue; \textit{Amigos}, con las relaciones mutuas en las que ambos usuarios se siguen; y \textit{Buscar}, para localizar nuevos perfiles. De esta forma, un usuario que pasa a ser seguido de vuelta no desaparece del listado de seguidores, sino que también queda reflejado como amistad mutua en la pestaña correspondiente.
 
-Al acceder al perfil de otro usuario se puede seguirlo o dejar de seguirlo, iniciar una conversación privada y consultar los eventos a los que asiste. La mensajería privada también puede iniciarse pulsando sobre un usuario desde el chat del evento o desde la lista de asistentes. Se podrán enviar mensajes, imágenes y, si se dejan pulsados, eliminarlos.
+Al acceder al perfil de otro usuario se puede seguirlo o dejar de seguirlo, iniciar una conversación privada y consultar los eventos a los que asiste. Los contadores de seguidores y seguidos del perfil son interactivos y abren una pantalla independiente con la lista concreta de usuarios correspondiente. La mensajería privada también puede iniciarse pulsando sobre un usuario desde el chat del evento o desde la lista de asistentes. Se podrán enviar mensajes, imágenes y, si se dejan pulsados, eliminarlos.
 
 Las conversaciones privadas pueden consultarse posteriormente desde la sección de mensajes, favoreciendo la continuidad del contacto entre usuarios.
 
