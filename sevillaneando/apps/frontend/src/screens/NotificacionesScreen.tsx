@@ -139,26 +139,26 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedView style={styles.header}>
-        <TouchableOpacity
-          onPress={marcarTodasLeidas}
-          disabled={marcandoTodas}
-          style={[
-            styles.markAllButton,
-            {
-              opacity: marcandoTodas ? 0.6 : 1,
-              backgroundColor: notificaciones.some((n) => !n.leida) ? '#6c2eb7' : '#999',
-            },
-          ]}
-          accessibilityLabel="Marcar todas las notificaciones como leídas"
-        >
-          {marcandoTodas ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Icon name="check-all" size={16} color="#fff" />
-          )}
-        </TouchableOpacity>
-      </ThemedView>
+      <TouchableOpacity
+        onPress={marcarTodasLeidas}
+        disabled={marcandoTodas}
+        style={[
+          styles.markAllButton,
+          {
+            alignSelf: 'flex-end',
+            marginBottom: 12,
+            opacity: marcandoTodas ? 0.6 : 1,
+            backgroundColor: notificaciones.some((n) => !n.leida) ? '#6c2eb7' : '#999',
+          },
+        ]}
+        accessibilityLabel="Marcar todas las notificaciones como leídas"
+      >
+        {marcandoTodas ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Icon name="check-all" size={16} color="#fff" />
+        )}
+      </TouchableOpacity>
       <FlatList
         data={notificaciones}
         keyExtractor={(item) => item.id}
@@ -228,12 +228,6 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   markAllButton: {
     width: 40,
     height: 40,
