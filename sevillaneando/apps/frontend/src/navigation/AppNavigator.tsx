@@ -233,11 +233,7 @@ export function AppNavigator() {
             component={LegalAttributionsScreen}
             options={{ title: 'Licencias y atribuciones' }}
           />
-          <AppStack.Screen
-            name="Help"
-            component={HelpScreen}
-            options={{ title: 'Guía de uso' }}
-          />
+          <AppStack.Screen name="Help" component={HelpScreen} options={{ title: 'Guía de uso' }} />
           <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
           <AppStack.Screen
             name="ProfileConnections"
