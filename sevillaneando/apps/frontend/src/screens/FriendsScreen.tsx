@@ -317,7 +317,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 16, paddingBottom: 0 },
+  header: { padding: 16, paddingTop: 8, paddingBottom: 0 },
   tabRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, gap: 4 },
   tab: {

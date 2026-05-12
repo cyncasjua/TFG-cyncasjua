@@ -37,6 +37,7 @@ import { RoutesListScreen } from '../screens/RoutesListScreen';
 import { RouteDetailScreen } from '../screens/RouteDetailScreen';
 import { SavedAndPrivateEventsScreen } from '../screens/SavedAndPrivateEventsScreen';
 import { LegalAttributionsScreen } from '../screens/LegalAttributionsScreen';
+import HelpScreen from '../screens/HelpScreen';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { ProfileConnectionsScreen } from '../screens/ProfileConnectionsScreen';
 
@@ -231,6 +232,11 @@ export function AppNavigator() {
             name="LegalAttributions"
             component={LegalAttributionsScreen}
             options={{ title: 'Licencias y atribuciones' }}
+          />
+          <AppStack.Screen
+            name="Help"
+            component={HelpScreen}
+            options={{ title: 'Guía de uso' }}
           />
           <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
           <AppStack.Screen

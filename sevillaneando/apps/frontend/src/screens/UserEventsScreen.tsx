@@ -137,7 +137,7 @@ export const UserEventsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { flex: 1, padding: 20, paddingTop: 8 },
   card: {
     borderRadius: 18,
     padding: 16,

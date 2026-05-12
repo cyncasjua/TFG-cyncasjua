@@ -2247,6 +2247,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
                     onPress={() => {
                       setMenuVisible(false);
+                      navigation.navigate('Help');
+                    }}
+                  >
+                    <MaterialIcons name="help-outline" size={20} color={colors.primary} />
+                    <ThemedText style={styles.menuActionLabel}>Guía de uso</ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.menuActionRow, { borderColor: colors.border }]}
+                    onPress={() => {
+                      setMenuVisible(false);
                       navigation.navigate('LegalAttributions');
                     }}
                   >

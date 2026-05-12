@@ -223,7 +223,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { flex: 1, padding: 20, paddingTop: 8 },
   tabs: {
     flexDirection: 'row',
     borderWidth: 1,
