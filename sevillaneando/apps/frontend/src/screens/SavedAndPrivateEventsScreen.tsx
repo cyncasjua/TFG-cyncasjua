@@ -25,12 +25,7 @@ import { formatEventDateRange } from '../utils/sevillaTime';
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { Event } from '../types/event';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {
-  ThemedText,
-  ThemedTextSecondary,
-  ThemedTitle,
-  ThemedView,
-} from '../components';
+import { ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SavedAndPrivateEvents'>;
 
@@ -185,8 +180,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
           {title}
         </ThemedText>
         <ThemedTextSecondary style={styles.eventInfo}>
-          <Icon name="calendar-outline" size={13} />{' '}
-          {formatEventDateRange(fechaInicio, fechaFin)}
+          <Icon name="calendar-outline" size={13} /> {formatEventDateRange(fechaInicio, fechaFin)}
         </ThemedTextSecondary>
         <ThemedTextSecondary style={styles.eventInfo} numberOfLines={1}>
           <Icon name="map-marker-outline" size={13} /> {address}

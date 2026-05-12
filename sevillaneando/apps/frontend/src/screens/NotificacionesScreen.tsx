@@ -132,9 +132,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>
-          Cargando notificaciones…
-        </ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando notificaciones…</ThemedTextSecondary>
       </ThemedView>
     );
   }
