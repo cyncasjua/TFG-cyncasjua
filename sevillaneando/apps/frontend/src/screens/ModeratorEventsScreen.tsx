@@ -109,7 +109,9 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               Pendientes
             </ThemedText>
             {pendingEvents.length > 0 && (
-              <ThemedText style={[styles.tabCount, activeList === 'pending' && styles.activeTabText]}>
+              <ThemedText
+                style={[styles.tabCount, activeList === 'pending' && styles.activeTabText]}
+              >
                 {pendingEvents.length} evento{pendingEvents.length !== 1 ? 's' : ''}
               </ThemedText>
             )}
@@ -119,17 +121,15 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
           style={[styles.tab, activeList === 'public' && styles.tabPublic]}
           onPress={() => setActiveList('public')}
         >
-          <Icon
-            name="earth"
-            size={18}
-            color={activeList === 'public' ? '#fff' : colors.primary}
-          />
+          <Icon name="earth" size={18} color={activeList === 'public' ? '#fff' : colors.primary} />
           <View>
             <ThemedText style={[styles.tabText, activeList === 'public' && styles.activeTabText]}>
               Públicos
             </ThemedText>
             {publicEvents.length > 0 && (
-              <ThemedText style={[styles.tabCount, activeList === 'public' && styles.activeTabText]}>
+              <ThemedText
+                style={[styles.tabCount, activeList === 'public' && styles.activeTabText]}
+              >
                 {publicEvents.length} evento{publicEvents.length !== 1 ? 's' : ''}
               </ThemedText>
             )}
@@ -163,9 +163,12 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
                 resizeMode="cover"
               />
               <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
-              <ThemedText style={styles.eventDesc} numberOfLines={2}>{item.description}</ThemedText>
+              <ThemedText style={styles.eventDesc} numberOfLines={2}>
+                {item.description}
+              </ThemedText>
               <ThemedTextSecondary style={styles.eventInfo}>
-                <Icon name="calendar-outline" size={13} /> {formatEventDateRange(item.fechaInicio, item.fechaFin)}
+                <Icon name="calendar-outline" size={13} />{' '}
+                {formatEventDateRange(item.fechaInicio, item.fechaFin)}
               </ThemedTextSecondary>
               <ThemedTextSecondary style={styles.eventInfo}>
                 <Icon name="map-marker-outline" size={13} /> {item.address}
