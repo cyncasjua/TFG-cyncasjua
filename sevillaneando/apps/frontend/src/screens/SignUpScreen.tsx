@@ -6,6 +6,7 @@ import {
   ImageBackground,
   Keyboard,
   TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -30,6 +31,8 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nombre, setNombre] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -99,28 +102,44 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
               ]}
               placeholderTextColor={colors.textSecondary}
             />
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Contraseña"
-              secureTextEntry
-              style={[
-                styles.input,
-                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
-              ]}
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Confirmar contraseña"
-              secureTextEntry
-              style={[
-                styles.input,
-                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
-              ]}
-              placeholderTextColor={colors.textSecondary}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Contraseña"
+                secureTextEntry={!showPassword}
+                style={[
+                  styles.inputPassword,
+                  { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+                ]}
+                placeholderTextColor={colors.textSecondary}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <ThemedText style={styles.eyeIcon}>{showPassword ? '🙈' : '👁'}</ThemedText>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Confirmar contraseña"
+                secureTextEntry={!showConfirmPassword}
+                style={[
+                  styles.inputPassword,
+                  { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+                ]}
+                placeholderTextColor={colors.textSecondary}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <ThemedText style={styles.eyeIcon}>{showConfirmPassword ? '🙈' : '👁'}</ThemedText>
+              </TouchableOpacity>
+            </View>
             {error && (
               <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>
             )}
@@ -150,6 +169,10 @@ const styles = StyleSheet.create({
   subtitle: { textAlign: 'center', marginBottom: 20 },
   form: { gap: 12, marginBottom: 20 },
   input: { borderRadius: 50, padding: 14, borderWidth: 1 },
+  passwordContainer: { flexDirection: 'row', alignItems: 'center' },
+  inputPassword: { flex: 1, borderRadius: 50, padding: 14, borderWidth: 1, paddingRight: 50 },
+  eyeButton: { position: 'absolute', right: 16 },
+  eyeIcon: { fontSize: 18 },
   error: { textAlign: 'center' },
   link: { textAlign: 'center', fontWeight: '600' },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ImageBackground, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,6 +24,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -88,17 +89,25 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             ]}
             placeholderTextColor={colors.textSecondary}
           />
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Contraseña"
-            secureTextEntry
-            style={[
-              styles.input,
-              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
-            ]}
-            placeholderTextColor={colors.textSecondary}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Contraseña"
+              secureTextEntry={!showPassword}
+              style={[
+                styles.inputPassword,
+                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+              ]}
+              placeholderTextColor={colors.textSecondary}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <ThemedText style={styles.eyeIcon}>{showPassword ? '🙈' : '👁'}</ThemedText>
+            </TouchableOpacity>
+          </View>
 
           <ThemedView style={styles.checkboxContainer}>
             <TouchableOpacity
@@ -152,6 +161,10 @@ const styles = StyleSheet.create({
   subtitle: { textAlign: 'center', marginBottom: 20 },
   form: { gap: 12, marginBottom: 20, borderRadius: 30, padding: 16 },
   input: { borderRadius: 50, padding: 14, borderWidth: 1 },
+  passwordContainer: { flexDirection: 'row', alignItems: 'center' },
+  inputPassword: { flex: 1, borderRadius: 50, padding: 14, borderWidth: 1, paddingRight: 50 },
+  eyeButton: { position: 'absolute', right: 16 },
+  eyeIcon: { fontSize: 18 },
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
   checkbox: {
     width: 24,
