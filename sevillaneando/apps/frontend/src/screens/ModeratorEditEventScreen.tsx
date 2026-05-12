@@ -343,7 +343,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   };
 
   const handleDeleteEvent = () => {
-    Alert.alert('Eliminar evento', 'Esta accion eliminara el evento definitivamente.', [
+    Alert.alert('Eliminar evento', 'Esta acción eliminará el evento definitivamente.', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',

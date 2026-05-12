@@ -14,8 +14,9 @@ import { api, getErrorMessage } from '../services';
 import { formatEventDateRange } from '../utils/sevillaTime';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
+import { ThemedView, ThemedText, ThemedTextSecondary } from '../components';
 import { getFullImageUrl } from '../utils/imageUrl';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { RootStackParamList } from '../navigation/types';
 import type { Event } from '../types/event';
 
@@ -93,23 +94,46 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Moderacion de eventos</ThemedTitle>
       <View style={[styles.tabs, { borderColor: colors.border }]}>
         <TouchableOpacity
-          style={[styles.tab, activeList === 'pending' && { backgroundColor: colors.primary }]}
+          style={[styles.tab, activeList === 'pending' && styles.tabPending]}
           onPress={() => setActiveList('pending')}
         >
-          <ThemedText style={[styles.tabText, activeList === 'pending' && styles.activeTabText]}>
-            Pendientes de aprobacion
-          </ThemedText>
+          <Icon
+            name="clock-alert-outline"
+            size={18}
+            color={activeList === 'pending' ? '#fff' : '#e67e22'}
+          />
+          <View>
+            <ThemedText style={[styles.tabText, activeList === 'pending' && styles.activeTabText]}>
+              Pendientes
+            </ThemedText>
+            {pendingEvents.length > 0 && (
+              <ThemedText style={[styles.tabCount, activeList === 'pending' && styles.activeTabText]}>
+                {pendingEvents.length} evento{pendingEvents.length !== 1 ? 's' : ''}
+              </ThemedText>
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeList === 'public' && { backgroundColor: colors.primary }]}
+          style={[styles.tab, activeList === 'public' && styles.tabPublic]}
           onPress={() => setActiveList('public')}
         >
-          <ThemedText style={[styles.tabText, activeList === 'public' && styles.activeTabText]}>
-            Publicos editables
-          </ThemedText>
+          <Icon
+            name="earth"
+            size={18}
+            color={activeList === 'public' ? '#fff' : colors.primary}
+          />
+          <View>
+            <ThemedText style={[styles.tabText, activeList === 'public' && styles.activeTabText]}>
+              Públicos
+            </ThemedText>
+            {publicEvents.length > 0 && (
+              <ThemedText style={[styles.tabCount, activeList === 'public' && styles.activeTabText]}>
+                {publicEvents.length} evento{publicEvents.length !== 1 ? 's' : ''}
+              </ThemedText>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -139,35 +163,36 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
                 resizeMode="cover"
               />
               <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
-              <ThemedText style={styles.eventDesc}>{item.description}</ThemedText>
+              <ThemedText style={styles.eventDesc} numberOfLines={2}>{item.description}</ThemedText>
               <ThemedTextSecondary style={styles.eventInfo}>
-                Fecha: {formatEventDateRange(item.fechaInicio, item.fechaFin)}
+                <Icon name="calendar-outline" size={13} /> {formatEventDateRange(item.fechaInicio, item.fechaFin)}
               </ThemedTextSecondary>
               <ThemedTextSecondary style={styles.eventInfo}>
-                Ubicación: {item.address}
+                <Icon name="map-marker-outline" size={13} /> {item.address}
               </ThemedTextSecondary>
               {activeList === 'pending' ? (
                 <View style={styles.actions}>
                   <TouchableOpacity
-                    style={[styles.button, styles.aprobarBtn]}
+                    style={[styles.iconButton, styles.aprobarBtn]}
                     onPress={() => handleAprobar(item.id)}
                   >
-                    <ThemedText style={styles.buttonText}>Aprobar</ThemedText>
+                    <Icon name="check" size={22} color="#fff" />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.button, styles.rechazarBtn]}
+                    style={[styles.iconButton, styles.rechazarBtn]}
                     onPress={() => handleRechazar(item.id)}
                   >
-                    <ThemedText style={styles.buttonText}>Rechazar</ThemedText>
+                    <Icon name="close" size={22} color="#fff" />
                   </TouchableOpacity>
                 </View>
               ) : (
                 <View style={styles.actions}>
                   <TouchableOpacity
-                    style={[styles.button, { backgroundColor: colors.primary }]}
+                    style={[styles.editButton, { backgroundColor: colors.primary }]}
                     onPress={() => navigation.navigate('ModeratorEditEvent', { event: item })}
                   >
-                    <ThemedText style={styles.buttonText}>Editar evento</ThemedText>
+                    <Icon name="pencil" size={18} color="#fff" />
+                    <ThemedText style={styles.editButtonText}>Editar</ThemedText>
                   </TouchableOpacity>
                 </View>
               )}
@@ -178,7 +203,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedTextSecondary style={{ textAlign: 'center', marginTop: 40 }}>
             {activeList === 'pending'
               ? 'No hay eventos pendientes.'
-              : 'No hay eventos publicos editables.'}
+              : 'No hay eventos públicos editables.'}
           </ThemedTextSecondary>
         }
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -189,7 +214,6 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   tabs: {
     flexDirection: 'row',
     borderWidth: 1,
@@ -202,8 +226,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
-  tabText: { fontWeight: 'bold' },
+  tabPending: { backgroundColor: '#e67e22' },
+  tabPublic: { backgroundColor: '#7c4dff' },
+  tabText: { fontWeight: 'bold', fontSize: 14 },
+  tabCount: { fontSize: 11, opacity: 0.85, textAlign: 'center' },
   activeTabText: { color: '#fff' },
   card: {
     borderRadius: 18,
@@ -225,24 +255,37 @@ const styles = StyleSheet.create({
   eventTitle: { fontWeight: 'bold', fontSize: 18, marginBottom: 6 },
   eventDesc: { fontSize: 15, marginBottom: 6 },
   eventInfo: { fontSize: 13, marginBottom: 2 },
-  actions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 },
-  button: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 16,
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 14,
+    gap: 10,
+  },
+  iconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
-    marginHorizontal: 4,
+    justifyContent: 'center',
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    gap: 6,
+  },
+  editButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   aprobarBtn: {
     backgroundColor: '#4caf50',
   },
   rechazarBtn: {
     backgroundColor: '#f44336',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
   },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
