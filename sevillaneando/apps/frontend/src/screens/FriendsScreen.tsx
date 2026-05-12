@@ -14,7 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { getSeguidos, getSeguidores, searchUsers, seguirUsuario } from '../services/users';
-import { Avatar, ThemedText, ThemedTitle, ThemedView } from '../components';
+import { Avatar, ThemedText, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import type { PublicUser } from '../types/user';
@@ -179,25 +179,46 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedView style={styles.header}>
-        <ThemedTitle>Amigos</ThemedTitle>
-        <View style={[styles.tabs, { backgroundColor: colors.card }]}>
-          {(['seguidores', 'seguidos', 'amigos', 'buscar'] as Tab[]).map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={[styles.tab, tab === item && { backgroundColor: colors.primary }]}
-              onPress={() => setTab(item)}
-            >
-              <ThemedText style={[styles.tabText, tab === item && { color: '#fff' }]}>
-                {item === 'seguidores'
-                  ? 'Seguidores'
+        <View style={styles.tabRow}>
+          <View style={[styles.tabs, { backgroundColor: colors.card, flex: 1 }]}>
+            {(['seguidores', 'seguidos', 'amigos'] as Tab[]).map((item) => {
+              const iconName =
+                item === 'seguidores'
+                  ? 'account-arrow-left-outline'
                   : item === 'seguidos'
-                  ? 'Seguidos'
-                  : item === 'amigos'
-                  ? 'Amigos'
-                  : 'Buscar'}
-              </ThemedText>
-            </TouchableOpacity>
-          ))}
+                  ? 'account-arrow-right-outline'
+                  : 'account-heart-outline';
+              const label =
+                item === 'seguidores' ? 'Seguidores' : item === 'seguidos' ? 'Seguidos' : 'Amigos';
+              return (
+                <TouchableOpacity
+                  key={item}
+                  style={[styles.tab, tab === item && { backgroundColor: colors.primary }]}
+                  onPress={() => setTab(item)}
+                >
+                  <Icon
+                    name={iconName}
+                    size={16}
+                    color={tab === item ? '#fff' : colors.text + '99'}
+                  />
+                  <ThemedText style={[styles.tabText, tab === item && { color: '#fff' }]}>
+                    {label}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.searchIconBtn,
+              {
+                backgroundColor: tab === 'buscar' ? colors.primary : colors.card,
+              },
+            ]}
+            onPress={() => setTab('buscar')}
+          >
+            <Icon name="magnify" size={22} color={tab === 'buscar' ? '#fff' : colors.text + '99'} />
+          </TouchableOpacity>
         </View>
       </ThemedView>
 
@@ -211,7 +232,10 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             renderItem={renderFollower}
             contentContainerStyle={styles.list}
             ListEmptyComponent={
-              <ThemedText style={styles.empty}>Aún no hay seguidores.</ThemedText>
+              <View style={styles.emptyContainer}>
+                <Icon name="account-arrow-left-outline" size={44} color={colors.text + '33'} />
+                <ThemedText style={styles.empty}>Aún no tienes seguidores.</ThemedText>
+              </View>
             }
           />
         )
@@ -224,7 +248,12 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             keyExtractor={(item) => item.id}
             renderItem={renderUser}
             contentContainerStyle={styles.list}
-            ListEmptyComponent={<ThemedText style={styles.empty}>Aún no sigue a nadie.</ThemedText>}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Icon name="account-arrow-right-outline" size={44} color={colors.text + '33'} />
+                <ThemedText style={styles.empty}>Aún no sigues a nadie.</ThemedText>
+              </View>
+            }
           />
         )
       ) : tab === 'amigos' ? (
@@ -237,7 +266,12 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             renderItem={renderUser}
             contentContainerStyle={styles.list}
             ListEmptyComponent={
-              <ThemedText style={styles.empty}>No hay amigos todavía.</ThemedText>
+              <View style={styles.emptyContainer}>
+                <Icon name="account-heart-outline" size={44} color={colors.text + '33'} />
+                <ThemedText style={styles.empty}>
+                  Aún no tienes amigos. ¡Sigue a alguien que te siga de vuelta!
+                </ThemedText>
+              </View>
             }
           />
         )
@@ -283,17 +317,20 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 16, paddingBottom: 0, gap: 12 },
-  tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, gap: 4, marginBottom: 4 },
-  tab: { flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: 'center' },
+  header: { padding: 16, paddingBottom: 0 },
+  tabRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, gap: 4 },
+  tab: { flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 4 },
   tabText: { fontWeight: '600', fontSize: 12 },
+  searchIconBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 16, gap: 8 },
   userRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 999, padding: 12, gap: 12 },
   userRowInner: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
   userInfo: { flex: 1 },
   userName: { fontWeight: '600', fontSize: 15 },
   subText: { fontSize: 12, marginTop: 2 },
-  empty: { textAlign: 'center', opacity: 0.5, marginTop: 32 },
+  empty: { textAlign: 'center', opacity: 0.5, fontSize: 14, maxWidth: 240 },
+  emptyContainer: { alignItems: 'center', marginTop: 48, gap: 10 },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',

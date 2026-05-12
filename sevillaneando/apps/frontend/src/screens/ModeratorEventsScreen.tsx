@@ -86,7 +86,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
         <ThemedTextSecondary style={{ marginTop: 8 }}>
-          Cargando eventos de moderacion...
+          Cargando eventos de moderación…
         </ThemedTextSecondary>
       </ThemedView>
     );
@@ -203,11 +203,18 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <ThemedTextSecondary style={{ textAlign: 'center', marginTop: 40 }}>
-            {activeList === 'pending'
-              ? 'No hay eventos pendientes.'
-              : 'No hay eventos públicos editables.'}
-          </ThemedTextSecondary>
+          <View style={styles.emptyContainer}>
+            <Icon
+              name={activeList === 'pending' ? 'clock-check-outline' : 'earth-off'}
+              size={48}
+              color={colors.text + '44'}
+            />
+            <ThemedTextSecondary style={styles.emptyText}>
+              {activeList === 'pending'
+                ? 'No hay eventos pendientes de revisión.'
+                : 'No hay eventos públicos editables.'}
+            </ThemedTextSecondary>
+          </View>
         }
         contentContainerStyle={{ paddingBottom: 40 }}
       />
@@ -291,4 +298,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f44336',
   },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyContainer: { alignItems: 'center', marginTop: 60, gap: 12 },
+  emptyText: { textAlign: 'center', fontSize: 15, opacity: 0.6 },
 });

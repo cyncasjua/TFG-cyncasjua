@@ -14,7 +14,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { ThemedView, ThemedText, ThemedTextSecondary } from '../components';
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { RootStackParamList } from '../navigation/types';
 import type { Event } from '../types/event';
@@ -69,7 +70,6 @@ export const UserEventsScreen: React.FC = () => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Mis eventos</ThemedTitle>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -112,19 +112,23 @@ export const UserEventsScreen: React.FC = () => {
 
               <View style={styles.actions}>
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.primary }]}
+                  style={[styles.editButton, { backgroundColor: colors.primary }]}
                   onPress={() => handleEdit(item)}
                 >
-                  <ThemedText style={styles.buttonText}>Editar evento</ThemedText>
+                  <Icon name="pencil" size={18} color="#fff" />
+                  <ThemedText style={styles.buttonText}>Editar</ThemedText>
                 </TouchableOpacity>
               </View>
             </ThemedView>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <ThemedTextSecondary style={{ textAlign: 'center', marginTop: 40 }}>
-            No has creado ningún evento aún.
-          </ThemedTextSecondary>
+          <View style={styles.emptyContainer}>
+            <Icon name="calendar-plus-outline" size={48} color={colors.text + '44'} />
+            <ThemedTextSecondary style={styles.emptyText}>
+              Aún no has creado ningún evento.{'\n'}¡Anímate a crear el primero!
+            </ThemedTextSecondary>
+          </View>
         }
         contentContainerStyle={{ paddingBottom: 40 }}
       />
@@ -134,7 +138,6 @@ export const UserEventsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   card: {
     borderRadius: 18,
     padding: 16,
@@ -155,17 +158,22 @@ const styles = StyleSheet.create({
   eventTitle: { fontWeight: 'bold', fontSize: 18, marginBottom: 6 },
   eventDesc: { fontSize: 15, marginBottom: 8 },
   eventInfo: { fontSize: 13, marginBottom: 2 },
-  actions: { marginTop: 14 },
-  button: {
-    paddingVertical: 12,
-    borderRadius: 16,
+  actions: { marginTop: 14, flexDirection: 'row', justifyContent: 'flex-end' },
+  editButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    gap: 6,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
   },
+  emptyContainer: { alignItems: 'center', marginTop: 60, gap: 12 },
+  emptyText: { textAlign: 'center', fontSize: 15, opacity: 0.6, lineHeight: 22 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
 

@@ -193,7 +193,7 @@ const CategoriesScreen = () => {
         />
         {user?.rol === 'admin' && (
           <TouchableOpacity
-            style={styles.fab}
+            style={[styles.fab, { backgroundColor: colors.primary }]}
             onPress={() => {
               setEditMode(false);
               setEditId(null);
@@ -201,9 +201,9 @@ const CategoriesScreen = () => {
               setDescripcion('');
               setModalVisible(true);
             }}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <MaterialIcons name="add-circle" size={48} color={colors.primary} />
+            <MaterialIcons name="add" size={28} color="#fff" />
           </TouchableOpacity>
         )}
         <Modal
@@ -380,8 +380,16 @@ const styles = StyleSheet.create({
     bottom: 32,
     right: 32,
     zIndex: 20,
-    elevation: 8,
-    backgroundColor: 'transparent',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
   modalOverlay: {
     flex: 1,

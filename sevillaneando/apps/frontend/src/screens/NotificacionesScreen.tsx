@@ -13,7 +13,7 @@ import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useNotificaciones } from '../context/NotificacionesContext';
-import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
+import { ThemedView, ThemedText, ThemedTextSecondary } from '../components';
 import type { RootStackParamList } from '../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { reportError } from '../utils/telemetry';
@@ -133,7 +133,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
         <ThemedTextSecondary style={{ marginTop: 8 }}>
-          Cargando notificaciones...
+          Cargando notificaciones…
         </ThemedTextSecondary>
       </ThemedView>
     );
@@ -142,7 +142,6 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedView style={styles.header}>
-        <ThemedTitle style={styles.title}>Notificaciones</ThemedTitle>
         <TouchableOpacity
           onPress={marcarTodasLeidas}
           disabled={marcandoTodas}
@@ -176,14 +175,6 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
                 !item.leida && { borderColor: colors.primary, borderWidth: 2 },
               ]}
             >
-              <TouchableOpacity
-                onPress={() => confirmarBorrado(item.id)}
-                style={styles.trashButton}
-                accessibilityLabel="Eliminar notificación"
-              >
-                <Icon name="trash-can-outline" size={20} color="#6c2eb7" />
-              </TouchableOpacity>
-
               <TouchableOpacity onPress={() => marcarLeida(item.id)}>
                 <ThemedText style={styles.mensaje}>{item.mensaje}</ThemedText>
                 <ThemedTextSecondary style={styles.fecha}>
@@ -197,6 +188,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
                     Nueva
                   </ThemedText>
                 )}
+                <View style={{ flex: 1 }} />
                 {actionLabel && (
                   <TouchableOpacity
                     style={[styles.actionButton, { borderColor: colors.primary }]}
@@ -212,11 +204,25 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
                     </ThemedText>
                   </TouchableOpacity>
                 )}
+                <TouchableOpacity
+                  onPress={() => confirmarBorrado(item.id)}
+                  style={styles.trashButton}
+                  accessibilityLabel="Eliminar notificación"
+                >
+                  <Icon name="trash-can-outline" size={20} color={colors.text + '66'} />
+                </TouchableOpacity>
               </View>
             </ThemedView>
           );
         }}
-        ListEmptyComponent={<ThemedTextSecondary>No tienes notificaciones.</ThemedTextSecondary>}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Icon name="bell-off-outline" size={48} color={colors.text + '44'} />
+            <ThemedTextSecondary style={styles.emptyText}>
+              Todo al día, no hay notificaciones nuevas
+            </ThemedTextSecondary>
+          </View>
+        }
       />
     </ThemedView>
   );
@@ -226,11 +232,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontSize: 20, fontWeight: 'bold', flex: 1 },
   markAllButton: {
     width: 40,
     height: 40,
@@ -243,14 +248,14 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     marginBottom: 12,
   },
-  mensaje: { fontSize: 16, paddingRight: 36 },
+  mensaje: { fontSize: 16 },
   fecha: { fontSize: 12, marginTop: 4 },
   badge: {
     color: '#fff',
     borderRadius: 16,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     overflow: 'hidden',
     fontWeight: 'bold',
     fontSize: 12,
@@ -258,10 +263,8 @@ const styles = StyleSheet.create({
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 8,
-    marginTop: 8,
-    paddingRight: 32,
+    marginTop: 10,
   },
   actionButton: {
     flexDirection: 'row',
@@ -273,17 +276,22 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   actionText: { fontSize: 12, fontWeight: '700' },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   trashButton: {
-    position: 'absolute',
-    bottom: 6,
-    right: 4,
-    width: 44,
-    height: 44,
-    padding: 8,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
   },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 60,
+    gap: 12,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 15,
+    opacity: 0.6,
+  },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
