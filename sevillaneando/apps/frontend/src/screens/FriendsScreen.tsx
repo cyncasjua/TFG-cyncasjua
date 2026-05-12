@@ -9,12 +9,11 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { getSeguidos, getSeguidores, searchUsers, seguirUsuario } from '../services/users';
-import { Avatar, ThemedText, ThemedView } from '../components';
+import { Avatar, ThemedText, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import type { PublicUser } from '../types/user';
@@ -177,8 +176,9 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedView style={styles.header}>
+        <ThemedTitle style={styles.title}>Amigos</ThemedTitle>
         <View style={styles.tabRow}>
           <View style={[styles.tabs, { backgroundColor: colors.card, flex: 1 }]}>
             {(['seguidores', 'seguidos', 'amigos'] as Tab[]).map((item) => {
@@ -311,13 +311,14 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </TouchableWithoutFeedback>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 16, paddingTop: 8, paddingBottom: 0 },
+  header: { padding: 16, paddingBottom: 0 },
+  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
   tabRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, gap: 4 },
   tab: {

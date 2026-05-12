@@ -7,7 +7,6 @@ import {
   FlatList,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import {
@@ -105,7 +104,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={eventosAsistidos}
         keyExtractor={(item) => item.id}
@@ -211,7 +210,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         )}
         ListEmptyComponent={null}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

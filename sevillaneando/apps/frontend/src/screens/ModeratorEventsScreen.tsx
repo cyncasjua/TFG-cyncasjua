@@ -14,7 +14,7 @@ import { api, getErrorMessage } from '../services';
 import { formatEventDateRange } from '../utils/sevillaTime';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { ThemedView, ThemedText, ThemedTextSecondary } from '../components';
+import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import { getFullImageUrl } from '../utils/imageUrl';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { RootStackParamList } from '../navigation/types';
@@ -94,6 +94,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ThemedTitle style={styles.screenTitle}>Moderación de eventos</ThemedTitle>
       <View style={[styles.tabs, { borderColor: colors.border }]}>
         <TouchableOpacity
           style={[styles.tab, activeList === 'pending' && styles.tabPending]}
@@ -223,7 +224,8 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 8 },
+  container: { flex: 1, padding: 20 },
+  screenTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   tabs: {
     flexDirection: 'row',
     borderWidth: 1,

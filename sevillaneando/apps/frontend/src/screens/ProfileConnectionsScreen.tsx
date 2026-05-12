@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
@@ -53,7 +52,7 @@ export const ProfileConnectionsScreen: React.FC<Props> = ({ route, navigation })
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {loading ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: 32 }} />
       ) : (
@@ -64,12 +63,12 @@ export const ProfileConnectionsScreen: React.FC<Props> = ({ route, navigation })
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <ThemedText style={styles.empty}>
-              {type === 'seguidores' ? 'Aun no hay seguidores.' : 'Aun no sigue a nadie.'}
+              {type === 'seguidores' ? 'Aún no hay seguidores.' : 'Aún no sigue a nadie.'}
             </ThemedText>
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

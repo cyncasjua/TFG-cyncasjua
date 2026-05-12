@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
@@ -195,14 +194,14 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ThemedText>Cargando mensajes...</ThemedText>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {conversations.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialIcons name="mail-outline" size={64} color={colors.text + '50'} />
@@ -222,7 +221,7 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
           scrollEnabled
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

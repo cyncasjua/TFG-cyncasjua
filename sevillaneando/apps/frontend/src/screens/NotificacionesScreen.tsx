@@ -13,7 +13,7 @@ import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useNotificaciones } from '../context/NotificacionesContext';
-import { ThemedView, ThemedText, ThemedTextSecondary } from '../components';
+import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import type { RootStackParamList } from '../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { reportError } from '../utils/telemetry';
@@ -139,26 +139,27 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <TouchableOpacity
-        onPress={marcarTodasLeidas}
-        disabled={marcandoTodas}
-        style={[
-          styles.markAllButton,
-          {
-            alignSelf: 'flex-end',
-            marginBottom: 12,
-            opacity: marcandoTodas ? 0.6 : 1,
-            backgroundColor: notificaciones.some((n) => !n.leida) ? '#6c2eb7' : '#999',
-          },
-        ]}
-        accessibilityLabel="Marcar todas las notificaciones como leídas"
-      >
-        {marcandoTodas ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Icon name="check-all" size={16} color="#fff" />
-        )}
-      </TouchableOpacity>
+      <View style={styles.header}>
+        <ThemedTitle style={styles.title}>Notificaciones</ThemedTitle>
+        <TouchableOpacity
+          onPress={marcarTodasLeidas}
+          disabled={marcandoTodas}
+          style={[
+            styles.markAllButton,
+            {
+              opacity: marcandoTodas ? 0.6 : 1,
+              backgroundColor: notificaciones.some((n) => !n.leida) ? '#6c2eb7' : '#999',
+            },
+          ]}
+          accessibilityLabel="Marcar todas las notificaciones como leídas"
+        >
+          {marcandoTodas ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Icon name="check-all" size={16} color="#fff" />
+          )}
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={notificaciones}
         keyExtractor={(item) => item.id}
@@ -228,6 +229,13 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: { fontSize: 20, fontWeight: 'bold', flex: 1 },
   markAllButton: {
     width: 40,
     height: 40,

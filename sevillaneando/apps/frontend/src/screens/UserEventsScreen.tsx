@@ -15,7 +15,7 @@ import { api, getErrorMessage } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { ThemedView, ThemedText, ThemedTextSecondary } from '../components';
+import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../components';
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { RootStackParamList } from '../navigation/types';
 import type { Event } from '../types/event';
@@ -70,6 +70,7 @@ export const UserEventsScreen: React.FC = () => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ThemedTitle style={styles.title}>Mis eventos</ThemedTitle>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -137,7 +138,8 @@ export const UserEventsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 8 },
+  container: { flex: 1, padding: 20 },
+  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   card: {
     borderRadius: 18,
     padding: 16,
