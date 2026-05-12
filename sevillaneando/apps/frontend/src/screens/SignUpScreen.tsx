@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   passwordContainer: { flexDirection: 'row', alignItems: 'center' },
   inputPassword: { flex: 1, borderRadius: 50, padding: 14, borderWidth: 1, paddingRight: 50 },
   eyeButton: { position: 'absolute', right: 16 },
-  eyeIcon: { fontSize: 18 },
+  eyeIcon: { fontSize: 18, color: 'white' },
   error: { textAlign: 'center' },
   link: { textAlign: 'center', fontWeight: '600' },
 });
