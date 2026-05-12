@@ -24,12 +24,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
 
 type Tab = 'seguidores' | 'seguidos' | 'amigos' | 'buscar';
 
-export const FriendsScreen: React.FC<Props> = ({ route, navigation }) => {
+export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const targetUserId = route.params?.userId ?? user?.id;
-  const isOwnList = targetUserId === user?.id;
-  const [tab, setTab] = useState<Tab>(route.params?.initialTab ?? 'seguidores');
+  const [tab, setTab] = useState<Tab>('seguidores');
   const [seguidores, setSeguidores] = useState<PublicUser[]>([]);
   const [seguidos, setSeguidos] = useState<PublicUser[]>([]);
   const [amigos, setAmigos] = useState<PublicUser[]>([]);
@@ -41,10 +39,10 @@ export const FriendsScreen: React.FC<Props> = ({ route, navigation }) => {
   const [searching, setSearching] = useState(false);
 
   const loadSeguidos = useCallback(async () => {
-    if (!targetUserId) return [] as PublicUser[];
+    if (!user?.id) return [] as PublicUser[];
     setLoadingSeguidos(true);
     try {
-      const list = await getSeguidos(targetUserId);
+      const list = await getSeguidos(user.id);
       setSeguidos(list);
       return list;
     } catch {
@@ -53,16 +51,16 @@ export const FriendsScreen: React.FC<Props> = ({ route, navigation }) => {
     } finally {
       setLoadingSeguidos(false);
     }
-  }, [targetUserId]);
+  }, [user?.id]);
 
   const loadSeguidores = useCallback(
     async (seguidosList?: PublicUser[]) => {
-      if (!targetUserId) return;
+      if (!user?.id) return;
       setLoadingSeguidores(true);
       try {
         const [followers, followed] = await Promise.all([
-          getSeguidores(targetUserId),
-          seguidosList ? Promise.resolve(seguidosList) : getSeguidos(targetUserId),
+          getSeguidores(user.id),
+          seguidosList ? Promise.resolve(seguidosList) : getSeguidos(user.id),
         ]);
         const followedIds = new Set(followed.map((s) => s.id));
         setSeguidores(followers);
@@ -74,7 +72,7 @@ export const FriendsScreen: React.FC<Props> = ({ route, navigation }) => {
         setLoadingSeguidores(false);
       }
     },
-    [targetUserId]
+    [user?.id]
   );
 
   useFocusEffect(
@@ -145,7 +143,7 @@ export const FriendsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const renderFollower = ({ item }: { item: PublicUser }) => {
     const loading = followingBack.has(item.id);
-    const canFollowBack = isOwnList && !isFollowedByCurrentUser(item.id);
+    const canFollowBack = !isFollowedByCurrentUser(item.id);
 
     if (!canFollowBack) return renderUser({ item });
 

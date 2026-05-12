@@ -118,7 +118,9 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             <View style={styles.statsRow}>
               <TouchableOpacity
                 style={styles.stat}
-                onPress={() => navigation.navigate('Friends', { userId, initialTab: 'seguidores' })}
+                onPress={() =>
+                  navigation.navigate('ProfileConnections', { userId, type: 'seguidores' })
+                }
               >
                 <ThemedText style={styles.statNumber}>{numSeguidores}</ThemedText>
                 <ThemedText style={styles.statLabel}>seguidores</ThemedText>
@@ -126,7 +128,9 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <View style={[styles.statDivider, { backgroundColor: colors.border ?? '#ccc' }]} />
               <TouchableOpacity
                 style={styles.stat}
-                onPress={() => navigation.navigate('Friends', { userId, initialTab: 'seguidos' })}
+                onPress={() =>
+                  navigation.navigate('ProfileConnections', { userId, type: 'seguidos' })
+                }
               >
                 <ThemedText style={styles.statNumber}>{numSeguidos}</ThemedText>
                 <ThemedText style={styles.statLabel}>seguidos</ThemedText>

@@ -38,6 +38,7 @@ import { RouteDetailScreen } from '../screens/RouteDetailScreen';
 import { SavedAndPrivateEventsScreen } from '../screens/SavedAndPrivateEventsScreen';
 import { LegalAttributionsScreen } from '../screens/LegalAttributionsScreen';
 import { FriendsScreen } from '../screens/FriendsScreen';
+import { ProfileConnectionsScreen } from '../screens/ProfileConnectionsScreen';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -232,6 +233,11 @@ export function AppNavigator() {
             options={{ title: 'Licencias y atribuciones' }}
           />
           <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
+          <AppStack.Screen
+            name="ProfileConnections"
+            component={ProfileConnectionsScreen}
+            options={{ title: 'Usuarios' }}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
