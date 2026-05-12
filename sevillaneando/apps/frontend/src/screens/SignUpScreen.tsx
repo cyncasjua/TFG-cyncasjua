@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
   StyleSheet,
   TextInput,
@@ -118,7 +119,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
                 style={styles.eyeButton}
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <ThemedText style={styles.eyeIcon}>{showPassword ? '🙈' : '👁'}</ThemedText>
+                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color="white" />
               </TouchableOpacity>
             </View>
             <View style={styles.passwordContainer}>
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   passwordContainer: { flexDirection: 'row', alignItems: 'center' },
   inputPassword: { flex: 1, borderRadius: 50, padding: 14, borderWidth: 1, paddingRight: 50 },
   eyeButton: { position: 'absolute', right: 16 },
-  eyeIcon: { fontSize: 18, color: 'white' },
+  eyeIcon: { fontSize: 18 },
   error: { textAlign: 'center' },
   link: { textAlign: 'center', fontWeight: '600' },
 });

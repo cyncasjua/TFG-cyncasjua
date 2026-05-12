@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, ImageBackground, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -105,7 +106,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <ThemedText style={styles.eyeIcon}>{showPassword ? '🙈' : '👁'}</ThemedText>
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   passwordContainer: { flexDirection: 'row', alignItems: 'center' },
   inputPassword: { flex: 1, borderRadius: 50, padding: 14, borderWidth: 1, paddingRight: 50 },
   eyeButton: { position: 'absolute', right: 16 },
-  eyeIcon: { fontSize: 18, color: 'white' },
+  eyeIcon: { fontSize: 18 },
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
   checkbox: {
     width: 24,
