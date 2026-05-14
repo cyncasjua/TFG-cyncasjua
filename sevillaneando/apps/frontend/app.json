@@ -2,6 +2,7 @@
   "expo": {
     "name": "Sevillaneando",
     "slug": "sevillaneando",
+    "privacy": "public",
     "scheme": "sevillaneando",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
