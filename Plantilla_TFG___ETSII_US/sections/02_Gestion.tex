@@ -130,6 +130,62 @@ La planificación del proyecto se ha estructurado en varias fases, siguiendo un 
     \item \textbf{Fase 6 – Despliegue y cierre del proyecto}: despliegue del sistema, elaboración de la memoria técnica y los manuales, creación de los materiales de defensa del proyecto y cierre formal del trabajo.
 \end{itemize}
 
+\subsection{Gestión de riesgos}
+
+Durante la fase de planificación se identificaron los principales riesgos que podían afectar al desarrollo del proyecto. Para cada uno se estimó su probabilidad de ocurrencia e impacto, y se definió un plan de mitigación o contingencia.
+
+La probabilidad se clasifica en: \textbf{Baja} (poco probable), \textbf{Media} (posible) o \textbf{Alta} (probable). El impacto en: \textbf{Bajo} (afecta a tareas menores), \textbf{Medio} (retraso en una fase) o \textbf{Alto} (compromete el alcance o el plazo).
+
+\begin{longtable}{p{3.5cm}p{1.5cm}p{1.5cm}p{4.5cm}p{3.5cm}}
+\caption{Tabla de riesgos identificados}\label{tab:riesgos}\\
+\toprule
+\textbf{Riesgo} & \textbf{Prob.} & \textbf{Impacto} & \textbf{Mitigación} & \textbf{Resultado real} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Riesgo} & \textbf{Prob.} & \textbf{Impacto} & \textbf{Mitigación} & \textbf{Resultado real} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Complejidad técnica superior a la estimada en módulos nuevos (scraping, recomendaciones, rutas) &
+Alta & Alto &
+Planificar un margen de holgura por fase; repriorizar el backlog si se supera el tiempo estimado. &
+Ocurrió en scraping (~30 h reales frente a 10--15 h estimadas) y en rutas (~18 h frente a 12--14 h). \\
+\midrule
+
+Incompatibilidades entre plataformas móviles (iOS / Android) &
+Media & Medio &
+Probar en ambas plataformas desde las primeras iteraciones; usar componentes multiplataforma siempre que sea posible. &
+Ocurrió en la fase de pruebas: el mapa no se visualizaba en Android y aparecieron descuadres de layout, resueltos en el Sprint 6. \\
+\midrule
+
+Cambios externos en herramientas o servicios de terceros &
+Baja & Medio &
+Documentar las versiones utilizadas; mantener alternativas identificadas para los servicios críticos. &
+Ocurrió con Expo Go (12/05/2026): restricción de carga de actualizaciones EAS a miembros del proyecto, resuelta adoptando \texttt{--tunnel}. \\
+\midrule
+
+Dificultad para integrar servicios externos (APIs, autenticación, almacenamiento) &
+Media & Medio &
+Prototipar las integraciones clave en fases tempranas; consultar documentación oficial y ejemplos de uso. &
+La integración de Firebase, Cloudinary y Ticketmaster resultó más costosa de lo previsto, aunque manejable dentro del margen de cada sprint. \\
+\midrule
+
+Falta de tiempo para implementar todas las funcionalidades planificadas &
+Alta & Medio &
+Mantener una priorización estricta del backlog; clasificar las funcionalidades en esenciales y opcionales desde el inicio. &
+La Fase 5 (ampliaciones) no pudo completarse íntegramente: la generación de carteles con IA y la moderación NSFW quedaron fuera del alcance. \\
+\midrule
+
+Pérdida de datos o código por error en el sistema de control de versiones &
+Baja & Alto &
+Uso de Git con repositorio remoto en GitHub; commits frecuentes y política de ramas definida. &
+No ocurrió. \\
+
+\end{longtable}
+
 \subsection{Desviaciones respecto a la planificación inicial}
 
 A lo largo del proyecto se han producido algunas desviaciones respecto a la planificación inicial, motivadas principalmente por la aparición de nuevas necesidades técnicas y por el ajuste del alcance en función del tiempo disponible.
@@ -329,9 +385,9 @@ El desarrollo ha sido llevado a cabo por una única persona asumiendo todos los 
 \toprule
 \textbf{Concepto} & \textbf{Valor} \\
 \midrule
-Coste hora base & \textbf{30,52 €/h} \\
+Coste hora base & \textbf{28,37 €/h} \\
 Horas presupuestadas & \textbf{300 h} \\
-Coste base de personal & 300 h $\times$ 30,52 €/h = \textbf{9.156 €} \\
+Coste base de personal & 300 h $\times$ 28,37 €/h = \textbf{8.511 €} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -346,8 +402,8 @@ Sobre el coste base de personal se aplican los \textbf{costes sociales} a cargo 
 \toprule
 \textbf{Concepto} & \textbf{Importe} \\
 \midrule
-Costes sociales & 9.156 € $\times$ 30\% = \textbf{2.747 €} \\
-Coste total de personal (base + sociales) & \textbf{11.903 €} \\
+Costes sociales & 8.511 € $\times$ 30\% = \textbf{2.553 €} \\
+Coste total de personal (base + sociales) & \textbf{11.064 €} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -370,19 +426,19 @@ La distribución se ha alineado con la planificación y la EDT definidas anterio
 \endhead
 \bottomrule
 \endlastfoot
-Fase 0 -- Determinación del alcance & 5 h & 153 € \\
-Fase 1 -- Análisis y planificación & 15 h & 458 € \\
-Fase 2 -- Diseño del sistema & 25 h & 763 € \\
-Fase 3A -- Desarrollo frontend & 75 h & 2.289 € \\
-Fase 3B -- Desarrollo backend & 75 h & 2.289 € \\
-Fase 4 -- Pruebas y validación & 15 h & 458 € \\
-Fase 5 -- Ampliaciones y extras & 10 h & 305 € \\
-Fase 6 -- Despliegue, documentación y cierre & 80 h & 2.442 € \\
+Fase 0 -- Determinación del alcance & 5 h & 142 € \\
+Fase 1 -- Análisis y planificación & 15 h & 426 € \\
+Fase 2 -- Diseño del sistema & 25 h & 709 € \\
+Fase 3A -- Desarrollo frontend & 75 h & 2.128 € \\
+Fase 3B -- Desarrollo backend & 75 h & 2.128 € \\
+Fase 4 -- Pruebas y validación & 15 h & 426 € \\
+Fase 5 -- Ampliaciones y extras & 10 h & 284 € \\
+Fase 6 -- Despliegue, documentación y cierre & 80 h & 2.268 € \\
 \midrule
-\textbf{Total} & \textbf{300 h} & \textbf{9.156 €} \\
+\textbf{Total} & \textbf{300 h} & \textbf{8.511 €} \\
 \end{longtable}
 
-Los importes de la tabla anterior se calculan aplicando el coste horario base de 30,52 €/h y redondeando al euro más cercano. La Fase 2 incluye la elaboración de mockups, modelo conceptual y diagramas técnicos; la Fase 5 se mantiene como partida reducida porque incluye únicamente las ampliaciones finalmente abordadas o evaluadas dentro del alcance disponible.
+Los importes de la tabla anterior se calculan aplicando el coste horario base de 28,37 €/h y redondeando al euro más cercano. La Fase 2 incluye la elaboración de mockups, modelo conceptual y diagramas técnicos; la Fase 5 se mantiene como partida reducida porque incluye únicamente las ampliaciones finalmente abordadas o evaluadas dentro del alcance disponible.
 
 \subsection{Infraestructura y costes indirectos}
 
@@ -422,11 +478,11 @@ Herramientas en la nube (plan gratuito: Render, Supabase, Cloudinary, Firebase, 
 \endhead
 \bottomrule
 \endlastfoot
-Coste de personal (base) & 9.156 € \\
-Costes sociales (30\%) & 2.747 € \\
+Coste de personal (base) & 8.511 € \\
+Costes sociales (30\%) & 2.553 € \\
 Costes indirectos (infraestructura) & 411 € \\
 \midrule
-\textbf{Coste total del proyecto} & \textbf{12.314 €} \\
+\textbf{Coste total del proyecto} & \textbf{11.475 €} \\
 \end{longtable}
 
 \subsection{Presupuesto}
@@ -441,8 +497,8 @@ El presupuesto es la cantidad que se cobraría al cliente por la realización de
 \toprule
 \textbf{Partida} & \textbf{Descripción} & \textbf{Cálculo} \\
 \midrule
-\textbf{Margen de contingencia (12\%)} & Cubre desviaciones razonables respecto a la estimación inicial. & 12.314 € $\times$ 12\% = 1.478 € \\
-\textbf{Beneficio industrial (20\%)} & Margen de beneficio habitual en el sector para proyectos de desarrollo de software. & (12.314 € + 1.478 €) $\times$ 20\% = 2.758 € \\
+\textbf{Margen de contingencia (12\%)} & Cubre desviaciones razonables respecto a la estimación inicial. & 11.475 € $\times$ 12\% = 1.377 € \\
+\textbf{Beneficio industrial (20\%)} & Margen de beneficio habitual en el sector para proyectos de desarrollo de software. & (11.475 € + 1.377 €) $\times$ 20\% = 2.570 € \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -459,14 +515,14 @@ El presupuesto es la cantidad que se cobraría al cliente por la realización de
 \endhead
 \bottomrule
 \endlastfoot
-Coste total del proyecto & 12.314 € \\
-Margen de contingencia (12\%) & 1.478 € \\
-Beneficio industrial (20\%) & 2.758 € \\
+Coste total del proyecto & 11.475 € \\
+Margen de contingencia (12\%) & 1.377 € \\
+Beneficio industrial (20\%) & 2.570 € \\
 \midrule
-\textbf{Presupuesto total (sin IVA)} & \textbf{16.550 €} \\
-\textbf{IVA (21\%)} & \textbf{3.475 €} \\
+\textbf{Presupuesto total (sin IVA)} & \textbf{15.422 €} \\
+\textbf{IVA (21\%)} & \textbf{3.239 €} \\
 \midrule
-\textbf{Presupuesto total (con IVA)} & \textbf{20.025 €} \\
+\textbf{Presupuesto total (con IVA)} & \textbf{18.661 €} \\
 \end{longtable}
 
 Este presupuesto representa el valor de mercado del trabajo realizado. En el contexto del TFG no ha supuesto un gasto económico real, ya que las herramientas y servicios utilizados están disponibles en planes gratuitos y el trabajo ha sido realizado por la propia estudiante.
