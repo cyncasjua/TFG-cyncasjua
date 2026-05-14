@@ -2,28 +2,30 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {1.1}{\ignorespaces Comparativa de soluciones existentes}}{3}{table.caption.8}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.2}{\ignorespaces Estimación del coste base de personal}}{14}{table.caption.10}%
-\contentsline {table}{\numberline {2.3}{\ignorespaces Costes sociales y coste total de personal}}{14}{table.caption.11}%
-\contentsline {table}{\numberline {2.4}{\ignorespaces Distribución estimada del esfuerzo y coste base por fase}}{15}{table.2.4}%
-\contentsline {table}{\numberline {2.5}{\ignorespaces Infraestructura y costes indirectos}}{15}{table.2.5}%
-\contentsline {table}{\numberline {2.6}{\ignorespaces Coste total del proyecto}}{16}{table.2.6}%
-\contentsline {table}{\numberline {2.7}{\ignorespaces Partidas adicionales del presupuesto}}{16}{table.caption.12}%
-\contentsline {table}{\numberline {2.8}{\ignorespaces Presupuesto final del proyecto}}{16}{table.2.8}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Tabla de riesgos identificados}}{8}{table.2.1}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Estimación del coste base de personal}}{16}{table.caption.10}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Costes sociales y coste total de personal}}{16}{table.caption.11}%
+\contentsline {table}{\numberline {2.5}{\ignorespaces Distribución estimada del esfuerzo y coste base por fase}}{16}{table.2.5}%
+\contentsline {table}{\numberline {2.6}{\ignorespaces Infraestructura y costes indirectos}}{17}{table.2.6}%
+\contentsline {table}{\numberline {2.7}{\ignorespaces Coste total del proyecto}}{17}{table.2.7}%
+\contentsline {table}{\numberline {2.8}{\ignorespaces Partidas adicionales del presupuesto}}{18}{table.caption.12}%
+\contentsline {table}{\numberline {2.9}{\ignorespaces Presupuesto final del proyecto}}{18}{table.2.9}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Requisitos de información del sistema}}{23}{table.3.1}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Requisitos funcionales del sistema}}{25}{table.3.2}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Matriz de trazabilidad: requisitos funcionales y objetivos del sistema}}{30}{table.caption.17}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Requisitos no funcionales del sistema}}{33}{table.3.4}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Requisitos de información del sistema}}{24}{table.3.1}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Requisitos funcionales del sistema}}{26}{table.3.2}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Matriz de trazabilidad: requisitos funcionales y objetivos del sistema}}{31}{table.caption.17}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Requisitos no funcionales del sistema}}{34}{table.3.4}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Módulos y operaciones principales de la API REST}}{49}{table.caption.29}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{57}{table.caption.34}%
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{95}{table.caption.41}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{96}{table.caption.42}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Módulos y operaciones principales de la API REST}}{50}{table.caption.29}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{58}{table.caption.34}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Patrones de diseño aplicados en el sistema}}{61}{table.caption.37}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Glosario de términos del proyecto}}{117}{table.A.1}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{95}{table.caption.42}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{96}{table.caption.43}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Glosario de términos del proyecto}}{116}{table.A.1}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

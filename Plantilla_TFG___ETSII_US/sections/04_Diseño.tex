@@ -527,43 +527,38 @@ El mismo motor puede generar rutas recomendadas aplicando tres estrategias selec
 
 \section{Patrones de diseño aplicados}
 
-A lo largo del desarrollo de \textbf{Sevillaneando} se han aplicado de forma explícita o implícita varios patrones de diseño reconocidos. Muchos de ellos son inherentes a los frameworks y librerías elegidos; otros han sido aplicados de forma deliberada como decisiones de arquitectura. En esta sección se identifican y justifican los más relevantes.
+A lo largo del desarrollo de \textbf{Sevillaneando} se han aplicado varios patrones de diseño reconocidos, algunos inherentes a los frameworks elegidos y otros aplicados de forma deliberada. La tabla~\ref{tab:patrones} resume los más relevantes.
 
-\subsection{Patrón Módulo (NestJS)}
-
-NestJS organiza el backend en módulos independientes (\textit{EventosModule}, \textit{UsuariosModule}, \textit{CategoriasModule}, etc.), cada uno encapsulando su propio controlador, servicio y entidades. Este patrón favorece la separación de responsabilidades, facilita el mantenimiento y permite extender el sistema añadiendo nuevos módulos sin modificar los existentes. Es el patrón estructural central del backend.
-
-\subsection{Patrón Estrategia (\textit{IScraper})}
-
-El sistema de scraping implementa el patrón Estrategia: cada fuente de eventos externos (\texttt{SevillaScraperService}, \texttt{TicketmasterScraperService}, \texttt{GeminiScraperService}) implementa la interfaz \texttt{IScraper}, que define el contrato común de obtención y normalización de eventos. El servicio orquestador (\texttt{ScrapingService}) trabaja con la abstracción, no con implementaciones concretas. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación.
-
-\subsection{Patrón Repositorio (TypeORM)}
-
-El acceso a la base de datos se realiza a través de los repositorios de TypeORM, que abstraen las operaciones de persistencia y consulta SQL. Los servicios de NestJS no interactúan directamente con SQL, sino con los repositorios tipados de cada entidad. Esto desacopla la lógica de negocio de los detalles de la base de datos y facilita las pruebas unitarias al poder sustituir el repositorio por un doble de prueba.
-
-\subsection{Patrón Guard (autenticación y autorización)}
-
-NestJS implementa los guards como componentes que interceptan cada petición antes de que llegue al controlador. El \texttt{FirebaseAuthGuard} verifica el token JWT en todas las rutas protegidas; el \texttt{RolesGuard} comprueba que el usuario tiene el rol requerido para cada endpoint. Este patrón centraliza la lógica de autenticación y autorización, evitando duplicarla en cada controlador.
-
-\subsection{Patrón Interceptor (Axios)}
-
-En el frontend, el cliente Axios centralizado actúa como interceptor: inyecta automáticamente el token de Firebase en la cabecera \texttt{Authorization} de cada petición y aplica lógica de reintento ante errores de red. Este patrón evita repetir la gestión de autenticación en cada llamada al servicio y garantiza un comportamiento uniforme ante fallos de conectividad.
-
-\subsection{Patrón Contexto / Proveedor (React)}
-
-La gestión de estado global del frontend se implementa mediante el patrón Contexto de React (\texttt{AuthContext}, \texttt{ThemeContext}, \textbf{SocketContext}, \texttt{NotificacionesContext}). Cada contexto actúa como proveedor de un estado compartido que los componentes hijos pueden consumir sin necesidad de \textit{prop drilling}. La separación en cuatro contextos independientes evita rerenders innecesarios: un cambio en el tema no provoca la actualización de los componentes suscritos al contexto de notificaciones.
-
-\subsection{Patrón Observador (Socket.IO)}
-
-La comunicación en tiempo real del chat se apoya en el patrón Observador: el servidor emite eventos (\texttt{mensaje-evento}, \texttt{mensaje-privado}) y los clientes suscritos a la sala correspondiente los reciben automáticamente. Socket.IO gestiona internamente la lista de suscriptores y la entrega de eventos, desacoplando al emisor del receptor.
-
-\subsection{Patrón Puntuación multifactorial (motor de recomendaciones)}
-
-El motor de recomendaciones aplica una variante del patrón de puntuación (\textit{scoring}): cada evento candidato recibe una puntuación calculada como suma ponderada de factores independientes (afinidad por categoría, proximidad geográfica, proximidad temporal, historial de interacciones). Añadir o modificar un factor de puntuación solo requiere cambiar su peso o su función de cálculo sin alterar el resto del algoritmo.
-
-\subsection{Patrón Estado (flujo de moderación)}
-
-El ciclo de vida de un evento sigue el patrón Estado: un evento puede encontrarse en estado \texttt{Pendiente}, \texttt{Aprobado} o \texttt{Rechazado}, y las transiciones entre estados están controladas por reglas de negocio definidas en el servicio. No todas las transiciones son válidas (por ejemplo, no se puede aprobar un evento ya aprobado), lo que garantiza la coherencia del flujo de moderación.
+\begin{table}[H]
+\centering
+\caption{Patrones de diseño aplicados en el sistema}
+\label{tab:patrones}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Patrón} & \textbf{Dónde se aplica} & \textbf{Por qué} \\
+\hline
+Módulo & Backend NestJS & Cada dominio (\textit{EventosModule}, \textit{UsuariosModule}, etc.) encapsula controlador, servicio y entidades. Facilita el mantenimiento y la extensión sin afectar a otros módulos. \\
+\hline
+Repositorio & TypeORM & Los servicios acceden a la base de datos a través de repositorios tipados, desacoplando la lógica de negocio del SQL y permitiendo sustituirlos por dobles en pruebas unitarias. \\
+\hline
+Guard & \texttt{FirebaseAuthGuard}, \texttt{RolesGuard} & Centraliza la autenticación y la autorización interceptando cada petición antes del controlador, evitando duplicar esa lógica en cada endpoint. \\
+\hline
+Interceptor & Cliente Axios (frontend) & Inyecta automáticamente el token Firebase en cada petición y aplica reintentos ante errores de red, sin repetir esa lógica en cada llamada al servicio. \\
+\hline
+Contexto / Proveedor & \texttt{AuthContext}, \texttt{SocketContext}, \texttt{ThemeContext}, \texttt{NotificacionesContext} & Gestiona el estado global del frontend evitando \textit{prop drilling}. La separación en cuatro contextos independientes evita rerenders innecesarios entre dominios. \\
+\hline
+Estrategia & \texttt{IScraper} & Cada fuente externa implementa la misma interfaz; el orquestador trabaja con la abstracción. Permite añadir nuevas fuentes sin modificar la lógica de orquestación. \\
+\hline
+Observador & Socket.IO (chat) & El servidor emite eventos a las salas y los clientes suscritos los reciben automáticamente, desacoplando al emisor del receptor. \\
+\hline
+Puntuación multifactorial & Motor de recomendaciones & Cada factor (categoría, proximidad, historial) es independiente y ponderado. Modificar un peso o añadir un factor no altera el resto del algoritmo. \\
+\hline
+Estado & Flujo de moderación de eventos & El ciclo de vida del evento (\texttt{Pendiente} → \texttt{Aprobado} / \texttt{Rechazado}) tiene transiciones controladas; no todas son válidas, lo que garantiza la coherencia del flujo. \\
+\hline
+\end{tabular}%
+}
+\end{table}
 
 \section{Decisiones de diseño relevantes}
 

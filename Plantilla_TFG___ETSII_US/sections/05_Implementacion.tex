@@ -373,19 +373,7 @@ Durante el arranque del backend se puede ejecutar un proceso de carga inicial de
 
 \section{Despliegue y entorno de desarrollo}
 
-El entorno de desarrollo requiere Node.js, un gestor de paquetes como npm, Docker y Expo. Docker se utiliza para levantar la base de datos PostGIS, mientras que el backend y el frontend se ejecutan como aplicaciones independientes.
-
-El flujo habitual de ejecución es el siguiente:
-
-\begin{enumerate}
-    \item levantar la base de datos mediante Docker Compose;
-    \item iniciar el backend NestJS;
-    \item iniciar la aplicación móvil con Expo;
-    \item conectar el frontend con la API mediante la variable de entorno correspondiente;
-    \item configurar las claves necesarias para Firebase y el servicio de almacenamiento de imágenes.
-\end{enumerate}
-
-Este enfoque permite desarrollar y probar el sistema de forma local, manteniendo separados los componentes principales.
+El procedimiento detallado para configurar el entorno local y desplegar el sistema se recoge en el Anexo~\ref{cap:manual_desarrollo} (Manual de desarrollo) y el Anexo~\ref{cap:manual_despliegue} (Manual de despliegue).
 
 \section{Conclusiones}
 
