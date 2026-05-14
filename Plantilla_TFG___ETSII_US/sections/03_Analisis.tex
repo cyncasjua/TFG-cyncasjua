@@ -525,6 +525,76 @@ Las reglas de negocio definen las restricciones y condiciones del sistema, asegu
     \item \textbf{RN-37}: Las notificaciones de moderación solo deben enviarse al creador del evento aprobado o rechazado.
 \end{itemize}
 
+\section{Cumplimiento del Reglamento General de Protección de Datos (RGPD)}\label{sec:rgpd}
+
+El sistema \textbf{Sevillaneando} trata datos de carácter personal de sus usuarios, por lo que está sujeto al Reglamento (UE) 2016/679, de 27 de abril de 2016, relativo a la protección de las personas físicas en lo que respecta al tratamiento de datos personales (RGPD), así como a la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD).
+
+\subsection{Datos personales tratados}
+
+La aplicación recoge y trata los siguientes datos personales:
+
+\begin{itemize}
+    \item \textbf{Identificación:} nombre completo y dirección de correo electrónico, recogidos durante el registro.
+    \item \textbf{Fotografía de perfil:} imagen opcional que el usuario sube voluntariamente.
+    \item \textbf{Ubicación geográfica:} coordenadas del usuario, recogidas opcionalmente para mostrar eventos cercanos.
+    \item \textbf{Intereses culturales:} categorías seleccionadas por el usuario para personalizar las recomendaciones.
+    \item \textbf{Contenido generado:} eventos, rutas, reseñas, valoraciones y mensajes de chat creados por el usuario.
+\end{itemize}
+
+\subsection{Finalidad y base legal del tratamiento}
+
+El tratamiento de los datos se realiza con las siguientes finalidades:
+
+\begin{itemize}
+    \item Gestión de la cuenta del usuario y autenticación.
+    \item Personalización de la experiencia: recomendación de eventos según intereses, historial y ubicación.
+    \item Funcionalidades sociales: chat, mensajería privada y sistema de seguimiento entre usuarios.
+    \item Moderación de contenido para garantizar la calidad de los eventos publicados.
+\end{itemize}
+
+La base legal del tratamiento es el \textbf{consentimiento expreso del interesado} (art. 6.1.a RGPD), otorgado mediante la aceptación de la política de privacidad en el momento del registro. Este consentimiento puede retirarse en cualquier momento mediante la eliminación de la cuenta.
+
+\subsection{Terceros encargados del tratamiento}
+
+El sistema integra servicios externos que actúan como encargados del tratamiento:
+
+\begin{itemize}
+    \item \textbf{Firebase (Google LLC):} autenticación de usuarios y almacenamiento de imágenes. Google LLC cuenta con certificaciones de cumplimiento RGPD y cláusulas contractuales tipo para transferencias internacionales.
+    \item \textbf{Cloudinary:} alojamiento de imágenes de eventos y perfiles.
+    \item \textbf{Ticketmaster:} fuente de datos de eventos culturales públicos; no se transfieren datos de usuarios.
+    \item \textbf{Google Gemini:} enriquecimiento de información de eventos; no se transfieren datos de usuarios.
+    \item \textbf{OpenStreetMap / Nominatim:} mapas y geocodificación; se usan únicamente coordenadas de búsqueda, sin enviar datos identificativos.
+\end{itemize}
+
+\subsection{Derechos de los usuarios}
+
+De acuerdo con el RGPD, los usuarios tienen los siguientes derechos sobre sus datos personales:
+
+\begin{itemize}
+    \item \textbf{Derecho de acceso} (art. 15): el usuario puede consultar todos sus datos desde su perfil.
+    \item \textbf{Derecho de rectificación} (art. 16): el usuario puede modificar su nombre, correo, fotografía e intereses desde la pantalla de edición de perfil.
+    \item \textbf{Derecho de supresión o ``derecho al olvido''} (art. 17): el usuario puede eliminar su cuenta desde la aplicación, lo que provoca la anonimización o eliminación de todos sus datos personales.
+    \item \textbf{Derecho a la portabilidad} (art. 20): los datos se almacenan en formatos estándar (JSON, PostgreSQL) que permiten su exportación.
+    \item \textbf{Derecho a retirar el consentimiento} (art. 7.3): el usuario puede retirar su consentimiento eliminando su cuenta en cualquier momento.
+\end{itemize}
+
+\subsection{Medidas técnicas y organizativas}
+
+Para garantizar la seguridad de los datos se han implementado las siguientes medidas (art. 32 RGPD):
+
+\begin{itemize}
+    \item Comunicaciones cifradas mediante HTTPS/TLS en todas las peticiones entre cliente y servidor.
+    \item Autenticación delegada a Firebase, que implementa mecanismos de seguridad reconocidos industrialmente.
+    \item Validación y saneamiento de todas las entradas de usuario en el servidor (NestJS + \texttt{class-validator}).
+    \item Limitación de peticiones (\textit{rate limiting}) para prevenir ataques de fuerza bruta.
+    \item Cabeceras de seguridad HTTP configuradas mediante Helmet.js.
+    \item Control de acceso basado en roles (\textit{RBAC}): usuario, moderador y administrador.
+\end{itemize}
+
+\subsection{Consentimiento explícito en el registro}
+
+La aplicación incorpora un mecanismo de consentimiento explícito en la pantalla de registro: el usuario debe marcar una casilla aceptando la política de privacidad antes de poder crear su cuenta. Esta pantalla, accesible desde el formulario de registro, detalla los datos recogidos, la finalidad del tratamiento, los terceros implicados, los derechos del usuario y las medidas de seguridad aplicadas.
+
 \section{Conclusiones}
 
 El análisis del problema ha permitido identificar las necesidades principales que debe cubrir el sistema \textbf{Sevillaneando}, así como definir los requisitos necesarios para su desarrollo.

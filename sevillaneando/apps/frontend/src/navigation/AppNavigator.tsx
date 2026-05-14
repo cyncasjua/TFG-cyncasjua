@@ -37,6 +37,7 @@ import { RoutesListScreen } from '../screens/RoutesListScreen';
 import { RouteDetailScreen } from '../screens/RouteDetailScreen';
 import { SavedAndPrivateEventsScreen } from '../screens/SavedAndPrivateEventsScreen';
 import { LegalAttributionsScreen } from '../screens/LegalAttributionsScreen';
+import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
 import HelpScreen from '../screens/HelpScreen';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { ProfileConnectionsScreen } from '../screens/ProfileConnectionsScreen';
@@ -233,6 +234,11 @@ export function AppNavigator() {
             component={LegalAttributionsScreen}
             options={{ title: 'Licencias y atribuciones' }}
           />
+          <AppStack.Screen
+            name="PrivacyPolicy"
+            component={PrivacyPolicyScreen}
+            options={{ title: 'Política de privacidad' }}
+          />
           <AppStack.Screen name="Help" component={HelpScreen} options={{ title: 'Guía de uso' }} />
           <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
           <AppStack.Screen
@@ -245,6 +251,11 @@ export function AppNavigator() {
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
           <AuthStack.Screen name="Login" component={LoginScreen} />
           <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+          <AuthStack.Screen
+            name="PrivacyPolicy"
+            component={PrivacyPolicyScreen}
+            options={{ headerShown: true, title: 'Política de privacidad' }}
+          />
         </AuthStack.Navigator>
       )}
     </NavigationContainer>

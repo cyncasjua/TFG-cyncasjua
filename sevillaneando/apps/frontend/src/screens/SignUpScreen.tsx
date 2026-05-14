@@ -34,6 +34,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const [nombre, setNombre] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -54,6 +55,11 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       }
       if (password.length < 6) {
         setError('La contraseña debe tener al menos 6 caracteres.');
+        setLoading(false);
+        return;
+      }
+      if (!privacyAccepted) {
+        setError('Debes aceptar la política de privacidad para continuar.');
         setLoading(false);
         return;
       }
@@ -141,6 +147,34 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
                 <ThemedText style={styles.eyeIcon}>{showConfirmPassword ? '🙈' : '👁'}</ThemedText>
               </TouchableOpacity>
             </View>
+
+            <TouchableOpacity
+              style={styles.privacyRow}
+              onPress={() => setPrivacyAccepted(!privacyAccepted)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  {
+                    borderColor: colors.primary,
+                    backgroundColor: privacyAccepted ? colors.primary : 'transparent',
+                  },
+                ]}
+              >
+                {privacyAccepted && <Ionicons name="checkmark" size={14} color="white" />}
+              </View>
+              <ThemedTextSecondary style={styles.privacyText}>
+                He leído y acepto la{' '}
+                <ThemedText
+                  style={[styles.privacyLink, { color: colors.primary }]}
+                  onPress={() => navigation.navigate('PrivacyPolicy')}
+                >
+                  política de privacidad
+                </ThemedText>
+              </ThemedTextSecondary>
+            </TouchableOpacity>
+
             {error && (
               <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>
             )}
@@ -174,6 +208,17 @@ const styles = StyleSheet.create({
   inputPassword: { flex: 1, borderRadius: 50, padding: 14, borderWidth: 1, paddingRight: 50 },
   eyeButton: { position: 'absolute', right: 16 },
   eyeIcon: { fontSize: 18 },
+  privacyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  privacyText: { flex: 1, fontSize: 13, lineHeight: 18 },
+  privacyLink: { fontWeight: '700' },
   error: { textAlign: 'center' },
   link: { textAlign: 'center', fontWeight: '600' },
 });

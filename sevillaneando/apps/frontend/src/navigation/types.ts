@@ -27,6 +27,7 @@ export type RootStackParamList = {
   RouteDetail: { routeId: string };
   SavedAndPrivateEvents: { mode?: 'saved' | 'private' | 'both' | 'joined' };
   LegalAttributions: undefined;
+  PrivacyPolicy: undefined;
   Help: undefined;
   Friends: undefined;
   ProfileConnections: { userId: string; type: 'seguidores' | 'seguidos' };
@@ -35,4 +36,5 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Login: undefined;
   SignUp: undefined;
+  PrivacyPolicy: undefined;
 };
