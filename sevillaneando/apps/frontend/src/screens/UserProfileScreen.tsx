@@ -17,7 +17,6 @@ import {
   getSeguidos,
   getSeguidores,
 } from '../services/users';
-import { getEventAttendees } from '../services/events';
 import { Avatar, ThemedButton, ThemedText, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
@@ -29,6 +28,54 @@ import dayjs from 'dayjs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserProfile'>;
+
+type EventCardProps = {
+  item: Event;
+  colors: ReturnType<typeof useTheme>['colors'];
+  navigation: Props['navigation'];
+};
+
+const EventCard: React.FC<EventCardProps> = ({ item, colors, navigation }) => {
+  const [imgError, setImgError] = useState(false);
+  const imageUrl = getFullImageUrl(item.imagen);
+
+  return (
+    <TouchableOpacity
+      style={[styles.eventCard, { backgroundColor: colors.card }]}
+      onPress={() => navigation.navigate('EventDetail', { event: item })}
+    >
+      {imageUrl && !imgError ? (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.eventImage}
+          resizeMode="cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <View style={[styles.eventImage, styles.eventImagePlaceholder, { backgroundColor: colors.primary + '22' }]}>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={styles.eventImageDefault}
+            resizeMode="contain"
+          />
+        </View>
+      )}
+      <View style={styles.eventInfo}>
+        <ThemedText style={styles.eventTitle} numberOfLines={1}>
+          {item.title}
+        </ThemedText>
+        {item.fechaInicio && (
+          <ThemedText style={styles.eventDate}>
+            {dayjs(item.fechaInicio).format('DD MMM YYYY, HH:mm')}
+          </ThemedText>
+        )}
+        <ThemedText style={styles.eventAddress} numberOfLines={1}>
+          {item.address}
+        </ThemedText>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const { userId } = route.params;
@@ -181,32 +228,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           </ThemedView>
         }
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.eventCard, { backgroundColor: colors.card }]}
-            onPress={() => navigation.navigate('EventDetail', { event: item })}
-          >
-            {item.imagen ? (
-              <Image
-                source={{ uri: getFullImageUrl(item.imagen) ?? undefined }}
-                style={styles.eventImage}
-              />
-            ) : (
-              <View style={[styles.eventImage, { backgroundColor: colors.primary + '33' }]} />
-            )}
-            <View style={styles.eventInfo}>
-              <ThemedText style={styles.eventTitle} numberOfLines={1}>
-                {item.title}
-              </ThemedText>
-              {item.fechaInicio && (
-                <ThemedText style={styles.eventDate}>
-                  {dayjs(item.fechaInicio).format('DD MMM YYYY, HH:mm')}
-                </ThemedText>
-              )}
-              <ThemedText style={styles.eventAddress} numberOfLines={1}>
-                {item.address}
-              </ThemedText>
-            </View>
-          </TouchableOpacity>
+          <EventCard item={item} colors={colors} navigation={navigation} />
         )}
         ListEmptyComponent={null}
       />
@@ -236,6 +258,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontWeight: 'bold', fontSize: 15, marginTop: 12, alignSelf: 'flex-start' },
   eventCard: { borderRadius: 12, flexDirection: 'row', overflow: 'hidden', marginBottom: 2 },
   eventImage: { width: 80, height: 80 },
+  eventImagePlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  eventImageDefault: { width: 56, height: 56 },
   eventInfo: { flex: 1, padding: 10, justifyContent: 'center', gap: 2 },
   eventTitle: { fontWeight: 'bold', fontSize: 14 },
   eventDate: { fontSize: 12, opacity: 0.7 },

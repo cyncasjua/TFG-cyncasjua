@@ -1,7 +1,7 @@
 \babel@toc {spanish}{}\relax 
-\contentsline {lstlisting}{\numberline {5.1}{\ignorespaces Definición del campo geográfico en la entidad Event con TypeORM}}{76}{lstlisting.5.1}%
-\contentsline {lstlisting}{\numberline {5.2}{\ignorespaces Construcción conceptual de la ubicación geográfica de un evento}}{78}{lstlisting.5.2}%
-\contentsline {lstlisting}{\numberline {5.3}{\ignorespaces Guard de autenticación Firebase en NestJS}}{80}{lstlisting.5.3}%
-\contentsline {lstlisting}{\numberline {5.4}{\ignorespaces Función de parseo de coordenadas geográficas en el frontend}}{81}{lstlisting.5.4}%
-\contentsline {lstlisting}{\numberline {5.5}{\ignorespaces Pesos del sistema de recomendaciones (valores por defecto)}}{84}{lstlisting.5.5}%
+\contentsline {lstlisting}{\numberline {5.1}{\ignorespaces Definición del campo geográfico en la entidad Event con TypeORM}}{79}{lstlisting.5.1}%
+\contentsline {lstlisting}{\numberline {5.2}{\ignorespaces Construcción conceptual de la ubicación geográfica de un evento}}{81}{lstlisting.5.2}%
+\contentsline {lstlisting}{\numberline {5.3}{\ignorespaces Guard de autenticación Firebase en NestJS}}{83}{lstlisting.5.3}%
+\contentsline {lstlisting}{\numberline {5.4}{\ignorespaces Función de parseo de coordenadas geográficas en el frontend}}{84}{lstlisting.5.4}%
+\contentsline {lstlisting}{\numberline {5.5}{\ignorespaces Pesos del sistema de recomendaciones (valores por defecto)}}{87}{lstlisting.5.5}%
 \providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 
