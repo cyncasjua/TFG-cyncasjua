@@ -52,7 +52,13 @@ const EventCard: React.FC<EventCardProps> = ({ item, colors, navigation }) => {
           onError={() => setImgError(true)}
         />
       ) : (
-        <View style={[styles.eventImage, styles.eventImagePlaceholder, { backgroundColor: colors.primary + '22' }]}>
+        <View
+          style={[
+            styles.eventImage,
+            styles.eventImagePlaceholder,
+            { backgroundColor: colors.primary + '22' },
+          ]}
+        >
           <Image
             source={require('../../assets/icon.png')}
             style={styles.eventImageDefault}
@@ -227,9 +233,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
           </ThemedView>
         }
-        renderItem={({ item }) => (
-          <EventCard item={item} colors={colors} navigation={navigation} />
-        )}
+        renderItem={({ item }) => <EventCard item={item} colors={colors} navigation={navigation} />}
         ListEmptyComponent={null}
       />
     </View>
