@@ -19,8 +19,8 @@ export const PrivacyPolicyScreen: React.FC = () => {
         >
           <ThemedText style={styles.sectionTitle}>1. Responsable del tratamiento</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Sevillaneando es una aplicación académica desarrollada como Trabajo de Fin de Grado (TFG)
-            en la Universidad de Sevilla. Los datos recogidos se tratan únicamente con fines
+            Sevillaneando es una aplicación académica desarrollada como Trabajo de Fin de Grado
+            (TFG) en la Universidad de Sevilla. Los datos recogidos se tratan únicamente con fines
             demostrativos y académicos.
           </ThemedTextSecondary>
         </ThemedView>
@@ -33,11 +33,10 @@ export const PrivacyPolicyScreen: React.FC = () => {
             Al registrarte y usar la aplicación podemos tratar los siguientes datos personales:
           </ThemedTextSecondary>
           <ThemedTextSecondary style={styles.bodyText}>
-            • Nombre y dirección de correo electrónico (registro){'\n'}
-            • Fotografía de perfil (opcional){'\n'}
-            • Ubicación geográfica (opcional, para búsqueda de eventos cercanos){'\n'}
-            • Intereses culturales seleccionados{'\n'}
-            • Contenido generado: eventos, rutas, reseñas y mensajes de chat
+            • Nombre y dirección de correo electrónico (registro){'\n'}• Fotografía de perfil
+            (opcional){'\n'}• Ubicación geográfica (opcional, para búsqueda de eventos cercanos)
+            {'\n'}• Intereses culturales seleccionados{'\n'}• Contenido generado: eventos, rutas,
+            reseñas y mensajes de chat
           </ThemedTextSecondary>
         </ThemedView>
 
@@ -46,11 +45,9 @@ export const PrivacyPolicyScreen: React.FC = () => {
         >
           <ThemedText style={styles.sectionTitle}>3. Finalidad y base legal</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Tratamos tus datos para:{'\n'}
-            • Gestionar tu cuenta y autenticación{'\n'}
-            • Mostrarte eventos culturales relevantes en Sevilla{'\n'}
-            • Permitirte crear y compartir rutas y reseñas{'\n'}
-            • Facilitar la comunicación entre usuarios (chat)
+            Tratamos tus datos para:{'\n'}• Gestionar tu cuenta y autenticación{'\n'}• Mostrarte
+            eventos culturales relevantes en Sevilla{'\n'}• Permitirte crear y compartir rutas y
+            reseñas{'\n'}• Facilitar la comunicación entre usuarios (chat)
           </ThemedTextSecondary>
           <ThemedTextSecondary style={styles.bodyText}>
             La base legal del tratamiento es tu consentimiento expreso (art. 6.1.a RGPD), otorgado
@@ -64,12 +61,11 @@ export const PrivacyPolicyScreen: React.FC = () => {
           <ThemedText style={styles.sectionTitle}>4. Terceros que procesan tus datos</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
             Para prestar el servicio utilizamos los siguientes proveedores externos, cada uno con su
-            propia política de privacidad:{'\n'}
-            • Firebase (Google LLC) — autenticación y almacenamiento de archivos{'\n'}
-            • Cloudinary — alojamiento de imágenes{'\n'}
-            • Ticketmaster — datos de eventos culturales públicos{'\n'}
-            • Google Gemini — enriquecimiento de información de eventos{'\n'}
-            • OpenStreetMap / Nominatim — mapas y geocodificación
+            propia política de privacidad:{'\n'}• Firebase (Google LLC) — autenticación y
+            almacenamiento de archivos{'\n'}• Cloudinary — alojamiento de imágenes{'\n'}•
+            Ticketmaster — datos de eventos culturales públicos{'\n'}• Google Gemini —
+            enriquecimiento de información de eventos{'\n'}• OpenStreetMap / Nominatim — mapas y
+            geocodificación
           </ThemedTextSecondary>
         </ThemedView>
 
@@ -89,12 +85,10 @@ export const PrivacyPolicyScreen: React.FC = () => {
         >
           <ThemedText style={styles.sectionTitle}>6. Tus derechos</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            De acuerdo con el RGPD (Reglamento UE 2016/679) tienes derecho a:{'\n'}
-            • Acceder a tus datos personales{'\n'}
-            • Rectificar datos inexactos{'\n'}
-            • Suprimir tus datos (derecho al olvido){'\n'}
-            • Portabilidad de tus datos{'\n'}
-            • Retirar el consentimiento en cualquier momento
+            De acuerdo con el RGPD (Reglamento UE 2016/679) tienes derecho a:{'\n'}• Acceder a tus
+            datos personales{'\n'}• Rectificar datos inexactos{'\n'}• Suprimir tus datos (derecho al
+            olvido){'\n'}• Portabilidad de tus datos{'\n'}• Retirar el consentimiento en cualquier
+            momento
           </ThemedTextSecondary>
           <ThemedTextSecondary style={styles.bodyText}>
             Puedes ejercer estos derechos eliminando tu cuenta desde el perfil de la aplicación o
