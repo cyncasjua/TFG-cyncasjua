@@ -255,7 +255,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
             : false;
           return renderEventCard(
             `${title}-${event.id}`,
-            event.imagen,
+            event.imagen ?? undefined,
             event.title,
             event.address,
             event.fechaInicio,

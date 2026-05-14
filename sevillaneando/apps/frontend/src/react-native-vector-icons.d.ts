@@ -23,3 +23,16 @@ declare module 'react-native-vector-icons/MaterialCommunityIcons' {
   const MaterialCommunityIcons: ComponentType<MaterialCommunityIconsProps>;
   export default MaterialCommunityIcons;
 }
+
+declare module 'react-native-vector-icons/Ionicons' {
+  import { ComponentType } from 'react';
+  import { ViewStyle } from 'react-native';
+  interface IoniconsProps {
+    name: string;
+    size?: number;
+    color?: string;
+    style?: ViewStyle;
+  }
+  const Ionicons: ComponentType<IoniconsProps>;
+  export default Ionicons;
+}
