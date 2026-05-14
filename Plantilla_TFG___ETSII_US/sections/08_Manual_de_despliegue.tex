@@ -126,6 +126,29 @@ En producción, la conexión a la base de datos debe realizarse mediante SSL. En
 DATABASE_SSL=true
 \end{lstlisting}
 
+\subsection{Activación de Row-Level Security (RLS)}
+
+Si se utiliza \textbf{Supabase} como proveedor de base de datos, es imprescindible activar las políticas de seguridad a nivel de fila (\textit{Row-Level Security}) en todas las tablas del esquema público. Supabase notifica mediante un aviso de seguridad crítico cuando estas políticas no están configuradas, ya que sin ellas cualquier petición autenticada puede acceder a todos los registros.
+
+Para activar RLS en todas las tablas del esquema \texttt{public}, ejecutar el siguiente bloque SQL desde el editor de Supabase o mediante un cliente PostgreSQL:
+
+\begin{lstlisting}[language=SQL]
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOR t IN
+    SELECT tablename FROM pg_tables
+    WHERE schemaname = 'public'
+  LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', t);
+  END LOOP;
+END;
+$$;
+\end{lstlisting}
+
+A continuación, definir las políticas de acceso apropiadas para cada tabla según el rol que deba tener acceso. El backend accede a la base de datos mediante el rol de servicio de Supabase (\texttt{service\_role}), que omite RLS por diseño, por lo que esta configuración no afecta al funcionamiento del backend pero protege el acceso directo a los datos a través del cliente público de Supabase.
+
 \subsection{Alternativa: despliegue con Docker}
 
 Para entornos de demostración o pruebas, la base de datos puede desplegarse mediante Docker:

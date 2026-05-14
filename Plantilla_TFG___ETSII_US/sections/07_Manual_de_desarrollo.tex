@@ -32,7 +32,7 @@ El sistema \textbf{Sevillaneando} sigue una arquitectura cliente-servidor distri
         }
     ]
 
-    \node[box] (client) {Cliente móvil\\React Native 0.81 + Expo 54};
+    \node[box] (client) {Cliente móvil\\React Native 0.81.5 + Expo 54};
     \node[box, below=of client] (backend) {Backend\\NestJS 11 + API REST + WebSockets (Socket.IO)};
     \node[box, below=of backend] (db) {Base de datos\\PostgreSQL 15 + PostGIS 3.3};
 
@@ -48,7 +48,7 @@ El flujo principal de comunicación se realiza mediante peticiones HTTP a la API
 
 \subsection{Cliente móvil}
 
-El cliente ha sido desarrollado con \textbf{React Native 0.81} y \textbf{Expo SDK 54}, lo que permite crear una aplicación multiplataforma (iOS y Android) con una única base de código en TypeScript.
+El cliente ha sido desarrollado con \textbf{React Native 0.81.5} y \textbf{Expo SDK 54}, lo que permite crear una aplicación multiplataforma (iOS y Android) con una única base de código en TypeScript.
 
 Sus responsabilidades principales son:
 \begin{itemize}
@@ -229,7 +229,7 @@ La base de datos se levanta mediante Docker Compose. El archivo \texttt{docker-c
 docker compose up -d db
 \end{lstlisting}
 
-El contenedor queda disponible en \texttt{localhost:5433}. Si es la primera vez que se levanta, TypeORM creará automáticamente las tablas al arrancar el backend (opción \texttt{synchronize: true} en modo desarrollo).
+El contenedor queda disponible en \texttt{localhost:5433}. Si es la primera vez que se levanta, TypeORM creará automáticamente las tablas al arrancar el backend gracias a la opción \texttt{synchronize: true}, activa únicamente cuando \texttt{NODE\_ENV} es distinto de \texttt{production}. En producción esta opción se desactiva para evitar que TypeORM altere el esquema automáticamente; el esquema debe estar ya creado en la base de datos antes del primer arranque.
 
 \subsection{2. Backend}
 

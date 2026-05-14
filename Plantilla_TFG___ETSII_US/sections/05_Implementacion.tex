@@ -253,7 +253,7 @@ Los factores considerados y sus pesos por defecto son los siguientes:
     \item \textbf{Evento visitado} (+4): el usuario accedió al detalle del evento.
     \item \textbf{Valoración propia} (±2 por punto sobre 3): la puntuación que el propio usuario dio al evento.
     \item \textbf{Valoración media de la comunidad} (+hasta 1,5 por punto sobre 3): media de reseñas del resto de usuarios.
-    \item \textbf{Popularidad} (máx. +3): función del número de asistentes apuntados.
+    \item \textbf{Popularidad} (máx. +3): calculada como \texttt{min(asistentes / 5, 3)}, donde 5 es el factor de escala y 3 el tope máximo (\texttt{maxAttendeesBoost}).
     \item \textbf{Proximidad temporal} (máx. +8, decae linealmente): mayor puntuación cuanto más próxima es la fecha de inicio. Los eventos con fechas flexibles reciben un boost reducido al 20\%.
     \item \textbf{Proximidad geográfica} (máx. +6, decae linealmente): mayor puntuación cuanto más cerca esté el evento de la ubicación del usuario. Para eventos de fecha flexible el boost se amplifica un 35\%.
 \end{itemize}

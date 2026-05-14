@@ -61,7 +61,7 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
           MensajePrivado,
           EventEditRequest,
         ],
-        synchronize: true,
+        synchronize: process.env.NODE_ENV !== 'production',
         ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
       }),
     }),
