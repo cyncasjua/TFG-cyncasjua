@@ -4,7 +4,9 @@
 
 Durante la fase final del desarrollo se llevó a cabo una validación de la aplicación con usuarios piloto reales. El objetivo fue obtener retroalimentación directa de personas que no habían participado en el desarrollo, para identificar problemas de usabilidad, ajustes visuales necesarios, nuevas ideas de funcionalidad y comportamientos inesperados de la interfaz en condiciones de uso real.
 
-La distribución se realizó mediante \textbf{Expo Go}, que permite instalar y ejecutar la aplicación directamente desde un enlace sin necesidad de publicarla en las tiendas oficiales. Se compartió el enlace con un grupo de usuarios voluntarios de distintos perfiles y con diferentes dispositivos.
+La distribución se realizó mediante \textbf{Expo Go}, que permite ejecutar la aplicación sin publicarla en las tiendas oficiales. Durante las primeras pruebas se compartió un enlace de Expo con un grupo de usuarios voluntarios de distintos perfiles y con diferentes dispositivos.
+
+Posteriormente, Expo modificó el comportamiento de carga de proyectos en Expo Go: desde el 12 de mayo de 2026, las actualizaciones publicadas mediante EAS Update solo pueden abrirse si la cuenta autenticada es propietaria del proyecto o pertenece a la organización correspondiente~\cite{expoGoLoading2026}. Por ello, para pruebas abiertas posteriores y demostraciones con evaluadores externos, la estrategia se ajustó a Expo Go con túnel (\texttt{npx expo start --tunnel}), manteniendo el backend desplegado en Render como entorno de datos.
 
 \section{Perfil de los usuarios}
 

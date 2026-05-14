@@ -188,7 +188,7 @@ Las pruebas de aceptación se han ejecutado sobre dos entornos:
 \begin{itemize}
     \item \textbf{Entorno local}: servidor NestJS ejecutado en local, conectado a una instancia de PostgreSQL con PostGIS en Docker. Frontend compilado con Expo y ejecutado en un emulador Android a través de Android Studio.
 
-    \item \textbf{Entorno desplegado}: backend desplegado en Render con base de datos en Supabase. Frontend distribuido mediante \textbf{Expo Go}, probado principalmente sobre un \textbf{iPhone 16 Pro} con iOS. Se ha verificado que todos los módulos de la aplicación se abren correctamente, incluyendo el mapa (OpenStreetMap), el chat en tiempo real y las notificaciones.
+    \item \textbf{Entorno desplegado}: backend desplegado en Render con base de datos en Supabase. Frontend ejecutado mediante \textbf{Expo Go con túnel}, probado principalmente sobre un \textbf{iPhone 16 Pro} con iOS. Se ha verificado que todos los módulos de la aplicación se abren correctamente, incluyendo el mapa (OpenStreetMap), el chat en tiempo real y las notificaciones.
 \end{itemize}
 
 En ambos entornos se comprobó el correcto funcionamiento de la interfaz, la navegación entre pantallas, la carga de datos desde la API y el comportamiento ante acciones del usuario.
@@ -349,7 +349,7 @@ Validan las notificaciones de moderación y de eventos cercanos. Corresponden a 
 
 \section{Resultados de las pruebas de aceptación}
 
-Los 30 casos de prueba de aceptación se han ejecutado sobre los dos entornos descritos (local con emulador Android y desplegado sobre iPhone 16 Pro con Expo Go). La siguiente tabla recoge los resultados obtenidos:
+Los 30 casos de prueba de aceptación se han ejecutado sobre los dos entornos descritos: entorno local con emulador Android y entorno móvil real sobre iPhone 16 Pro mediante Expo Go con túnel, conectando en ambos casos con el backend desplegado en Render. La siguiente tabla recoge los resultados obtenidos:
 
 \begin{longtable}{|p{1.3cm}|p{4.5cm}|p{2.8cm}|p{6cm}|}
 \hline
@@ -417,12 +417,12 @@ CP-30 & Notificación de evento cercano & Superada & \\
 \hline
 \end{longtable}
 
-Todos los casos de prueba han sido superados satisfactoriamente. El sistema se comporta de acuerdo con los requisitos funcionales definidos en el análisis tanto en el entorno de desarrollo local como en el entorno desplegado en producción.
+Todos los casos de prueba han sido superados satisfactoriamente. El sistema se comporta de acuerdo con los requisitos funcionales definidos en el análisis tanto en el entorno de desarrollo local como en el entorno móvil conectado al backend de producción.
 
 \section{Conclusiones}
 
 El plan de pruebas del sistema \textbf{Sevillaneando} ha combinado pruebas unitarias automatizadas del backend y pruebas de aceptación manuales ejecutadas sobre dispositivos reales, cubriendo los principales requisitos funcionales del sistema.
 
-Las \textbf{36 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go sobre el entorno desplegado).
+Las \textbf{36 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go mediante túnel y backend desplegado en Render).
 
 El resultado global es que todos los casos de prueba han sido superados, lo que valida que el sistema cumple con los requisitos funcionales definidos y que los principales flujos de uso de la aplicación funcionan de forma correcta y coherente.

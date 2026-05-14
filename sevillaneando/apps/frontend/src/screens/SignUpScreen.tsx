@@ -144,7 +144,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
                 style={styles.eyeButton}
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                <ThemedText style={styles.eyeIcon}>{showConfirmPassword ? '🙈' : '👁'}</ThemedText>
+                <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={22} color="white" />
               </TouchableOpacity>
             </View>
 
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: 11,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',

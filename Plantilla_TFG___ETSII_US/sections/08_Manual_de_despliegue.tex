@@ -238,6 +238,10 @@ Esta URL debe usarse como valor de \texttt{EXPO\_PUBLIC\_API\_URL} en el fronten
 
 Al tratarse de un proyecto académico, la distribución de la aplicación móvil no se realiza a través de tiendas de aplicaciones, ya que publicar en Google Play requiere una tarifa de registro única de 25 USD y publicar en App Store requiere una cuenta de desarrollador de Apple con un coste de 99 USD anuales. En su lugar, la aplicación se distribuye mediante dos mecanismos sin coste: instalación directa mediante APK en Android y acceso mediante Expo Go.
 
+Durante el desarrollo se valoró también el uso de \textbf{EAS Update} para compartir un código QR asociado a la versión publicada en Expo. Sin embargo, desde el 12 de mayo de 2026 Expo modificó el comportamiento de carga de proyectos en Expo Go: las actualizaciones publicadas mediante EAS Update solo pueden abrirse en Expo Go si el usuario autenticado es propietario del proyecto o pertenece a la organización propietaria~\cite{expoGoLoading2026}. Por este motivo, este mecanismo deja de ser adecuado para una defensa o prueba abierta con evaluadores externos no registrados en el proyecto.
+
+La alternativa adoptada para la demostración en iOS y Android es el uso de \textbf{Expo Go con túnel}. Este mecanismo no publica una versión permanente de la aplicación en Expo, sino que expone temporalmente el servidor de desarrollo local mediante un túnel accesible desde Internet. La aplicación móvil se carga desde el equipo de desarrollo, pero sus peticiones siguen apuntando al backend desplegado en Render mediante la variable \texttt{EXPO\_PUBLIC\_API\_URL}; por tanto, los datos utilizados son los del entorno de producción y no una base de datos local.
+
 \subsection{Variables de entorno del frontend}
 
 Antes de generar cualquier build, actualizar el archivo \texttt{apps/frontend/.env} con las URLs y credenciales del entorno de producción:
@@ -266,15 +270,15 @@ eas build -p android --profile preview
 
 El perfil \texttt{preview} genera un \texttt{.apk} instalable directamente, a diferencia del perfil \texttt{production} que genera un \texttt{.aab} pensado para Google Play. Una vez finalizada la construcción en los servidores de Expo, se descarga el \texttt{.apk} y se transfiere al dispositivo Android. Es necesario habilitar la opción \textit{Instalar aplicaciones de fuentes desconocidas} en los ajustes del dispositivo.
 
-\textbf{Nota}: esta opción solo es válida para Android. iOS no permite la instalación de aplicaciones fuera de la App Store sin una cuenta de desarrollador de Apple, por lo que en ese caso se utiliza Expo Go.
+\textbf{Nota}: esta opción solo es válida para Android. iOS no permite la instalación de aplicaciones fuera de la App Store sin una cuenta de desarrollador de Apple, por lo que en ese caso se utiliza Expo Go con túnel.
 
-\subsection{Opción 2: Expo Go}
+\subsection{Opción 2: Expo Go con túnel}
 
-\textbf{Expo Go} permite ejecutar la aplicación directamente desde el código fuente sin necesidad de generar ninguna build. Es compatible con iOS y Android y no tiene ningún coste.
+\textbf{Expo Go} permite ejecutar la aplicación directamente desde el código fuente sin necesidad de generar ninguna build. Es compatible con iOS y Android y no tiene ningún coste. Para permitir el acceso desde dispositivos que no están en la misma red local que el equipo de desarrollo, se utiliza el modo túnel:
 
 \begin{lstlisting}
 cd apps/frontend
-npx expo start
+npx expo start --tunnel
 \end{lstlisting}
 
 Expo muestra un código QR en la terminal. El evaluador o usuario que desee probar la aplicación solo necesita:
@@ -284,7 +288,7 @@ Expo muestra un código QR en la terminal. El evaluador o usuario que desee prob
     \item Escanear el código QR con la cámara del dispositivo (iOS) o desde dentro de Expo Go (Android).
 \end{enumerate}
 
-La aplicación se carga directamente en el dispositivo conectándose al servidor de desarrollo. Para que funcione, el dispositivo debe estar en la misma red que el equipo donde corre el servidor, o bien usar un túnel con \texttt{npx expo start --tunnel}.
+La aplicación se carga directamente en el dispositivo conectándose al servidor de desarrollo a través del túnel. Para que funcione, el equipo de desarrollo debe permanecer encendido y el proceso de Expo debe seguir ejecutándose. Este método se utiliza únicamente como mecanismo de demostración y validación, no como despliegue permanente de la aplicación.
 
 %--------------------------------------------------
 \section{Validación posterior al despliegue}
@@ -334,7 +338,7 @@ Lista de verificación antes de dar por concluido el despliegue:
     \item[$\square$] La conexión SSL con la base de datos está activa.
     \item[$\square$] Las credenciales de Firebase, Cloudinary, Ticketmaster y Gemini son válidas.
     \item[$\square$] El frontend apunta a la URL correcta del backend de producción.
-    \item[$\square$] El APK de Android se genera sin errores o la aplicación carga correctamente mediante Expo Go.
+    \item[$\square$] El APK de Android se genera sin errores o la aplicación carga correctamente mediante Expo Go con túnel.
     \item[$\square$] Las funcionalidades principales se han validado en el entorno de producción.
     \item[$\square$] El CORS está configurado para aceptar únicamente los orígenes esperados.
 \end{itemize}
@@ -344,7 +348,7 @@ Lista de verificación antes de dar por concluido el despliegue:
 
 Para desplegar una nueva versión del backend en Render, simplemente se hace push a la rama \texttt{main} del repositorio. Render detecta el nuevo commit y lanza automáticamente un nuevo despliegue.
 
-Para actualizar la aplicación móvil, se genera una nueva build con los cambios aplicados (APK para Android) o se reinicia el servidor de Expo Go apuntando al código actualizado.
+Para actualizar la aplicación móvil, se genera una nueva build con los cambios aplicados (APK para Android) o se reinicia el servidor de Expo Go con túnel apuntando al código actualizado.
 
 %--------------------------------------------------
 \section{Rollback y recuperación}
@@ -371,7 +375,7 @@ cd apps/frontend
 eas build -p android --profile preview
 \end{lstlisting}
 
-Para Expo Go, al ejecutar \texttt{npx expo start} siempre se sirve el código fuente actual, por lo que el rollback consiste simplemente en volver al commit anterior con \texttt{git checkout} y reiniciar el servidor.
+Para Expo Go, al ejecutar \texttt{npx expo start --tunnel} siempre se sirve el código fuente actual, por lo que el rollback consiste simplemente en volver al commit anterior con \texttt{git checkout} y reiniciar el servidor.
 
 \subsection{Respaldo de la base de datos}
 
@@ -391,6 +395,7 @@ Si se utiliza un servicio gestionado (Supabase, AWS RDS, etc.), los backups auto
     \item Render Documentation: \texttt{https://render.com/docs}
     \item Expo EAS Build: \texttt{https://docs.expo.dev/build/introduction}
     \item Expo Go: \texttt{https://expo.dev/go}
+    \item Expo Go loading changes: \texttt{https://expo.dev/changelog/expo-go-loading-changes-may-2026}
     \item NestJS Documentation: \texttt{https://docs.nestjs.com}
     \item PostGIS Documentation: \texttt{https://postgis.net/documentation}
     \item Supabase Documentation: \texttt{https://supabase.com/docs}
