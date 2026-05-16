@@ -11,7 +11,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedTitle style={styles.title}>Política de privacidad</ThemedTitle>
         <ThemedTextSecondary style={styles.updated}>
-          Última actualización: mayo de 2025
+          Última actualización: mayo de 2026
         </ThemedTextSecondary>
 
         <ThemedView
@@ -75,8 +75,9 @@ export const PrivacyPolicyScreen: React.FC = () => {
           <ThemedText style={styles.sectionTitle}>5. Conservación de los datos</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
             Tus datos se conservan mientras tu cuenta esté activa. Al eliminar tu cuenta, tus datos
-            de perfil y contenido asociado se eliminarán o anonimizarán de forma permanente en un
-            plazo máximo de 30 días.
+            de perfil, fotografía e historial de actividad se eliminan de forma inmediata. Los
+            mensajes privados en los que ninguna de las dos partes tenga cuenta activa se eliminan
+            de forma definitiva en un plazo máximo de 30 días.
           </ThemedTextSecondary>
         </ThemedView>
 

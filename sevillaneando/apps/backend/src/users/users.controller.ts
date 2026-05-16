@@ -77,7 +77,10 @@ export class UsersController {
       },
     })
   )
-  async uploadProfileImageFirebase(@UploadedFile() file: Express.Multer.File) {
+  async uploadProfileImageFirebase(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: { user: { uid: string } }
+  ) {
     if (!file) throw new BadRequestException('Archivo requerido');
 
     const uploaded = await this.cloudinaryService.uploadImage(file.buffer, {
@@ -85,7 +88,12 @@ export class UsersController {
       publicIdPrefix: 'profile',
     });
 
-    return { url: uploaded.optimizedUrl };
+    await this.usersService.updateProfile(req.user.uid, {
+      fotoPerfil: uploaded.optimizedUrl,
+      fotoPerfilPublicId: uploaded.publicId,
+    });
+
+    return { url: uploaded.optimizedUrl, publicId: uploaded.publicId };
   }
 
   private getFirebaseUser(req: { user: { uid: string; email?: string; name?: string } }) {

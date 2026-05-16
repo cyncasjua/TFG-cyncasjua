@@ -74,4 +74,12 @@ export class CloudinaryService {
       publicId: uploadResult.public_id,
     };
   }
+
+  async deleteImage(publicId: string): Promise<void> {
+    if (!this.isConfigured) {
+      this.logger.warn('Cloudinary no configurado: no se puede eliminar la imagen.');
+      return;
+    }
+    await cloudinary.uploader.destroy(publicId);
+  }
 }

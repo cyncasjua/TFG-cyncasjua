@@ -38,7 +38,7 @@ La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecn
 
 \subsection{Aplicación móvil (frontend)}
 
-La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native} y \textbf{Expo}, lo que permite generar una única base de código compatible con Android e iOS. La arquitectura interna del frontend se estructura en cuatro niveles:
+La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native}~\cite{reactnative} y \textbf{Expo}~\cite{expo}, lo que permite generar una única base de código compatible con Android e iOS. La arquitectura interna del frontend se estructura en cuatro niveles:
 
 \begin{itemize}
     \item \textbf{Pantallas}: componentes que representan vistas completas navegables.
@@ -47,7 +47,7 @@ La aplicación móvil actúa como único punto de interacción con el usuario. H
     \item \textbf{Contextos}: gestión del estado global compartido entre pantallas (\texttt{AuthContext} para la sesión, \texttt{SocketContext} para la conexión WebSocket, \texttt{ThemeContext} para el tema visual y \texttt{NotificacionesContext} para los avisos pendientes).
 \end{itemize}
 
-La navegación entre pantallas se implementa con \textbf{React Navigation} mediante una navegación en pila (\textit{stack navigator}), separando las rutas autenticadas de las públicas. El \texttt{AuthContext} determina en tiempo de montaje qué pila de navegación se activa según el estado de la sesión.
+La navegación entre pantallas se implementa con \textbf{React Navigation}~\cite{reactnavigation} mediante una navegación en pila (\textit{stack navigator}), separando las rutas autenticadas de las públicas. El \texttt{AuthContext} determina en tiempo de montaje qué pila de navegación se activa según el estado de la sesión.
 
 La figura~\ref{fig:flujo_frontend} muestra cómo interactúan estos niveles desde la acción del usuario hasta la respuesta del servidor.
 
@@ -60,7 +60,7 @@ La figura~\ref{fig:flujo_frontend} muestra cómo interactúan estos niveles desd
 
 \subsection{Servidor backend}
 
-El backend es una API REST desarrollada con \textbf{NestJS} sobre \textbf{Node.js}. NestJS organiza el servidor en módulos independientes, cada uno con sus controladores, servicios y entidades. Esta separación facilita el mantenimiento y permite extender el sistema sin afectar al resto de componentes.
+El backend es una API REST desarrollada con \textbf{NestJS}~\cite{nestjs} sobre \textbf{Node.js}. NestJS organiza el servidor en módulos independientes, cada uno con sus controladores, servicios y entidades. Esta separación facilita el mantenimiento y permite extender el sistema sin afectar al resto de componentes.
 
 Cada petición HTTP entrante pasa por la siguiente cadena de responsabilidades:
 
@@ -105,21 +105,21 @@ La figura~\ref{fig:flujo_backend} ilustra esta cadena para una petición autenti
 \label{fig:flujo_backend}
 \end{figure}
 
-Además de la API REST, el backend integra un servidor \textbf{Socket.IO} para la comunicación en tiempo real del chat. La conexión WebSocket se autentica en el \textit{handshake} inicial mediante el mismo mecanismo que la API REST: el cliente envía el token de Firebase como parámetro de la URL de conexión, y el middleware de Socket.IO lo verifica antes de aceptar la conexión. Una vez autenticada, la conexión se mantiene abierta y el servidor puede emitir eventos al cliente en cualquier momento sin necesidad de una nueva petición.
+Además de la API REST, el backend integra un servidor \textbf{Socket.IO}~\cite{socketio} para la comunicación en tiempo real del chat. La conexión WebSocket se autentica en el \textit{handshake} inicial mediante el mismo mecanismo que la API REST: el cliente envía el token de Firebase como parámetro de la URL de conexión, y el middleware de Socket.IO lo verifica antes de aceptar la conexión. Una vez autenticada, la conexión se mantiene abierta y el servidor puede emitir eventos al cliente en cualquier momento sin necesidad de una nueva petición.
 
 \subsection{Base de datos}
 
-La persistencia de datos se gestiona con \textbf{PostgreSQL 15} junto con la extensión \textbf{PostGIS}. PostgreSQL cubre el modelo relacional general del sistema, mientras que PostGIS añade soporte para datos geográficos, permitiendo almacenar coordenadas como puntos \texttt{geography} en SRID 4326 y ejecutar consultas espaciales eficientes como el filtrado por radio (\texttt{ST\_DWithin}) o el cálculo de distancias en metros (\texttt{ST\_Distance}). La comunicación entre el backend y la base de datos se realiza a través de \textbf{TypeORM}, que mapea las entidades TypeScript a tablas SQL y genera las consultas correspondientes.
+La persistencia de datos se gestiona con \textbf{PostgreSQL 15} junto con la extensión \textbf{PostGIS}~\cite{postgisdocs}. PostgreSQL cubre el modelo relacional general del sistema, mientras que PostGIS añade soporte para datos geográficos, permitiendo almacenar coordenadas como puntos \texttt{geography} en SRID 4326 y ejecutar consultas espaciales eficientes como el filtrado por radio (\texttt{ST\_DWithin}) o el cálculo de distancias en metros (\texttt{ST\_Distance}). La comunicación entre el backend y la base de datos se realiza a través de \textbf{TypeORM}~\cite{typeorm}, que mapea las entidades TypeScript a tablas SQL y genera las consultas correspondientes.
 
 \subsection{Servicios externos}
 
 El sistema delega en servicios externos las siguientes responsabilidades:
 
 \begin{itemize}
-    \item \textbf{Firebase Authentication}: gestión del ciclo de vida de la sesión del usuario (registro, inicio de sesión y tokens JWT). El cliente móvil usa el SDK de Firebase para obtener y renovar tokens; el backend usa el SDK de administración para verificarlos sin almacenar contraseñas ni gestionar sesiones propias.
-    \item \textbf{Cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats. El backend sube las imágenes directamente a Cloudinary mediante su SDK y almacena únicamente la URL resultante en PostgreSQL. Cloudinary sirve las imágenes desde su CDN (Content Delivery Network) con transformaciones automáticas de formato y calidad.
-    \item \textbf{OpenStreetMap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}. Los \textit{tiles} cartográficos se obtienen directamente del servidor de OpenStreetMap sin pasar por el backend.
-    \item \textbf{Eventbrite / Ticketmaster / webs institucionales y de ocio de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. Eventbrite se procesa extrayendo tarjetas de eventos y bloques JSON-LD del HTML; la API oficial de Ticketmaster se consume directamente; el resto de webs (portal municipal, guías de ocio, teatros y fundaciones) se procesan mediante el scraper basado en \textbf{Google Gemini AI}. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
+    \item \textbf{Firebase Authentication}~\cite{firebase}: gestión del ciclo de vida de la sesión del usuario (registro, inicio de sesión y tokens JWT). El cliente móvil usa el SDK de Firebase para obtener y renovar tokens; el backend usa el SDK de administración para verificarlos sin almacenar contraseñas ni gestionar sesiones propias.
+    \item \textbf{Cloudinary}~\cite{cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats. El backend sube las imágenes directamente a Cloudinary mediante su SDK y almacena únicamente la URL resultante en PostgreSQL. Cloudinary sirve las imágenes desde su CDN (Content Delivery Network) con transformaciones automáticas de formato y calidad.
+    \item \textbf{OpenStreetMap}~\cite{openstreetmap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}. Los \textit{tiles} cartográficos se obtienen directamente del servidor de OpenStreetMap sin pasar por el backend.
+    \item \textbf{Eventbrite}~\cite{eventbrite} \textbf{/ Ticketmaster}~\cite{ticketmaster} \textbf{/ webs institucionales y de ocio de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. Eventbrite se procesa extrayendo tarjetas de eventos y bloques JSON-LD del HTML; la API oficial de Ticketmaster se consume directamente; el resto de webs (portal municipal, guías de ocio, teatros y fundaciones) se procesan mediante el scraper basado en \textbf{Google Gemini AI}. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
     \item \textbf{Google Gemini AI}: modelo de lenguaje utilizado por el \texttt{GeminiScraperService} para extraer y estructurar eventos a partir del contenido HTML de siete webs de ocio e institucionales de Sevilla. El backend envía el texto limpio de cada página al modelo \textbf{Gemini 2.5 Flash} mediante la API de Google Generative AI y obtiene los eventos en formato JSON estructurado.
     \item \textbf{Nominatim (OpenStreetMap)}: API de geocodificación utilizada por el \texttt{GeminiScraperService} para resolver las coordenadas geográficas de los eventos cuando Gemini no puede deducirlas directamente del texto. Se realizan hasta tres variantes de búsqueda por dirección para maximizar la cobertura.
 \end{itemize}
@@ -235,48 +235,161 @@ Las relaciones principales entre entidades son las siguientes:
 
 \section{Diseño de la API REST}
 
-El backend expone una API REST cuya organización sigue la estructura modular de NestJS. Cada módulo define un conjunto de endpoints agrupados por recurso. La tabla~\ref{tab:api} muestra los módulos principales y sus operaciones más relevantes.
+El backend expone una API REST~\cite{fielding2000rest} cuya organización sigue la estructura modular de NestJS. Cada módulo define un conjunto de endpoints agrupados por recurso. La documentación interactiva completa se genera automáticamente mediante \texttt{@nestjs/swagger} y queda disponible en \texttt{/api/docs} cuando el servidor está en ejecución.
 
-\begin{table}[H]
-\centering
-\caption{Módulos y operaciones principales de la API REST}
-\label{tab:api}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Módulo} & \textbf{Método / Ruta} & \textbf{Descripción} \\
-\hline
-\multirow{10}{*}{Eventos} & POST /events & Crear evento \\
- & GET /events & Listar eventos (con filtros) \\
- & GET /events/:id & Detalle de evento \\
- & PUT /events/:id & Editar evento \\
- & DELETE /events/:id & Eliminar evento \\
- & PATCH /events/:id/aprobar & Aprobar evento (moderador/admin) \\
- & GET /events/moderacion/list & Listar eventos pendientes de moderación \\
- & GET /events/moderacion/publicos & Listar eventos públicos para moderación \\
- & GET /events/acceso/:linkAcceso & Acceder a evento privado por enlace \\
- & GET /events/:id/private-share-link & Generar enlace de acceso privado \\
-\hline
-\multirow{4}{*}{Usuarios} & GET /users/me & Perfil del usuario autenticado \\
- & GET /users/search & Buscar usuarios \\
- & PATCH /users/:id & Actualizar perfil \\
- & PATCH /users/:id/role & Cambiar rol (admin) \\
-\hline
-\multirow{2}{*}{Categorías} & GET /categorias & Listar categorías \\
- & POST /categorias & Crear categoría (admin) \\
-\hline
-\multirow{2}{*}{Rutas} & GET /rutas & Listar rutas \\
- & POST /rutas & Crear ruta \\
-\hline
-Recomendaciones & GET /recomendaciones & Obtener recomendaciones personalizadas \\
-\hline
-Notificaciones & GET /notificaciones & Listar notificaciones del usuario \\
-\hline
-\end{tabular}%
-}
-\end{table}
+\subsection{Versionado}
 
-Todos los endpoints que requieren autenticación reciben el token de Firebase en la cabecera \texttt{Authorization: Bearer <token>}. Los endpoints que exigen rol de moderador o administrador aplican un guard adicional de roles.
+La API no aplica versionado explícito en la URL (p.ej.\ \texttt{/v1/}) en esta primera versión, dado que cliente y servidor se desarrollan y despliegan de forma coordinada en el mismo proyecto. Si en el futuro el sistema expusiera la API a clientes externos independientes, se adoptaría versionado mediante prefijo de ruta (\texttt{/v1/}, \texttt{/v2/}) o cabecera \texttt{Accept-Version}, siguiendo la convención habitual de NestJS.
+
+\subsection{Autenticación y control de acceso}
+
+Todos los endpoints protegidos reciben el token de Firebase en la cabecera \texttt{Authorization: Bearer <token>}. Los endpoints que exigen rol de moderador o administrador aplican un guard adicional de roles. En la tabla~\ref{tab:api} la columna \textbf{Auth} indica el nivel requerido: \textbf{—} (público), \textbf{U} (usuario autenticado), \textbf{M} (moderador o admin) o \textbf{A} (solo admin).
+
+\subsection{Endpoints principales}
+
+La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directamente del contrato OpenAPI exportado desde el backend. El contenido fue generado con asistencia de Claude (Anthropic) a partir del YAML del Swagger y revisado por la autora.
+
+\begin{longtable}{|p{1.5cm}|p{3.6cm}|p{0.8cm}|p{4cm}|p{2.8cm}|}
+\caption{Endpoints de la API REST (fuente: OpenAPI 3.0)}\label{tab:api}\\
+\hline
+\textbf{Módulo} & \textbf{Método / Ruta} & \textbf{Auth} & \textbf{Parámetros / Cuerpo} & \textbf{Respuestas} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Módulo} & \textbf{Método / Ruta} & \textbf{Auth} & \textbf{Parámetros / Cuerpo} & \textbf{Respuestas} \\
+\hline
+\endhead
+\hline
+\endlastfoot
+
+\multirow{16}{=}{Eventos}
+ & POST /events & U & Body: \texttt{CreateEventDto} (title, description, address, location, fechaInicio, fechaFin, precio, privado, categoriaId, imagen) & 201, 400, 401 \\
+\cline{2-5}
+ & GET /events & — & — & 200 \\
+\cline{2-5}
+ & GET /events/\{id\} & — & Path: \texttt{id} (UUID) & 200, 404 \\
+\cline{2-5}
+ & PUT /events/\{id\} & U & Path: \texttt{id}; Body: \texttt{UpdateEventDto} & 200, 400, 401, 404 \\
+\cline{2-5}
+ & DELETE /events/\{id\} & U & Path: \texttt{id} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & PATCH /events/\{id\}/aprobar & M & Path: \texttt{id} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & PATCH /events/\{id\}/rechazar & M & Path: \texttt{id} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & GET /events/moderacion/list & M & — & 200, 401 \\
+\cline{2-5}
+ & GET /events/moderacion/publicos & M & — & 200, 401 \\
+\cline{2-5}
+ & GET /events/acceso/\{linkAcceso\} & — & Path: \texttt{linkAcceso} & 200, 404 \\
+\cline{2-5}
+ & GET /events/\{id\}/private-share-link & U & Path: \texttt{id} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & POST /events/upload-image & U & Form: \texttt{file} (binary) & 201, 400, 401 \\
+\cline{2-5}
+ & GET /events/\{id\}/attendees & — & Path: \texttt{id} & 200, 404 \\
+\cline{2-5}
+ & POST /events/\{id\}/attendees & U & Path: \texttt{id} & 201, 401, 404 \\
+\cline{2-5}
+ & DELETE /events/\{id\}/attendees & U & Path: \texttt{id} & 200, 401, 404 \\
+\cline{2-5}
+ & GET /events/\{id\}/reviews & — & Path: \texttt{id} & 200 \\
+\hline
+
+\multirow{11}{=}{Usuarios}
+ & GET /users/me & U & — & 200, 401 \\
+\cline{2-5}
+ & PATCH /users/me/firebase & U & Body: \texttt{UpdateProfileDto} & 200, 400, 401 \\
+\cline{2-5}
+ & DELETE /users/me/firebase & U & — & 200, 401 \\
+\cline{2-5}
+ & GET /users/search & U & Query: \texttt{q} (mín.\ 2 car.) & 200, 401 \\
+\cline{2-5}
+ & GET /users & M & — & 200, 401, 403 \\
+\cline{2-5}
+ & GET /users/\{id\} & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
+ & DELETE /users/\{id\} & A & Path: \texttt{id} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & PATCH /users/\{id\}/role & A & Path: \texttt{id}; Body: \texttt{UpdateRoleDto} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & POST /users/\{id\}/seguir & U & Path: \texttt{id} & 201, 401 \\
+\cline{2-5}
+ & DELETE /users/\{id\}/seguir & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
+ & GET /users/\{id\}/seguidores & U & Path: \texttt{id} & 200, 401 \\
+\hline
+
+\multirow{4}{=}{Categorías}
+ & GET /categorias & — & — & 200 \\
+\cline{2-5}
+ & POST /categorias & A & Body: \texttt{CreateCategoriaDTO} & 201, 400, 401, 403 \\
+\cline{2-5}
+ & PUT /categorias/\{id\} & A & Path: \texttt{id}; Body: \texttt{CreateCategoriaDTO} & 200, 400, 401, 403, 404 \\
+\cline{2-5}
+ & DELETE /categorias/\{id\} & A & Path: \texttt{id} & 200, 401, 403, 404 \\
+\hline
+
+\multirow{7}{=}{Rutas}
+ & GET /rutas & — & Query: \texttt{userId?} & 200 \\
+\cline{2-5}
+ & POST /rutas & U & Body: \texttt{CreateRutaDto} & 201, 400, 401 \\
+\cline{2-5}
+ & GET /rutas/search & — & Query: \texttt{q} & 200 \\
+\cline{2-5}
+ & GET /rutas/\{id\} & — & Path: \texttt{id} & 200, 404 \\
+\cline{2-5}
+ & PATCH /rutas/\{id\} & U & Path: \texttt{id}; Body: \texttt{UpdateRutaDto} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & DELETE /rutas/\{id\} & U & Path: \texttt{id} & 200, 401, 403, 404 \\
+\cline{2-5}
+ & POST /rutas/\{id\}/calificar & U & Path: \texttt{id} & 201, 400, 401, 404 \\
+\hline
+
+\multirow{7}{=}{Recomend.}
+ & GET /recomendaciones/me/events & U & Query: \texttt{lat?}, \texttt{lng?}, \texttt{radiusKm?}, \texttt{from?}, \texttt{to?}, \texttt{limit?} & 200, 401 \\
+\cline{2-5}
+ & GET /recomendaciones/me/rutas & U & Query: \texttt{lat?}, \texttt{lng?}, \texttt{strategy?} (\texttt{walkable}/\texttt{score}/\texttt{balanced}), \texttt{limit?} & 200, 401 \\
+\cline{2-5}
+ & GET /recomendaciones/me/guardados & U & — & 200, 401 \\
+\cline{2-5}
+ & POST /recomendaciones/events/\{id\}/guardar & U & Path: \texttt{eventId} & 201, 401, 404 \\
+\cline{2-5}
+ & DELETE /recomendaciones/events/\{id\}/guardar & U & Path: \texttt{eventId} & 200, 401 \\
+\cline{2-5}
+ & POST /recomendaciones/events/\{id\}/compartir & U & Path: \texttt{eventId} & 201, 401 \\
+\cline{2-5}
+ & POST /recomendaciones/events/\{id\}/valorar & U & Path: \texttt{eventId}; Body: \texttt{RateEventDto} & 201, 400, 401 \\
+\hline
+
+\multirow{3}{=}{Notific.}
+ & GET /notificaciones/usuario/\{id\} & U & Path: \texttt{usuarioId} & 200, 401 \\
+\cline{2-5}
+ & PATCH /notificaciones/\{id\}/leida & U & Path: \texttt{id} & 200, 401, 404 \\
+\cline{2-5}
+ & DELETE /notificaciones/\{id\} & U & Path: \texttt{id} & 200, 401, 404 \\
+\hline
+
+Chat & POST /chat/upload & U & Form: \texttt{file} (binary) & 201, 400, 401 \\
+\hline
+
+\multirow{4}{=}{Scraping}
+ & POST /scraping/run-all & A & — & 200, 401 \\
+\cline{2-5}
+ & POST /scraping/run/\{name\} & A & Path: \texttt{scraperName} & 200, 401 \\
+\cline{2-5}
+ & GET /scraping/scrapers & A & — & 200, 401 \\
+\cline{2-5}
+ & POST /scraping/reset & A & — & 200, 401, 500 \\
+\hline
+
+\multirow{2}{=}{Scheduler}
+ & POST /scheduler/run-scraping & — & — & 200 \\
+\cline{2-5}
+ & POST /scheduler/run-notifications & — & — & 200 \\
+\hline
+
+\end{longtable}
 
 La API aplica limitación de velocidad (\textit{throttling}) mediante \texttt{@nestjs/throttler} con tres niveles configurables:
 
@@ -417,7 +530,7 @@ Edición moderada & Edición directa de un evento pendiente antes de aprobarlo &
 
 \section{Diseño del sistema de comunicación en tiempo real}
 
-El chat de la aplicación está implementado sobre \textbf{Socket.IO}, integrado en el mismo servidor NestJS que la API REST. Se definen dos canales de comunicación independientes:
+El chat de la aplicación está implementado sobre \textbf{Socket.IO}~\cite{socketio}, integrado en el mismo servidor NestJS que la API REST. Se definen dos canales de comunicación independientes:
 
 \begin{itemize}
     \item \textbf{Chat de evento}: sala identificada por \texttt{event:\{eventId\}} en la que todos los asistentes pueden leer y enviar mensajes.
@@ -478,9 +591,11 @@ La figura~\ref{fig:flujo_socket} muestra el flujo completo desde el establecimie
 
 \section{Diseño del sistema de recomendaciones}
 
-El motor de recomendaciones es un componente del backend que genera listas de eventos personalizadas para cada usuario. Su diseño se basa en un algoritmo de puntuación multifactorial: cada evento candidato recibe una puntuación calculada como suma ponderada de varios factores relacionados con el comportamiento del usuario, sus intereses declarados, la proximidad temporal y la proximidad geográfica.
+El motor de recomendaciones es un componente del backend que genera listas de eventos personalizadas para cada usuario. Su diseño se basa en un algoritmo de puntuación multifactorial~\cite{ricci2015recommender}: cada evento candidato recibe una puntuación calculada como suma ponderada de varios factores relacionados con el comportamiento del usuario, sus intereses declarados, la proximidad temporal y la proximidad geográfica.
 
 Los factores con mayor peso en el diseño son la afinidad por categoría (hasta 12 puntos), el haber guardado previamente el evento (+10) y la proximidad temporal al evento (hasta 8 puntos). Los eventos se ordenan de mayor a menor puntuación y se devuelven los más relevantes.
+
+Cabe destacar que este algoritmo de \textit{scoring} multifactorial no es un patrón de diseño de software en el sentido estructural o de comportamiento (GoF), sino un algoritmo de dominio propio del problema de recomendación. Su característica clave es que cada factor es independiente y ponderado: modificar el peso de un criterio o incorporar uno nuevo no afecta al cálculo del resto, lo que facilita su ajuste y extensión.
 
 La figura~\ref{fig:flujo_recomendaciones} muestra las entradas que consulta el motor y el proceso de puntuación hasta producir la lista final.
 
@@ -527,7 +642,7 @@ El mismo motor puede generar rutas recomendadas aplicando tres estrategias selec
 
 \section{Patrones de diseño aplicados}
 
-A lo largo del desarrollo de \textbf{Sevillaneando} se han aplicado varios patrones de diseño reconocidos, algunos inherentes a los frameworks elegidos y otros aplicados de forma deliberada. La tabla~\ref{tab:patrones} resume los más relevantes.
+A lo largo del desarrollo de \textbf{Sevillaneando} se han aplicado varios patrones de diseño reconocidos~\cite{gamma1994design}, algunos inherentes a los frameworks elegidos y otros aplicados de forma deliberada. La tabla~\ref{tab:patrones} resume los más relevantes.
 
 \begin{table}[H]
 \centering
@@ -551,8 +666,6 @@ Contexto / Proveedor & \texttt{AuthContext}, \texttt{SocketContext}, \texttt{The
 Estrategia & \texttt{IScraper} & Cada fuente externa implementa la misma interfaz; el orquestador trabaja con la abstracción. Permite añadir nuevas fuentes sin modificar la lógica de orquestación. \\
 \hline
 Observador & Socket.IO (chat) & El servidor emite eventos a las salas y los clientes suscritos los reciben automáticamente, desacoplando al emisor del receptor. \\
-\hline
-Puntuación multifactorial & Motor de recomendaciones & Cada factor (categoría, proximidad, historial) es independiente y ponderado. Modificar un peso o añadir un factor no altera el resto del algoritmo. \\
 \hline
 Estado & Flujo de moderación de eventos & El ciclo de vida del evento (\texttt{Pendiente} → \texttt{Aprobado} / \texttt{Rechazado}) tiene transiciones controladas; no todas son válidas, lo que garantiza la coherencia del flujo. \\
 \hline

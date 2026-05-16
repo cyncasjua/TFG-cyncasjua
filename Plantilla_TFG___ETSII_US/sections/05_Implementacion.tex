@@ -14,7 +14,7 @@ Las tecnologías utilizadas en el sistema —TypeScript, React Native, Expo, Nes
 
 \subsection{ORM y datos geográficos}
 
-La ubicación de los eventos se almacena en PostgreSQL como un punto geográfico compatible con PostGIS mediante TypeORM, utilizando el sistema de referencia SRID 4326. El siguiente fragmento muestra la definición del campo en la entidad \texttt{Event}:
+La ubicación de los eventos se almacena en PostgreSQL~\cite{postgresql} como un punto geográfico compatible con PostGIS~\cite{postgisdocs} mediante TypeORM~\cite{typeorm}, utilizando el sistema de referencia SRID 4326. El siguiente fragmento muestra la definición del campo en la entidad \texttt{Event}:
 
 \begin{lstlisting}[language=JavaScript, caption={Definición del campo geográfico en la entidad Event con TypeORM}]
 @Entity({ name: 'events' })

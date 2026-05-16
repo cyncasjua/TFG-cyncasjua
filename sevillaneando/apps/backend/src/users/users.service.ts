@@ -7,13 +7,15 @@ import type { GeoJsonPoint } from '../common/geojson-point';
 import { Categoria } from '../categorias/categoria.entity';
 import { normalizeInteres, normalizeIntereses } from './enums/interes-categoria.enum';
 import { FirebaseService } from '../auth/firebase.service';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
     @InjectRepository(Categoria) private readonly categoriaRepo: Repository<Categoria>,
-    @Inject(forwardRef(() => FirebaseService)) private readonly firebaseService: FirebaseService
+    @Inject(forwardRef(() => FirebaseService)) private readonly firebaseService: FirebaseService,
+    private readonly cloudinaryService: CloudinaryService
   ) {}
 
   private async resolveIntereses(values: unknown): Promise<string[]> {
@@ -55,10 +57,12 @@ export class UsersService {
         contrasena: null,
         ubicacion: null,
         fotoPerfil: null,
+        fotoPerfilPublicId: null,
         intereses: [],
         categoryOrder: [],
         radiusOptions: [],
         rol: RolEnum.USER,
+        privacyAcceptedAt: new Date(),
       });
       await this.usersRepo.save(user);
     } else {
@@ -100,6 +104,7 @@ export class UsersService {
       email?: string;
       ubicacion?: GeoJsonPoint;
       fotoPerfil?: string;
+      fotoPerfilPublicId?: string;
       intereses?: string[];
       categoryOrder?: string[];
       radiusOptions?: number[];
@@ -110,6 +115,7 @@ export class UsersService {
     if (data.email !== undefined) user.email = data.email;
     if (data.ubicacion !== undefined) user.ubicacion = data.ubicacion;
     if (data.fotoPerfil !== undefined) user.fotoPerfil = data.fotoPerfil;
+    if (data.fotoPerfilPublicId !== undefined) user.fotoPerfilPublicId = data.fotoPerfilPublicId;
     if (data.intereses !== undefined) user.intereses = await this.resolveIntereses(data.intereses);
     if (data.categoryOrder !== undefined) user.categoryOrder = data.categoryOrder;
     if (data.radiusOptions !== undefined) user.radiusOptions = data.radiusOptions;
@@ -145,6 +151,14 @@ export class UsersService {
   }
 
   private async deleteDbRecordsById(id: string): Promise<void> {
+    const user = await this.usersRepo.findOne({ where: { id } });
+    if (user?.fotoPerfilPublicId) {
+      try {
+        await this.cloudinaryService.deleteImage(user.fotoPerfilPublicId);
+      } catch (e) {
+        console.error(`[UserDeletion] Failed to delete Cloudinary image for user ${id}:`, e);
+      }
+    }
     const em = this.usersRepo.manager;
     await em.query('DELETE FROM user_seguidores WHERE seguidor_id = $1 OR seguido_id = $1', [id]);
     await em.query('DELETE FROM user_saved_events WHERE user_id = $1', [id]);

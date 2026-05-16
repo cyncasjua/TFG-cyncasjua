@@ -44,6 +44,12 @@ export class User {
   @Column({ type: 'text', nullable: true })
   fotoPerfil!: string | null;
 
+  @Column({ nullable: true })
+  fotoPerfilPublicId!: string | null;
+
+  @Column({ nullable: true })
+  privacyAcceptedAt!: Date | null;
+
   @ApiProperty({ description: 'Categorías de interés del usuario', type: [String] })
   @Column({ type: 'text', array: true, default: '{}' })
   intereses!: string[];

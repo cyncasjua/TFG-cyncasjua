@@ -1,6 +1,7 @@
 import { Controller, Get, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { ScrapingScheduler } from './scraping.scheduler';
 import { NotificacionesScheduler } from './notificaciones.scheduler';
+import { PurgaDatosScheduler } from './purga-datos.scheduler';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Scheduler')
@@ -8,7 +9,8 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 export class SchedulerController {
   constructor(
     private readonly scrapingScheduler: ScrapingScheduler,
-    private readonly notificacionesScheduler: NotificacionesScheduler
+    private readonly notificacionesScheduler: NotificacionesScheduler,
+    private readonly purgaDatosScheduler: PurgaDatosScheduler
   ) {}
 
   @Get('health')
@@ -52,5 +54,20 @@ export class SchedulerController {
       this.notificacionesScheduler.notificarEventosMenos24h(),
     ]).catch(() => {});
     return { status: 'ok', job: 'notifications' };
+  }
+
+  @Post('run-purga-datos')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Purgar datos huérfanos RGPD (trigger HTTP para Cloud Scheduler o uso manual)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Purga lanzada',
+    schema: { example: { status: 'ok', job: 'purga-datos' } },
+  })
+  runPurgaDatos() {
+    this.purgaDatosScheduler.purgarMensajesHuerfanos().catch(() => {});
+    return { status: 'ok', job: 'purga-datos' };
   }
 }

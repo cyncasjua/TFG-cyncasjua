@@ -14,6 +14,8 @@ const makeUser = (overrides: DeepPartial<User> = {}): User => {
   base.contrasena = null;
   base.ubicacion = null;
   base.fotoPerfil = null;
+  base.fotoPerfilPublicId = null;
+  base.privacyAcceptedAt = null;
   base.intereses = [];
   base.categoryOrder = [];
   base.radiusOptions = [];
@@ -64,7 +66,12 @@ const createUserRepo = () =>
   } as unknown as Repository<User>);
 
 const createService = (repo: Repository<User>) =>
-  new UsersService(repo, {} as Repository<Categoria>, {} as FirebaseService);
+  new UsersService(
+    repo,
+    {} as Repository<Categoria>,
+    {} as FirebaseService,
+    { deleteImage: jest.fn<() => Promise<void>>().mockResolvedValue() } as any
+  );
 
 describe('UsersService', () => {
   beforeEach(() => {

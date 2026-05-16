@@ -60,7 +60,7 @@ En este apartado se describe la metodología seguida durante el proyecto, organi
 
 \subsection{Metodología de gestión del proyecto}
 
-El desarrollo del proyecto se ha llevado a cabo mediante una adaptación de la metodología ágil Scrum, ajustada al contexto de un Trabajo de Fin de Grado.
+El desarrollo del proyecto se ha llevado a cabo mediante una adaptación de la metodología ágil Scrum~\cite{scrumguide2020}, ajustada al contexto de un Trabajo de Fin de Grado.
 
 Al tratarse de un equipo unipersonal, la desarrolladora ha asumido simultáneamente los roles de \textit{Product Owner}, \textit{Scrum Master} y desarrolladora. Esto ha permitido una toma de decisiones ágil, aunque también ha requerido una mayor disciplina en la autogestión del tiempo y las prioridades.
 
@@ -72,7 +72,7 @@ Para la gestión del backlog y el seguimiento de tareas se han utilizado \textbf
 
 La estimación de tareas se ha realizado mediante la técnica de tallas de camiseta (\textit{T-shirt sizing}), que asigna un tamaño relativo a cada historia: XS (extra pequeña), S (pequeña), M (mediana), L (grande) y XL (extra grande). La talla se define en función de la complejidad, el riesgo y la cantidad de trabajo, comparando cada historia con otras ya conocidas. Esta estimación permite priorizar el backlog combinando valor (prioridad) y esfuerzo (talla), facilitando la planificación ágil y la selección de historias por sprint.
 
-Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}, que automatiza los despliegues y la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
+Adicionalmente, se ha configurado un pipeline de integración y entrega continua (CI/CD) mediante \textbf{GitHub Actions}~\cite{githubactions}, que automatiza los despliegues y la ejecución del linter y las comprobaciones de formato en cada push, contribuyendo a mantener la calidad del código a lo largo del desarrollo.
 
 \subsection{Metodología de gestión del código fuente}
 
@@ -80,7 +80,7 @@ Para la gestión del código fuente se ha utilizado un sistema de control de ver
 
 Se ha seguido una política de ramas sencilla basada en \textit{main}, para la versión estable; \textit{develop}, para la integración de nuevas funcionalidades antes de fusionarlas en \textit{main}; y ramas de funcionalidad (\textit{feature/*}), derivadas de \textit{develop}.
 
-Además, se ha aplicado el estándar \textit{Conventional Commits} para mantener un historial de cambios claro y estructurado, siguiendo la siguiente convención:
+Además, se ha aplicado el estándar \textit{Conventional Commits}~\cite{conventionalcommits} para mantener un historial de cambios claro y estructurado, siguiendo la siguiente convención:
 
 \begin{center}
 \texttt{<tipo> [alcance opcional]: <descripción corta>}
@@ -108,7 +108,7 @@ También se ha seguido un versionado semántico de tres niveles (X.Y.Z) para la 
 
 \subsection{Metodología de seguimiento del tiempo}
 
-El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en las distintas actividades del trabajo y contrastarlo posteriormente con las fases de planificación. El informe detallado de horas se recoge en el Anexo~\ref{anexo:reporte_horas}.
+El seguimiento del tiempo dedicado al proyecto se ha realizado con la herramienta \textbf{Clockify}~\cite{clockify}, lo que ha permitido monitorizar el esfuerzo real invertido en las distintas actividades del trabajo y contrastarlo posteriormente con las fases de planificación. El informe detallado de horas se recoge en el Anexo~\ref{anexo:reporte_horas}.
 
 \section{Planificación}
 
@@ -202,6 +202,49 @@ A lo largo del proyecto se han producido algunas desviaciones respecto a la plan
     \item \textbf{Impacto de las fechas del scraping en el sistema de rutas} \textit{(Fase 3 – Sprint 5)}: los problemas de normalización de fechas descritos en el punto anterior tuvieron también un efecto directo sobre el sistema de rutas recomendadas, cuyo desarrollo se concentró en el Sprint 5. Las rutas agrupan eventos por fecha como criterio de organización, por lo que los eventos del scraping que presentaban un calendario de fechas múltiples o indeterminadas no podían tratarse del mismo modo que los eventos con fecha única. Como solución, se decidió que cuando un evento procedente del scraping viene asociado a un calendario de sesiones, la fecha deja de usarse como factor de puntuación en la construcción de la ruta; en su lugar, se indica que existen varias fechas disponibles y el criterio de ordenación pasa a ser principalmente la distancia entre eventos. Fue necesario adaptar la lógica del algoritmo para detectar este caso y aplicar la estrategia adecuada. Esta incidencia supuso una desviación de aproximadamente 4--5 horas adicionales sobre las 12--14 horas estimadas para el algoritmo de rutas.
 
     \item \textbf{Problemas de compatibilidad con Android} \textit{(Fases 5 y 6 – Sprints 5 y 6)}: durante la fase de pruebas con usuarios piloto, llevada a cabo en el Sprint 5, se detectaron incidencias significativas en dispositivos Android que no habían aparecido durante el desarrollo, realizado íntegramente sobre iOS. Los principales problemas fueron la no visualización del mapa (OpenStreetMap) en Android y varios descuadres en la disposición de elementos de pantalla. La corrección de estas incidencias se extendió hasta el Sprint 6 y supuso una dedicación adicional de aproximadamente 7--8 horas no previstas en la planificación original. Esta desviación pone de manifiesto la importancia de incorporar pruebas sobre ambas plataformas desde las primeras fases del desarrollo.
+\end{itemize}
+
+\paragraph{Resumen cuantitativo de desviaciones.}
+
+La tabla~\ref{tab:desviaciones_horas} recoge las principales partidas donde se produjo una desviación significativa entre la estimación inicial y el esfuerzo real registrado en Clockify:
+
+\begin{table}[H]
+\centering
+\caption{Resumen cuantitativo de desviaciones por área}
+\label{tab:desviaciones_horas}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|r|r|r|l|}
+\hline
+\textbf{Área} & \textbf{Horas estimadas} & \textbf{Horas reales (aprox.)} & \textbf{Desviación} & \textbf{Causa principal} \\
+\hline
+Motor de scraping & 10--15 h & $\sim$30 h & +15--20 h & Variabilidad de fuentes, gestión 429, clasificación \\
+\hline
+Sistema de rutas & 12--14 h & $\sim$18--19 h & +5--7 h & Impacto de fechas múltiples del scraping \\
+\hline
+Compatibilidad Android & 0 h (no previsto) & $\sim$7--8 h & +7--8 h & Desarrollo solo sobre iOS hasta la fase de pruebas \\
+\hline
+CI/CD y calidad de código & 0 h (no previsto) & $\sim$9--10 h & +9--10 h & Decisión durante el Sprint 6 de automatizar checks \\
+\hline
+Funcionalidades opcionales (Fase 5) & 10 h & $\sim$3--4 h & $-$6--7 h & Reasignadas al desarrollo core \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+En conjunto, las desviaciones al alza superan a las bajistas, lo que supone que el esfuerzo real del proyecto fue sensiblemente superior a las 300 horas presupuestadas. Esta diferencia no se considera un fracaso de planificación, sino un resultado habitual en proyectos de desarrollo de software donde el alcance técnico real solo se revela durante la implementación.
+
+\paragraph{Lecciones extraídas de las desviaciones.}
+
+Las desviaciones anteriores permiten identificar mejoras concretas aplicables a futuros proyectos similares:
+
+\begin{itemize}
+    \item \textbf{Sobreestimar el esfuerzo de integración con fuentes externas.} El scraping de datos no estructurados es inherentemente impredecible. En futuros proyectos, se reservará al menos el doble de la estimación inicial para cualquier tarea de ingesta de datos externos, dado que la variabilidad de formatos y los límites de tasa son difíciles de anticipar sin haberlos explorado previamente.
+
+    \item \textbf{Probar en todas las plataformas objetivo desde el primer sprint.} Posponer las pruebas en Android hasta la fase final hizo que los problemas de compatibilidad fueran más costosos de corregir. Incorporar una comprobación básica en Android al final de cada sprint de desarrollo de interfaz habría evitado esa acumulación.
+
+    \item \textbf{Analizar dependencias entre módulos antes de cerrar las estimaciones.} La relación entre el scraping y el sistema de rutas no estaba prevista; los problemas de normalización de fechas de uno repercutieron en la lógica del otro. Un análisis de dependencias en la fase de diseño habría permitido secuenciar el desarrollo en el orden adecuado.
+
+    \item \textbf{Incluir una partida explícita para calidad e infraestructura técnica.} La configuración de CI/CD y los ajustes de linter forman parte integral de un proyecto profesional. Contemplarlos desde el inicio evita que aparezcan como sobrecarga imprevista al final del proyecto.
 \end{itemize}
 
 En términos generales, el proyecto se ha completado dentro del plazo establecido y con el alcance funcional definido como prioritario, asumiendo las desviaciones anteriores como decisiones justificadas de gestión del alcance. El seguimiento realizado con Clockify se recoge en el Anexo~\ref{anexo:reporte_horas} y sirve como evidencia del orden de magnitud del trabajo, aunque para el presupuesto se emplea una estimación redondeada por fases, definida en la Sección de Presupuesto.
