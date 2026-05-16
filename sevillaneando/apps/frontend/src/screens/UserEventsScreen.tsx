@@ -72,9 +72,17 @@ export const UserEventsScreen: React.FC = () => {
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedTitle style={styles.title}>Mis eventos</ThemedTitle>
       <ThemedView
-        style={[styles.infoBox, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '44' }]}
+        style={[
+          styles.infoBox,
+          { backgroundColor: colors.primary + '18', borderColor: colors.primary + '44' },
+        ]}
       >
-        <Icon name="information-outline" size={18} color={colors.primary} style={{ marginTop: 1 }} />
+        <Icon
+          name="information-outline"
+          size={18}
+          color={colors.primary}
+          style={{ marginTop: 1 }}
+        />
         <ThemedTextSecondary style={styles.infoText}>
           ¿Quieres saber el estado de un evento en moderación o proponer una mejora? Escríbele a{' '}
           <ThemedText style={[styles.infoHighlight, { color: colors.primary }]}>
