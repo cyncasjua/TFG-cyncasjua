@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput, StyleSheet, View, TouchableOpacity } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TextInput,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';

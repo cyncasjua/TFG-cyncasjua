@@ -39,9 +39,7 @@ export const UserEventsScreen: React.FC = () => {
       const visible = allEvents.filter(
         (e) => e.privado || e.estado === 'Aprobado' || e.estado === 'Rechazado'
       );
-      const pending = allEvents.filter(
-        (e) => !e.privado && e.estado === 'Pendiente'
-      ).length;
+      const pending = allEvents.filter((e) => !e.privado && e.estado === 'Pendiente').length;
       setEvents(visible);
       setPendingCount(pending);
     } catch (err) {
@@ -107,10 +105,7 @@ export const UserEventsScreen: React.FC = () => {
       </ThemedView>
       {pendingCount > 0 && (
         <ThemedView
-          style={[
-            styles.infoBox,
-            { backgroundColor: '#e6740018', borderColor: '#e6740044' },
-          ]}
+          style={[styles.infoBox, { backgroundColor: '#e6740018', borderColor: '#e6740044' }]}
         >
           <Icon name="clock-outline" size={18} color="#e67400" style={{ marginTop: 1 }} />
           <ThemedTextSecondary style={styles.infoText}>
@@ -118,7 +113,9 @@ export const UserEventsScreen: React.FC = () => {
             <ThemedText style={[styles.infoHighlight, { color: '#e67400' }]}>
               {pendingCount} {pendingCount === 1 ? 'evento público' : 'eventos públicos'}
             </ThemedText>{' '}
-            pendiente{pendingCount > 1 ? 's' : ''} de moderación. No {pendingCount === 1 ? 'aparece' : 'aparecen'} aquí hasta que {pendingCount === 1 ? 'sea aprobado' : 'sean aprobados'}.
+            pendiente{pendingCount > 1 ? 's' : ''} de moderación. No{' '}
+            {pendingCount === 1 ? 'aparece' : 'aparecen'} aquí hasta que{' '}
+            {pendingCount === 1 ? 'sea aprobado' : 'sean aprobados'}.
           </ThemedTextSecondary>
         </ThemedView>
       )}

@@ -200,7 +200,10 @@ export const AdminScreen: React.FC<Props> = () => {
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
-            style={[styles.tab, activeTab === tab.key && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            style={[
+              styles.tab,
+              activeTab === tab.key && { borderBottomColor: colors.primary, borderBottomWidth: 2 },
+            ]}
             onPress={() => setActiveTab(tab.key)}
           >
             <MaterialIcons
@@ -209,7 +212,10 @@ export const AdminScreen: React.FC<Props> = () => {
               color={activeTab === tab.key ? colors.primary : colors.textSecondary}
             />
             <ThemedText
-              style={[styles.tabLabel, { color: activeTab === tab.key ? colors.primary : colors.textSecondary }]}
+              style={[
+                styles.tabLabel,
+                { color: activeTab === tab.key ? colors.primary : colors.textSecondary },
+              ]}
             >
               {tab.label}
             </ThemedText>
@@ -233,27 +239,39 @@ export const AdminScreen: React.FC<Props> = () => {
                 <ThemedText style={styles.statsTitle}>Eventos</ThemedText>
                 <View style={styles.statsGrid}>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>{stats.totalEventos}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                      {stats.totalEventos}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>Total</ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>{stats.eventosAprobados}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                      {stats.eventosAprobados}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>Aprobados</ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: '#e67e22' }]}>{stats.eventosPendientes}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: '#e67e22' }]}>
+                      {stats.eventosPendientes}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>Pendientes</ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: colors.error }]}>{stats.eventosRechazados}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: colors.error }]}>
+                      {stats.eventosRechazados}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>Rechazados</ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>{stats.eventosScrapeados}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                      {stats.eventosScrapeados}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>Scrapeados</ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>{stats.eventosUsuario}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                      {stats.eventosUsuario}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>De usuarios</ThemedTextSecondary>
                   </View>
                 </View>
@@ -262,7 +280,9 @@ export const AdminScreen: React.FC<Props> = () => {
                 <ThemedText style={styles.statsTitle}>Usuarios</ThemedText>
                 <View style={styles.statsGrid}>
                   <View style={styles.statItem}>
-                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>{stats.totalUsuarios}</ThemedText>
+                    <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                      {stats.totalUsuarios}
+                    </ThemedText>
                     <ThemedTextSecondary style={styles.statLabel}>Registrados</ThemedTextSecondary>
                   </View>
                 </View>
@@ -289,7 +309,10 @@ export const AdminScreen: React.FC<Props> = () => {
               </ThemedView>
               <ThemedView>
                 <TouchableOpacity
-                  onPress={() => { setSelectedUser(item); setShowModal(true); }}
+                  onPress={() => {
+                    setSelectedUser(item);
+                    setShowModal(true);
+                  }}
                   style={styles.iconButton}
                   accessibilityLabel="Editar rol"
                 >
@@ -314,7 +337,8 @@ export const AdminScreen: React.FC<Props> = () => {
           <ThemedCard style={styles.statsCard}>
             <ThemedText style={styles.statsTitle}>Gestión de scraping</ThemedText>
             <ThemedTextSecondary style={{ marginBottom: 16, lineHeight: 20 }}>
-              Borra todos los eventos scrapeados automáticamente y los vuelve a generar desde las fuentes externas. Puede tardar varios minutos.
+              Borra todos los eventos scrapeados automáticamente y los vuelve a generar desde las
+              fuentes externas. Puede tardar varios minutos.
             </ThemedTextSecondary>
             <ThemedButton
               title={resetting ? 'Restableciendo...' : 'Restablecer eventos scrapeados'}
@@ -341,9 +365,13 @@ export const AdminScreen: React.FC<Props> = () => {
               {['admin', 'moderator', 'user'].map((role) => (
                 <ThemedButton
                   key={role}
-                  title={changingRole ? 'Actualizando...' : role.charAt(0).toUpperCase() + role.slice(1)}
+                  title={
+                    changingRole ? 'Actualizando...' : role.charAt(0).toUpperCase() + role.slice(1)
+                  }
                   variant={selectedUser.rol === role ? 'primary' : 'secondary'}
-                  onPress={() => changeRole(selectedUser.id, role as 'admin' | 'moderator' | 'user')}
+                  onPress={() =>
+                    changeRole(selectedUser.id, role as 'admin' | 'moderator' | 'user')
+                  }
                   disabled={changingRole}
                   style={styles.roleOption}
                 />
@@ -366,7 +394,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16, paddingTop: 0 },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 8 },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, marginBottom: 12 },
-  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10 },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+  },
   tabLabel: { fontSize: 13, fontWeight: '600' },
   tabContent: { paddingBottom: 24 },
   emptyStats: { alignItems: 'center', marginTop: 60, gap: 12 },
@@ -377,14 +412,29 @@ const styles = StyleSheet.create({
   statItem: { width: '30%', alignItems: 'center', paddingVertical: 6 },
   statValue: { fontSize: 22, fontWeight: '800' },
   statLabel: { fontSize: 11, textAlign: 'center', marginTop: 2 },
-  userCard: { marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  userCard: {
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   userInfo: { flex: 1 },
   userName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   userEmail: { fontSize: 13, marginBottom: 4 },
   userRole: { fontSize: 12, fontWeight: '600' },
-  iconButton: { paddingHorizontal: 10, paddingVertical: 6, alignItems: 'center', justifyContent: 'center' },
+  iconButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   modalOverlay: { flex: 1, justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 35, borderTopRightRadius: 35, padding: 20, paddingBottom: 30 },
+  modalContent: {
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    padding: 20,
+    paddingBottom: 30,
+  },
   modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16 },
   roleOption: { marginBottom: 10 },
   closeButton: { marginTop: 12 },
