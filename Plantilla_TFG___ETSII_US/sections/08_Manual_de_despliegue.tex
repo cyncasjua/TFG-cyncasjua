@@ -126,6 +126,14 @@ En producción, la conexión a la base de datos debe realizarse mediante SSL. En
 DATABASE_SSL=true
 \end{lstlisting}
 
+\subsection{Creación del esquema de base de datos en producción}
+
+En producción, TypeORM tiene la opción \texttt{synchronize} desactivada para evitar que altere el esquema automáticamente. Por tanto, las tablas deben existir antes del primer arranque del backend.
+
+La forma más sencilla para un entorno académico es lanzar el backend una única vez apuntando a la base de datos de producción pero con \texttt{NODE\_ENV=development}, de modo que TypeORM cree todas las tablas. Para ello, configurar temporalmente las variables \texttt{DATABASE\_*} en \texttt{.env.development} con los datos de la BD de producción y arrancar con \texttt{npm run start:dev}. Una vez creadas las tablas, revertir \texttt{.env.development} a los valores locales.
+
+Alternativamente, si el proveedor permite conectarse directamente, ejecutar el backend en modo producción con \texttt{synchronize: true} temporalmente (modificando \texttt{app.module.ts} para la primera puesta en marcha y revirtiendo el cambio tras el primer arranque).
+
 \subsection{Activación de Row-Level Security (RLS)}
 
 Si se utiliza \textbf{Supabase} como proveedor de base de datos, es imprescindible activar las políticas de seguridad a nivel de fila (\textit{Row-Level Security}) en todas las tablas del esquema público. Supabase notifica mediante un aviso de seguridad crítico cuando estas políticas no están configuradas, ya que sin ellas cualquier petición autenticada puede acceder a todos los registros.
@@ -188,7 +196,7 @@ El backend requiere las siguientes variables de entorno en producción. Deben co
 NODE_ENV=production
 PORT=3000
 
-# Base de datos
+# Base de datos (servicio gestionado, SSL obligatorio)
 DATABASE_HOST=<host-del-servicio-gestionado>
 DATABASE_PORT=5432
 DATABASE_USER=postgres
@@ -196,12 +204,14 @@ DATABASE_PASSWORD=<password-segura>
 DATABASE_NAME=sevillaneando
 DATABASE_SSL=true
 
-# CORS
-ALLOWED_ORIGINS=https://sevillaneando-backend.onrender.com
+# CORS: dejar vacio si solo hay clientes moviles nativos.
+# Si se accede a Swagger desde navegador, anadir el dominio del frontend web.
+ALLOWED_ORIGINS=
 
 # Firebase Authentication (Admin SDK)
 FIREBASE_PROJECT_ID=<proyecto-firebase>
 FIREBASE_CLIENT_EMAIL=<email-service-account>
+# Incluir los \n literales: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 FIREBASE_PRIVATE_KEY=<clave-privada-firebase>
 
 # Cloudinary
@@ -212,9 +222,15 @@ CLOUDINARY_API_SECRET=<api-secret>
 # APIs externas
 TICKETMASTER_API_KEY=<api-key>
 GEMINI_API_KEY=<api-key>
+
+# Usuario de sistema para scraping
+SCRAPER_SYSTEM_UID=system-scraper-uid
+SCRAPER_SYSTEM_EMAIL=scraper.bot@sevillaneando.local
+SCRAPER_SYSTEM_NAME=Sevillaneando Bot
+LEGACY_SCRAPER_EMAIL=mod@demo.com
 \end{lstlisting}
 
-\textbf{Importante}: la variable \texttt{FIREBASE\_PRIVATE\_KEY} debe incluir los saltos de línea literales (\texttt{\textbackslash n}) exactamente como los proporciona Firebase al descargar el archivo de credenciales.
+\textbf{Importante}: la variable \texttt{FIREBASE\_PRIVATE\_KEY} debe incluir los saltos de línea como \texttt{\textbackslash n} literales dentro de comillas dobles, exactamente como los proporciona Firebase al descargar el archivo de credenciales JSON.
 
 \subsection{Despliegue en Render}
 
@@ -267,7 +283,14 @@ La alternativa adoptada para la demostración en iOS y Android es el uso de \tex
 
 \subsection{Variables de entorno del frontend}
 
-Antes de generar cualquier build, actualizar el archivo \texttt{apps/frontend/.env} con las URLs y credenciales del entorno de producción:
+El frontend dispone de dos ficheros de entorno: \texttt{apps/frontend/.env.development} (para local) y \texttt{apps/frontend/.env.production} (para producción). Para arrancar apuntando al backend de producción sin generar un build completo, ejecutar:
+
+\begin{lstlisting}
+cd apps/frontend
+npm run start:prod   # copia .env.production a .env y lanza Expo
+\end{lstlisting}
+
+El archivo \texttt{apps/frontend/.env.production} debe contener:
 
 \begin{lstlisting}
 EXPO_PUBLIC_API_URL=https://sevillaneando-backend.onrender.com
@@ -277,6 +300,9 @@ EXPO_PUBLIC_FIREBASE_API_KEY=<api-key>
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=<proyecto>.firebaseapp.com
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=<proyecto>
 EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=<proyecto>.appspot.com
+# Android e iOS tienen APP_ID distintos:
+#   iOS:     1:NNNNN:ios:XXXX
+#   Android: 1:NNNNN:android:XXXX
 EXPO_PUBLIC_FIREBASE_APP_ID=<app-id>
 \end{lstlisting}
 

@@ -169,27 +169,42 @@ npm install
 %--------------------------------------------------
 \section{Variables de entorno}
 
-El sistema requiere variables de entorno para conectar con los servicios externos y la base de datos. Deben crearse los archivos \texttt{.env} correspondientes antes de arrancar el sistema.
+El sistema utiliza ficheros \texttt{.env} separados por entorno. Nunca deben incluirse en el repositorio (están en \texttt{.gitignore}). La estructura es la siguiente:
 
-\subsection{Backend (\texttt{apps/backend/.env})}
+\begin{verbatim}
+apps/backend/
+  .env.development   <- valores locales (Docker, localhost, SSL desactivado)
+  .env.production    <- plantilla para produccion (rellenar con secretos reales)
+
+apps/frontend/
+  .env.development   <- apunta al backend local
+  .env.production    <- apunta al backend en produccion
+  .env               <- fichero activo (se genera copiando uno de los anteriores)
+\end{verbatim}
+
+El backend carga automáticamente \texttt{.env.\$\{NODE\_ENV\}} al arrancar gracias a \texttt{ConfigModule}. El frontend requiere un \texttt{.env} activo en su raíz; los scripts \texttt{npm run start:dev} y \texttt{npm run start:prod} copian el fichero correcto antes de lanzar Expo.
+
+\subsection{Backend (\texttt{apps/backend/.env.development})}
 
 \begin{lstlisting}
 NODE_ENV=development
 PORT=3000
 
-# Base de datos
+# Base de datos (Docker local, puerto 5433)
 DATABASE_HOST=localhost
 DATABASE_PORT=5433
 DATABASE_USER=postgres
 DATABASE_PASSWORD=postgres
 DATABASE_NAME=sevillaneando
+DATABASE_SSL=false
 
-# CORS (origenes permitidos)
+# CORS (origenes permitidos en local)
 ALLOWED_ORIGINS=http://localhost:8081,http://localhost:19006
 
 # Firebase Authentication (Admin SDK)
 FIREBASE_PROJECT_ID=...
 FIREBASE_CLIENT_EMAIL=...
+# Incluir los \n literales: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 FIREBASE_PRIVATE_KEY=...
 
 # Cloudinary (imagenes de eventos)
@@ -200,11 +215,19 @@ CLOUDINARY_API_SECRET=...
 # APIs externas
 TICKETMASTER_API_KEY=...
 GEMINI_API_KEY=...
+
+# Usuario de sistema para scraping
+SCRAPER_SYSTEM_UID=system-scraper-uid
+SCRAPER_SYSTEM_EMAIL=scraper.bot@sevillaneando.local
+SCRAPER_SYSTEM_NAME=Sevillaneando Bot
+LEGACY_SCRAPER_EMAIL=mod@demo.com
 \end{lstlisting}
 
-\subsection{Frontend (\texttt{apps/frontend/.env})}
+\subsection{Frontend (\texttt{apps/frontend/.env.development})}
 
 \begin{lstlisting}
+# Para emulador Android usar: http://10.0.2.2:3000
+# Para dispositivo fisico usar la IP local: http://192.168.1.X:3000
 EXPO_PUBLIC_API_URL=http://localhost:3000
 EXPO_PUBLIC_SHARE_BASE_URL=http://localhost:3000/events
 
@@ -213,6 +236,9 @@ EXPO_PUBLIC_FIREBASE_API_KEY=...
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
 EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+# Android e iOS tienen APP_ID distintos:
+#   iOS:     1:NNNNN:ios:XXXX
+#   Android: 1:NNNNN:android:XXXX
 EXPO_PUBLIC_FIREBASE_APP_ID=...
 \end{lstlisting}
 
@@ -244,13 +270,13 @@ El servidor arranca en \texttt{http://localhost:3000}. El modo \texttt{start:dev
 
 \begin{lstlisting}
 cd apps/frontend
-npx expo start
+npm run start:dev
 \end{lstlisting}
 
-Expo levanta el servidor de desarrollo y muestra un código QR. La aplicación puede ejecutarse en:
+Este script copia \texttt{.env.development} a \texttt{.env} y lanza el servidor Expo. La aplicación puede ejecutarse en:
 \begin{itemize}
-    \item Dispositivo físico: escaneando el QR con la aplicación \textbf{Expo Go}.
-    \item Emulador Android: pulsando \texttt{a} en la terminal.
+    \item Dispositivo físico: escaneando el QR con la aplicación \textbf{Expo Go}. La variable \texttt{EXPO\_PUBLIC\_API\_URL} debe apuntar a la IP local de la máquina de desarrollo (no a \texttt{localhost}), por ejemplo \texttt{http://192.168.1.42:3000}.
+    \item Emulador Android: pulsando \texttt{a} en la terminal. Usar \texttt{http://10.0.2.2:3000} como URL del backend, ya que \texttt{localhost} dentro del emulador apunta al propio dispositivo virtual.
     \item Simulador iOS (solo macOS): pulsando \texttt{i}.
 \end{itemize}
 
@@ -421,7 +447,7 @@ El workflow se ejecuta automáticamente sobre las ramas \texttt{main} y \texttt{
 \subsection{Frontend}
 
 \begin{itemize}
-    \item \textbf{No conecta con el backend}: verificar que \texttt{EXPO\_PUBLIC\_API\_URL} apunta a la IP de la máquina de desarrollo (no \texttt{localhost}) cuando se ejecuta en dispositivo físico.
+    \item \textbf{No conecta con el backend}: verificar que \texttt{EXPO\_PUBLIC\_API\_URL} apunta a la IP de la máquina de desarrollo (no \texttt{localhost}) cuando se ejecuta en dispositivo físico. En emulador Android usar \texttt{http://10.0.2.2:3000}.
     \item \textbf{Mapas no visibles}: comprobar que el paquete \texttt{react-native-maps} está correctamente enlazado. En Expo managed workflow esto se gestiona automáticamente.
     \item \textbf{Error de Metro bundler}: limpiar la caché con \texttt{npx expo start --clear}.
 \end{itemize}

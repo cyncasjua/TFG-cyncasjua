@@ -71,6 +71,22 @@ export const UserEventsScreen: React.FC = () => {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedTitle style={styles.title}>Mis eventos</ThemedTitle>
+      <ThemedView
+        style={[styles.infoBox, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '44' }]}
+      >
+        <Icon name="information-outline" size={18} color={colors.primary} style={{ marginTop: 1 }} />
+        <ThemedTextSecondary style={styles.infoText}>
+          ¿Quieres saber el estado de un evento en moderación o proponer una mejora? Escríbele a{' '}
+          <ThemedText style={[styles.infoHighlight, { color: colors.primary }]}>
+            Admin Demo
+          </ThemedText>{' '}
+          o{' '}
+          <ThemedText style={[styles.infoHighlight, { color: colors.primary }]}>
+            Moderator Demo
+          </ThemedText>{' '}
+          desde el chat de la app.
+        </ThemedTextSecondary>
+      </ThemedView>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -174,6 +190,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  infoText: { flex: 1, fontSize: 13, lineHeight: 19 },
+  infoHighlight: { fontWeight: '700' },
   emptyContainer: { alignItems: 'center', marginTop: 60, gap: 12 },
   emptyText: { textAlign: 'center', fontSize: 15, opacity: 0.6, lineHeight: 22 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },

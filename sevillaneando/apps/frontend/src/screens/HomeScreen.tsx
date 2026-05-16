@@ -2027,6 +2027,26 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     navigation.navigate('EditProfile');
                   }}
                 />
+                <TouchableOpacity
+                  style={[
+                    styles.menuContactBanner,
+                    { backgroundColor: colors.primary + '18', borderColor: colors.primary + '55' },
+                  ]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate('Friends');
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <MaterialIcons name="support-agent" size={20} color={colors.primary} />
+                  <ThemedTextSecondary style={styles.menuContactText}>
+                    ¿Sugerencias o dudas sobre moderación?{'\n'}
+                    <Text style={[styles.menuContactHighlight, { color: colors.primary }]}>
+                      Escríbele a Admin Demo o Moderator Demo
+                    </Text>
+                  </ThemedTextSecondary>
+                  <MaterialIcons name="chevron-right" size={18} color={colors.primary} />
+                </TouchableOpacity>
                 <ThemedView style={styles.menuSection}>
                   <ThemedTextSecondary style={{ marginBottom: 8 }}>Tema:</ThemedTextSecondary>
                   <ThemedView style={styles.themeRow}>
@@ -2437,6 +2457,23 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontWeight: '600',
     flex: 1,
+  },
+  menuContactBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 20,
+  },
+  menuContactText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  menuContactHighlight: {
+    fontWeight: '700',
   },
   menuActionBadge: {
     minWidth: 22,

@@ -54,7 +54,7 @@ Se han implementado \textbf{14 pruebas unitarias} sobre \texttt{events.service.t
 
 \subsubsection{RecomendacionesService}
 
-Se han implementado \textbf{5 pruebas unitarias} sobre \texttt{recomendaciones.service.ts}, cubriendo la gestión de eventos guardados y el sistema de valoraciones:
+Se han implementado \textbf{13 pruebas unitarias} sobre \texttt{recomendaciones.service.ts}, cubriendo la gestión de eventos guardados, el sistema de valoraciones y el algoritmo de scoring de recomendaciones:
 
 \begin{longtable}{|p{0.5cm}|p{5.5cm}|p{3.8cm}|p{4.5cm}|}
 \hline
@@ -69,6 +69,22 @@ Se han implementado \textbf{5 pruebas unitarias} sobre \texttt{recomendaciones.s
 4 & Crea una reseña nueva si el usuario no había valorado el evento & \texttt{rateEvent} & Se llama a \texttt{save} con la reseña creada \\
 \hline
 5 & Devuelve valoración vacía si el usuario no tiene reseña & \texttt{getMyEventRating} & Respuesta con \texttt{hasRating: false} y campos nulos \\
+\hline
+6 & Puntúa más alto el evento cuya categoría coincide con los intereses del usuario & \texttt{recommendEvents} & El score del evento de categoría preferida supera al de categoría no preferida \\
+\hline
+7 & Incluye razón de intereses en el evento cuya categoría coincide & \texttt{recommendEvents} & El campo \texttt{reasons} contiene una entrada relativa a intereses \\
+\hline
+8 & No añade razón de intereses si el usuario no tiene intereses configurados & \texttt{recommendEvents} & El campo \texttt{reasons} no menciona intereses cuando el perfil está vacío \\
+\hline
+9 & Puntúa más alto el evento guardado frente a un evento sin historial & \texttt{recommendEvents} & El bonus de \texttt{eventosGuardados} eleva el score del evento ya guardado \\
+\hline
+10 & Filtra eventos fuera del radio cuando se pasa ubicación del usuario & \texttt{recommendEvents} & El evento en Madrid no aparece en resultados con radio de 10~km centrado en Sevilla \\
+\hline
+11 & Respeta el límite de resultados indicado & \texttt{recommendEvents} & La respuesta contiene como máximo el número de eventos solicitado \\
+\hline
+12 & Normaliza categorías con acento --- ``Música'' coincide con interés ``musica'' & \texttt{recommendEvents} & La normalización NFD equipara categoría acentuada con interés sin acento \\
+\hline
+13 & Devuelve todos los criterios esperados en la respuesta & \texttt{recommendEvents} & El campo \texttt{criterios} incluye intereses-perfil, distancia, fecha y demás dimensiones \\
 \hline
 \end{longtable}
 
@@ -118,7 +134,7 @@ Se han implementado \textbf{17 pruebas unitarias} sobre \texttt{users.service.ts
 
 \subsection{Resumen de pruebas unitarias}
 
-En total se han implementado \textbf{36 pruebas unitarias automatizadas} sobre los tres servicios de mayor complejidad lógica del backend. La ejecución con \texttt{npm run test} produce el siguiente resultado:
+En total se han implementado \textbf{44 pruebas unitarias automatizadas} sobre los tres servicios de mayor complejidad lógica del backend. La ejecución con \texttt{npm run test} produce el siguiente resultado:
 
 \begin{verbatim}
 PASS  tests/events/events.service.spec.ts
@@ -126,7 +142,7 @@ PASS  tests/recomendaciones/recomendaciones.service.spec.ts
 PASS  tests/users/users.service.spec.ts
 
 Test Suites: 3 passed, 3 total
-Tests:       36 passed, 36 total
+Tests:       44 passed, 44 total
 Time:        5.904 s
 \end{verbatim}
 
@@ -138,11 +154,11 @@ Time:        5.904 s
 \hline
 \texttt{EventsService} & 14 & Todas superadas \\
 \hline
-\texttt{RecomendacionesService} & 5 & Todas superadas \\
+\texttt{RecomendacionesService} & 13 & Todas superadas \\
 \hline
 \texttt{UsersService} & 17 & Todas superadas \\
 \hline
-\textbf{Total} & \textbf{36} & \textbf{36/36 superadas} \\
+\textbf{Total} & \textbf{44} & \textbf{44/44 superadas} \\
 \hline
 \end{tabular}
 \caption{Resumen de pruebas unitarias del backend}
@@ -423,6 +439,6 @@ Todos los casos de prueba han sido superados satisfactoriamente. El sistema se c
 
 El plan de pruebas del sistema \textbf{Sevillaneando} ha combinado pruebas unitarias automatizadas del backend y pruebas de aceptación manuales ejecutadas sobre dispositivos reales, cubriendo los principales requisitos funcionales del sistema.
 
-Las \textbf{36 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go mediante túnel y backend desplegado en Render).
+Las \textbf{44 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. En particular, las 8 pruebas añadidas sobre el algoritmo de scoring de \texttt{RecomendacionesService} verifican aspectos críticos como la influencia de los intereses del usuario en la puntuación, el filtrado por radio geográfico, el bonus por historial de guardado y la normalización de acentos en categorías. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go mediante túnel y backend desplegado en Render).
 
 El resultado global es que todos los casos de prueba han sido superados, lo que valida que el sistema cumple con los requisitos funcionales definidos y que los principales flujos de uso de la aplicación funcionan de forma correcta y coherente.

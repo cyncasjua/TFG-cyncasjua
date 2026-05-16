@@ -128,6 +128,16 @@ const SECTIONS: Section[] = [
       'Cada evento público tiene un chat en tiempo real visible en su pantalla de detalle.\n\n' +
       'Cualquier usuario puede participar en el chat del evento. Puedes enviar texto e imágenes.',
   },
+  {
+    icon: 'message-question-outline',
+    title: 'Contacto y soporte',
+    content:
+      '¿Tienes alguna sugerencia de mejora o quieres saber el estado de un evento que has enviado a moderación?\n\n' +
+      'Puedes ponerte en contacto directamente con el equipo de la app a través del chat interno:\n\n' +
+      '• Admin Demo\n' +
+      '• Moderator Demo\n\n' +
+      'Búscalos en "Amigos" → busca por su nombre y envíales un mensaje privado.',
+  },
 ];
 
 export const HelpScreen: React.FC = () => {
