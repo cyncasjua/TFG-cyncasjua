@@ -787,7 +787,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               </>
             )}
 
-            <ThemedText style={styles.label}>Categoría</ThemedText>
+            <ThemedText style={styles.label}>Categoría *</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (

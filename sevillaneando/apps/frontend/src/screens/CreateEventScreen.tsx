@@ -727,7 +727,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 />
               </>
             )}
-            <ThemedText style={styles.label}>Categoría</ThemedText>
+            <ThemedText style={styles.label}>Categoría *</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (

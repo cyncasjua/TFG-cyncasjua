@@ -26,6 +26,7 @@ export const UserEventsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'UserEvents'>>();
 
   const [events, setEvents] = useState<Event[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchUserEvents = useCallback(async () => {
@@ -33,7 +34,16 @@ export const UserEventsScreen: React.FC = () => {
     setLoading(true);
     try {
       const res = await api.get(`/events/user/${user.id}`);
-      setEvents(res.data);
+      const allEvents: Event[] = res.data;
+      // Eventos públicos pendientes están en moderación: no mostrarlos
+      const visible = allEvents.filter(
+        (e) => e.privado || e.estado === 'Aprobado' || e.estado === 'Rechazado'
+      );
+      const pending = allEvents.filter(
+        (e) => !e.privado && e.estado === 'Pendiente'
+      ).length;
+      setEvents(visible);
+      setPendingCount(pending);
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));
     } finally {
@@ -95,6 +105,23 @@ export const UserEventsScreen: React.FC = () => {
           desde el chat de la app.
         </ThemedTextSecondary>
       </ThemedView>
+      {pendingCount > 0 && (
+        <ThemedView
+          style={[
+            styles.infoBox,
+            { backgroundColor: '#e6740018', borderColor: '#e6740044' },
+          ]}
+        >
+          <Icon name="clock-outline" size={18} color="#e67400" style={{ marginTop: 1 }} />
+          <ThemedTextSecondary style={styles.infoText}>
+            Tienes{' '}
+            <ThemedText style={[styles.infoHighlight, { color: '#e67400' }]}>
+              {pendingCount} {pendingCount === 1 ? 'evento público' : 'eventos públicos'}
+            </ThemedText>{' '}
+            pendiente{pendingCount > 1 ? 's' : ''} de moderación. No {pendingCount === 1 ? 'aparece' : 'aparecen'} aquí hasta que {pendingCount === 1 ? 'sea aprobado' : 'sean aprobados'}.
+          </ThemedTextSecondary>
+        </ThemedView>
+      )}
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -110,15 +137,35 @@ export const UserEventsScreen: React.FC = () => {
                 },
               ]}
             >
-              <Image
-                source={
-                  getFullImageUrl(item.imagen)
-                    ? { uri: getFullImageUrl(item.imagen)! }
-                    : require('../../assets/splash.png')
-                }
-                style={styles.image}
-                resizeMode="cover"
-              />
+              <View style={{ position: 'relative' }}>
+                <Image
+                  source={
+                    getFullImageUrl(item.imagen)
+                      ? { uri: getFullImageUrl(item.imagen)! }
+                      : require('../../assets/splash.png')
+                  }
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+                {item.estado === 'Rechazado' && (
+                  <View style={[styles.estadoBadge, { backgroundColor: '#d32f2f' }]}>
+                    <Icon name="close-circle-outline" size={13} color="#fff" />
+                    <ThemedText style={styles.estadoBadgeText}>Rechazado</ThemedText>
+                  </View>
+                )}
+                {item.estado === 'Aprobado' && !item.privado && (
+                  <View style={[styles.estadoBadge, { backgroundColor: '#4caf50' }]}>
+                    <Icon name="check-circle-outline" size={13} color="#fff" />
+                    <ThemedText style={styles.estadoBadgeText}>Aprobado</ThemedText>
+                  </View>
+                )}
+                {item.privado && (
+                  <View style={[styles.estadoBadge, { backgroundColor: '#5c6bc0' }]}>
+                    <Icon name="lock-outline" size={13} color="#fff" />
+                    <ThemedText style={styles.estadoBadgeText}>Privado</ThemedText>
+                  </View>
+                )}
+              </View>
               <ThemedText style={styles.eventTitle}>{item.title}</ThemedText>
               <ThemedText style={styles.eventDesc} numberOfLines={2}>
                 {item.description}
@@ -209,6 +256,18 @@ const styles = StyleSheet.create({
   },
   infoText: { flex: 1, fontSize: 13, lineHeight: 19 },
   infoHighlight: { fontWeight: '700' },
+  estadoBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  estadoBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   emptyContainer: { alignItems: 'center', marginTop: 60, gap: 12 },
   emptyText: { textAlign: 'center', fontSize: 15, opacity: 0.6, lineHeight: 22 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },

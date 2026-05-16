@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, TextInput, StyleSheet, View, TouchableOpacity } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -22,6 +23,9 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const [repeatPassword, setRepeatPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showRepeat, setShowRepeat] = useState(false);
 
   const esFirebase = !!user?.firebaseUid;
 
@@ -115,33 +119,48 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ThemedTitle style={styles.title}>Cambiar contraseña</ThemedTitle>
-      <TextInput
-        placeholder="Contraseña actual"
-        placeholderTextColor={colors.text + '99'}
-        secureTextEntry
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Nueva contraseña"
-        placeholderTextColor={colors.text + '99'}
-        secureTextEntry
-        value={newPassword}
-        onChangeText={setNewPassword}
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Repite la nueva contraseña"
-        placeholderTextColor={colors.text + '99'}
-        secureTextEntry
-        value={repeatPassword}
-        onChangeText={setRepeatPassword}
-        style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-        autoCapitalize="none"
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          placeholder="Contraseña actual"
+          placeholderTextColor={colors.text + '99'}
+          secureTextEntry={!showCurrent}
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity style={styles.eyeButton} onPress={() => setShowCurrent(!showCurrent)}>
+          <Ionicons name={showCurrent ? 'eye-off' : 'eye'} size={22} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          placeholder="Nueva contraseña"
+          placeholderTextColor={colors.text + '99'}
+          secureTextEntry={!showNew}
+          value={newPassword}
+          onChangeText={setNewPassword}
+          style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity style={styles.eyeButton} onPress={() => setShowNew(!showNew)}>
+          <Ionicons name={showNew ? 'eye-off' : 'eye'} size={22} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          placeholder="Repite la nueva contraseña"
+          placeholderTextColor={colors.text + '99'}
+          secureTextEntry={!showRepeat}
+          value={repeatPassword}
+          onChangeText={setRepeatPassword}
+          style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity style={styles.eyeButton} onPress={() => setShowRepeat(!showRepeat)}>
+          <Ionicons name={showRepeat ? 'eye-off' : 'eye'} size={22} color={colors.text} />
+        </TouchableOpacity>
+      </View>
       {error && <ThemedText style={{ color: '#d32f2f', marginBottom: 8 }}>{error}</ThemedText>}
       <ThemedButton
         title={loading ? 'Cambiando...' : 'Cambiar contraseña'}
@@ -162,13 +181,15 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, justifyContent: 'center' },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 24, alignSelf: 'center' },
+  inputWrapper: { position: 'relative', marginBottom: 16 },
   input: {
     borderWidth: 1,
     borderRadius: 16,
     padding: 12,
-    marginBottom: 16,
+    paddingRight: 48,
     fontSize: 16,
   },
+  eyeButton: { position: 'absolute', right: 14, top: 0, bottom: 0, justifyContent: 'center' },
   saveButton: { marginTop: 8 },
   cancelButton: { marginTop: 8 },
 });

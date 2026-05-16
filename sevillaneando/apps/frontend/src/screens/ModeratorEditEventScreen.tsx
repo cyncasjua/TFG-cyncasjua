@@ -624,7 +624,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               keyboardType="numeric"
             />
 
-            <ThemedText style={styles.label}>Categoría</ThemedText>
+            <ThemedText style={styles.label}>Categoría *</ThemedText>
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />
             ) : (

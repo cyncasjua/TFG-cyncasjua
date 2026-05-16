@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, getIdToken } from 'firebase/auth';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import { auth } from '../firebase/config';
+import { api, setAuthToken } from '../services';
 import { useTheme } from '../hooks/useTheme';
 import {
   ThemedButton,
@@ -65,8 +66,11 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      // Actualiza el nombre de usuario en Firebase
-      await updateProfile(userCredential.user, { displayName: nombre });
+      await updateProfile(userCredential.user, { displayName: nombre.trim() });
+      // Refrescar token y enviar el nombre directamente al backend (evita race condition con onAuthStateChanged)
+      const freshToken = await getIdToken(userCredential.user, true);
+      setAuthToken(freshToken);
+      await api.patch('/users/me/firebase', { nombre: nombre.trim() });
     } catch (err: unknown) {
       setError(getFirebaseErrorMessage(err));
       setLoading(false);
