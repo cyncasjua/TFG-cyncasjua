@@ -20,30 +20,22 @@ const badgeCopy: Record<FieldLabelStatus, string> = {
   choice: 'Opción',
 };
 
-const badgeColors: Record<FieldLabelStatus, { background: string; text: string }> = {
-  required: { background: '#FDECEC', text: '#B42318' },
-  optional: { background: '#EEF2F6', text: '#475467' },
-  automatic: { background: '#EAF2FF', text: '#175CD3' },
-  readonly: { background: '#F2F4F7', text: '#344054' },
-  choice: { background: '#ECFDF3', text: '#067647' },
-};
-
 export const FieldLabel: React.FC<Props> = ({ title, status, badgeText, helperText }) => {
   const { colors } = useTheme();
-  const badge = badgeColors[status];
+  const isHighlighted = status === 'required' || status === 'choice' || status === 'automatic';
+  const metaColor = isHighlighted ? colors.primary : colors.textSecondary;
 
   return (
     <View style={styles.container}>
       <View style={styles.row}>
+        {isHighlighted && <View style={[styles.marker, { backgroundColor: colors.primary }]} />}
         <ThemedText style={styles.title}>{title}</ThemedText>
-        <View style={[styles.badge, { backgroundColor: badge.background }]}>
-          <ThemedText style={[styles.badgeText, { color: badge.text }]}>
-            {badgeText ?? badgeCopy[status]}
-          </ThemedText>
-        </View>
+        <ThemedTextSecondary style={[styles.meta, { color: metaColor }]}>
+          {badgeText ?? badgeCopy[status]}
+        </ThemedTextSecondary>
       </View>
       {!!helperText && (
-        <ThemedTextSecondary style={[styles.helper, { color: colors.text + '88' }]}>
+        <ThemedTextSecondary style={[styles.helper, { color: colors.textSecondary }]}>
           {helperText}
         </ThemedTextSecondary>
       )}
@@ -60,19 +52,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
+  },
+  marker: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 7,
   },
   title: {
     fontWeight: '700',
   },
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
+  meta: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
   },
   helper: {
     marginTop: 3,
