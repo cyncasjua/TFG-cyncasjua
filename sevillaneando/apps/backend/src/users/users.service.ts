@@ -5,6 +5,7 @@ import { User } from './user.entity';
 import { RolEnum } from './enums/rol.enum';
 import type { GeoJsonPoint } from '../common/geojson-point';
 import { Categoria } from '../categorias/categoria.entity';
+import { EstadoEnum } from '../events/enums/estado.enum';
 import { normalizeInteres, normalizeIntereses } from './enums/interes-categoria.enum';
 import { FirebaseService } from '../auth/firebase.service';
 import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
@@ -245,20 +246,20 @@ export class UsersService {
       [{ count: eventosRechazados }],
       [{ count: eventosScrapeados }],
     ] = await Promise.all([
-      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "user"'),
+      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "users"'),
       em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events"'),
       em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events" WHERE estado = $1', [
-        'pendiente',
+        EstadoEnum.Pendiente,
       ]),
       em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events" WHERE estado = $1', [
-        'aprobado',
+        EstadoEnum.Aprobado,
       ]),
       em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events" WHERE estado = $1', [
-        'rechazado',
+        EstadoEnum.Rechazado,
       ]),
       em.query<[{ count: string }]>(
         `SELECT COUNT(*) as count FROM "events" e
-         INNER JOIN "user" u ON u.id = e."creadorId"
+         INNER JOIN "users" u ON u.id = e."creadorId"
          WHERE u."firebaseUid" = $1 OR u.email = $2`,
         [scraperUid, scraperEmail]
       ),
