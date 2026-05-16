@@ -188,9 +188,14 @@ export class TicketmasterScraperService implements IScraper {
       let precioMax: number | null = null;
 
       if (tmEvent.priceRanges && tmEvent.priceRanges.length > 0) {
-        precioMin = tmEvent.priceRanges[0].min;
-        precioMax = tmEvent.priceRanges[0].max;
-        precio = precioMin;
+        const min = tmEvent.priceRanges[0].min;
+        const max = tmEvent.priceRanges[0].max;
+        if (min != null && max != null && min !== max) {
+          precioMin = min;
+          precioMax = max;
+        } else {
+          precio = min ?? max ?? null;
+        }
       }
 
       const imagen = tmEvent.images?.[0]?.url;
@@ -243,10 +248,18 @@ export class TicketmasterScraperService implements IScraper {
     const month = Number(dateMatch[2]);
     const day = Number(dateMatch[3]);
 
-    const timeMatch = (localTime || '00:00:00').match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
-    const hour = timeMatch ? Number(timeMatch[1]) : 0;
-    const minute = timeMatch ? Number(timeMatch[2]) : 0;
-    const second = timeMatch?.[3] ? Number(timeMatch[3]) : 0;
+    if (!localTime) {
+      return new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    const timeMatch = localTime.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!timeMatch) {
+      return new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    const hour = Number(timeMatch[1]);
+    const minute = Number(timeMatch[2]);
+    const second = timeMatch[3] ? Number(timeMatch[3]) : 0;
 
     const offsetMinutes = this.getSevillaOffsetMinutesForLocalDate(year, month - 1, day);
     const utcMillis =

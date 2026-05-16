@@ -97,7 +97,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <ThemedTitle style={styles.summaryTitle}>
           {routePlan.day === 'Sin fecha'
-            ? '📅 Ruta con varias fechas disponibles'
+            ? 'Ruta sin fecha concreta'
             : `Ruta de ${dayjs(routePlan.day).locale('es').format('dddd DD/MM')}`}
         </ThemedTitle>
         <ThemedTextSecondary>
@@ -204,7 +204,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                   </View>
                   <ThemedTextSecondary numberOfLines={1}>
                     {event.hasMultipleDatesAvailable
-                      ? `Varias fechas disponibles · ${event.categoria || 'General'}`
+                      ? `Consultar fechas · ${event.categoria || 'General'}`
                       : `${formatSevillaTime(event.fechaInicio)} · ${event.categoria || 'General'}`}
                   </ThemedTextSecondary>
                   <ThemedTextSecondary numberOfLines={1}>{event.address}</ThemedTextSecondary>

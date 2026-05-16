@@ -16,6 +16,7 @@ import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import { auth } from '../firebase/config';
 import { api, setAuthToken } from '../services';
 import { useTheme } from '../hooks/useTheme';
+import { useAuthContext } from '../context/AuthContext';
 import {
   ThemedButton,
   ThemedText,
@@ -24,11 +25,13 @@ import {
   ThemedView,
 } from '../components';
 import type { AuthStackParamList } from '../navigation/types';
+import type { User as AppUser } from '../types/user';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
 export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
+  const { setUser } = useAuthContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -67,10 +70,11 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       await updateProfile(userCredential.user, { displayName: nombre.trim() });
-      // Refrescar token y enviar el nombre directamente al backend (evita race condition con onAuthStateChanged)
       const freshToken = await getIdToken(userCredential.user, true);
       setAuthToken(freshToken);
       await api.patch('/users/me/firebase', { nombre: nombre.trim() });
+      const refreshed = await api.get<AppUser>('/users/me');
+      setUser(refreshed.data);
     } catch (err: unknown) {
       setError(getFirebaseErrorMessage(err));
       setLoading(false);

@@ -105,12 +105,7 @@ export class ScrapingService {
       }
 
       const normalizedDateEvent = this.normalizeLongEventDates(scrapedEvent);
-      const normalizedEvent = {
-        ...this.normalizePriceFields(normalizedDateEvent),
-        precio: null,
-        precioMin: null,
-        precioMax: null,
-      };
+      const normalizedEvent = this.normalizePriceFields(normalizedDateEvent);
 
       try {
         const batchKey = this.getDuplicateKey(normalizedEvent.title);
@@ -330,16 +325,7 @@ export class ScrapingService {
     }
 
     if (end.getTime() <= start.getTime()) {
-      this.logger.debug(
-        `Evento con fechas inválidas (fin <= inicio) detectado: ${event.title} ` +
-          `(${start.toLocaleString()} - ${end.toLocaleString()}). Marcando como indefinido.`
-      );
-      return {
-        ...event,
-        fechaInicio: null,
-        fechaFin: null,
-        hasMultipleDatesAvailable: true,
-      };
+      return { ...event, fechaFin: null };
     }
 
     // Obtener la fecha sin hora para ambas

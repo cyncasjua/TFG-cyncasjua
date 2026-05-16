@@ -802,7 +802,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       <MaterialIcons name="event" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
                         {item.hasMultipleDatesAvailable
-                          ? 'Varias fechas disponibles'
+                          ? 'Consultar fechas'
                           : formatEventDateRange(item.fechaInicio, item.fechaFin)}
                       </ThemedTextSecondary>
                     </ThemedView>
@@ -954,7 +954,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                               )}
                               {event.hasMultipleDatesAvailable && (
                                 <ThemedTextSecondary numberOfLines={1}>
-                                  Varias fechas disponibles
+                                  Consultar fechas
                                 </ThemedTextSecondary>
                               )}
                               <ThemedView style={styles.recommendedMetaRow}>
@@ -1013,7 +1013,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                               )}
                               {event.hasMultipleDatesAvailable && (
                                 <ThemedTextSecondary numberOfLines={1}>
-                                  Varias fechas disponibles
+                                  Consultar fechas
                                 </ThemedTextSecondary>
                               )}
                               <ThemedView style={styles.recommendedMetaRow}>
@@ -1123,7 +1123,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                           <View style={styles.routeCardTop}>
                             <ThemedText style={styles.routeCardTitle}>
                               {route.day === 'Sin fecha'
-                                ? '📅 Varias fechas disponibles'
+                                ? '📅 Consultar fechas'
                                 : dayjs(route.day).locale('es').format('dddd DD/MM')}
                             </ThemedText>
                             <ThemedTextSecondary>
@@ -1175,7 +1175,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                             <View style={styles.routeCardTop}>
                               <ThemedText style={styles.routeCardTitle}>
                                 {route.day === 'Sin fecha'
-                                  ? '📅 Varias fechas disponibles'
+                                  ? '📅 Consultar fechas'
                                   : dayjs(route.day).locale('es').format('dddd DD/MM')}
                               </ThemedText>
                               <ThemedTextSecondary>

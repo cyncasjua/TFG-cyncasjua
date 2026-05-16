@@ -857,7 +857,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
                 {event.hasMultipleDatesAvailable
-                  ? 'Varias fechas disponibles'
+                  ? 'Consultar fechas'
                   : formatEventDateRange(event.fechaInicio, event.fechaFin)}
               </ThemedTextSecondary>
             </ThemedView>

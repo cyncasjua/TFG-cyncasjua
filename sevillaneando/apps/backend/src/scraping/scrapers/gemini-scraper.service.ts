@@ -152,7 +152,7 @@ Reglas estrictas:
 - Si el evento es explícitamente gratuito (se menciona "gratis", "entrada libre", "gratuito", "free", "sin cargo"), pon "precio": 0.
 - Si el precio no se menciona o no está claro, pon "precio": null (no asumas que es gratis).
 - Si hay un rango de precios, usa "precioMin" y "precioMax" y pon "precio": null. Si solo hay un precio concreto, usa "precio" y deja min/max a null.
-- Extrae las fechas y conviértelas al formato ISO 8601. Si el año no se especifica explícitamente, asume el año actual. Si solo hay fecha pero no hora, usa "T00:00:00".
+- Extrae las fechas y conviértelas al formato ISO 8601. Si el año no se especifica explícitamente, asume el año ${new Date().getFullYear()}. Si solo hay fecha pero no hora, usa únicamente la fecha sin hora (ej: "2026-06-04"). NUNCA inventes una hora si no aparece explícitamente en el texto.
 - Si el evento tiene una imagen o foto representativa en la página, pon la URL en "imagen". Si no hay imagen, pon null. Si hay varias imágenes, intenta asociar la más relevante según el título o la descripción del evento.
 - Si puedes deducir la ubicación (coordenadas), ponlas en "location" como [longitud, latitud]. Si no, pon null.
 - Solo incluye eventos que se celebren en Sevilla (ciudad). Descarta eventos de otras ciudades aunque aparezcan en la página.
