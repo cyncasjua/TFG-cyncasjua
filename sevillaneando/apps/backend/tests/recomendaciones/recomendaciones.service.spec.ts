@@ -13,8 +13,10 @@ import { RolEnum } from '../../src/users/enums/rol.enum';
 const createRepo = <T extends ObjectLiteral>() =>
   ({
     findOne: jest.fn(),
+    find: jest.fn(),
     save: jest.fn(),
     create: jest.fn(),
+    createQueryBuilder: jest.fn(),
   } as unknown as Repository<T>);
 
 const makeUser = (overrides: Partial<User> = {}): User =>
@@ -109,6 +111,55 @@ function createResenaEntity(
   return makeResena(data ?? {});
 }
 
+
+// ---- helpers para tests de scoring ----
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyMock = jest.MockedFunction<(...args: any[]) => any>;
+
+const makeQueryBuilder = (events: Event[]) => ({
+  leftJoinAndSelect: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  andWhere: jest.fn().mockReturnThis(),
+  getMany: (jest.fn() as AnyMock).mockResolvedValue(events),
+});
+
+const makeResenaQueryBuilder = (rawRows: { eventoId: string; avgScore: string }[] = []) => ({
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  getRawMany: (jest.fn() as AnyMock).mockResolvedValue(rawRows),
+});
+
+const makeQueryRunner = () => ({
+  connect: jest.fn(),
+  startTransaction: jest.fn(),
+  commitTransaction: jest.fn(),
+  rollbackTransaction: jest.fn(),
+  release: jest.fn(),
+  manager: { save: jest.fn() },
+  query: jest.fn(),
+});
+
+const setupRecommendMocks = (
+  userRepo: Repository<User>,
+  eventRepo: Repository<Event>,
+  resenaRepo: Repository<Resena>,
+  recomendacionRepo: Repository<Recomendacion>,
+  dataSource: DataSource,
+  user: User,
+  events: Event[],
+  resenas: Resena[] = [],
+  rawRatings: { eventoId: string; avgScore: string }[] = [],
+) => {
+  (userRepo.findOne as AnyMock).mockResolvedValue(user);
+  (eventRepo.createQueryBuilder as AnyMock).mockReturnValue(makeQueryBuilder(events));
+  (resenaRepo.find as AnyMock).mockResolvedValue(resenas);
+  (resenaRepo.createQueryBuilder as AnyMock).mockReturnValue(makeResenaQueryBuilder(rawRatings));
+  (recomendacionRepo.findOne as AnyMock).mockResolvedValue(null);
+  (recomendacionRepo.create as AnyMock).mockImplementation((d) => d);
+  (dataSource.createQueryRunner as AnyMock).mockReturnValue(makeQueryRunner());
+};
 
 describe('RecomendacionesService', () => {
   beforeEach(() => {
@@ -260,6 +311,253 @@ describe('RecomendacionesService', () => {
       puntuacion: null,
       comentario: '',
       fecha: null,
+    });
+  });
+
+  // ---- Tests del algoritmo de scoring ----
+
+  describe('recommendEvents — scoring por intereses del usuario', () => {
+    const createService = () => {
+      const userRepo = createRepo<User>();
+      const eventRepo = createRepo<Event>();
+      const resenaRepo = createRepo<Resena>();
+      const recomendacionRepo = createRepo<Recomendacion>();
+      const dataSource = { createQueryRunner: jest.fn() } as unknown as DataSource;
+      const service = new RecomendacionesService(
+        userRepo,
+        eventRepo,
+        resenaRepo,
+        recomendacionRepo,
+        dataSource,
+      );
+      return { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource };
+    };
+
+    it('puntúa más alto el evento cuya categoría coincide con los intereses del usuario', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser({ intereses: ['Música'] });
+      const eventMusica = makeEvent({
+        id: 'evt-music',
+        title: 'Concierto de jazz',
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        categoria: makeCategory({ nombre: 'Música' }),
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+      const eventOtro = makeEvent({
+        id: 'evt-other',
+        title: 'Feria de artesanía',
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        categoria: makeCategory({ nombre: 'Arte' }),
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+
+      setupRecommendMocks(
+        userRepo,
+        eventRepo,
+        resenaRepo,
+        recomendacionRepo,
+        dataSource,
+        user,
+        [eventMusica, eventOtro],
+      );
+
+      const result = await service.recommendEvents('user-1');
+      const musicScore = result.eventos.find((e) => e.id === 'evt-music')!.score;
+      const otroScore = result.eventos.find((e) => e.id === 'evt-other')!.score;
+
+      expect(musicScore).toBeGreaterThan(otroScore);
+    });
+
+    it('incluye razón de intereses en el evento cuya categoría coincide', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser({ intereses: ['Teatro'] });
+      const event = makeEvent({
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        categoria: makeCategory({ nombre: 'Teatro' }),
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+
+      setupRecommendMocks(userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource, user, [
+        event,
+      ]);
+
+      const result = await service.recommendEvents('user-1');
+      expect(result.eventos[0].reasons).toEqual(
+        expect.arrayContaining([expect.stringContaining('intereses')]),
+      );
+    });
+
+    it('no añade razón de intereses si el usuario no tiene intereses configurados', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser({ intereses: [] });
+      const event = makeEvent({
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        categoria: makeCategory({ nombre: 'Música' }),
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+
+      setupRecommendMocks(userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource, user, [
+        event,
+      ]);
+
+      const result = await service.recommendEvents('user-1');
+      const reasons = result.eventos[0].reasons;
+      expect(reasons.some((r) => r.includes('intereses'))).toBe(false);
+    });
+
+    it('puntúa más alto el evento guardado frente a un evento sin historial', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const savedEvent = makeEvent({
+        id: 'evt-saved',
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+      const freshEvent = makeEvent({
+        id: 'evt-fresh',
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+      const user = makeUser({ eventosGuardados: [savedEvent] });
+
+      setupRecommendMocks(
+        userRepo,
+        eventRepo,
+        resenaRepo,
+        recomendacionRepo,
+        dataSource,
+        user,
+        [savedEvent, freshEvent],
+      );
+
+      const result = await service.recommendEvents('user-1');
+      const savedScore = result.eventos.find((e) => e.id === 'evt-saved')!.score;
+      const freshScore = result.eventos.find((e) => e.id === 'evt-fresh')!.score;
+
+      expect(savedScore).toBeGreaterThan(freshScore);
+    });
+
+    it('filtra eventos fuera del radio cuando se pasa ubicación del usuario', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser();
+      const nearEvent = makeEvent({
+        id: 'evt-near',
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        location: { type: 'Point', coordinates: [-5.9845, 37.3891] } as any,
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+      const farEvent = makeEvent({
+        id: 'evt-far',
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        location: { type: 'Point', coordinates: [-3.7038, 40.4168] } as any,
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+
+      setupRecommendMocks(userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource, user, [
+        nearEvent,
+        farEvent,
+      ]);
+
+      const result = await service.recommendEvents('user-1', {
+        lat: 37.3891,
+        lng: -5.9845,
+        radiusKm: 10,
+      });
+
+      const ids = result.eventos.map((e) => e.id);
+      expect(ids).toContain('evt-near');
+      expect(ids).not.toContain('evt-far');
+    });
+
+    it('respeta el límite de resultados indicado', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser();
+      const events = Array.from({ length: 10 }, (_, i) =>
+        makeEvent({
+          id: `evt-${i}`,
+          estado: EstadoEnum.Aprobado,
+          privado: false,
+          fechaInicio: new Date(Date.now() + 86400000),
+          fechaFin: new Date(Date.now() + 2 * 86400000),
+        }),
+      );
+
+      setupRecommendMocks(userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource, user, events);
+
+      const result = await service.recommendEvents('user-1', { limit: 3 });
+      expect(result.eventos.length).toBeLessThanOrEqual(3);
+    });
+
+    it('normaliza categorías con acento — "Música" coincide con interés "musica"', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser({ intereses: ['musica'] });
+      const event = makeEvent({
+        estado: EstadoEnum.Aprobado,
+        privado: false,
+        categoria: makeCategory({ nombre: 'Música' }),
+        fechaInicio: new Date(Date.now() + 86400000),
+        fechaFin: new Date(Date.now() + 2 * 86400000),
+      });
+
+      setupRecommendMocks(userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource, user, [
+        event,
+      ]);
+
+      const result = await service.recommendEvents('user-1');
+      expect(result.eventos[0].reasons).toEqual(
+        expect.arrayContaining([expect.stringContaining('intereses')]),
+      );
+    });
+
+    it('devuelve todos los criterios esperados en la respuesta', async () => {
+      const { service, userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource } =
+        createService();
+
+      const user = makeUser();
+      setupRecommendMocks(userRepo, eventRepo, resenaRepo, recomendacionRepo, dataSource, user, []);
+
+      const result = await service.recommendEvents('user-1');
+      expect(result.criterios).toEqual(
+        expect.arrayContaining([
+          'intereses-perfil',
+          'eventos-guardados',
+          'eventos-compartidos',
+          'eventos-visitados',
+          'eventos-apuntados',
+          'valoraciones',
+          'distancia',
+          'fecha',
+        ]),
+      );
     });
   });
 });

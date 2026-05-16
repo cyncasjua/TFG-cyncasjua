@@ -28,6 +28,16 @@ import { reportError } from '../utils/telemetry';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
+type AdminStats = {
+  totalUsuarios: number;
+  totalEventos: number;
+  eventosPendientes: number;
+  eventosAprobados: number;
+  eventosRechazados: number;
+  eventosScrapeados: number;
+  eventosUsuario: number;
+};
+
 export const AdminScreen: React.FC<Props> = () => {
   const { colors } = useTheme();
   const [users, setUsers] = useState<User[]>([]);
@@ -36,9 +46,11 @@ export const AdminScreen: React.FC<Props> = () => {
   const [showModal, setShowModal] = useState(false);
   const [changingRole, setChangingRole] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [stats, setStats] = useState<AdminStats | null>(null);
 
   useEffect(() => {
     loadUsers();
+    loadStats();
   }, []);
 
   const loadUsers = async () => {
@@ -51,6 +63,15 @@ export const AdminScreen: React.FC<Props> = () => {
       reportError('admin.load-users', 'Error cargando usuarios', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const res = await api.get<AdminStats>('/users/admin/stats');
+      setStats(res.data);
+    } catch {
+      // Stats son opcionales, no bloqueamos la pantalla si fallan
     }
   };
 
@@ -162,7 +183,55 @@ export const AdminScreen: React.FC<Props> = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Gestión de Usuarios</ThemedTitle>
+      <ThemedTitle style={styles.title}>Panel de Administración</ThemedTitle>
+
+      {stats && (
+        <ThemedCard style={styles.statsCard}>
+          <ThemedText style={styles.statsTitle}>Estadísticas de la plataforma</ThemedText>
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                {stats.totalUsuarios}
+              </ThemedText>
+              <ThemedTextSecondary style={styles.statLabel}>Usuarios</ThemedTextSecondary>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                {stats.totalEventos}
+              </ThemedText>
+              <ThemedTextSecondary style={styles.statLabel}>Eventos totales</ThemedTextSecondary>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                {stats.eventosAprobados}
+              </ThemedText>
+              <ThemedTextSecondary style={styles.statLabel}>Aprobados</ThemedTextSecondary>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={[styles.statValue, { color: '#e67e22' }]}>
+                {stats.eventosPendientes}
+              </ThemedText>
+              <ThemedTextSecondary style={styles.statLabel}>Pendientes</ThemedTextSecondary>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={[styles.statValue, { color: colors.error }]}>
+                {stats.eventosRechazados}
+              </ThemedText>
+              <ThemedTextSecondary style={styles.statLabel}>Rechazados</ThemedTextSecondary>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={[styles.statValue, { color: colors.primary }]}>
+                {stats.eventosScrapeados}
+              </ThemedText>
+              <ThemedTextSecondary style={styles.statLabel}>Scrapeados</ThemedTextSecondary>
+            </View>
+          </View>
+        </ThemedCard>
+      )}
+
+      <ThemedTitle style={[styles.title, { fontSize: 18, marginTop: 8 }]}>
+        Gestión de Usuarios
+      </ThemedTitle>
 
       <ThemedButton
         title={resetting ? 'Restableciendo...' : 'Restablecer eventos scrapeados'}
@@ -254,6 +323,12 @@ const styles = StyleSheet.create({
   backgroundImage: { opacity: 0.2, transform: [{ scale: 1.5 }, { translateY: 40 }] },
   container: { flex: 1, paddingHorizontal: 16, paddingTop: 0 },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 16 },
+  statsCard: { marginBottom: 16, padding: 14 },
+  statsTitle: { fontSize: 15, fontWeight: '700', marginBottom: 12 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  statItem: { width: '30%', alignItems: 'center', paddingVertical: 6 },
+  statValue: { fontSize: 22, fontWeight: '800' },
+  statLabel: { fontSize: 11, textAlign: 'center', marginTop: 2 },
   userCard: {
     marginBottom: 12,
     flexDirection: 'row',

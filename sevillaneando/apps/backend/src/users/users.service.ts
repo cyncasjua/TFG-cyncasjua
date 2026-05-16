@@ -223,4 +223,58 @@ export class UsersService {
     });
     return user?.seguidos.some((u) => u.id === seguidoId) ?? false;
   }
+
+  async getAdminStats(): Promise<{
+    totalUsuarios: number;
+    totalEventos: number;
+    eventosPendientes: number;
+    eventosAprobados: number;
+    eventosRechazados: number;
+    eventosScrapeados: number;
+    eventosUsuario: number;
+  }> {
+    const em = this.usersRepo.manager;
+    const scraperUid = process.env.SCRAPER_SYSTEM_UID || 'system-scraper-uid';
+    const scraperEmail = process.env.SCRAPER_SYSTEM_EMAIL || 'scraper.bot@sevillaneando.local';
+
+    const [
+      [{ count: totalUsuarios }],
+      [{ count: totalEventos }],
+      [{ count: eventosPendientes }],
+      [{ count: eventosAprobados }],
+      [{ count: eventosRechazados }],
+      [{ count: eventosScrapeados }],
+    ] = await Promise.all([
+      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "user"'),
+      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events"'),
+      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events" WHERE estado = $1', [
+        'pendiente',
+      ]),
+      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events" WHERE estado = $1', [
+        'aprobado',
+      ]),
+      em.query<[{ count: string }]>('SELECT COUNT(*) as count FROM "events" WHERE estado = $1', [
+        'rechazado',
+      ]),
+      em.query<[{ count: string }]>(
+        `SELECT COUNT(*) as count FROM "events" e
+         INNER JOIN "user" u ON u.id = e."creadorId"
+         WHERE u."firebaseUid" = $1 OR u.email = $2`,
+        [scraperUid, scraperEmail]
+      ),
+    ]);
+
+    const total = Number(totalEventos);
+    const scrapeados = Number(eventosScrapeados);
+
+    return {
+      totalUsuarios: Number(totalUsuarios),
+      totalEventos: total,
+      eventosPendientes: Number(eventosPendientes),
+      eventosAprobados: Number(eventosAprobados),
+      eventosRechazados: Number(eventosRechazados),
+      eventosScrapeados: scrapeados,
+      eventosUsuario: total - scrapeados,
+    };
+  }
 }

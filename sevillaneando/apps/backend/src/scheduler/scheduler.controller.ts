@@ -1,4 +1,4 @@
-import { Controller, Get, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, HttpCode, HttpStatus, Logger } from '@nestjs/common';
 import { ScrapingScheduler } from './scraping.scheduler';
 import { NotificacionesScheduler } from './notificaciones.scheduler';
 import { PurgaDatosScheduler } from './purga-datos.scheduler';
@@ -7,6 +7,8 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 @ApiTags('Scheduler')
 @Controller('scheduler')
 export class SchedulerController {
+  private readonly logger = new Logger(SchedulerController.name);
+
   constructor(
     private readonly scrapingScheduler: ScrapingScheduler,
     private readonly notificacionesScheduler: NotificacionesScheduler,
@@ -33,7 +35,9 @@ export class SchedulerController {
     schema: { example: { status: 'ok', job: 'scraping' } },
   })
   runScraping() {
-    this.scrapingScheduler.handleDailyScraping().catch(() => {});
+    this.scrapingScheduler
+      .handleDailyScraping()
+      .catch((err: unknown) => this.logger.error('Error en scraping programado:', err));
     return { status: 'ok', job: 'scraping' };
   }
 
@@ -52,7 +56,7 @@ export class SchedulerController {
       this.notificacionesScheduler.notificarEventosCercanos(),
       this.notificacionesScheduler.notificarEventosProximos(),
       this.notificacionesScheduler.notificarEventosMenos24h(),
-    ]).catch(() => {});
+    ]).catch((err: unknown) => this.logger.error('Error en notificaciones programadas:', err));
     return { status: 'ok', job: 'notifications' };
   }
 
@@ -67,7 +71,9 @@ export class SchedulerController {
     schema: { example: { status: 'ok', job: 'purga-datos' } },
   })
   runPurgaDatos() {
-    this.purgaDatosScheduler.purgarMensajesHuerfanos().catch(() => {});
+    this.purgaDatosScheduler
+      .purgarMensajesHuerfanos()
+      .catch((err: unknown) => this.logger.error('Error en purga de datos programada:', err));
     return { status: 'ok', job: 'purga-datos' };
   }
 }

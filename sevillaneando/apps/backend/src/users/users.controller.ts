@@ -128,6 +128,31 @@ export class UsersController {
     });
   }
 
+  @Get('admin/stats')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Estadísticas generales de la plataforma (admin)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Estadísticas de usuarios y eventos',
+    schema: {
+      example: {
+        totalUsuarios: 42,
+        totalEventos: 150,
+        eventosPendientes: 5,
+        eventosAprobados: 130,
+        eventosRechazados: 15,
+        eventosScrapeados: 100,
+        eventosUsuario: 50,
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'Sin permiso de admin' })
+  getAdminStats() {
+    return this.usersService.getAdminStats();
+  }
+
   @Get()
   @UseGuards(RolesGuard)
   @Roles('admin', 'moderator')
