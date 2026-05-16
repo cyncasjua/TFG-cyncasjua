@@ -25,6 +25,7 @@ import {
   ThemedButton,
   OsmAttribution,
   AppPickerModal,
+  FieldLabel,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL, getErrorMessage } from '../services';
@@ -368,7 +369,10 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Crear Evento</ThemedTitle>
-            <ThemedText style={styles.label}>Título *</ThemedText>
+            <ThemedTextSecondary style={styles.requiredHint}>
+              Los campos marcados como obligatorios deben completarse para enviar el evento.
+            </ThemedTextSecondary>
+            <FieldLabel title="Título" status="required" />
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -382,7 +386,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               onSubmitEditing={() => descriptionRef.current?.focus()}
               blurOnSubmit={false}
             />
-            <ThemedText style={styles.label}>Descripción *</ThemedText>
+            <FieldLabel title="Descripción" status="required" />
             <TextInput
               ref={descriptionRef}
               value={description}
@@ -404,10 +408,11 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
-            <ThemedTextSecondary style={{ marginBottom: 8 }}>
-              Si no la indicas, el evento se publicará sin fecha y podrás añadirla más tarde.
-            </ThemedTextSecondary>
+            <FieldLabel
+              title="Fecha de inicio"
+              status="optional"
+              helperText="Si no la indicas, el evento se publicará sin fecha y podrás añadirla más tarde."
+            />
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
                 value={formatDateTime(fechaInicio)}
@@ -431,7 +436,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               }}
               onCancel={() => setShowFechaInicio(false)}
             />
-            <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
+            <FieldLabel title="Fecha de fin" status="optional" />
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
                 value={formatDateTime(fechaFin)}
@@ -455,7 +460,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               }}
               onCancel={() => setShowFechaFin(false)}
             />
-            <ThemedText style={styles.label}>Privado</ThemedText>
+            <FieldLabel title="Privado" status="optional" />
             <TouchableOpacity
               style={styles.checkboxContainer}
               onPress={() => setPrivado(!privado)}
@@ -474,6 +479,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             </TouchableOpacity>
 
+            <FieldLabel title="Dirección o lugar" status="required" />
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                 <TextInput
@@ -526,7 +532,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             </View>
 
-            <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
+            <FieldLabel title="Ubicación en el mapa" status="required" />
             <View
               style={{
                 height: 220,
@@ -572,12 +578,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 : 'Toca el mapa para seleccionar la ubicación'}
             </ThemedText>
 
-            <ThemedText style={styles.label}>Precio: Fijo o Intervalo</ThemedText>
-            <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
-              Elige UNO: precio fijo (0 € = gratis) o un rango mín-máx. Campo obligatorio.
-            </ThemedText>
-
-            <ThemedText style={styles.label}>Precio Fijo</ThemedText>
+            <FieldLabel
+              title="Precio fijo o rango"
+              status="required"
+              helperText="Elige una sola forma de precio."
+            />
+            <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
             <TextInput
               ref={precioRef}
               value={precio}
@@ -594,7 +600,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Precio Mínimo</ThemedText>
+            <FieldLabel
+              title="Precio mínimo"
+              status="choice"
+              badgeText="Opción B"
+              helperText="Rellénalo junto con el precio máximo."
+            />
             <TextInput
               ref={precioMinRef}
               value={precioMin}
@@ -611,7 +622,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Precio Máximo</ThemedText>
+            <FieldLabel
+              title="Precio máximo"
+              status="choice"
+              badgeText="Opción B"
+              helperText="Rellénalo junto con el precio mínimo."
+            />
             <TextInput
               ref={precioMaxRef}
               value={precioMax}
@@ -628,7 +644,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Estado</ThemedText>
+            <FieldLabel title="Estado" status="automatic" />
             <>
               <TouchableOpacity
                 onPress={() => setOpenEstado(true)}
@@ -658,7 +674,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 onClose={() => setOpenEstado(false)}
               />
             </>
-            <ThemedText style={styles.label}>Recurrencia</ThemedText>
+            <FieldLabel title="Recurrencia" status="optional" />
             <>
               <TouchableOpacity
                 onPress={() => setOpenRecurrencia(true)}
@@ -697,7 +713,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             </>
             {!!recurrencia && (
               <>
-                <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
+                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
                   style={[
@@ -727,7 +743,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 />
               </>
             )}
-            <ThemedText style={styles.label}>Categoría *</ThemedText>
+            <FieldLabel title="Categoría" status="required" />
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (
@@ -781,7 +797,11 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 }}
               />
             )}
-            <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
+            <FieldLabel
+              title="Imagen del evento"
+              status="optional"
+              helperText="Máximo 5 imágenes."
+            />
 
             {localImageUris && localImageUris.length > 0 && (
               <View
@@ -882,10 +902,8 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
   },
-  label: {
-    fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 2,
+  requiredHint: {
+    marginBottom: 12,
   },
   input: {
     marginBottom: 10,

@@ -21,10 +21,12 @@ import { RootStackParamList } from '../navigation/types';
 import {
   ThemedView,
   ThemedText,
+  ThemedTextSecondary,
   ThemedTitle,
   ThemedButton,
   OsmAttribution,
   AppPickerModal,
+  FieldLabel,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL } from '../services';
@@ -424,7 +426,11 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
 
-            <ThemedText style={styles.label}>Título *</ThemedText>
+            <ThemedTextSecondary style={styles.requiredHint}>
+              Los campos marcados como obligatorios deben completarse para guardar los cambios.
+            </ThemedTextSecondary>
+
+            <FieldLabel title="Título" status="required" />
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -439,7 +445,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Descripción *</ThemedText>
+            <FieldLabel title="Descripción" status="required" />
             <TextInput
               ref={descriptionRef}
               value={description}
@@ -461,7 +467,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
+            <FieldLabel title="Fecha de inicio" status="optional" />
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
                 ref={fechaInicioRef}
@@ -486,7 +492,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               onCancel={() => setShowFechaInicio(false)}
             />
 
-            <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
+            <FieldLabel title="Fecha de fin" status="optional" />
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
                 ref={fechaFinRef}
@@ -512,7 +518,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               onCancel={() => setShowFechaFin(false)}
             />
 
-            <ThemedText style={styles.label}>Privado</ThemedText>
+            <FieldLabel title="Privado" status="optional" />
             <TouchableOpacity
               style={styles.checkboxContainer}
               onPress={() => setPrivado(!privado)}
@@ -531,6 +537,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               </View>
             </TouchableOpacity>
 
+            <FieldLabel title="Dirección o lugar" status="required" />
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                 <TextInput
@@ -586,7 +593,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               </View>
             </View>
 
-            <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
+            <FieldLabel title="Ubicación en el mapa" status="required" />
             <View
               style={{
                 height: 220,
@@ -644,28 +651,36 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 : 'Toca el mapa para seleccionar la ubicación'}
             </ThemedText>
 
-            <ThemedText style={styles.label}>Precios</ThemedText>
-            <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
-              Elige UNO: precio fijo (0 € = gratis) o un rango mín-máx. Campo obligatorio.
-            </ThemedText>
+            <FieldLabel
+              title="Precio fijo o rango"
+              status="required"
+              helperText="Elige una sola forma de precio: fijo o rango mín-máx."
+            />
 
+            <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
             <TextInput
               ref={precioRef}
               value={precio}
               onChangeText={setPrecio}
-              placeholder="Precio Fijo (Ej: 15)"
+              placeholder="Precio fijo si no usas rango (Ej: 15)"
               keyboardType="numeric"
               placeholderTextColor={colors.text + '99'}
               style={[
                 styles.input,
                 { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
               ]}
+            />
+            <FieldLabel
+              title="Precio mínimo"
+              status="choice"
+              badgeText="Opción B"
+              helperText="Rellénalo junto con el precio máximo."
             />
             <TextInput
               ref={precioMinRef}
               value={precioMin}
               onChangeText={setPrecioMin}
-              placeholder="Precio Mínimo (Ej: 10)"
+              placeholder="Precio mínimo si usas rango (Ej: 10)"
               keyboardType="numeric"
               placeholderTextColor={colors.text + '99'}
               style={[
@@ -673,11 +688,17 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
               ]}
             />
+            <FieldLabel
+              title="Precio máximo"
+              status="choice"
+              badgeText="Opción B"
+              helperText="Rellénalo junto con el precio mínimo."
+            />
             <TextInput
               ref={precioMaxRef}
               value={precioMax}
               onChangeText={setPrecioMax}
-              placeholder="Precio Máximo (Ej: 25)"
+              placeholder="Precio máximo si usas rango (Ej: 25)"
               keyboardType="numeric"
               placeholderTextColor={colors.text + '99'}
               style={[
@@ -686,7 +707,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               ]}
             />
 
-            <ThemedText style={styles.label}>Estado</ThemedText>
+            <FieldLabel title="Estado" status="automatic" />
             <>
               <TouchableOpacity
                 onPress={() => setOpenEstado(true)}
@@ -717,7 +738,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               />
             </>
 
-            <ThemedText style={styles.label}>Recurrencia</ThemedText>
+            <FieldLabel title="Recurrencia" status="optional" />
             <>
               <TouchableOpacity
                 onPress={() => setOpenRecurrencia(true)}
@@ -756,7 +777,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             </>
             {!!recurrencia && (
               <>
-                <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
+                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
                   style={[
@@ -787,7 +808,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               </>
             )}
 
-            <ThemedText style={styles.label}>Categoría *</ThemedText>
+            <FieldLabel title="Categoría" status="required" />
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} style={{ marginBottom: 10 }} />
             ) : (
@@ -831,7 +852,11 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               </>
             )}
 
-            <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
+            <FieldLabel
+              title="Imagen del evento"
+              status="optional"
+              helperText="Máximo 5 imágenes."
+            />
 
             {localImageUris && localImageUris.length > 0 && (
               <View
@@ -966,11 +991,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 6,
-    marginTop: 10,
+  requiredHint: {
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,

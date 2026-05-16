@@ -8,3 +8,4 @@ export { ProfileHeader } from './ProfileHeader';
 export { PrivateEventLinkModal } from './PrivateEventLinkModal';
 export { CalendarDateTimePicker } from './CalendarDateTimePicker';
 export { AppPickerModal } from './AppPickerModal';
+export { FieldLabel } from './FieldLabel';

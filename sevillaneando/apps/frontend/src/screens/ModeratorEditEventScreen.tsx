@@ -21,10 +21,12 @@ import { RootStackParamList } from '../navigation/types';
 import {
   ThemedView,
   ThemedText,
+  ThemedTextSecondary,
   ThemedTitle,
   ThemedButton,
   OsmAttribution,
   AppPickerModal,
+  FieldLabel,
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { api, API_BASE_URL } from '../services';
@@ -383,7 +385,10 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
-            <ThemedText style={styles.label}>Título *</ThemedText>
+            <ThemedTextSecondary style={styles.requiredHint}>
+              Los campos marcados como obligatorios deben completarse antes de guardar.
+            </ThemedTextSecondary>
+            <FieldLabel title="Título" status="required" />
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -397,7 +402,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onSubmitEditing={() => descriptionRef.current?.focus()}
               blurOnSubmit={false}
             />
-            <ThemedText style={styles.label}>Descripción *</ThemedText>
+            <FieldLabel title="Descripción" status="required" />
             <TextInput
               ref={descriptionRef}
               value={description}
@@ -418,7 +423,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onSubmitEditing={() => addressRef.current?.focus()}
               blurOnSubmit={false}
             />
-            <ThemedText style={styles.label}>Dirección</ThemedText>
+            <FieldLabel title="Dirección" status="required" />
             <TextInput
               ref={addressRef}
               value={address}
@@ -431,7 +436,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               ]}
               onBlur={handleAddressBlur}
             />
-            <ThemedText style={styles.label}>Buscar dirección o lugar</ThemedText>
+            <FieldLabel title="Buscar dirección o lugar" status="optional" />
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <TextInput
                 value={address}
@@ -457,7 +462,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 <Icon name="magnify" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
-            <ThemedText style={styles.label}>Ubicación en el mapa</ThemedText>
+            <FieldLabel title="Ubicación en el mapa" status="required" />
             <MapView
               ref={mapRef}
               style={styles.map}
@@ -498,7 +503,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <View style={{ marginBottom: 8 }}>
               <OsmAttribution compact />
             </View>
-            <ThemedText style={styles.label}>Fecha de inicio (opcional)</ThemedText>
+            <FieldLabel title="Fecha de inicio" status="optional" />
             <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
               <TextInput
                 ref={fechaInicioRef}
@@ -523,7 +528,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               }}
               onCancel={() => setShowFechaInicio(false)}
             />
-            <ThemedText style={styles.label}>Fecha de fin (opcional)</ThemedText>
+            <FieldLabel title="Fecha de fin" status="optional" />
             <TouchableOpacity onPress={() => setShowFechaFin(true)}>
               <TextInput
                 ref={fechaFinRef}
@@ -553,7 +558,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               onCancel={() => setShowFechaFin(false)}
             />
 
-            <ThemedText style={styles.label}>Privado</ThemedText>
+            <FieldLabel title="Privado" status="readonly" />
             <TouchableOpacity style={styles.checkboxContainer} disabled activeOpacity={1}>
               <View
                 style={[
@@ -571,12 +576,13 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               </ThemedText>
             </TouchableOpacity>
 
-            <ThemedText style={styles.label}>Precio: Fijo o Intervalo</ThemedText>
-            <ThemedText style={{ fontSize: 12, color: colors.text + '77', marginBottom: 8 }}>
-              Elige UNO: precio fijo (0 € = gratis) o un rango mín-máx. Campo obligatorio.
-            </ThemedText>
+            <FieldLabel
+              title="Precio fijo o rango"
+              status="required"
+              helperText="Elige una sola forma de precio: fijo o rango mín-máx."
+            />
 
-            <ThemedText style={styles.label}>Precio Fijo (€) </ThemedText>
+            <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
             <TextInput
               ref={precioRef}
               value={precio}
@@ -593,7 +599,12 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Precio Mínimo (€)</ThemedText>
+            <FieldLabel
+              title="Precio mínimo"
+              status="choice"
+              badgeText="Opción B"
+              helperText="Rellénalo junto con el precio máximo."
+            />
             <TextInput
               ref={precioMinRef}
               value={precioMin}
@@ -610,7 +621,12 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               blurOnSubmit={false}
             />
 
-            <ThemedText style={styles.label}>Precio Máximo (€) </ThemedText>
+            <FieldLabel
+              title="Precio máximo"
+              status="choice"
+              badgeText="Opción B"
+              helperText="Rellénalo junto con el precio mínimo."
+            />
             <TextInput
               ref={precioMaxRef}
               value={precioMax}
@@ -624,7 +640,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               keyboardType="numeric"
             />
 
-            <ThemedText style={styles.label}>Categoría *</ThemedText>
+            <FieldLabel title="Categoría" status="required" />
             {categoriasLoading ? (
               <ActivityIndicator color={colors.primary} />
             ) : (
@@ -667,7 +683,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 />
               </>
             )}
-            <ThemedText style={styles.label}>Estado</ThemedText>
+            <FieldLabel title="Estado de moderación" status="required" />
             <>
               <TouchableOpacity
                 onPress={() => setOpenEstado(true)}
@@ -697,7 +713,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 onClose={() => setOpenEstado(false)}
               />
             </>
-            <ThemedText style={styles.label}>Recurrencia</ThemedText>
+            <FieldLabel title="Recurrencia" status="optional" />
             <>
               <TouchableOpacity
                 onPress={() => setOpenRecurrencia(true)}
@@ -737,7 +753,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             </>
             {!!recurrencia && (
               <>
-                <ThemedText style={styles.label}>Fecha fin de recurrencia</ThemedText>
+                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
                   style={[
@@ -767,7 +783,11 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 />
               </>
             )}
-            <ThemedText style={styles.label}>Imagen del evento (Máx 5)</ThemedText>
+            <FieldLabel
+              title="Imagen del evento"
+              status="optional"
+              helperText="Máximo 5 imágenes."
+            />
 
             {localImageUris && localImageUris.length > 0 && (
               <View
@@ -892,7 +912,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   scrollContainer: { flexGrow: 1 },
-  label: { fontWeight: 'bold', marginTop: 12, marginBottom: 4 },
+  requiredHint: { marginBottom: 12 },
   input: { borderWidth: 1, borderRadius: 16, padding: 8, marginBottom: 8, borderColor: '#ccc' },
   map: { width: '100%', height: 180, borderRadius: 10, marginBottom: 12 },
   mapSearchInput: {
