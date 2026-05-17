@@ -79,7 +79,13 @@ export class VisitaSevillaScraperService implements IScraper {
     precio: number | null;
     imagen: string | undefined;
   }> {
-    const empty = { description: '', address: 'Sevilla, España', location: null, precio: null, imagen: undefined };
+    const empty = {
+      description: '',
+      address: 'Sevilla, España',
+      location: null,
+      precio: null,
+      imagen: undefined,
+    };
     const html = await this.fetchHtml(url);
     if (!html) return empty;
 
@@ -132,11 +138,7 @@ export class VisitaSevillaScraperService implements IScraper {
     }
 
     // Descripción: texto limpio de .evento-descripcion quitando la parte de Dirección/Tarifas/Horario
-    const descText = $('.evento-descripcion')
-      .text()
-      .replace(/\s+/g, ' ')
-      .trim()
-      .substring(0, 800);
+    const descText = $('.evento-descripcion').text().replace(/\s+/g, ' ').trim().substring(0, 800);
 
     const description = `${descText}\n\nFuente: ${url}`;
 
