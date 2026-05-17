@@ -28,5 +28,5 @@ export function formatEventPrice(
     return formatPrice(event.precio, currency);
   }
 
-  return isScrapedEvent(event) ? 'Consultar precio' : 'Precio variable';
+  return 'Consultar precios';
 }

@@ -146,6 +146,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const scrollRef = useRef<ScrollView>(null);
   const [maxScroll, setMaxScroll] = useState(0);
   const [scrollX, setScrollX] = useState(0);
+  const [imageContainerWidth, setImageContainerWidth] = useState(0);
+  const [mapActive, setMapActive] = useState(false);
 
   useEffect(() => {
     initialEventImages.forEach((uri: string) => {
@@ -304,13 +306,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     const precioVal = precio.trim() !== '' ? parseFloat(precio) : null;
     const precioMinVal = precioMin.trim() !== '' ? parseFloat(precioMin) : null;
     const precioMaxVal = precioMax.trim() !== '' ? parseFloat(precioMax) : null;
-    const noPrecio = precioVal === null && precioMinVal === null && precioMaxVal === null;
     const rangoIncompleto = (precioMinVal !== null) !== (precioMaxVal !== null);
     const conflicto = precioVal !== null && (precioMinVal !== null || precioMaxVal !== null);
-    if (noPrecio) {
-      Alert.alert('Error', 'Indica un precio fijo o un rango de precio (mín y máx).');
-      return;
-    }
     if (rangoIncompleto) {
       Alert.alert('Error', 'Si usas rango de precio, rellena tanto el mínimo como el máximo.');
       return;
@@ -411,12 +408,13 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: colors.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled={true}
+          scrollEnabled={!mapActive}
         >
           <ThemedView style={styles.container}>
             {privado && eventLinkAcceso && (
@@ -517,7 +515,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <CalendarDateTimePicker
               isVisible={showFechaFin}
               value={fechaFin}
-              minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+              minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
               onConfirm={(val) => {
                 setFechaFin(val);
                 setShowFechaFin(false);
@@ -611,6 +609,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 borderColor: colors.primary,
                 position: 'relative',
               }}
+              onStartShouldSetResponder={() => true}
+              onTouchStart={() => setMapActive(true)}
+              onTouchEnd={() => setMapActive(false)}
+              onTouchCancel={() => setMapActive(false)}
             >
               <MapView
                 ref={mapRef}
@@ -660,8 +662,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
             <FieldLabel
               title="Precio fijo o rango"
-              status="required"
-              helperText="Elige una sola forma de precio: fijo o rango mín-máx."
+              status="optional"
+              helperText="Si no se indica, se mostrará 'Consultar precios'."
             />
 
             <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
@@ -745,7 +747,20 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               />
             </>
 
-            <FieldLabel title="Recurrencia" status="optional" />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <FieldLabel title="Recurrencia" status="optional" />
+              <TouchableOpacity
+                onPress={() =>
+                  Alert.alert(
+                    'Recurrencia',
+                    'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.',
+                  )
+                }
+                style={{ marginLeft: 6, marginTop: 10 }}
+              >
+                <Icon name="information-outline" size={18} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
             <>
               <TouchableOpacity
                 onPress={() => setOpenRecurrencia(true)}
@@ -784,7 +799,20 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             </>
             {!!recurrencia && (
               <>
-                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                  <TouchableOpacity
+                    onPress={() =>
+                      Alert.alert(
+                        'Fecha fin de recurrencia',
+                        'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.',
+                      )
+                    }
+                    style={{ marginLeft: 6, marginTop: 10 }}
+                  >
+                    <Icon name="information-outline" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
                   style={[
@@ -805,7 +833,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 <DateTimePickerModal
                   isVisible={showRecurrenciaFin}
                   mode="date"
-                  minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+                  minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
                   onConfirm={(date: Date) => {
                     setRecurrenciaFin(date.toISOString());
                     setShowRecurrenciaFin(false);
@@ -868,10 +896,14 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             {localImageUris && localImageUris.length > 0 && (
               <View
                 style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
+                onLayout={(e) => setImageContainerWidth(e.nativeEvent.layout.width)}
               >
                 <ScrollView
                   horizontal
-                  showsHorizontalScrollIndicator={true}
+                  showsHorizontalScrollIndicator={false}
+                  directionalLockEnabled
+                  nestedScrollEnabled
+                  keyboardShouldPersistTaps="handled"
                   contentContainerStyle={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -879,7 +911,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                   }}
                   style={{ width: '100%' }}
                   ref={scrollRef}
-                  onContentSizeChange={(w, h) => setMaxScroll(w - 360)}
+                  onContentSizeChange={(w) => setMaxScroll(w - imageContainerWidth)}
                   onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
                   scrollEventThrottle={16}
                 >
@@ -955,6 +987,26 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                     );
                   })}
                 </ScrollView>
+                {scrollX > 0 && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      scrollRef.current?.scrollTo({ x: scrollX - 130, animated: true })
+                    }
+                    style={styles.scrollArrowLeft}
+                  >
+                    <Icon name="chevron-left" size={24} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                {maxScroll > 0 && scrollX < maxScroll && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      scrollRef.current?.scrollTo({ x: scrollX + 130, animated: true })
+                    }
+                    style={styles.scrollArrowRight}
+                  >
+                    <Icon name="chevron-right" size={24} color="#fff" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
@@ -1052,6 +1104,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     zIndex: 2,
+  },
+  scrollArrowLeft: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    marginTop: -20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 4,
+    zIndex: 10,
+  },
+  scrollArrowRight: {
+    position: 'absolute',
+    right: 0,
+    top: '50%',
+    marginTop: -20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 4,
+    zIndex: 10,
   },
   imagePickerBtn: {
     flexDirection: 'row',

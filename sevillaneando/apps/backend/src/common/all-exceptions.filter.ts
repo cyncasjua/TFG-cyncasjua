@@ -17,16 +17,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const status =
-      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const isMulterFileSizeError =
+      exception instanceof Error && (exception as any).code === 'LIMIT_FILE_SIZE';
+
+    const status = isMulterFileSizeError
+      ? HttpStatus.PAYLOAD_TOO_LARGE
+      : exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
     this.logger.error(
       `[${request.method} ${request.url}] HTTP ${status}`,
       exception instanceof Error ? exception.stack : String(exception)
     );
 
-    const body =
-      exception instanceof HttpException
+    const body = isMulterFileSizeError
+      ? { statusCode: HttpStatus.PAYLOAD_TOO_LARGE, message: 'El archivo supera el tamaño máximo permitido (10 MB)' }
+      : exception instanceof HttpException
         ? exception.getResponse()
         : { statusCode: status, message: 'Internal server error' };
 

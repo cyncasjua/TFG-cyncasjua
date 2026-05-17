@@ -217,14 +217,6 @@ export class TicketmasterScraperService implements IScraper {
   ): { precio: number | null; precioMin: number | null; precioMax: number | null } {
     const ranges = Array.isArray(tmEvent.priceRanges) ? tmEvent.priceRanges : [];
 
-    if (ranges.length > 0) {
-      this.logger.log(
-        `priceRanges de "${tmEvent.name}": ${JSON.stringify(ranges)}`
-      );
-    } else {
-      this.logger.log(`Sin priceRanges para "${tmEvent.name}"`);
-    }
-
     type PriceRange = { min: number | null; max: number | null };
     const parsedRanges: PriceRange[] = (ranges as { min?: unknown; max?: unknown }[])
       .map((range) => ({
@@ -246,11 +238,7 @@ export class TicketmasterScraperService implements IScraper {
     if (minCandidates.length > 0 && maxCandidates.length > 0) {
       const min = Math.min(...minCandidates);
       const max = Math.max(...maxCandidates);
-      if (min < max) {
-        this.logger.log(`Precio rango de "${tmEvent.name}": ${min} - ${max}`);
-        return { precio: null, precioMin: min, precioMax: max };
-      }
-      this.logger.log(`Precio fijo de "${tmEvent.name}": ${min}`);
+      if (min < max) return { precio: null, precioMin: min, precioMax: max };
       return { precio: min, precioMin: null, precioMax: null };
     }
 
@@ -265,17 +253,9 @@ export class TicketmasterScraperService implements IScraper {
       .join(' ');
 
     const textRange = this.extractPriceRangeFromText(textFallback);
-    if (textRange) {
-      this.logger.log(`Precio rango (texto) de "${tmEvent.name}": ${textRange.precioMin} - ${textRange.precioMax}`);
-      return { precio: null, ...textRange };
-    }
+    if (textRange) return { precio: null, ...textRange };
 
     const fixedPrice = this.extractFixedPriceFromText(textFallback);
-    if (fixedPrice != null) {
-      this.logger.log(`Precio fijo (texto) de "${tmEvent.name}": ${fixedPrice}`);
-    } else {
-      this.logger.log(`Sin precio para "${tmEvent.name}"`);
-    }
     return { precio: fixedPrice, precioMin: null, precioMax: null };
   }
 

@@ -133,28 +133,7 @@ export class ScrapingService {
           .getOne();
 
         if (existingEvent) {
-          const categoria = await this.resolveCategory(normalizedEvent);
-          existingEvent.description = normalizedEvent.description;
-          existingEvent.address = normalizedEvent.address;
-          existingEvent.location = normalizedEvent.location;
-          existingEvent.fechaInicio = normalizedEvent.fechaInicio;
-          existingEvent.fechaFin = normalizedEvent.fechaFin;
-          existingEvent.hasMultipleDatesAvailable =
-            normalizedEvent.hasMultipleDatesAvailable ?? false;
-          existingEvent.precio = normalizedEvent.precio ?? null;
-          existingEvent.precioMin = normalizedEvent.precioMin ?? null;
-          existingEvent.precioMax = normalizedEvent.precioMax ?? null;
-          existingEvent.imagen = normalizedEvent.imagen ?? existingEvent.imagen;
-          existingEvent.imagenes = normalizedEvent.imagenes ?? existingEvent.imagenes;
-          existingEvent.estado = EstadoEnum.Aprobado;
-          existingEvent.creador = systemUser;
-          existingEvent.privado = false;
-          existingEvent.categoria = categoria;
-
-          await this.eventRepo.save(existingEvent);
-          savedCount++;
-          this.logger.debug(`Evento existente actualizado: ${normalizedEvent.title}`);
-
+          this.logger.debug(`Evento ya existente, omitido: ${normalizedEvent.title}`);
           seenInBatch.add(batchKey);
           continue;
         }

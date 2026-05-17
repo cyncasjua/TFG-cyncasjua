@@ -71,15 +71,6 @@ export class EventsController {
     return this.eventsService.findAll(query);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener un evento por ID' })
-  @ApiParam({ name: 'id', description: 'UUID del evento' })
-  @ApiResponse({ status: 200, description: 'Evento encontrado', type: Event })
-  @ApiResponse({ status: 404, description: 'Evento no encontrado' })
-  async findOne(@Param('id') id: string): Promise<Event> {
-    return this.eventsService.findOnePublicById(id);
-  }
-
   @Get('acceso/:linkAcceso')
   @ApiOperation({ summary: 'Obtener un evento privado por link de acceso' })
   @ApiParam({ name: 'linkAcceso', description: 'Token de acceso al evento privado' })
@@ -87,6 +78,15 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Evento no encontrado o link inválido' })
   async getEventoPrivado(@Param('linkAcceso') linkAcceso: string): Promise<Event> {
     return this.eventsService.findOneByLinkAcceso(linkAcceso);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Obtener un evento por ID' })
+  @ApiParam({ name: 'id', description: 'UUID del evento' })
+  @ApiResponse({ status: 200, description: 'Evento encontrado', type: Event })
+  @ApiResponse({ status: 404, description: 'Evento no encontrado' })
+  async findOne(@Param('id') id: string): Promise<Event> {
+    return this.eventsService.findOnePublicById(id);
   }
 
   @Get(':id/private-share-link')
@@ -216,7 +216,7 @@ export class EventsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: 10 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
         const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
         if (!allowed.includes(file.mimetype)) {

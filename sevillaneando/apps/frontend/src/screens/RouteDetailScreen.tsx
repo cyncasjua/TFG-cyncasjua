@@ -35,6 +35,24 @@ import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
+function offsetDuplicateCoordinates(
+  coords: Array<{ latitude: number; longitude: number }>,
+): Array<{ latitude: number; longitude: number }> {
+  const OFFSET = 0.0002;
+  const seen = new Map<string, number>();
+  return coords.map((coord) => {
+    const key = `${coord.latitude},${coord.longitude}`;
+    const count = seen.get(key) ?? 0;
+    seen.set(key, count + 1);
+    if (count === 0) return coord;
+    const angle = (count * 2 * Math.PI) / 6;
+    return {
+      latitude: coord.latitude + OFFSET * Math.cos(angle),
+      longitude: coord.longitude + OFFSET * Math.sin(angle),
+    };
+  });
+}
+
 type Props = NativeStackScreenProps<RootStackParamList, 'RouteDetail'>;
 
 export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigation }) => {
@@ -96,10 +114,11 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
 
   const coordinates = useMemo(() => {
     if (!route || !route.trayecto) return [];
-    return route.trayecto.map((point: any) => ({
+    const raw = route.trayecto.map((point: any) => ({
       latitude: point.coordinates[1],
       longitude: point.coordinates[0],
     }));
+    return offsetDuplicateCoordinates(raw);
   }, [route]);
 
   const initialRegion = useMemo(() => {

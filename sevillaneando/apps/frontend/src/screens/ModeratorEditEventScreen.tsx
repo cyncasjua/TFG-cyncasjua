@@ -127,6 +127,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   const scrollRef = useRef<ScrollView>(null);
   const [scrollX, setScrollX] = useState(0);
   const [maxScroll, setMaxScroll] = useState(0);
+  const [imageContainerWidth, setImageContainerWidth] = useState(0);
+  const [mapActive, setMapActive] = useState(false);
 
   useEffect(() => {
     initialEventImages.forEach((uri) => {
@@ -293,13 +295,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     const precioVal = precio.trim() !== '' ? parseFloat(precio) : null;
     const precioMinVal = precioMin.trim() !== '' ? parseFloat(precioMin) : null;
     const precioMaxVal = precioMax.trim() !== '' ? parseFloat(precioMax) : null;
-    const noPrecio = precioVal === null && precioMinVal === null && precioMaxVal === null;
     const rangoIncompleto = (precioMinVal !== null) !== (precioMaxVal !== null);
     const conflicto = precioVal !== null && (precioMinVal !== null || precioMaxVal !== null);
-    if (noPrecio) {
-      Alert.alert('Error', 'Indica un precio fijo o un rango de precio (mín y máx).');
-      return;
-    }
     if (rangoIncompleto) {
       Alert.alert('Error', 'Si usas rango de precio, rellena tanto el mínimo como el máximo.');
       return;
@@ -379,12 +376,13 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: colors.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled={true}
+          scrollEnabled={!mapActive}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
@@ -466,43 +464,51 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               </TouchableOpacity>
             </View>
             <FieldLabel title="Ubicación en el mapa" status="required" />
-            <MapView
-              ref={mapRef}
-              style={styles.map}
-              initialRegion={{
-                latitude,
-                longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              scrollEnabled={false}
-              zoomEnabled={false}
-              rotateEnabled={false}
-              pitchEnabled={false}
-              onPress={(e: MapPressEvent) => {
-                const newLat = e.nativeEvent.coordinate.latitude;
-                const newLon = e.nativeEvent.coordinate.longitude;
-
-                setLatitude(newLat);
-                setLongitude(newLon);
-                setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
-
-                reverseGeocode(newLat, newLon);
-
-                mapRef.current?.animateToRegion(
-                  {
-                    latitude: newLat,
-                    longitude: newLon,
-                    latitudeDelta: 0.0015,
-                    longitudeDelta: 0.0015,
-                  },
-                  500
-                );
-              }}
+            <View
+              style={styles.mapContainer}
+              onStartShouldSetResponder={() => true}
+              onTouchStart={() => setMapActive(true)}
+              onTouchEnd={() => setMapActive(false)}
+              onTouchCancel={() => setMapActive(false)}
             >
-              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-              <Marker coordinate={{ latitude, longitude }} />
-            </MapView>
+              <MapView
+                ref={mapRef}
+                style={StyleSheet.absoluteFillObject}
+                initialRegion={{
+                  latitude,
+                  longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                rotateEnabled={false}
+                pitchEnabled={false}
+                onPress={(e: MapPressEvent) => {
+                  const newLat = e.nativeEvent.coordinate.latitude;
+                  const newLon = e.nativeEvent.coordinate.longitude;
+
+                  setLatitude(newLat);
+                  setLongitude(newLon);
+                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+
+                  reverseGeocode(newLat, newLon);
+
+                  mapRef.current?.animateToRegion(
+                    {
+                      latitude: newLat,
+                      longitude: newLon,
+                      latitudeDelta: 0.0015,
+                      longitudeDelta: 0.0015,
+                    },
+                    500
+                  );
+                }}
+              >
+                <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
+                <Marker coordinate={{ latitude, longitude }} />
+              </MapView>
+            </View>
             <View style={{ marginBottom: 8 }}>
               <OsmAttribution compact />
             </View>
@@ -524,7 +530,6 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <CalendarDateTimePicker
               isVisible={showFechaInicio}
               value={fechaInicio ?? ''}
-              minimumDate={new Date()}
               onConfirm={(val) => {
                 setFechaInicio(val);
                 setShowFechaInicio(false);
@@ -549,11 +554,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             <CalendarDateTimePicker
               isVisible={showFechaFin}
               value={fechaFin ?? ''}
-              minimumDate={
-                fechaInicio && new Date(fechaInicio) > new Date()
-                  ? new Date(fechaInicio)
-                  : new Date()
-              }
+              minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
               onConfirm={(val) => {
                 setFechaFin(val);
                 setShowFechaFin(false);
@@ -581,8 +582,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
 
             <FieldLabel
               title="Precio fijo o rango"
-              status="required"
-              helperText="Elige una sola forma de precio: fijo o rango mín-máx."
+              status="optional"
+              helperText="Si no se indica, se mostrará 'Consultar precios'."
             />
 
             <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
@@ -716,7 +717,20 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 onClose={() => setOpenEstado(false)}
               />
             </>
-            <FieldLabel title="Recurrencia" status="optional" />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <FieldLabel title="Recurrencia" status="optional" />
+              <TouchableOpacity
+                onPress={() =>
+                  Alert.alert(
+                    'Recurrencia',
+                    'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.',
+                  )
+                }
+                style={{ marginLeft: 6, marginTop: 10 }}
+              >
+                <Icon name="information-outline" size={18} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
             <>
               <TouchableOpacity
                 onPress={() => setOpenRecurrencia(true)}
@@ -756,7 +770,20 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             </>
             {!!recurrencia && (
               <>
-                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                  <TouchableOpacity
+                    onPress={() =>
+                      Alert.alert(
+                        'Fecha fin de recurrencia',
+                        'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.',
+                      )
+                    }
+                    style={{ marginLeft: 6, marginTop: 10 }}
+                  >
+                    <Icon name="information-outline" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   onPress={() => setShowRecurrenciaFin(true)}
                   style={[
@@ -777,7 +804,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                 <DateTimePickerModal
                   isVisible={showRecurrenciaFin}
                   mode="date"
-                  minimumDate={fechaInicio ? new Date(fechaInicio) : new Date()}
+                  minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
                   onConfirm={(date: Date) => {
                     setRecurrenciaFin(date.toISOString());
                     setShowRecurrenciaFin(false);
@@ -795,10 +822,14 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             {localImageUris && localImageUris.length > 0 && (
               <View
                 style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
+                onLayout={(e) => setImageContainerWidth(e.nativeEvent.layout.width)}
               >
                 <ScrollView
                   horizontal
-                  showsHorizontalScrollIndicator={true}
+                  showsHorizontalScrollIndicator={false}
+                  directionalLockEnabled
+                  nestedScrollEnabled
+                  keyboardShouldPersistTaps="handled"
                   contentContainerStyle={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -806,7 +837,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                   }}
                   style={{ width: '100%' }}
                   ref={scrollRef}
-                  onContentSizeChange={(w, h) => setMaxScroll(w - 360)}
+                  onContentSizeChange={(w) => setMaxScroll(w - imageContainerWidth)}
                   onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
                   scrollEventThrottle={16}
                 >
@@ -881,6 +912,26 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                     );
                   })}
                 </ScrollView>
+                {scrollX > 0 && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      scrollRef.current?.scrollTo({ x: scrollX - 130, animated: true })
+                    }
+                    style={styles.scrollArrowLeft}
+                  >
+                    <Icon name="chevron-left" size={24} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                {maxScroll > 0 && scrollX < maxScroll && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      scrollRef.current?.scrollTo({ x: scrollX + 130, animated: true })
+                    }
+                    style={styles.scrollArrowRight}
+                  >
+                    <Icon name="chevron-right" size={24} color="#fff" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
@@ -918,6 +969,7 @@ const styles = StyleSheet.create({
   requiredHint: { marginBottom: 12 },
   input: { borderWidth: 1, borderRadius: 16, padding: 8, marginBottom: 8, borderColor: '#ccc' },
   map: { width: '100%', height: 180, borderRadius: 10, marginBottom: 12 },
+  mapContainer: { width: '100%', height: 180, borderRadius: 10, marginBottom: 12, overflow: 'hidden', position: 'relative' },
   mapSearchInput: {
     borderWidth: 1,
     borderRadius: 16,
@@ -958,6 +1010,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     zIndex: 2,
+  },
+  scrollArrowLeft: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    marginTop: -20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 4,
+    zIndex: 10,
+  },
+  scrollArrowRight: {
+    position: 'absolute',
+    right: 0,
+    top: '50%',
+    marginTop: -20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 4,
+    zIndex: 10,
   },
   imagePickerBtn: {
     flexDirection: 'row',

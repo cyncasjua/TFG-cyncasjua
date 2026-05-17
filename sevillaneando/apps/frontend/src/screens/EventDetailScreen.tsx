@@ -81,6 +81,7 @@ type ChatMessage = {
 
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
+  const [mapActive, setMapActive] = useState(false);
   const { event: initialEvent } = route.params;
   const [event, setEvent] = useState<Event>(initialEvent);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -105,7 +106,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     return [defaultEventImage];
   }, [coverImage, event.imagenes, defaultEventImage]);
   const isFocused = useIsFocused();
-  const { token, user } = useAuth();
+  const { token, user, role } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [chatError, setChatError] = useState('');
@@ -771,7 +772,18 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             color="#6c2eb7"
           />
         </TouchableOpacity>
-        <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+        {(role === 'moderator' || role === 'admin') && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ModeratorEditEvent', { event })}
+            style={[
+              styles.editToggle,
+              { backgroundColor: colors.card + 'EE', borderColor: colors.border },
+            ]}
+          >
+            <MaterialIcons name="edit" size={22} color="#6c2eb7" />
+          </TouchableOpacity>
+        )}
+        <ScrollView contentContainerStyle={{ paddingBottom: 32 }} scrollEnabled={!mapActive}>
           <FlatList
             data={detailImages}
             horizontal
@@ -920,6 +932,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               styles.mapContainer,
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
+            onTouchStart={() => setMapActive(true)}
+            onTouchEnd={() => setMapActive(false)}
+            onTouchCancel={() => setMapActive(false)}
           >
             <MapView
               style={StyleSheet.absoluteFillObject}
@@ -929,6 +944,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
             >
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               <Marker coordinate={coords} title={event.title} />
@@ -1569,6 +1588,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 20,
+    zIndex: 4,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 8,
+  },
+  editToggle: {
+    position: 'absolute',
+    top: 16,
+    right: 72,
     zIndex: 4,
     borderWidth: 1,
     borderRadius: 16,

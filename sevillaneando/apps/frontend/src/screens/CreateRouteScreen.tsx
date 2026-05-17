@@ -28,6 +28,25 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
+// Desplaza ligeramente los marcadores que comparten coordenadas exactas para que sean visibles
+function offsetDuplicateCoordinates(
+  coords: Array<{ latitude: number; longitude: number }>,
+): Array<{ latitude: number; longitude: number }> {
+  const OFFSET = 0.0002;
+  const seen = new Map<string, number>();
+  return coords.map((coord) => {
+    const key = `${coord.latitude},${coord.longitude}`;
+    const count = seen.get(key) ?? 0;
+    seen.set(key, count + 1);
+    if (count === 0) return coord;
+    const angle = (count * 2 * Math.PI) / 6;
+    return {
+      latitude: coord.latitude + OFFSET * Math.cos(angle),
+      longitude: coord.longitude + OFFSET * Math.sin(angle),
+    };
+  });
+}
+
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateRoute'>;
 
 export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
@@ -112,14 +131,14 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
 
   // Generar coordenadas automáticamente desde los eventos seleccionados en el orden especificado
   useEffect(() => {
-    const coordinates = selectedEventosIds
+    const raw = selectedEventosIds
       .map((eventId) => eventos.find((e) => e.id === eventId))
       .filter((e) => e && e.location?.coordinates?.length === 2)
       .map((e) => ({
         latitude: e.location.coordinates[1],
         longitude: e.location.coordinates[0],
       }));
-    setRouteCoordinates(coordinates);
+    setRouteCoordinates(offsetDuplicateCoordinates(raw));
   }, [selectedEventosIds, eventos]);
 
   const handleCreateRoute = async () => {
