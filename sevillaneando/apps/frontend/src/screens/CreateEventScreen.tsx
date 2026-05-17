@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   Image,
   View,
-  TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -363,17 +362,17 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        scrollEnabled={!mapActive}
+        onScrollBeginDrag={Keyboard.dismiss}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
-          scrollEnabled={!mapActive}
-        >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Crear Evento</ThemedTitle>
             <ThemedTextSecondary style={styles.requiredHint}>
@@ -967,9 +966,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
               style={{ marginTop: 16 }}
             />
           </ThemedView>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

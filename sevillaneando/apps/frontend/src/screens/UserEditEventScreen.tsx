@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   Image,
   View,
-  TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -406,17 +405,17 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        scrollEnabled={!mapActive}
+        onScrollBeginDrag={Keyboard.dismiss}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
-          scrollEnabled={!mapActive}
-        >
           <ThemedView style={styles.container}>
             {privado && eventLinkAcceso && (
               <PrivateEventLinkModal
@@ -1066,9 +1065,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               <ThemedText style={styles.deleteEventText}>Eliminar evento</ThemedText>
             </TouchableOpacity>
           </ThemedView>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

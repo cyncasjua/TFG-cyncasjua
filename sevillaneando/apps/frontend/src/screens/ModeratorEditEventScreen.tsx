@@ -13,7 +13,6 @@ import {
   Image,
   View,
   ActivityIndicator,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import MapView, { Marker, UrlTile, MapPressEvent } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
@@ -374,16 +373,16 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
-          scrollEnabled={!mapActive}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        scrollEnabled={!mapActive}
+        onScrollBeginDrag={Keyboard.dismiss}
         >
           <ThemedView style={styles.container}>
             <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
@@ -988,9 +987,8 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
               <ThemedText style={styles.deleteEventText}>Eliminar evento</ThemedText>
             </TouchableOpacity>
           </ThemedView>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
