@@ -949,10 +949,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               onPress={() => setShowMapCallout(false)}
             >
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-              <Marker
-                coordinate={coords}
-                onPress={() => setShowMapCallout((v) => !v)}
-              />
+              <Marker coordinate={coords} onPress={() => setShowMapCallout((v) => !v)} />
             </MapView>
             {showMapCallout && (
               <Pressable

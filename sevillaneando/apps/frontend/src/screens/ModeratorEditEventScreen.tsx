@@ -464,9 +464,7 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
             </TouchableOpacity>
           </View>
           <FieldLabel title="Ubicación en el mapa" status="required" />
-          <View
-            style={styles.mapContainer}
-          >
+          <View style={styles.mapContainer}>
             <MapView
               ref={mapRef}
               style={StyleSheet.absoluteFillObject}
