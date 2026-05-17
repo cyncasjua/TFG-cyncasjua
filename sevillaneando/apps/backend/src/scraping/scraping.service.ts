@@ -441,12 +441,14 @@ export class ScrapingService {
     let precio = this.toNonNegativeNumberOrNull(event.precio);
     let precioMin = this.toNonNegativeNumberOrNull(event.precioMin);
     let precioMax = this.toNonNegativeNumberOrNull(event.precioMax);
-    const inferredRange = this.extractPriceRangeFromText(`${event.title} ${event.description}`);
 
-    if (inferredRange && (precioMin == null || precioMax == null)) {
-      precio = null;
-      precioMin = inferredRange.precioMin;
-      precioMax = inferredRange.precioMax;
+    // Solo inferir rango desde el texto si el scraper no extrajo ningún precio.
+    if (precio == null && precioMin == null && precioMax == null) {
+      const inferredRange = this.extractPriceRangeFromText(`${event.title} ${event.description}`);
+      if (inferredRange) {
+        precioMin = inferredRange.precioMin;
+        precioMax = inferredRange.precioMax;
+      }
     }
 
     if (precioMin != null && precioMax != null) {
@@ -506,13 +508,19 @@ export class ScrapingService {
   }
 
   private extractPriceRangeFromText(text: string): { precioMin: number; precioMax: number } | null {
+    // El primer número debe ir seguido de € (o "euros"), o el separador debe ser
+    // un guion/dash/em-dash (no "a"/"hasta"/"y"), para evitar falsos positivos
+    // en frases como "exposición de 10 a 20 artistas con entrada de 5€".
     const match = text.match(
-      /(\d+(?:[.,]\d+)?)\s*(?:€|euros?)?\s*(?:-|–|—|a|hasta|y)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
+      /(\d+(?:[.,]\d+)?)\s*€\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)|(\d+(?:[.,]\d+)?)\s*(?:-|–|—)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
     );
     if (!match) return null;
 
-    const first = this.toNonNegativeNumberOrNull(match[1].replace(',', '.'));
-    const second = this.toNonNegativeNumberOrNull(match[2].replace(',', '.'));
+    const rawFirst = match[1] ?? match[3];
+    const rawSecond = match[2] ?? match[4];
+
+    const first = this.toNonNegativeNumberOrNull(rawFirst.replace(',', '.'));
+    const second = this.toNonNegativeNumberOrNull(rawSecond.replace(',', '.'));
 
     if (first == null || second == null || first === second) return null;
 

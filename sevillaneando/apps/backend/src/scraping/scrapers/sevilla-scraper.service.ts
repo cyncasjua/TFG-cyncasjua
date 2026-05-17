@@ -506,15 +506,21 @@ export class SevillaScraperService implements IScraper {
         .map((offer) => Number(offer?.price))
         .filter((price) => Number.isFinite(price) && price >= 0);
 
-      if (prices.length === 1) {
-        return { precio: prices[0], precioMin: null, precioMax: null };
+      // Si hay precios de pago mezclados con 0€, los ceros son "free tier" del JSON-LD
+      // y no deben arrastrar el mínimo a 0 en el rango.
+      const paidPrices = prices.filter((price) => price > 0);
+      const effectivePrices = paidPrices.length > 0 ? paidPrices : prices;
+
+      if (effectivePrices.length === 1) {
+        // Si había offer a 0 y una de pago, se expone el precio de pago como fijo.
+        return { precio: effectivePrices[0], precioMin: null, precioMax: null };
       }
 
-      if (prices.length > 1) {
+      if (effectivePrices.length > 1) {
         return {
           precio: null,
-          precioMin: Math.min(...prices),
-          precioMax: Math.max(...prices),
+          precioMin: Math.min(...effectivePrices),
+          precioMax: Math.max(...effectivePrices),
         };
       }
     }

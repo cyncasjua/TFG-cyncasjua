@@ -12,7 +12,7 @@ export function formatEventPrice(
   currency = '€'
 ): string {
   if (event.precioMin != null && event.precioMax != null) {
-    return `${event.precioMin}${currency} - ${event.precioMax}${currency}`;
+    return `${event.precioMin} ${currency} - ${event.precioMax} ${currency}`;
   }
 
   if (event.precio === 0) {

@@ -1286,7 +1286,7 @@ export class RecomendacionesService {
         // Actualizar el snapshot en la misma transacción
         for (const event of recommendedEvents) {
           await queryRunner.query(
-            `INSERT INTO "recomendacion_eventos_recomendados_events" ("recomendacionId", "eventId")
+            `INSERT INTO "recomendacion_eventos_recomendados_events" ("recomendacionId", "eventsId")
              VALUES ($1, $2)
              ON CONFLICT DO NOTHING`,
             [snapshot.id, event.id]

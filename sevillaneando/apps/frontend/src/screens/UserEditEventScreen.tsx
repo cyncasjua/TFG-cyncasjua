@@ -99,9 +99,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   );
   const [mapDelta, setMapDelta] = useState({ latitudeDelta: 0.01, longitudeDelta: 0.01 });
 
-  const [precio, setPrecio] = useState(event.precio ? String(event.precio) : '');
-  const [precioMin, setPrecioMin] = useState(event.precioMin ? String(event.precioMin) : '');
-  const [precioMax, setPrecioMax] = useState(event.precioMax ? String(event.precioMax) : '');
+  const [precio, setPrecio] = useState(event.precio != null ? String(event.precio) : '');
+  const [precioMin, setPrecioMin] = useState(event.precioMin != null ? String(event.precioMin) : '');
+  const [precioMax, setPrecioMax] = useState(event.precioMax != null ? String(event.precioMax) : '');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
 

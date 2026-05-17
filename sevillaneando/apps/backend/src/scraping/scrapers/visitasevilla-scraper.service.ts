@@ -188,11 +188,11 @@ export class VisitaSevillaScraperService implements IScraper {
     }
 
     const rangeMatch = text.match(
-      /(\d+(?:[.,]\d+)?)\s*(?:€|euros?)?\s*(?:-|–|—|a|hasta|y)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
+      /(\d+(?:[.,]\d+)?)\s*€\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)|(\d+(?:[.,]\d+)?)\s*(?:-|–|—)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
     );
     if (rangeMatch) {
-      const first = parseFloat(rangeMatch[1].replace(',', '.'));
-      const second = parseFloat(rangeMatch[2].replace(',', '.'));
+      const first = parseFloat((rangeMatch[1] ?? rangeMatch[3]).replace(',', '.'));
+      const second = parseFloat((rangeMatch[2] ?? rangeMatch[4]).replace(',', '.'));
       if (Number.isFinite(first) && Number.isFinite(second) && first !== second) {
         return {
           precio: null,
@@ -200,6 +200,16 @@ export class VisitaSevillaScraperService implements IScraper {
           precioMax: Math.max(first, second),
         };
       }
+    }
+
+    // "Desde X€" / "A partir de X€" → precio mínimo sin máximo conocido, se trata como precio fijo
+    const desdeMatch = text.match(/(?:desde|a partir de)\s+(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i);
+    if (desdeMatch) {
+      return {
+        precio: parseFloat(desdeMatch[1].replace(',', '.')),
+        precioMin: null,
+        precioMax: null,
+      };
     }
 
     const euroMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i);
