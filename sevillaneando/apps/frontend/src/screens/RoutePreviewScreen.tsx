@@ -131,6 +131,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             key={`${routePlan.day}-${index}`}
             coordinate={coordinate}
             title={`Parada ${index + 1}`}
+            tracksViewChanges={false}
           >
             <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>
               <ThemedText style={styles.markerLabel}>{index + 1}</ThemedText>

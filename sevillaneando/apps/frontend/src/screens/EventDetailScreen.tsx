@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import MapView, { Callout, Marker, UrlTile } from 'react-native-maps';
 import {
   Linking,
   Platform,
@@ -37,7 +37,7 @@ import {
 } from '../components';
 import type { Event } from '../types/event';
 import { useIsFocused } from '@react-navigation/native';
-import { TextInput, TouchableOpacity } from 'react-native';
+import { Pressable, TextInput, TouchableOpacity } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
@@ -932,7 +932,6 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               styles.mapContainer,
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
-            onTouchStart={() => setMapActive(true)}
             onTouchEnd={() => setMapActive(false)}
             onTouchCancel={() => setMapActive(false)}
           >
@@ -944,14 +943,62 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
-              scrollEnabled={false}
-              zoomEnabled={false}
+              scrollEnabled={mapActive}
+              zoomEnabled={mapActive}
               rotateEnabled={false}
               pitchEnabled={false}
             >
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-              <Marker coordinate={coords} title={event.title} />
+              <Marker coordinate={coords}>
+                <Callout
+                  onPress={openExternalNavigation}
+                  tooltip={false}
+                >
+                  <View style={{ padding: 6, maxWidth: 200 }}>
+                    <ThemedText style={{ fontWeight: '700', fontSize: 13 }}>
+                      {event.title}
+                    </ThemedText>
+                    {event.address ? (
+                      <ThemedText style={{ fontSize: 11, color: '#6c2eb7', marginTop: 2 }}>
+                        Abrir en mapas
+                      </ThemedText>
+                    ) : null}
+                  </View>
+                </Callout>
+              </Marker>
             </MapView>
+            {!mapActive && (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  bottom: 8,
+                  left: 0,
+                  right: 0,
+                  alignItems: 'center',
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: 'rgba(0,0,0,0.45)',
+                    borderRadius: 12,
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
+                  }}
+                >
+                  <ThemedText style={{ color: '#fff', fontSize: 11 }}>
+                    Mantén pulsado para mover el mapa
+                  </ThemedText>
+                </View>
+              </View>
+            )}
+            {!mapActive && (
+              <Pressable
+                style={{ ...StyleSheet.absoluteFillObject }}
+                onLongPress={() => setMapActive(true)}
+                delayLongPress={400}
+              />
+            )}
           </ThemedView>
           <ThemedView style={{ marginBottom: 12 }}>
             <OsmAttribution compact />

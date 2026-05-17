@@ -258,14 +258,6 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
               zoomEnabled={true}
             >
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-              {routeCoordinates.map((coord, index) => (
-                <Marker key={index} coordinate={coord} title={`Evento ${index + 1}`}>
-                  <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>
-                    <ThemedText style={styles.markerLabel}>{index + 1}</ThemedText>
-                  </View>
-                </Marker>
-              ))}
-
               {routeCoordinates.length >= 2 && (
                 <Polyline
                   coordinates={routeCoordinates}
@@ -274,6 +266,18 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
                   lineDashPattern={[1]}
                 />
               )}
+              {routeCoordinates.map((coord, index) => (
+                <Marker
+                  key={index}
+                  coordinate={coord}
+                  title={`Evento ${index + 1}`}
+                  tracksViewChanges={false}
+                >
+                  <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>
+                    <ThemedText style={styles.markerLabel}>{index + 1}</ThemedText>
+                  </View>
+                </Marker>
+              ))}
             </MapView>
 
             {routeCoordinates.length > 0 ? (

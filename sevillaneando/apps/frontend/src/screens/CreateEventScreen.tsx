@@ -4,6 +4,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   TextInput,
   ScrollView,
   Keyboard,
@@ -549,8 +550,6 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 borderColor: colors.primary,
                 position: 'relative',
               }}
-              onStartShouldSetResponder={() => true}
-              onTouchStart={() => setMapActive(true)}
               onTouchEnd={() => setMapActive(false)}
               onTouchCancel={() => setMapActive(false)}
             >
@@ -563,8 +562,8 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                   latitudeDelta: DEFAULT_MAP_DELTA.latitudeDelta,
                   longitudeDelta: DEFAULT_MAP_DELTA.longitudeDelta,
                 }}
-                scrollEnabled={false}
-                zoomEnabled={false}
+                scrollEnabled={mapActive}
+                zoomEnabled={mapActive}
                 rotateEnabled={false}
                 pitchEnabled={false}
                 onPress={(e) => {
@@ -578,6 +577,38 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 )}
                 <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               </MapView>
+              {!mapActive && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    bottom: 8,
+                    left: 0,
+                    right: 0,
+                    alignItems: 'center',
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.45)',
+                      borderRadius: 12,
+                      paddingHorizontal: 12,
+                      paddingVertical: 4,
+                    }}
+                  >
+                    <ThemedText style={{ color: '#fff', fontSize: 11 }}>
+                      Mantén pulsado para mover el mapa
+                    </ThemedText>
+                  </View>
+                </View>
+              )}
+              {!mapActive && (
+                <Pressable
+                  style={{ ...StyleSheet.absoluteFillObject }}
+                  onLongPress={() => setMapActive(true)}
+                  delayLongPress={400}
+                />
+              )}
             </View>
             <View style={{ marginBottom: 8 }}>
               <OsmAttribution compact />

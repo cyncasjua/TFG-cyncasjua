@@ -284,7 +284,12 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             )}
 
             {coordinates.map((coord, index) => (
-              <Marker key={`${routeId}-${index}`} coordinate={coord} title={`Parada ${index + 1}`}>
+              <Marker
+                key={`${routeId}-${index}`}
+                coordinate={coord}
+                title={`Parada ${index + 1}`}
+                tracksViewChanges={false}
+              >
                 <View style={[styles.markerBubble, { backgroundColor: colors.primary }]}>
                   <ThemedText style={styles.markerLabel}>{index + 1}</ThemedText>
                 </View>
