@@ -64,8 +64,8 @@ export class VisitaSevillaScraperService implements IScraper {
       fechaFin,
       hasMultipleDatesAvailable,
       precio: detail.precio,
-      precioMin: null,
-      precioMax: null,
+      precioMin: detail.precioMin,
+      precioMax: detail.precioMax,
       categoriaHint: category || 'Otros',
       imagen: detail.imagen || imagenListado,
       sourceUrl,
@@ -77,6 +77,8 @@ export class VisitaSevillaScraperService implements IScraper {
     address: string;
     location: { type: 'Point'; coordinates: [number, number] } | null;
     precio: number | null;
+    precioMin: number | null;
+    precioMax: number | null;
     imagen: string | undefined;
   }> {
     const empty = {
@@ -84,6 +86,8 @@ export class VisitaSevillaScraperService implements IScraper {
       address: 'Sevilla, España',
       location: null,
       precio: null,
+      precioMin: null,
+      precioMax: null,
       imagen: undefined,
     };
     const html = await this.fetchHtml(url);
@@ -127,18 +131,17 @@ export class VisitaSevillaScraperService implements IScraper {
     }
 
     // Precio: acepta "Tarifas", "Precio" y variantes como "PRECIOS;: Desde 45 €".
-    let precio: number | null = null;
     const tarifaText = this.extractLabeledValue(descBlocks, ['tarifas', 'tarifa', 'precio', 'precios']);
-    precio = this.extractPrecio(tarifaText || descText);
+    const parsedPrice = this.extractPriceFields(tarifaText || descText);
     // También buscar en el título: "Desde 17 euros"
-    if (precio === null) {
+    if (parsedPrice.precio === null && parsedPrice.precioMin === null && parsedPrice.precioMax === null) {
       const titleEuroMatch = url.match(/desde-(\d+)-euros/i);
-      if (titleEuroMatch) precio = parseFloat(titleEuroMatch[1]);
+      if (titleEuroMatch) parsedPrice.precio = parseFloat(titleEuroMatch[1]);
     }
 
     const description = `${descText.substring(0, 800)}\n\nFuente: ${url}`;
 
-    return { description, address, location, precio, imagen };
+    return { description, address, location, ...parsedPrice, imagen };
   }
 
   private extractLabeledValue(blocks: string[], labels: string[]): string | null {
@@ -164,17 +167,37 @@ export class VisitaSevillaScraperService implements IScraper {
       .toLowerCase();
   }
 
-  private extractPrecio(text: string): number | null {
-    if (!text) return null;
+  private extractPriceFields(text: string): {
+    precio: number | null;
+    precioMin: number | null;
+    precioMax: number | null;
+  } {
+    const empty = { precio: null, precioMin: null, precioMax: null };
+    if (!text) return empty;
 
     if (/gratuito|gratis|entrada libre|free|sin cargo/i.test(this.normalizeLabelText(text))) {
-      return 0;
+      return { precio: 0, precioMin: null, precioMax: null };
+    }
+
+    const rangeMatch = text.match(
+      /(\d+(?:[.,]\d+)?)\s*(?:€|euros?)?\s*(?:-|–|—|a|hasta|y)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
+    );
+    if (rangeMatch) {
+      const first = parseFloat(rangeMatch[1].replace(',', '.'));
+      const second = parseFloat(rangeMatch[2].replace(',', '.'));
+      if (Number.isFinite(first) && Number.isFinite(second) && first !== second) {
+        return {
+          precio: null,
+          precioMin: Math.min(first, second),
+          precioMax: Math.max(first, second),
+        };
+      }
     }
 
     const euroMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i);
-    if (!euroMatch) return null;
+    if (!euroMatch) return empty;
 
-    return parseFloat(euroMatch[1].replace(',', '.'));
+    return { precio: parseFloat(euroMatch[1].replace(',', '.')), precioMin: null, precioMax: null };
   }
 
   // Parsea el formato DD.MM.YY o DD.MM.YY-DD.MM.YY de visitasevilla

@@ -1247,25 +1247,36 @@ export class RecomendacionesService {
   private async storeSnapshot(user: User, top: ScoredEvent[]) {
     if (top.length === 0) return;
 
-    let snapshot = await this.recomendacionRepo.findOne({
-      where: { usuario: { id: user.id } },
-      relations: ['usuario'],
-    });
+    const recommendedEvents = this.getUniqueRecommendedEvents(top);
+    if (recommendedEvents.length === 0) return;
+
+    const criterios = ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'];
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      let snapshot = await queryRunner.manager.findOne(Recomendacion, {
+        where: { usuario: { id: user.id } },
+        relations: ['usuario'],
+        lock: { mode: 'pessimistic_write' },
+      });
+
       if (!snapshot) {
-        snapshot = this.recomendacionRepo.create({
+        snapshot = queryRunner.manager.create(Recomendacion, {
           usuario: user,
-          eventosRecomendados: top.map((item) => item.event),
-          criterios: ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'],
+          eventosRecomendados: recommendedEvents,
+          criterios,
           vista: false,
         });
         await queryRunner.manager.save(snapshot);
       } else {
+        await queryRunner.manager.update(Recomendacion, snapshot.id, {
+          criterios,
+          vista: false,
+        });
+
         // Limpiar las relaciones existentes en la misma transacción
         await queryRunner.query(
           'DELETE FROM "recomendacion_eventos_recomendados_events" WHERE "recomendacionId" = $1',
@@ -1273,10 +1284,14 @@ export class RecomendacionesService {
         );
 
         // Actualizar el snapshot en la misma transacción
-        snapshot.eventosRecomendados = top.map((item) => item.event);
-        snapshot.criterios = ['intereses', 'historial', 'distancia', 'fecha', 'valoraciones'];
-        snapshot.vista = false;
-        await queryRunner.manager.save(snapshot);
+        for (const event of recommendedEvents) {
+          await queryRunner.query(
+            `INSERT INTO "recomendacion_eventos_recomendados_events" ("recomendacionId", "eventId")
+             VALUES ($1, $2)
+             ON CONFLICT DO NOTHING`,
+            [snapshot.id, event.id]
+          );
+        }
       }
 
       await queryRunner.commitTransaction();
@@ -1286,6 +1301,20 @@ export class RecomendacionesService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  private getUniqueRecommendedEvents(top: ScoredEvent[]): Event[] {
+    const seen = new Set<string>();
+    const events: Event[] = [];
+
+    for (const item of top) {
+      const event = item.event;
+      if (!event?.id || seen.has(event.id)) continue;
+      seen.add(event.id);
+      events.push(event);
+    }
+
+    return events;
   }
 
   private getEffectiveEventEndTime(startTimeMs: number, endTimeMs: number): number {

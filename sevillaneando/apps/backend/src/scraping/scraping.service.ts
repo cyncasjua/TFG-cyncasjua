@@ -13,6 +13,10 @@ import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
 import { GeminiScraperService } from './scrapers/gemini-scraper.service';
 import { VisitaSevillaScraperService } from './scrapers/visitasevilla-scraper.service';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
+
+// Dominios que bloquean hotlinking — sus imágenes deben re-hospedarse en Cloudinary.
+const BLOCKED_IMAGE_HOSTS = ['tic.visitasevilla.es'];
 
 @Injectable()
 export class ScrapingService {
@@ -35,7 +39,8 @@ export class ScrapingService {
     private readonly resenaRepo: Repository<Resena>,
     @InjectRepository(Mensaje)
     private readonly mensajeRepo: Repository<Mensaje>,
-    private readonly moduleRef: ModuleRef
+    private readonly moduleRef: ModuleRef,
+    private readonly cloudinaryService: CloudinaryService
   ) {}
 
   async scrapeAll(): Promise<{ total: number; saved: number; errors: number }> {
@@ -106,7 +111,11 @@ export class ScrapingService {
       }
 
       const normalizedDateEvent = this.normalizeLongEventDates(scrapedEvent);
-      const normalizedEvent = this.normalizePriceFields(normalizedDateEvent);
+      const normalizedEvent = this.normalizeMediaFields(
+        this.normalizePriceFields(normalizedDateEvent)
+      );
+
+      normalizedEvent.imagen = await this.reHostImageIfNeeded(normalizedEvent.imagen);
 
       try {
         const batchKey = this.getDuplicateKey(normalizedEvent.title);
@@ -135,8 +144,8 @@ export class ScrapingService {
           existingEvent.precio = normalizedEvent.precio;
           existingEvent.precioMin = normalizedEvent.precioMin;
           existingEvent.precioMax = normalizedEvent.precioMax;
-          existingEvent.imagen = normalizedEvent.imagen;
-          existingEvent.imagenes = normalizedEvent.imagenes;
+          existingEvent.imagen = normalizedEvent.imagen ?? existingEvent.imagen;
+          existingEvent.imagenes = normalizedEvent.imagenes ?? existingEvent.imagenes;
           existingEvent.estado = EstadoEnum.Aprobado;
           existingEvent.creador = systemUser;
           existingEvent.privado = false;
@@ -183,6 +192,48 @@ export class ScrapingService {
     }
 
     return savedCount;
+  }
+
+  private isBlockedImageHost(url: string | undefined): boolean {
+    if (!url) return false;
+    try {
+      const { hostname } = new URL(url);
+      return BLOCKED_IMAGE_HOSTS.some((h) => hostname === h || hostname.endsWith(`.${h}`));
+    } catch {
+      return false;
+    }
+  }
+
+  private async reHostImageIfNeeded(imageUrl: string | undefined): Promise<string | undefined> {
+    if (!imageUrl || !this.isBlockedImageHost(imageUrl)) return imageUrl;
+
+    try {
+      const resp = await fetch(imageUrl, {
+        headers: {
+          Referer: 'https://visitasevilla.es/',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!resp.ok) {
+        this.logger.warn(`reHostImage: HTTP ${resp.status} para ${imageUrl}`);
+        return undefined;
+      }
+
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      const result = await this.cloudinaryService.uploadImage(buffer, {
+        folder: 'sevillaneando/scraped',
+        publicIdPrefix: 'visitasevilla',
+      });
+
+      this.logger.debug(`reHostImage: imagen subida a Cloudinary: ${result.optimizedUrl}`);
+      return result.optimizedUrl;
+    } catch (err) {
+      this.logger.warn(`reHostImage: error rehospedando ${imageUrl}: ${String(err)}`);
+      return undefined;
+    }
   }
 
   getAvailableScrapers(): string[] {
@@ -390,6 +441,13 @@ export class ScrapingService {
     let precio = this.toNonNegativeNumberOrNull(event.precio);
     let precioMin = this.toNonNegativeNumberOrNull(event.precioMin);
     let precioMax = this.toNonNegativeNumberOrNull(event.precioMax);
+    const inferredRange = this.extractPriceRangeFromText(`${event.title} ${event.description}`);
+
+    if (inferredRange && (precioMin == null || precioMax == null)) {
+      precio = null;
+      precioMin = inferredRange.precioMin;
+      precioMax = inferredRange.precioMax;
+    }
 
     if (precioMin != null && precioMax != null) {
       if (precioMin > precioMax) {
@@ -417,6 +475,50 @@ export class ScrapingService {
       precio,
       precioMin,
       precioMax,
+    };
+  }
+
+  private normalizeMediaFields(event: ScrapedEvent): ScrapedEvent {
+    const imagen = this.normalizeScrapedImageUrl(event.imagen);
+    const imagenes = event.imagenes
+      ?.map((image) => this.normalizeScrapedImageUrl(image))
+      .filter((image): image is string => Boolean(image));
+
+    return {
+      ...event,
+      imagen,
+      imagenes: imagenes && imagenes.length > 0 ? imagenes : event.imagenes,
+    };
+  }
+
+  private normalizeScrapedImageUrl(image?: string | null): string | undefined {
+    if (!image) return undefined;
+    const trimmed = image.trim();
+    if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return undefined;
+
+    // Normaliza http→https para dominios que lo soporten; los de BLOCKED_IMAGE_HOSTS
+    // se procesarán después en reHostImageIfNeeded (descarga + resubida a Cloudinary).
+    if (/^http:\/\//i.test(trimmed)) {
+      return trimmed.replace(/^http:/i, 'https:');
+    }
+
+    return trimmed;
+  }
+
+  private extractPriceRangeFromText(text: string): { precioMin: number; precioMax: number } | null {
+    const match = text.match(
+      /(\d+(?:[.,]\d+)?)\s*(?:€|euros?)?\s*(?:-|–|—|a|hasta|y)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
+    );
+    if (!match) return null;
+
+    const first = this.toNonNegativeNumberOrNull(match[1].replace(',', '.'));
+    const second = this.toNonNegativeNumberOrNull(match[2].replace(',', '.'));
+
+    if (first == null || second == null || first === second) return null;
+
+    return {
+      precioMin: Math.min(first, second),
+      precioMax: Math.max(first, second),
     };
   }
 

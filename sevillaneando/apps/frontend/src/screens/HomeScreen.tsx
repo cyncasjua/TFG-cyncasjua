@@ -66,6 +66,34 @@ const BOTTOM_DOCK_ICON_RADIUS = BOTTOM_DOCK_ICON_SIZE / 2;
 const INITIAL_RECOMMENDED_EVENTS_VISIBLE = 8;
 const RECOMMENDED_EVENTS_FETCH_LIMIT = 24;
 
+const DEFAULT_EVENT_IMAGE = require('../../assets/splash.png');
+
+function EventCardImage({
+  uri,
+  style,
+  imageStyle,
+  children,
+}: {
+  uri: string | undefined;
+  style: object;
+  imageStyle: object;
+  children: React.ReactNode;
+}) {
+  const [failed, setFailed] = React.useState(false);
+  const source = uri && !failed ? { uri } : DEFAULT_EVENT_IMAGE;
+  return (
+    <ImageBackground
+      source={source}
+      style={style}
+      imageStyle={imageStyle}
+      resizeMode="cover"
+      onError={() => setFailed(true)}
+    >
+      {children}
+    </ImageBackground>
+  );
+}
+
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [recommendedEvents, setRecommendedEvents] = useState<RecommendedEvent[]>([]);
@@ -750,15 +778,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       {item.distance.toFixed(1)} km
                     </ThemedText>
                   )}
-                  <ImageBackground
-                    source={
-                      getFullImageUrl(item.imagen)
-                        ? { uri: getFullImageUrl(item.imagen)! }
-                        : require('../../assets/splash.png')
-                    }
+                  <EventCardImage
+                    uri={getFullImageUrl(item.imagen)}
                     style={{ height: 120, justifyContent: 'flex-end' }}
                     imageStyle={{ opacity: 0.2 }}
-                    resizeMode="cover"
                   >
                     <ThemedText
                       style={{
@@ -795,7 +818,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="place" size={16} color="#ffd700" /> {item.address}
                     </ThemedTextSecondary>
-                  </ImageBackground>
+                  </EventCardImage>
                   <ThemedView style={{ padding: 12 }}>
                     <ThemedView
                       style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
