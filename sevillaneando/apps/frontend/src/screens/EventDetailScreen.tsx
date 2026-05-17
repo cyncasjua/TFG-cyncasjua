@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import MapView, { Callout, Marker, UrlTile } from 'react-native-maps';
 import {
   Linking,
   Platform,
@@ -82,7 +82,6 @@ type ChatMessage = {
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [mapActive, setMapActive] = useState(false);
-  const [showMapCallout, setShowMapCallout] = useState(false);
   const { event: initialEvent } = route.params;
   const [event, setEvent] = useState<Event>(initialEvent);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -946,42 +945,38 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               zoomEnabled={mapActive}
               rotateEnabled={false}
               pitchEnabled={false}
-              onPress={() => setShowMapCallout(false)}
             >
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-              <Marker
-                coordinate={coords}
-                onPress={() => setShowMapCallout((v) => !v)}
-              />
+              <Marker coordinate={coords}>
+                <Callout tooltip onPress={openExternalNavigation}>
+                  <View
+                    style={{
+                      backgroundColor: colors.card,
+                      borderRadius: 12,
+                      padding: 10,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      maxWidth: 220,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 4,
+                      elevation: 4,
+                    }}
+                  >
+                    <ThemedText style={{ fontWeight: '700', fontSize: 13 }} numberOfLines={2}>
+                      {event.title}
+                    </ThemedText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 }}>
+                      <MaterialIcons name="open-in-new" size={12} color={colors.primary} />
+                      <ThemedText style={{ fontSize: 11, color: colors.primary }}>
+                        Abrir en mapas
+                      </ThemedText>
+                    </View>
+                  </View>
+                </Callout>
+              </Marker>
             </MapView>
-            {showMapCallout && (
-              <Pressable
-                onPress={openExternalNavigation}
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  right: 52,
-                  backgroundColor: colors.card,
-                  borderRadius: 12,
-                  padding: 10,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 4,
-                  elevation: 4,
-                }}
-              >
-                <ThemedText style={{ fontWeight: '700', fontSize: 13 }} numberOfLines={2}>
-                  {event.title}
-                </ThemedText>
-                <ThemedText style={{ fontSize: 11, color: colors.primary, marginTop: 3 }}>
-                  Abrir en mapas →
-                </ThemedText>
-              </Pressable>
-            )}
             <Pressable
               onPress={() => setMapActive((v) => !v)}
               style={{

@@ -18,7 +18,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const isMulterFileSizeError =
-      exception instanceof Error && (exception as any).code === 'LIMIT_FILE_SIZE';
+      exception instanceof Error && (exception as Error & { code?: string }).code === 'LIMIT_FILE_SIZE';
 
     const status = isMulterFileSizeError
       ? HttpStatus.PAYLOAD_TOO_LARGE

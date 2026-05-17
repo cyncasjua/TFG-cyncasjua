@@ -4,6 +4,29 @@ import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { IScraper, ScrapedEvent } from '../interfaces/scraper.interface';
 
+type TmEvent = {
+  id?: string;
+  name?: string;
+  url?: string;
+  info?: string;
+  description?: string;
+  pleaseNote?: string;
+  images?: { url: string }[];
+  priceRanges?: { type?: string; min?: number; max?: number }[];
+  dates?: {
+    start?: { dateTime?: string; localDate?: string; localTime?: string };
+    end?: { dateTime?: string; localDate?: string; localTime?: string };
+  };
+  _embedded?: {
+    venues?: {
+      city?: { name?: string };
+      state?: { stateCode?: string };
+      address?: { line1?: string };
+      location?: { latitude?: string; longitude?: string };
+    }[];
+  };
+};
+
 //Scraper para eventos de Ticketmaster en Sevilla
 @Injectable()
 export class TicketmasterScraperService implements IScraper {
@@ -112,10 +135,9 @@ export class TicketmasterScraperService implements IScraper {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private parseTicketmasterEvent(tmEvent: any): ScrapedEvent | null {
+  private parseTicketmasterEvent(tmEvent: TmEvent): ScrapedEvent | null {
     try {
-      const title = tmEvent.name;
+      const title = tmEvent.name ?? '';
       let description = '';
       if (typeof tmEvent.info === 'string' && tmEvent.info.trim().length > 0) {
         description = tmEvent.info.trim();
@@ -139,16 +161,16 @@ export class TicketmasterScraperService implements IScraper {
       }
 
       const fechaInicio = this.parseTicketmasterDateTime(
-        tmEvent.dates.start?.dateTime,
-        tmEvent.dates.start?.localDate,
-        tmEvent.dates.start?.localTime
+        tmEvent.dates?.start?.dateTime,
+        tmEvent.dates?.start?.localDate,
+        tmEvent.dates?.start?.localTime
       );
       let fechaFin: Date | null = null;
 
       fechaFin = this.parseTicketmasterDateTime(
-        tmEvent.dates.end?.dateTime,
-        tmEvent.dates.end?.localDate,
-        tmEvent.dates.end?.localTime
+        tmEvent.dates?.end?.dateTime,
+        tmEvent.dates?.end?.localDate,
+        tmEvent.dates?.end?.localTime
       );
 
       // No inventar fechaFin si no existe - dejar como null
@@ -210,9 +232,8 @@ export class TicketmasterScraperService implements IScraper {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private extractTicketmasterPrice(
-    tmEvent: any,
+    tmEvent: TmEvent,
     description: string
   ): { precio: number | null; precioMin: number | null; precioMax: number | null } {
     const ranges = Array.isArray(tmEvent.priceRanges) ? tmEvent.priceRanges : [];
