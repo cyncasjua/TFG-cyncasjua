@@ -325,7 +325,8 @@ ${htmlLimpio}
         }
 
         if (locationFinal) {
-          const parsedFechaInicio = fechaInicio && !isNaN(fechaInicio.getTime()) ? fechaInicio : null;
+          const parsedFechaInicio =
+            fechaInicio && !isNaN(fechaInicio.getTime()) ? fechaInicio : null;
           const parsedFechaFin = fechaFin && !isNaN(fechaFin.getTime()) ? fechaFin : null;
           eventos.push({
             title: evento.title || 'Evento sin título',
@@ -366,7 +367,9 @@ ${htmlLimpio}
     }
 
     // Fecha con hora: "2026-06-04T20:00:00" — parsear como fecha local de Sevilla
-    const dateTimeMatch = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+    const dateTimeMatch = value
+      .trim()
+      .match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
     if (dateTimeMatch) {
       const [, year, month, day, hour, minute, second] = dateTimeMatch;
       // Construir como fecha local (sin offset), TypeORM lo almacenará como UTC
