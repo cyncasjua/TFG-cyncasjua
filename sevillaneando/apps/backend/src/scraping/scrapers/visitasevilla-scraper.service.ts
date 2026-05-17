@@ -131,7 +131,12 @@ export class VisitaSevillaScraperService implements IScraper {
     }
 
     // Precio: acepta "Tarifas", "Precio" y variantes como "PRECIOS;: Desde 45 €".
-    const tarifaText = this.extractLabeledValue(descBlocks, ['tarifas', 'tarifa', 'precio', 'precios']);
+    const tarifaText = this.extractLabeledValue(descBlocks, [
+      'tarifas',
+      'tarifa',
+      'precio',
+      'precios',
+    ]);
     const parsedPrice = this.extractPriceFields(tarifaText || descText);
     if (
       parsedPrice.precio === null &&
