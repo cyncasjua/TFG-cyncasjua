@@ -12,6 +12,7 @@ import { EstadoEnum } from '../events/enums/estado.enum';
 import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
 import { GeminiScraperService } from './scrapers/gemini-scraper.service';
+import { VisitaSevillaScraperService } from './scrapers/visitasevilla-scraper.service';
 
 @Injectable()
 export class ScrapingService {
@@ -264,6 +265,9 @@ export class ScrapingService {
       strict: false,
     });
     const geminiScraperService = this.moduleRef.get(GeminiScraperService, { strict: false });
+    const visitaSevillaScraperService = this.moduleRef.get(VisitaSevillaScraperService, {
+      strict: false,
+    });
 
     if (sevillaScraperService) {
       scrapers.push(sevillaScraperService);
@@ -275,6 +279,12 @@ export class ScrapingService {
       scrapers.push(ticketmasterScraperService);
     } else {
       this.logger.warn('TicketmasterScraperService no está disponible');
+    }
+
+    if (visitaSevillaScraperService) {
+      scrapers.push(visitaSevillaScraperService);
+    } else {
+      this.logger.warn('VisitaSevillaScraperService no está disponible');
     }
 
     if (geminiScraperService) {
@@ -326,6 +336,22 @@ export class ScrapingService {
 
     if (end.getTime() <= start.getTime()) {
       return { ...event, fechaFin: null };
+    }
+
+    // Si el evento dura más de 7 días es casi seguro que Gemini extrajo un rango
+    // de festival/ciclo en lugar de la fecha de una sesión concreta. En ese caso
+    // quitamos las fechas y lo marcamos como "consultar fechas".
+    const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    if (diffDays > 7) {
+      this.logger.debug(
+        `Evento con duración > 7 días (${diffDays.toFixed(1)} d) descartado como rango de festival: ${event.title}`
+      );
+      return {
+        ...event,
+        fechaInicio: null,
+        fechaFin: null,
+        hasMultipleDatesAvailable: true,
+      };
     }
 
     // Obtener la fecha sin hora para ambas

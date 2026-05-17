@@ -11,6 +11,7 @@ import { SevillaScraperService } from './scrapers/sevilla-scraper.service';
 import { TicketmasterScraperService } from './scrapers/ticketmaster-scraper.service';
 import { AuthModule } from '../auth/auth.module';
 import { GeminiScraperService } from './scrapers/gemini-scraper.service';
+import { VisitaSevillaScraperService } from './scrapers/visitasevilla-scraper.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Event, Categoria, User, Resena, Mensaje]), AuthModule],
@@ -20,6 +21,7 @@ import { GeminiScraperService } from './scrapers/gemini-scraper.service';
     SevillaScraperService,
     TicketmasterScraperService,
     GeminiScraperService,
+    VisitaSevillaScraperService,
   ],
   exports: [ScrapingService],
 })

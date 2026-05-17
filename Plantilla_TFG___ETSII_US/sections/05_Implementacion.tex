@@ -41,12 +41,13 @@ export class Event {
 
 \subsection{Scraping}
 
-El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado tres fuentes concretas:
+El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado cuatro fuentes concretas:
 
 \begin{itemize}
     \item \textbf{Eventbrite Sevilla}: el \texttt{SevillaScraperService} descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD embebidos en la página.
     \item \textbf{Ticketmaster API}: el \texttt{TicketmasterScraperService} consume la API oficial de Ticketmaster Discovery paginando los resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha de inicio.
-    \item \textbf{Scraper multi-web con Gemini AI}: el \texttt{GeminiScraperService} procesa siete webs institucionales y de ocio de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras). Para cada URL, descarga el HTML, lo limpia con \texttt{cheerio} eliminando scripts, estilos y elementos de navegación, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que devuelve los eventos en formato JSON estructurado. Las coordenadas geográficas que Gemini no puede deducir se resuelven mediante geocodificación con la API de \textbf{Nominatim} (OpenStreetMap), con hasta tres variantes de búsqueda por dirección.
+    \item \textbf{Visita Sevilla}: el \texttt{VisitaSevillaScraperService} descarga directamente la agenda de \texttt{visitasevilla.es} y parsea el HTML con \texttt{cheerio}. Interpreta el formato de fechas propio del portal (\texttt{DD.MM.YY} y rangos \texttt{DD.MM.YY-DD.MM.YY}), descarta placeholders de eventos sin fecha concreta y marca como \textit{consultar fechas} aquellos con rangos superiores a catorce días, evitando así duraciones ficticias.
+    \item \textbf{Scraper multi-web con Gemini AI}: el \texttt{GeminiScraperService} procesa varias webs institucionales y de ocio de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras). Para cada URL, descarga el HTML, lo limpia con \texttt{cheerio} eliminando scripts, estilos y elementos de navegación, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que devuelve los eventos en formato JSON estructurado. Las coordenadas geográficas que Gemini no puede deducir se resuelven mediante geocodificación con la API de \textbf{Nominatim} (OpenStreetMap), con hasta tres variantes de búsqueda por dirección.
 \end{itemize}
 
 Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida, descartando aquellos sin coordenadas o con datos incompletos.

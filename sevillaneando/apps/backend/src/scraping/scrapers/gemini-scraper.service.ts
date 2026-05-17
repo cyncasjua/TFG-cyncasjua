@@ -13,7 +13,7 @@ export class GeminiScraperService implements IScraper {
   private readonly urlsToScrape = [
     // --- INSTITUCIONALES Y OFICIALES ---
     'https://www.juntadeandalucia.es/cultura/agendaculturaldeandalucia/sevilla', //añade 9
-    'https://visitasevilla.es/ahora-en-sevilla/', //añade 100
+    // visitasevilla.es tiene scraper dedicado (VisitaSevillaScraperService)
 
     // --- GRANDES RECINTOS Y TEATROS ---
     'https://www.teatrodelamaestranza.es/es/programacion/', //añade 28
@@ -185,8 +185,8 @@ ${htmlLimpio}
 
       const eventos: ScrapedEvent[] = [];
       for (const evento of datosParseados.eventos || []) {
-        const fechaInicio = evento.fechaInicio ? new Date(evento.fechaInicio) : null;
-        const fechaFin = evento.fechaFin ? new Date(evento.fechaFin) : null;
+        const fechaInicio = evento.fechaInicio ? this.parseGeminiDate(evento.fechaInicio) : null;
+        const fechaFin = evento.fechaFin ? this.parseGeminiDate(evento.fechaFin) : null;
 
         const imagenFinal = evento.imagen || null;
 
@@ -325,12 +325,15 @@ ${htmlLimpio}
         }
 
         if (locationFinal) {
+          const parsedFechaInicio = fechaInicio && !isNaN(fechaInicio.getTime()) ? fechaInicio : null;
+          const parsedFechaFin = fechaFin && !isNaN(fechaFin.getTime()) ? fechaFin : null;
           eventos.push({
             title: evento.title || 'Evento sin título',
             description: descripcionFinal,
             address: addressFinal,
-            fechaInicio: fechaInicio && !isNaN(fechaInicio.getTime()) ? fechaInicio : null,
-            fechaFin: fechaFin && !isNaN(fechaFin.getTime()) ? fechaFin : null,
+            fechaInicio: parsedFechaInicio,
+            fechaFin: parsedFechaFin,
+            hasMultipleDatesAvailable: parsedFechaInicio === null,
             precio,
             precioMin,
             precioMax,
@@ -349,5 +352,35 @@ ${htmlLimpio}
         `Gemini devolvió un formato no válido: ${mensajeError}. Respuesta original: ${textoRespuesta.substring(0, 100)}...`
       );
     }
+  }
+
+  // Parsea fechas de Gemini evitando que "YYYY-MM-DD" se interprete como UTC medianoche
+  // (lo que causaría que aparezca a las 01:00 o 02:00 en zona horaria de Sevilla).
+  // Si viene solo fecha sin hora, devuelve null para que el sistema lo trate sin hora.
+  private parseGeminiDate(value: string): Date | null {
+    if (!value) return null;
+
+    // Solo fecha: "2026-06-04" — sin hora. Devolver null para no inventar hora.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+      return null;
+    }
+
+    // Fecha con hora: "2026-06-04T20:00:00" — parsear como fecha local de Sevilla
+    const dateTimeMatch = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (dateTimeMatch) {
+      const [, year, month, day, hour, minute, second] = dateTimeMatch;
+      // Construir como fecha local (sin offset), TypeORM lo almacenará como UTC
+      return new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second ?? 0)
+      );
+    }
+
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? null : parsed;
   }
 }

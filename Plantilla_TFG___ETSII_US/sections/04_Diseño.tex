@@ -119,8 +119,8 @@ El sistema delega en servicios externos las siguientes responsabilidades:
     \item \textbf{Firebase Authentication}~\cite{firebase}: gestión del ciclo de vida de la sesión del usuario (registro, inicio de sesión y tokens JWT). El cliente móvil usa el SDK de Firebase para obtener y renovar tokens; el backend usa el SDK de administración para verificarlos sin almacenar contraseñas ni gestionar sesiones propias.
     \item \textbf{Cloudinary}~\cite{cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats. El backend sube las imágenes directamente a Cloudinary mediante su SDK y almacena únicamente la URL resultante en PostgreSQL. Cloudinary sirve las imágenes desde su CDN (Content Delivery Network) con transformaciones automáticas de formato y calidad.
     \item \textbf{OpenStreetMap}~\cite{openstreetmap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}. Los \textit{tiles} cartográficos se obtienen directamente del servidor de OpenStreetMap sin pasar por el backend.
-    \item \textbf{Eventbrite}~\cite{eventbrite} \textbf{/ Ticketmaster}~\cite{ticketmaster} \textbf{/ webs institucionales y de ocio de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. Eventbrite se procesa extrayendo tarjetas de eventos y bloques JSON-LD del HTML; la API oficial de Ticketmaster se consume directamente; el resto de webs (portal municipal, guías de ocio, teatros y fundaciones) se procesan mediante el scraper basado en \textbf{Google Gemini AI}. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
-    \item \textbf{Google Gemini AI}: modelo de lenguaje utilizado por el \texttt{GeminiScraperService} para extraer y estructurar eventos a partir del contenido HTML de siete webs de ocio e institucionales de Sevilla. El backend envía el texto limpio de cada página al modelo \textbf{Gemini 2.5 Flash} mediante la API de Google Generative AI y obtiene los eventos en formato JSON estructurado.
+    \item \textbf{Eventbrite}~\cite{eventbrite} \textbf{/ Ticketmaster}~\cite{ticketmaster} \textbf{/ Visita Sevilla / webs institucionales y de ocio de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. Eventbrite se procesa extrayendo tarjetas de eventos y bloques JSON-LD del HTML; la API oficial de Ticketmaster se consume directamente; el portal \texttt{visitasevilla.es} dispone de un scraper dedicado que interpreta su formato de fechas propio; el resto de webs (portal municipal, guías de ocio, teatros y fundaciones) se procesan mediante el scraper basado en \textbf{Google Gemini AI}. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
+    \item \textbf{Google Gemini AI}: modelo de lenguaje utilizado por el \texttt{GeminiScraperService} para extraer y estructurar eventos a partir del contenido HTML de varias webs de ocio e institucionales de Sevilla. El backend envía el texto limpio de cada página al modelo \textbf{Gemini 2.5 Flash} mediante la API de Google Generative AI y obtiene los eventos en formato JSON estructurado.
     \item \textbf{Nominatim (OpenStreetMap)}: API de geocodificación utilizada por el \texttt{GeminiScraperService} para resolver las coordenadas geográficas de los eventos cuando Gemini no puede deducirlas directamente del texto. Se realizan hasta tres variantes de búsqueda por dirección para maximizar la cobertura.
 \end{itemize}
 
@@ -820,15 +820,17 @@ La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de ev
 % Fila 2: Orquestador (centro)
 \node[box] (orch) at (0,-1.6) {ScrapingService\\(orquestador)};
 
-% Fila 3: Scrapers (tres columnas)
-\node[box] (s1) at (-4.2,-3.4) {SevillaScraper\\(cheerio + JSON-LD)};
-\node[box] (s2) at ( 0.0,-3.4) {TicketmasterScraper\\(API oficial)};
-\node[box] (s3) at ( 4.2,-3.4) {GeminiScraper\\(extracción con IA)};
+% Fila 3: Scrapers (cuatro columnas)
+\node[box] (s1) at (-6.3,-3.4) {SevillaScraper\\(cheerio + JSON-LD)};
+\node[box] (s2) at (-2.1,-3.4) {TicketmasterScraper\\(API oficial)};
+\node[box] (s3) at ( 2.1,-3.4) {VisitaScraper\\(cheerio + fechas)};
+\node[box] (s4) at ( 6.3,-3.4) {GeminiScraper\\(extracción con IA)};
 
 % Fila 4: Fuentes externas (bajo cada scraper)
-\node[ext] (evtb) at (-4.2,-5.0) {Eventbrite\\(HTML + JSON-LD)};
-\node[ext] (tick) at ( 0.0,-5.0) {Ticketmaster API};
-\node[ext] (gem)  at ( 4.2,-5.0) {7 webs + Gemini AI};
+\node[ext] (evtb) at (-6.3,-5.0) {Eventbrite\\(HTML + JSON-LD)};
+\node[ext] (tick) at (-2.1,-5.0) {Ticketmaster API};
+\node[ext] (visa) at ( 2.1,-5.0) {visitasevilla.es};
+\node[ext] (gem)  at ( 6.3,-5.0) {webs inst. + Gemini AI};
 
 % Fila 5: Normalización (centro)
 \node[box] (norm) at (0,-6.8) {Normalización al\\modelo Event};
@@ -839,18 +841,21 @@ La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de ev
 % Flechas orch → scrapers
 \draw[arr] (cron) -- (orch);
 \draw[arr] (orch.south) -- ++(0,-0.5) -| (s1.north);
-\draw[arr] (orch.south) -- ++(0,-0.5) -- (s2.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s2.north);
 \draw[arr] (orch.south) -- ++(0,-0.5) -| (s3.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s4.north);
 
 % Flechas scrapers ↔ fuentes
 \draw[arr] (s1) -- (evtb);
 \draw[arr] (s2) -- (tick);
-\draw[arr] (s3) -- (gem);
+\draw[arr] (s3) -- (visa);
+\draw[arr] (s4) -- (gem);
 
 % Punto de confluencia entre fuentes y normalización
 \coordinate (merge) at (0,-6.1);
 \draw (evtb.south) -- ++(0,-0.35) -| (merge);
-\draw (tick.south) -- (merge);
+\draw (tick.south) -- ++(0,-0.35) -| (merge);
+\draw (visa.south) -- ++(0,-0.35) -| (merge);
 \draw (gem.south)  -- ++(0,-0.35) -| (merge);
 \draw[arr] (merge) -- (norm.north);
 
@@ -863,7 +868,7 @@ La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de ev
 
 \subsection{Por qué los scrapers siguen el patrón estrategia con interfaz \texttt{IScraper}}
 
-Cada fuente de eventos externos (Eventbrite, Ticketmaster, webs institucionales y de ocio de Sevilla procesadas con Gemini AI) está implementada como un scraper independiente que implementa la interfaz \texttt{IScraper}. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación del servicio de scraping. La alternativa de implementar el scraping como código monolítico habría acoplado la lógica de cada fuente con el proceso de guardado en base de datos, dificultando el mantenimiento cuando alguna de las fuentes externas cambia su estructura.
+Cada fuente de eventos externos (Eventbrite, Ticketmaster, Visita Sevilla y webs institucionales y de ocio de Sevilla procesadas con Gemini AI) está implementada como un scraper independiente que implementa la interfaz \texttt{IScraper}. Esto permite añadir nuevas fuentes de datos sin modificar la lógica de orquestación del servicio de scraping. La alternativa de implementar el scraping como código monolítico habría acoplado la lógica de cada fuente con el proceso de guardado en base de datos, dificultando el mantenimiento cuando alguna de las fuentes externas cambia su estructura.
 
 Además, todos los eventos scraped se asignan a un único usuario técnico del sistema (\textit{scraper-bot}), centralizado con un UID y correo fijos. Esto simplifica la trazabilidad: es inmediato identificar qué eventos provienen de fuentes externas y quién es su ``creador'' a efectos del modelo de datos.
 
@@ -922,15 +927,16 @@ Unificar ambos roles implicaría que cualquiera del amplio grupo de moderadores 
 
 \subsection{Por qué se ha implementado scraping en lugar de usar únicamente APIs oficiales}
 
-El contenido de eventos de la aplicación proviene de dos grandes bloques: eventos creados por usuarios y eventos obtenidos automáticamente de fuentes externas. Para estas últimas se utilizan tres estrategias complementarias:
+El contenido de eventos de la aplicación proviene de dos grandes bloques: eventos creados por usuarios y eventos obtenidos automáticamente de fuentes externas. Para estas últimas se utilizan cuatro estrategias complementarias:
 
 \begin{itemize}
     \item \textbf{Scraping HTML con JSON-LD (Eventbrite)}: el \texttt{SevillaScraperService} descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD estructurados embebidos en la página.
     \item \textbf{API oficial de Ticketmaster}: el \texttt{TicketmasterScraperService} consume la API Discovery de Ticketmaster paginando resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha.
-    \item \textbf{Extracción asistida por IA (Gemini)}: el \texttt{GeminiScraperService} accede a siete webs de ocio e institucionales de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras), limpia el HTML con \texttt{cheerio}, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que extrae y estructura los eventos en formato JSON. Las coordenadas no deducidas por el modelo se resuelven mediante geocodificación con Nominatim. Esto permite integrar fuentes con estructuras HTML variables o sin patrón fijo, que serían inviables de parsear con selectores estáticos.
+    \item \textbf{Scraping dedicado de Visita Sevilla}: el \texttt{VisitaSevillaScraperService} descarga la agenda de \texttt{visitasevilla.es} y parsea su HTML con \texttt{cheerio}. Se ha implementado un scraper específico porque la web utiliza un formato de fecha propio (\texttt{DD.MM.YY} y rangos \texttt{DD.MM.YY-DD.MM.YY}) que no puede interpretarse correctamente mediante extracción genérica con IA. El scraper descarta los placeholders de eventos recurrentes sin fecha concreta y marca como \textit{consultar fechas} los rangos que superan los catorce días, evitando así persistir duraciones ficticias.
+    \item \textbf{Extracción asistida por IA (Gemini)}: el \texttt{GeminiScraperService} accede a varias webs de ocio e institucionales de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras), limpia el HTML con \texttt{cheerio}, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que extrae y estructura los eventos en formato JSON. Las coordenadas no deducidas por el modelo se resuelven mediante geocodificación con Nominatim. Esto permite integrar fuentes con estructuras HTML variables o sin patrón fijo, que serían inviables de parsear con selectores estáticos.
 \end{itemize}
 
-La razón de esta combinación de estrategias es la cobertura: Ticketmaster y Eventbrite recogen principalmente grandes eventos comerciales, pero la oferta cultural de Sevilla incluye multitud de actividades locales (ferias de barrio, exposiciones, talleres, mercadillos, programación de teatros) que solo están publicadas en webs institucionales sin API pública ni estructura HTML uniforme. El uso de Gemini AI como capa de extracción permite incorporar estas fuentes sin escribir un parser específico para cada web, lo que hace el sistema más robusto ante cambios de estructura. El patrón \texttt{IScraper} garantiza que añadir nuevas fuentes es una tarea acotada sin tocar la lógica central.
+La razón de esta combinación de estrategias es la cobertura: Ticketmaster y Eventbrite recogen principalmente grandes eventos comerciales, pero la oferta cultural de Sevilla incluye multitud de actividades locales (ferias de barrio, exposiciones, talleres, mercadillos, programación de teatros) que solo están publicadas en webs institucionales sin API pública ni estructura HTML uniforme. Las webs con formato HTML predecible y propio, como Visita Sevilla, disponen de scrapers dedicados más precisos; el resto se integran mediante Gemini AI, lo que hace el sistema robusto ante cambios de estructura. El patrón \texttt{IScraper} garantiza que añadir nuevas fuentes es una tarea acotada sin tocar la lógica central.
 
 \subsection{Por qué se usa Cloudinary para el almacenamiento de imágenes}
 

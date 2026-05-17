@@ -849,7 +849,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         }}
                       >
                         {(() => {
-                          if (item.precio === 0) return 'Gratis';
+                          const scraped = item.creador?.email === 'scraper.bot@sevillaneando.local';
+                          if (item.precio === 0) return scraped ? 'Consultar precio' : 'Gratis';
                           if (item.precio != null) return `${item.precio} €`;
                           if (item.precioMin != null && item.precioMax != null)
                             return `${item.precioMin}€ - ${item.precioMax}€`;

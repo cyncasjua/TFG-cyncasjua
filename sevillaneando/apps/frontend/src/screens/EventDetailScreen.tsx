@@ -374,8 +374,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const webLink = webPrivateLink || webEventLink;
     const eventLink = webLink || deepLink;
     const startText = formatEventDateRange(event.fechaInicio, event.fechaFin);
+    const isScraped = event.creador?.email === 'scraper.bot@sevillaneando.local';
     const priceText = (() => {
-      if (event.precio === 0) return 'Gratis';
+      if (event.precio === 0) return isScraped ? 'Consultar precio' : 'Gratis';
       if (event.precio != null) return `${event.precio} EUR`;
       if (event.precioMin != null && event.precioMax != null)
         return `${event.precioMin} - ${event.precioMax} EUR`;
@@ -917,7 +918,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 }}
               >
                 {(() => {
-                  if (event.precio === 0) return 'Gratis';
+                  const scraped = event.creador?.email === 'scraper.bot@sevillaneando.local';
+                  if (event.precio === 0) return scraped ? 'Consultar precio' : 'Gratis';
                   if (event.precio != null) return `${event.precio} €`;
                   if (event.precioMin != null && event.precioMax != null)
                     return `${event.precioMin}€ - ${event.precioMax}€`;
