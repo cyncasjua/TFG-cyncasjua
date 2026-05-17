@@ -383,387 +383,304 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         nestedScrollEnabled={true}
         scrollEnabled={!mapActive}
         onScrollBeginDrag={Keyboard.dismiss}
-        >
-          <ThemedView style={styles.container}>
-            <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
-            <ThemedTextSecondary style={styles.requiredHint}>
-              Los campos marcados como obligatorios deben completarse antes de guardar.
-            </ThemedTextSecondary>
-            <FieldLabel title="Título" status="required" />
+      >
+        <ThemedView style={styles.container}>
+          <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
+          <ThemedTextSecondary style={styles.requiredHint}>
+            Los campos marcados como obligatorios deben completarse antes de guardar.
+          </ThemedTextSecondary>
+          <FieldLabel title="Título" status="required" />
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Título del evento"
+            placeholderTextColor={colors.text + '99'}
+            style={[
+              styles.input,
+              { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+            ]}
+            returnKeyType="next"
+            onSubmitEditing={() => descriptionRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+          <FieldLabel title="Descripción" status="required" />
+          <TextInput
+            ref={descriptionRef}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Descripción"
+            placeholderTextColor={colors.text + '99'}
+            multiline
+            style={[
+              styles.input,
+              {
+                height: 80,
+                color: colors.text,
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+              },
+            ]}
+            returnKeyType="next"
+            onSubmitEditing={() => addressRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+          <FieldLabel title="Dirección" status="required" />
+          <TextInput
+            ref={addressRef}
+            value={address}
+            onChangeText={setAddress}
+            placeholder="Dirección"
+            placeholderTextColor={colors.text + '99'}
+            style={[
+              styles.input,
+              { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+            ]}
+            onBlur={handleAddressBlur}
+          />
+          <FieldLabel title="Buscar dirección o lugar" status="optional" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
             <TextInput
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Título del evento"
+              value={address}
+              onChangeText={setAddress}
+              placeholder="Buscar dirección o lugar..."
               placeholderTextColor={colors.text + '99'}
               style={[
-                styles.input,
-                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-              ]}
-              returnKeyType="next"
-              onSubmitEditing={() => descriptionRef.current?.focus()}
-              blurOnSubmit={false}
-            />
-            <FieldLabel title="Descripción" status="required" />
-            <TextInput
-              ref={descriptionRef}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Descripción"
-              placeholderTextColor={colors.text + '99'}
-              multiline
-              style={[
-                styles.input,
+                styles.mapSearchInput,
                 {
-                  height: 80,
+                  flex: 1,
                   color: colors.text,
                   backgroundColor: colors.card,
                   borderColor: colors.primary,
                 },
               ]}
-              returnKeyType="next"
-              onSubmitEditing={() => addressRef.current?.focus()}
-              blurOnSubmit={false}
+              returnKeyType="search"
+              onSubmitEditing={() => geocodeAddress(address, true)}
             />
-            <FieldLabel title="Dirección" status="required" />
-            <TextInput
-              ref={addressRef}
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Dirección"
-              placeholderTextColor={colors.text + '99'}
-              style={[
-                styles.input,
-                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-              ]}
-              onBlur={handleAddressBlur}
-            />
-            <FieldLabel title="Buscar dirección o lugar" status="optional" />
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <TextInput
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Buscar dirección o lugar..."
-                placeholderTextColor={colors.text + '99'}
-                style={[
-                  styles.mapSearchInput,
-                  {
-                    flex: 1,
-                    color: colors.text,
-                    backgroundColor: colors.card,
-                    borderColor: colors.primary,
-                  },
-                ]}
-                returnKeyType="search"
-                onSubmitEditing={() => geocodeAddress(address, true)}
-              />
-              <TouchableOpacity
-                onPress={() => geocodeAddress(address, true)}
-                style={styles.mapSearchButton}
-              >
-                <Icon name="magnify" size={24} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-            <FieldLabel title="Ubicación en el mapa" status="required" />
-            <View
-              style={styles.mapContainer}
-              onTouchEnd={() => setMapActive(false)}
-              onTouchCancel={() => setMapActive(false)}
+            <TouchableOpacity
+              onPress={() => geocodeAddress(address, true)}
+              style={styles.mapSearchButton}
             >
-              <MapView
-                ref={mapRef}
-                style={StyleSheet.absoluteFillObject}
-                initialRegion={{
-                  latitude,
-                  longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }}
-                scrollEnabled={mapActive}
-                zoomEnabled={mapActive}
-                rotateEnabled={false}
-                pitchEnabled={false}
-                onPress={(e: MapPressEvent) => {
-                  const newLat = e.nativeEvent.coordinate.latitude;
-                  const newLon = e.nativeEvent.coordinate.longitude;
+              <Icon name="magnify" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+          <FieldLabel title="Ubicación en el mapa" status="required" />
+          <View
+            style={styles.mapContainer}
+            onTouchEnd={() => setMapActive(false)}
+            onTouchCancel={() => setMapActive(false)}
+          >
+            <MapView
+              ref={mapRef}
+              style={StyleSheet.absoluteFillObject}
+              initialRegion={{
+                latitude,
+                longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={mapActive}
+              zoomEnabled={mapActive}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              onPress={(e: MapPressEvent) => {
+                const newLat = e.nativeEvent.coordinate.latitude;
+                const newLon = e.nativeEvent.coordinate.longitude;
 
-                  setLatitude(newLat);
-                  setLongitude(newLon);
-                  setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
+                setLatitude(newLat);
+                setLongitude(newLon);
+                setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
 
-                  reverseGeocode(newLat, newLon);
+                reverseGeocode(newLat, newLon);
 
-                  mapRef.current?.animateToRegion(
-                    {
-                      latitude: newLat,
-                      longitude: newLon,
-                      latitudeDelta: 0.0015,
-                      longitudeDelta: 0.0015,
-                    },
-                    500
-                  );
+                mapRef.current?.animateToRegion(
+                  {
+                    latitude: newLat,
+                    longitude: newLon,
+                    latitudeDelta: 0.0015,
+                    longitudeDelta: 0.0015,
+                  },
+                  500
+                );
+              }}
+            >
+              <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
+              <Marker coordinate={{ latitude, longitude }} />
+            </MapView>
+            {!mapActive && (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  bottom: 8,
+                  left: 0,
+                  right: 0,
+                  alignItems: 'center',
                 }}
               >
-                <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
-                <Marker coordinate={{ latitude, longitude }} />
-              </MapView>
-              {!mapActive && (
                 <View
-                  pointerEvents="none"
                   style={{
-                    position: 'absolute',
-                    bottom: 8,
-                    left: 0,
-                    right: 0,
-                    alignItems: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.45)',
+                    borderRadius: 12,
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
                   }}
                 >
-                  <View
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.45)',
-                      borderRadius: 12,
-                      paddingHorizontal: 12,
-                      paddingVertical: 4,
-                    }}
-                  >
-                    <ThemedText style={{ color: '#fff', fontSize: 11 }}>
-                      Mantén pulsado para mover el mapa
-                    </ThemedText>
-                  </View>
-                </View>
-              )}
-              {!mapActive && (
-                <Pressable
-                  style={{ ...StyleSheet.absoluteFillObject }}
-                  onLongPress={() => setMapActive(true)}
-                  delayLongPress={400}
-                />
-              )}
-            </View>
-            <View style={{ marginBottom: 8 }}>
-              <OsmAttribution compact />
-            </View>
-            <FieldLabel title="Fecha de inicio" status="optional" />
-            <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
-              <TextInput
-                ref={fechaInicioRef}
-                value={fechaInicio ? dayjs(fechaInicio).format('YYYY-MM-DD HH:mm') : ''}
-                placeholder="YYYY-MM-DD HH:mm"
-                placeholderTextColor={colors.text + '99'}
-                style={[
-                  styles.input,
-                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-                ]}
-                editable={false}
-                pointerEvents="none"
-              />
-            </TouchableOpacity>
-            <CalendarDateTimePicker
-              isVisible={showFechaInicio}
-              value={fechaInicio ?? ''}
-              onConfirm={(val) => {
-                setFechaInicio(val);
-                setShowFechaInicio(false);
-              }}
-              onCancel={() => setShowFechaInicio(false)}
-            />
-            <FieldLabel title="Fecha de fin" status="optional" />
-            <TouchableOpacity onPress={() => setShowFechaFin(true)}>
-              <TextInput
-                ref={fechaFinRef}
-                value={fechaFin ? dayjs(fechaFin).format('YYYY-MM-DD HH:mm') : ''}
-                placeholder="YYYY-MM-DD HH:mm"
-                placeholderTextColor={colors.text + '99'}
-                style={[
-                  styles.input,
-                  { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-                ]}
-                editable={false}
-                pointerEvents="none"
-              />
-            </TouchableOpacity>
-            <CalendarDateTimePicker
-              isVisible={showFechaFin}
-              value={fechaFin ?? ''}
-              minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
-              onConfirm={(val) => {
-                setFechaFin(val);
-                setShowFechaFin(false);
-              }}
-              onCancel={() => setShowFechaFin(false)}
-            />
-
-            <FieldLabel title="Privado" status="readonly" />
-            <TouchableOpacity style={styles.checkboxContainer} disabled activeOpacity={1}>
-              <View
-                style={[
-                  styles.checkbox,
-                  {
-                    borderColor: colors.primary,
-                    backgroundColor: isPrivateEvent ? colors.primary : colors.card,
-                  },
-                ]}
-              >
-                {isPrivateEvent && <Icon name="check" size={16} color="#fff" />}
-              </View>
-              <ThemedText style={{ color: colors.text + 'AA' }}>
-                Solo lectura para moderador
-              </ThemedText>
-            </TouchableOpacity>
-
-            <FieldLabel
-              title="Precio fijo o rango"
-              status="optional"
-              helperText="Si no se indica, se mostrará 'Consultar precios'."
-            />
-
-            <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
-            <TextInput
-              ref={precioRef}
-              value={precio}
-              onChangeText={setPrecio}
-              placeholder="Ej: 15€"
-              placeholderTextColor={colors.text + '99'}
-              style={[
-                styles.input,
-                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-              ]}
-              keyboardType="numeric"
-              returnKeyType="next"
-              onSubmitEditing={() => precioMinRef.current?.focus()}
-              blurOnSubmit={false}
-            />
-
-            <FieldLabel
-              title="Precio mínimo"
-              status="choice"
-              badgeText="Opción B"
-              helperText="Rellénalo junto con el precio máximo."
-            />
-            <TextInput
-              ref={precioMinRef}
-              value={precioMin}
-              onChangeText={setPrecioMin}
-              placeholder="Ej: 10€"
-              placeholderTextColor={colors.text + '99'}
-              style={[
-                styles.input,
-                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-              ]}
-              keyboardType="numeric"
-              returnKeyType="next"
-              onSubmitEditing={() => precioMaxRef.current?.focus()}
-              blurOnSubmit={false}
-            />
-
-            <FieldLabel
-              title="Precio máximo"
-              status="choice"
-              badgeText="Opción B"
-              helperText="Rellénalo junto con el precio mínimo."
-            />
-            <TextInput
-              ref={precioMaxRef}
-              value={precioMax}
-              onChangeText={setPrecioMax}
-              placeholder="Ej: 25€"
-              placeholderTextColor={colors.text + '99'}
-              style={[
-                styles.input,
-                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
-              ]}
-              keyboardType="numeric"
-            />
-
-            <FieldLabel title="Categoría" status="required" />
-            {categoriasLoading ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : (
-              <>
-                <TouchableOpacity
-                  onPress={() => setOpenCategoria(true)}
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.primary,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      minHeight: 48,
-                    },
-                  ]}
-                >
-                  <ThemedText
-                    style={{
-                      fontSize: 15,
-                      color: categoriaId ? colors.text : colors.text + '80',
-                      flex: 1,
-                    }}
-                  >
-                    {categoriaId
-                      ? dropdownItems.find((i) => i.value === categoriaId)?.label ??
-                        'Selecciona una categoría'
-                      : 'Selecciona una categoría'}
+                  <ThemedText style={{ color: '#fff', fontSize: 11 }}>
+                    Mantén pulsado para mover el mapa
                   </ThemedText>
-                  <Icon name="chevron-down" size={22} color={colors.text} />
-                </TouchableOpacity>
-                <AppPickerModal
-                  visible={openCategoria}
-                  title="Categoría"
-                  items={dropdownItems}
-                  value={categoriaId}
-                  onSelect={(val) => setCategoriaId(val)}
-                  onClose={() => setOpenCategoria(false)}
-                />
-              </>
+                </View>
+              </View>
             )}
-            <FieldLabel title="Estado de moderación" status="required" />
-            <>
-              <TouchableOpacity
-                onPress={() => setOpenEstado(true)}
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.primary,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    minHeight: 48,
-                  },
-                ]}
-              >
-                <ThemedText style={{ fontSize: 15, color: colors.text, flex: 1 }}>
-                  {estadoItems.find((i) => i.value === estado)?.label ?? estado}
-                </ThemedText>
-                <Icon name="chevron-down" size={22} color={colors.text} />
-              </TouchableOpacity>
-              <AppPickerModal
-                visible={openEstado}
-                title="Estado"
-                items={estadoItems}
-                value={estado}
-                onSelect={(val) => setEstado(val)}
-                onClose={() => setOpenEstado(false)}
+            {!mapActive && (
+              <Pressable
+                style={{ ...StyleSheet.absoluteFillObject }}
+                onLongPress={() => setMapActive(true)}
+                delayLongPress={400}
               />
-            </>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <FieldLabel title="Recurrencia" status="optional" />
-              <TouchableOpacity
-                onPress={() =>
-                  Alert.alert(
-                    'Recurrencia',
-                    'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.'
-                  )
-                }
-                style={{ marginLeft: 6, marginTop: 10 }}
-              >
-                <Icon name="information-outline" size={18} color={colors.primary} />
-              </TouchableOpacity>
+            )}
+          </View>
+          <View style={{ marginBottom: 8 }}>
+            <OsmAttribution compact />
+          </View>
+          <FieldLabel title="Fecha de inicio" status="optional" />
+          <TouchableOpacity onPress={() => setShowFechaInicio(true)}>
+            <TextInput
+              ref={fechaInicioRef}
+              value={fechaInicio ? dayjs(fechaInicio).format('YYYY-MM-DD HH:mm') : ''}
+              placeholder="YYYY-MM-DD HH:mm"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              editable={false}
+              pointerEvents="none"
+            />
+          </TouchableOpacity>
+          <CalendarDateTimePicker
+            isVisible={showFechaInicio}
+            value={fechaInicio ?? ''}
+            onConfirm={(val) => {
+              setFechaInicio(val);
+              setShowFechaInicio(false);
+            }}
+            onCancel={() => setShowFechaInicio(false)}
+          />
+          <FieldLabel title="Fecha de fin" status="optional" />
+          <TouchableOpacity onPress={() => setShowFechaFin(true)}>
+            <TextInput
+              ref={fechaFinRef}
+              value={fechaFin ? dayjs(fechaFin).format('YYYY-MM-DD HH:mm') : ''}
+              placeholder="YYYY-MM-DD HH:mm"
+              placeholderTextColor={colors.text + '99'}
+              style={[
+                styles.input,
+                { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+              ]}
+              editable={false}
+              pointerEvents="none"
+            />
+          </TouchableOpacity>
+          <CalendarDateTimePicker
+            isVisible={showFechaFin}
+            value={fechaFin ?? ''}
+            minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
+            onConfirm={(val) => {
+              setFechaFin(val);
+              setShowFechaFin(false);
+            }}
+            onCancel={() => setShowFechaFin(false)}
+          />
+
+          <FieldLabel title="Privado" status="readonly" />
+          <TouchableOpacity style={styles.checkboxContainer} disabled activeOpacity={1}>
+            <View
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: colors.primary,
+                  backgroundColor: isPrivateEvent ? colors.primary : colors.card,
+                },
+              ]}
+            >
+              {isPrivateEvent && <Icon name="check" size={16} color="#fff" />}
             </View>
+            <ThemedText style={{ color: colors.text + 'AA' }}>
+              Solo lectura para moderador
+            </ThemedText>
+          </TouchableOpacity>
+
+          <FieldLabel
+            title="Precio fijo o rango"
+            status="optional"
+            helperText="Si no se indica, se mostrará 'Consultar precios'."
+          />
+
+          <FieldLabel title="Precio fijo" status="choice" badgeText="Opción A" />
+          <TextInput
+            ref={precioRef}
+            value={precio}
+            onChangeText={setPrecio}
+            placeholder="Ej: 15€"
+            placeholderTextColor={colors.text + '99'}
+            style={[
+              styles.input,
+              { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+            ]}
+            keyboardType="numeric"
+            returnKeyType="next"
+            onSubmitEditing={() => precioMinRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+
+          <FieldLabel
+            title="Precio mínimo"
+            status="choice"
+            badgeText="Opción B"
+            helperText="Rellénalo junto con el precio máximo."
+          />
+          <TextInput
+            ref={precioMinRef}
+            value={precioMin}
+            onChangeText={setPrecioMin}
+            placeholder="Ej: 10€"
+            placeholderTextColor={colors.text + '99'}
+            style={[
+              styles.input,
+              { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+            ]}
+            keyboardType="numeric"
+            returnKeyType="next"
+            onSubmitEditing={() => precioMaxRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+
+          <FieldLabel
+            title="Precio máximo"
+            status="choice"
+            badgeText="Opción B"
+            helperText="Rellénalo junto con el precio mínimo."
+          />
+          <TextInput
+            ref={precioMaxRef}
+            value={precioMax}
+            onChangeText={setPrecioMax}
+            placeholder="Ej: 25€"
+            placeholderTextColor={colors.text + '99'}
+            style={[
+              styles.input,
+              { color: colors.text, backgroundColor: colors.card, borderColor: colors.primary },
+            ]}
+            keyboardType="numeric"
+          />
+
+          <FieldLabel title="Categoría" status="required" />
+          {categoriasLoading ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
             <>
               <TouchableOpacity
-                onPress={() => setOpenRecurrencia(true)}
+                onPress={() => setOpenCategoria(true)}
                 style={[
                   styles.input,
                   {
@@ -773,220 +690,293 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     minHeight: 48,
-                    marginBottom: 10,
                   },
                 ]}
               >
                 <ThemedText
                   style={{
                     fontSize: 15,
-                    color: recurrencia ? colors.text : colors.text + '80',
+                    color: categoriaId ? colors.text : colors.text + '80',
                     flex: 1,
                   }}
                 >
-                  {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ??
-                    'Sin recurrencia'}
+                  {categoriaId
+                    ? dropdownItems.find((i) => i.value === categoriaId)?.label ??
+                      'Selecciona una categoría'
+                    : 'Selecciona una categoría'}
                 </ThemedText>
                 <Icon name="chevron-down" size={22} color={colors.text} />
               </TouchableOpacity>
               <AppPickerModal
-                visible={openRecurrencia}
-                title="Recurrencia"
-                items={recurrenciaItems}
-                value={recurrencia ?? ''}
-                onSelect={(val) => setRecurrencia(val || null)}
-                onClose={() => setOpenRecurrencia(false)}
+                visible={openCategoria}
+                title="Categoría"
+                items={dropdownItems}
+                value={categoriaId}
+                onSelect={(val) => setCategoriaId(val)}
+                onClose={() => setOpenCategoria(false)}
               />
             </>
-            {!!recurrencia && (
-              <>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <FieldLabel title="Fecha fin de recurrencia" status="optional" />
-                  <TouchableOpacity
-                    onPress={() =>
-                      Alert.alert(
-                        'Fecha fin de recurrencia',
-                        'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.'
-                      )
-                    }
-                    style={{ marginLeft: 6, marginTop: 10 }}
-                  >
-                    <Icon name="information-outline" size={18} color={colors.primary} />
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setShowRecurrenciaFin(true)}
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.primary,
-                      justifyContent: 'center',
-                    },
-                  ]}
-                >
-                  <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
-                    {recurrenciaFin
-                      ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
-                      : 'Seleccionar fecha límite'}
-                  </ThemedText>
-                </TouchableOpacity>
-                <DateTimePickerModal
-                  isVisible={showRecurrenciaFin}
-                  mode="date"
-                  minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
-                  onConfirm={(date: Date) => {
-                    setRecurrenciaFin(date.toISOString());
-                    setShowRecurrenciaFin(false);
-                  }}
-                  onCancel={() => setShowRecurrenciaFin(false)}
-                />
-              </>
-            )}
-            <FieldLabel
-              title="Imagen del evento"
-              status="optional"
-              helperText="Máximo 5 imágenes."
+          )}
+          <FieldLabel title="Estado de moderación" status="required" />
+          <>
+            <TouchableOpacity
+              onPress={() => setOpenEstado(true)}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  minHeight: 48,
+                },
+              ]}
+            >
+              <ThemedText style={{ fontSize: 15, color: colors.text, flex: 1 }}>
+                {estadoItems.find((i) => i.value === estado)?.label ?? estado}
+              </ThemedText>
+              <Icon name="chevron-down" size={22} color={colors.text} />
+            </TouchableOpacity>
+            <AppPickerModal
+              visible={openEstado}
+              title="Estado"
+              items={estadoItems}
+              value={estado}
+              onSelect={(val) => setEstado(val)}
+              onClose={() => setOpenEstado(false)}
             />
-
-            {localImageUris && localImageUris.length > 0 && (
-              <View
-                style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
-                onLayout={(e) => setImageContainerWidth(e.nativeEvent.layout.width)}
+          </>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <FieldLabel title="Recurrencia" status="optional" />
+            <TouchableOpacity
+              onPress={() =>
+                Alert.alert(
+                  'Recurrencia',
+                  'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.'
+                )
+              }
+              style={{ marginLeft: 6, marginTop: 10 }}
+            >
+              <Icon name="information-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+          <>
+            <TouchableOpacity
+              onPress={() => setOpenRecurrencia(true)}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.primary,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  minHeight: 48,
+                  marginBottom: 10,
+                },
+              ]}
+            >
+              <ThemedText
+                style={{
+                  fontSize: 15,
+                  color: recurrencia ? colors.text : colors.text + '80',
+                  flex: 1,
+                }}
               >
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  directionalLockEnabled
-                  nestedScrollEnabled
-                  keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    minWidth: '100%',
-                  }}
-                  style={{ width: '100%' }}
-                  ref={scrollRef}
-                  onContentSizeChange={(w) => setMaxScroll(w - imageContainerWidth)}
-                  onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
-                  scrollEventThrottle={16}
+                {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ??
+                  'Sin recurrencia'}
+              </ThemedText>
+              <Icon name="chevron-down" size={22} color={colors.text} />
+            </TouchableOpacity>
+            <AppPickerModal
+              visible={openRecurrencia}
+              title="Recurrencia"
+              items={recurrenciaItems}
+              value={recurrencia ?? ''}
+              onSelect={(val) => setRecurrencia(val || null)}
+              onClose={() => setOpenRecurrencia(false)}
+            />
+          </>
+          {!!recurrencia && (
+            <>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                <TouchableOpacity
+                  onPress={() =>
+                    Alert.alert(
+                      'Fecha fin de recurrencia',
+                      'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.'
+                    )
+                  }
+                  style={{ marginLeft: 6, marginTop: 10 }}
                 >
-                  {localImageUris.map((uri, idx) => {
-                    const candidates = getImageUrlCandidates(uri);
-                    if (candidates.length === 0) {
-                      return null;
-                    }
-                    const attempts = failedImageAttempts[idx] ?? 0;
-                    const hasExhaustedCandidates = attempts >= candidates.length;
-                    const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
-                    return (
-                      <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
-                        <Image
-                          source={
-                            hasExhaustedCandidates
-                              ? require('../../assets/splash.png')
-                              : { uri: currentUri }
-                          }
-                          onError={() => {
-                            setFailedImageAttempts((prev) => ({
-                              ...prev,
-                              [idx]: (prev[idx] ?? 0) + 1,
-                            }));
-                          }}
-                          style={[
-                            styles.imagePreview,
-                            {
-                              width: 120,
-                              borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
-                              borderColor:
-                                coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
-                            },
-                          ]}
-                        />
-                        <TouchableOpacity
-                          onPress={() => {
-                            const newUris = [...localImageUris];
-                            const newUrls = [...imageUrls];
-                            newUris.splice(idx, 1);
-                            newUrls.splice(idx, 1);
-                            setLocalImageUris(newUris);
-                            setImageUrls(newUrls);
-                            setFailedImageAttempts({});
-                            if (newUrls.length === 0) {
-                              setCoverImageUrl(null);
-                            } else if (coverImageUrl === imageUrls[idx]) {
-                              setCoverImageUrl(newUrls[0] || null);
-                            }
-                          }}
-                          style={styles.deleteImageBtn}
-                        >
-                          <Icon name="close" size={18} color="#fff" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => setCoverImageUrl(imageUrls[idx])}
-                          style={[
-                            styles.coverImageBtn,
-                            {
-                              backgroundColor:
-                                coverImageUrl === imageUrls[idx]
-                                  ? colors.primary
-                                  : 'rgba(0,0,0,0.6)',
-                            },
-                          ]}
-                        >
-                          <ThemedText style={{ color: '#fff', fontSize: 12 }}>
-                            {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
-                          </ThemedText>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  })}
-                </ScrollView>
-                {scrollX > 0 && (
-                  <TouchableOpacity
-                    onPress={() =>
-                      scrollRef.current?.scrollTo({ x: scrollX - 130, animated: true })
-                    }
-                    style={styles.scrollArrowLeft}
-                  >
-                    <Icon name="chevron-left" size={24} color="#fff" />
-                  </TouchableOpacity>
-                )}
-                {maxScroll > 0 && scrollX < maxScroll && (
-                  <TouchableOpacity
-                    onPress={() =>
-                      scrollRef.current?.scrollTo({ x: scrollX + 130, animated: true })
-                    }
-                    style={styles.scrollArrowRight}
-                  >
-                    <Icon name="chevron-right" size={24} color="#fff" />
-                  </TouchableOpacity>
-                )}
+                  <Icon name="information-outline" size={18} color={colors.primary} />
+                </TouchableOpacity>
               </View>
-            )}
-
-            {imageUrls.length < 5 && (
-              <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
-                <Icon name="image-plus" size={24} color={colors.primary} />
-                <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
-                  Añadir imágenes
+              <TouchableOpacity
+                onPress={() => setShowRecurrenciaFin(true)}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.primary,
+                    justifyContent: 'center',
+                  },
+                ]}
+              >
+                <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
+                  {recurrenciaFin
+                    ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
+                    : 'Seleccionar fecha límite'}
                 </ThemedText>
               </TouchableOpacity>
-            )}
-            <ThemedButton
-              title={loading ? 'Guardando...' : 'Guardar cambios'}
-              onPress={handleSave}
-              disabled={loading}
-            />
-            <TouchableOpacity
-              style={[styles.deleteEventButton, { borderColor: '#d32f2f' }]}
-              onPress={handleDeleteEvent}
-              disabled={loading}
+              <DateTimePickerModal
+                isVisible={showRecurrenciaFin}
+                mode="date"
+                minimumDate={fechaInicio ? new Date(fechaInicio) : undefined}
+                onConfirm={(date: Date) => {
+                  setRecurrenciaFin(date.toISOString());
+                  setShowRecurrenciaFin(false);
+                }}
+                onCancel={() => setShowRecurrenciaFin(false)}
+              />
+            </>
+          )}
+          <FieldLabel title="Imagen del evento" status="optional" helperText="Máximo 5 imágenes." />
+
+          {localImageUris && localImageUris.length > 0 && (
+            <View
+              style={{ width: '100%', marginBottom: 8, position: 'relative', minHeight: 130 }}
+              onLayout={(e) => setImageContainerWidth(e.nativeEvent.layout.width)}
             >
-              <Icon name="trash-can-outline" size={20} color="#d32f2f" />
-              <ThemedText style={styles.deleteEventText}>Eliminar evento</ThemedText>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                directionalLockEnabled
+                nestedScrollEnabled
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  minWidth: '100%',
+                }}
+                style={{ width: '100%' }}
+                ref={scrollRef}
+                onContentSizeChange={(w) => setMaxScroll(w - imageContainerWidth)}
+                onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
+                scrollEventThrottle={16}
+              >
+                {localImageUris.map((uri, idx) => {
+                  const candidates = getImageUrlCandidates(uri);
+                  if (candidates.length === 0) {
+                    return null;
+                  }
+                  const attempts = failedImageAttempts[idx] ?? 0;
+                  const hasExhaustedCandidates = attempts >= candidates.length;
+                  const currentUri = candidates[Math.min(attempts, candidates.length - 1)];
+                  return (
+                    <View key={idx} style={{ marginRight: 8, position: 'relative' }}>
+                      <Image
+                        source={
+                          hasExhaustedCandidates
+                            ? require('../../assets/splash.png')
+                            : { uri: currentUri }
+                        }
+                        onError={() => {
+                          setFailedImageAttempts((prev) => ({
+                            ...prev,
+                            [idx]: (prev[idx] ?? 0) + 1,
+                          }));
+                        }}
+                        style={[
+                          styles.imagePreview,
+                          {
+                            width: 120,
+                            borderWidth: coverImageUrl === imageUrls[idx] ? 3 : 0,
+                            borderColor:
+                              coverImageUrl === imageUrls[idx] ? colors.primary : 'transparent',
+                          },
+                        ]}
+                      />
+                      <TouchableOpacity
+                        onPress={() => {
+                          const newUris = [...localImageUris];
+                          const newUrls = [...imageUrls];
+                          newUris.splice(idx, 1);
+                          newUrls.splice(idx, 1);
+                          setLocalImageUris(newUris);
+                          setImageUrls(newUrls);
+                          setFailedImageAttempts({});
+                          if (newUrls.length === 0) {
+                            setCoverImageUrl(null);
+                          } else if (coverImageUrl === imageUrls[idx]) {
+                            setCoverImageUrl(newUrls[0] || null);
+                          }
+                        }}
+                        style={styles.deleteImageBtn}
+                      >
+                        <Icon name="close" size={18} color="#fff" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setCoverImageUrl(imageUrls[idx])}
+                        style={[
+                          styles.coverImageBtn,
+                          {
+                            backgroundColor:
+                              coverImageUrl === imageUrls[idx] ? colors.primary : 'rgba(0,0,0,0.6)',
+                          },
+                        ]}
+                      >
+                        <ThemedText style={{ color: '#fff', fontSize: 12 }}>
+                          {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+              {scrollX > 0 && (
+                <TouchableOpacity
+                  onPress={() => scrollRef.current?.scrollTo({ x: scrollX - 130, animated: true })}
+                  style={styles.scrollArrowLeft}
+                >
+                  <Icon name="chevron-left" size={24} color="#fff" />
+                </TouchableOpacity>
+              )}
+              {maxScroll > 0 && scrollX < maxScroll && (
+                <TouchableOpacity
+                  onPress={() => scrollRef.current?.scrollTo({ x: scrollX + 130, animated: true })}
+                  style={styles.scrollArrowRight}
+                >
+                  <Icon name="chevron-right" size={24} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {imageUrls.length < 5 && (
+            <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
+              <Icon name="image-plus" size={24} color={colors.primary} />
+              <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
+                Añadir imágenes
+              </ThemedText>
             </TouchableOpacity>
-          </ThemedView>
+          )}
+          <ThemedButton
+            title={loading ? 'Guardando...' : 'Guardar cambios'}
+            onPress={handleSave}
+            disabled={loading}
+          />
+          <TouchableOpacity
+            style={[styles.deleteEventButton, { borderColor: '#d32f2f' }]}
+            onPress={handleDeleteEvent}
+            disabled={loading}
+          >
+            <Icon name="trash-can-outline" size={20} color="#d32f2f" />
+            <ThemedText style={styles.deleteEventText}>Eliminar evento</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
       </ScrollView>
     </KeyboardAvoidingView>
   );
