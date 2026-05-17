@@ -967,7 +967,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     <ThemedText style={{ fontWeight: '700', fontSize: 13 }} numberOfLines={2}>
                       {event.title}
                     </ThemedText>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 }}>
+                    <View
+                      style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 }}
+                    >
                       <MaterialIcons name="open-in-new" size={12} color={colors.primary} />
                       <ThemedText style={{ fontSize: 11, color: colors.primary }}>
                         Abrir en mapas

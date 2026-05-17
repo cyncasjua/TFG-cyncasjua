@@ -18,7 +18,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const isMulterFileSizeError =
-      exception instanceof Error && (exception as Error & { code?: string }).code === 'LIMIT_FILE_SIZE';
+      exception instanceof Error &&
+      (exception as Error & { code?: string }).code === 'LIMIT_FILE_SIZE';
 
     const status = isMulterFileSizeError
       ? HttpStatus.PAYLOAD_TOO_LARGE
@@ -32,7 +33,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     );
 
     const body = isMulterFileSizeError
-      ? { statusCode: HttpStatus.PAYLOAD_TOO_LARGE, message: 'El archivo supera el tamaño máximo permitido (10 MB)' }
+      ? {
+          statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
+          message: 'El archivo supera el tamaño máximo permitido (10 MB)',
+        }
       : exception instanceof HttpException
         ? exception.getResponse()
         : { statusCode: status, message: 'Internal server error' };

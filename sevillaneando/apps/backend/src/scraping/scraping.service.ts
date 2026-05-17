@@ -424,7 +424,9 @@ export class ScrapingService {
     let precioMin = this.toNonNegativeNumberOrNull(event.precioMin);
     let precioMax = this.toNonNegativeNumberOrNull(event.precioMax);
 
-    const inferredRange = this.extractPriceRangeFromTextStable(`${event.title} ${event.description}`);
+    const inferredRange = this.extractPriceRangeFromTextStable(
+      `${event.title} ${event.description}`
+    );
     if (
       inferredRange &&
       precioMin == null &&
