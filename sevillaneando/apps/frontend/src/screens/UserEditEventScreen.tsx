@@ -609,8 +609,6 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               borderColor: colors.primary,
               position: 'relative',
             }}
-            onTouchEnd={() => setMapActive(false)}
-            onTouchCancel={() => setMapActive(false)}
           >
             <MapView
               ref={mapRef}
@@ -648,38 +646,22 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
             </MapView>
-            {!mapActive && (
-              <View
-                pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  bottom: 8,
-                  left: 0,
-                  right: 0,
-                  alignItems: 'center',
-                }}
-              >
-                <View
-                  style={{
-                    backgroundColor: 'rgba(0,0,0,0.45)',
-                    borderRadius: 12,
-                    paddingHorizontal: 12,
-                    paddingVertical: 4,
-                  }}
-                >
-                  <ThemedText style={{ color: '#fff', fontSize: 11 }}>
-                    Mantén pulsado para mover el mapa
-                  </ThemedText>
-                </View>
-              </View>
-            )}
-            {!mapActive && (
-              <Pressable
-                style={{ ...StyleSheet.absoluteFillObject }}
-                onLongPress={() => setMapActive(true)}
-                delayLongPress={400}
-              />
-            )}
+            <Pressable
+              onPress={() => setMapActive((v) => !v)}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                backgroundColor: 'rgba(0,0,0,0.55)',
+                borderRadius: 20,
+                width: 36,
+                height: 36,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Icon name={mapActive ? 'lock-open-variant' : 'lock'} size={18} color="#fff" />
+            </Pressable>
           </View>
           <View style={{ marginBottom: 8 }}>
             <OsmAttribution compact />
