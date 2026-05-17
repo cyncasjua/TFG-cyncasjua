@@ -18,21 +18,21 @@
 \contentsline {table}{\numberline {3.4}{\ignorespaces Requisitos no funcionales del sistema}}{35}{table.3.4}%
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {4.1}{\ignorespaces Endpoints de la API REST (fuente: OpenAPI 3.0)}}{52}{table.4.1}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{61}{table.caption.36}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Patrones de diseño aplicados en el sistema}}{64}{table.caption.39}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{63}{table.caption.36}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Patrones de diseño aplicados en el sistema}}{66}{table.caption.39}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{99}{table.caption.44}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{99}{table.caption.45}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{104}{table.caption.44}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{104}{table.caption.45}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Glosario de términos del proyecto}}{121}{table.A.1}%
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Glosario de términos del proyecto}}{127}{table.A.1}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {H.1}{\ignorespaces Completitud de flujos principales por los usuarios piloto (n = 11)}}{196}{table.caption.113}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {H.1}{\ignorespaces Completitud de flujos principales por los usuarios piloto (n = 11)}}{204}{table.caption.113}%
 \addvspace {10\p@ }

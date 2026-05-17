@@ -16,7 +16,7 @@ Las tecnologías utilizadas en el sistema —TypeScript, React Native, Expo, Nes
 
 La ubicación de los eventos se almacena en PostgreSQL~\cite{postgresql} como un punto geográfico compatible con PostGIS~\cite{postgisdocs} mediante TypeORM~\cite{typeorm}, utilizando el sistema de referencia SRID 4326. El siguiente fragmento muestra la definición del campo en la entidad \texttt{Event}:
 
-\begin{lstlisting}[language=JavaScript, caption={Definición del campo geográfico en la entidad Event con TypeORM}]
+\begin{lstlisting}[language=JavaScript, caption={Definición del campo geográfico y de precios en la entidad Event con TypeORM}]
 @Entity({ name: 'events' })
 export class Event {
   @PrimaryGeneratedColumn('uuid')
@@ -30,6 +30,15 @@ export class Event {
 
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
   location!: GeoJsonPoint;
+
+  @Column('float', { nullable: true })
+  precio?: number | null;          // precio fijo (0 = gratuito)
+
+  @Column('float', { nullable: true })
+  precioMin?: number | null;       // precio minimo del rango
+
+  @Column('float', { nullable: true })
+  precioMax?: number | null;       // precio maximo del rango
 
   @Column({ type: 'enum', enum: RecurrenciaEnum, nullable: true })
   recurrencia?: RecurrenciaEnum | null;
@@ -63,6 +72,8 @@ El proyecto se organiza como un monorepositorio, separando el código del fronte
 \end{itemize}
 
 Esta estructura permite mantener en un único repositorio todos los componentes principales del sistema, facilitando la instalación, el desarrollo y la coordinación entre frontend y backend.
+
+En la revisión final del repositorio, la aplicación contiene 166 ficheros TypeScript/TSX de producción dentro de \texttt{src}: 83 en el backend, con 9.022 líneas, y 83 en el frontend, con 17.774 líneas. A esta base se añaden 3 ficheros de pruebas unitarias del backend, con 1.033 líneas adicionales, por lo que el total auditado asciende a 169 ficheros y 27.829 líneas. La estructura funcional se resume en 13 módulos NestJS, 10 controladores, 11 entidades TypeORM, 12 DTOs principales, 31 pantallas móviles, 11 componentes reutilizables y 6 servicios de comunicación con la API.
 
 \section{Implementación del backend}
 
@@ -156,23 +167,46 @@ Adicionalmente, el campo booleano \texttt{hasMultipleDatesAvailable} permite ind
 
 \subsection{Estructura de pantallas}
 
-La aplicación móvil se organiza en pantallas conectadas mediante navegación. Entre las pantallas principales se encuentran:
+La aplicación móvil se organiza en 31 pantallas conectadas mediante React Navigation. La navegación se divide en dos pilas: una pila pública con inicio de sesión, registro y política de privacidad, y una pila autenticada que contiene el resto de la aplicación. Algunas pantallas solo se registran cuando el usuario tiene el rol adecuado, como el panel de administración o las pantallas de moderación.
+
+Las pantallas principales se agrupan funcionalmente de la siguiente forma:
 
 \begin{itemize}
-    \item pantalla principal con listado de eventos;
-    \item pantalla de detalle de evento;
-    \item mapa de eventos;
-    \item formularios de creación y edición;
-    \item perfil de usuario;
-    \item secciones de eventos guardados, apuntados y privados;
-    \item paneles específicos para administradores y moderadores.
+    \item \textbf{Descubrimiento}: \texttt{HomeScreen}, \texttt{EventDetailScreen}, \texttt{EventDetailLinkScreen} y \texttt{EventsMapScreen}. La pantalla principal concentra el listado, filtros, eventos recomendados, rutas sugeridas, menú lateral y acceso a eventos privados.
+    \item \textbf{Gestión de eventos}: \texttt{CreateEventScreen}, \texttt{UserEditEventScreen}, \texttt{UserEventsScreen}, \texttt{CalendarEventsScreen}, \texttt{SavedAndPrivateEventsScreen}, \texttt{ModeratorEventsScreen} y \texttt{ModeratorEditEventScreen}. Estas pantallas cubren creación, edición, eventos propios, calendario, guardados, privados y moderación.
+    \item \textbf{Rutas}: \texttt{RoutesListScreen}, \texttt{RouteDetailScreen}, \texttt{RoutePreviewScreen} y \texttt{CreateRouteScreen}. Permiten consultar rutas de usuarios, crear nuevas rutas, valorar itinerarios y previsualizar rutas recomendadas por el sistema.
+    \item \textbf{Social}: \texttt{FriendsScreen}, \texttt{UserProfileScreen}, \texttt{ProfileConnectionsScreen}, \texttt{MessagesScreen}, \texttt{DirectMessageScreen} y \texttt{NotificacionesScreen}. Implementan búsqueda de usuarios, seguimiento, perfiles públicos, mensajería privada y notificaciones.
+    \item \textbf{Administración e información}: \texttt{AdminScreen}, \texttt{CategoriesScreen}, \texttt{HelpScreen}, \texttt{PrivacyPolicyScreen} y \texttt{LegalAttributionsScreen}.
 \end{itemize}
 
-Esta organización permite separar la interfaz según los casos de uso principales de la aplicación.
+Esta organización permite separar la interfaz según los casos de uso principales de la aplicación, manteniendo tipadas las rutas mediante \texttt{RootStackParamList} y \texttt{AuthStackParamList}. El sistema de \textit{deep linking} conecta URLs externas con pantallas internas, especialmente para abrir detalles de eventos compartidos y resolver enlaces de acceso a eventos privados.
+
+\subsection{Estado global y proveedores}
+
+El frontend utiliza cuatro contextos principales:
+
+\begin{itemize}
+    \item \textbf{\texttt{AuthContext}}: observa el estado de Firebase Authentication, obtiene el token JWT, consulta \texttt{/users/me}, almacena el usuario actual y su rol, e inyecta el token en el cliente Axios. Además, fuerza la renovación del token cada 50 minutos para evitar que expire durante el uso de la aplicación.
+    \item \textbf{\texttt{SocketContext}}: mantiene una única conexión Socket.IO autenticada con el token de Firebase. La conexión se reutiliza entre pantallas de chat y mensajería privada, con reconexión automática y desconexión tras un periodo prolongado de inactividad.
+    \item \textbf{\texttt{ThemeContext}}: gestiona modo claro y oscuro, con una paleta compartida por todos los componentes temáticos. La preferencia se persiste localmente mediante \texttt{AsyncStorage}.
+    \item \textbf{\texttt{NotificacionesContext}}: consulta periódicamente las notificaciones del usuario y mantiene el contador de no leídas, que se muestra en la interfaz sin tener que recargar manualmente la pantalla de notificaciones.
+\end{itemize}
+
+La raíz de la aplicación envuelve el navegador en estos proveedores mediante \texttt{AppProviders}, de forma que autenticación, tema, socket y notificaciones quedan disponibles para todas las pantallas sin propagar propiedades manualmente.
 
 \subsection{Comunicación con la API}
 
-El frontend utiliza una capa de servicios para comunicarse con el backend. Esta capa centraliza la configuración de Axios, la URL base de la API y la inclusión del token de autenticación en las peticiones protegidas.
+El frontend utiliza una capa de servicios para comunicarse con el backend. Esta capa centraliza la configuración de Axios, la URL base de la API y la inclusión del token de autenticación en las peticiones protegidas. El cliente Axios define un \textit{timeout} de 60 segundos y reintenta automáticamente una vez las peticiones que fallan por timeout o por error de red, comportamiento especialmente útil cuando el backend desplegado en Render se encuentra suspendido y necesita unos segundos para reactivarse.
+
+La capa de servicios se divide por dominio:
+
+\begin{itemize}
+    \item \textbf{\texttt{events.ts}}: consulta de eventos, detalle, asistentes, asistencia del usuario, reseñas y acceso por enlace privado. También normaliza la respuesta del backend para añadir coordenadas \texttt{latitude}/\texttt{longitude} cuando la ubicación llega como GeoJSON o WKT.
+    \item \textbf{\texttt{recommendations.ts}}: eventos recomendados, rutas recomendadas, guardado, compartición, visitas y valoraciones.
+    \item \textbf{\texttt{routes.ts}}: creación, consulta, búsqueda, edición, eliminación y valoración de rutas creadas por usuarios.
+    \item \textbf{\texttt{users.ts}}: perfil público, búsqueda de usuarios, seguimiento, seguidores y seguidos.
+    \item \textbf{\texttt{api.ts}}: configuración base de Axios, gestión del token y traducción de errores HTTP a mensajes de usuario.
+\end{itemize}
 
 Además, esta capa transforma los datos geográficos recibidos desde el backend. Como la ubicación puede llegar en formato WKT (\texttt{POINT(lon lat)}) o GeoJSON, el frontend extrae las coordenadas y las convierte en valores numéricos de latitud y longitud para poder mostrarlas en el mapa.
 
@@ -204,13 +238,24 @@ export const parseLocationPoint = (location?: string | any)
 
 Los eventos se representan en el mapa mediante marcadores. Cada marcador se posiciona utilizando las coordenadas del evento y permite al usuario acceder a información resumida o navegar hacia el detalle del evento.
 
-La ubicación del usuario también se utiliza para calcular cercanía y aplicar filtros por radio, siempre que el usuario haya definido una ubicación en su perfil.
+La ubicación del usuario también se utiliza para calcular cercanía y aplicar filtros por radio, siempre que el usuario haya definido una ubicación en su perfil. En el lado cliente se mantiene una utilidad de cálculo de distancia Haversine para ordenar, colorear o comparar eventos cuando es necesario trabajar sin una consulta espacial directa al backend. La constante \texttt{SEVILLE\_COORDINATES} proporciona un centro inicial razonable para el mapa, y \texttt{OSM\_TILE\_URL\_TEMPLATE} define los tiles de OpenStreetMap usados por \texttt{react-native-maps}.
 
 \subsection{Gestión de imágenes}
 
 La aplicación permite trabajar con imágenes asociadas a perfiles, eventos y chats. Estas imágenes no se almacenan directamente en la base de datos, sino que se suben a un servicio externo de almacenamiento.
 
-En la base de datos se almacena la referencia o URL de acceso a la imagen, lo que reduce la carga del backend y permite gestionar los archivos multimedia de forma más eficiente.
+En la base de datos se almacena la referencia o URL de acceso a la imagen, lo que reduce la carga del backend y permite gestionar los archivos multimedia de forma más eficiente. En el frontend, \texttt{imageUrl.ts} normaliza URLs absolutas, relativas, locales y procedentes de Cloudinary. También añade transformaciones de Cloudinary como \texttt{f\_auto} y \texttt{q\_auto} para optimizar formato y calidad, y genera candidatos alternativos de URL para aumentar la robustez ante imágenes importadas por scraping con formatos inconsistentes.
+
+\subsection{Utilidades de presentación y normalización}
+
+El frontend contiene varias utilidades específicas para adaptar los datos del backend al uso móvil:
+
+\begin{itemize}
+    \item \textbf{Precios}: \texttt{price.ts} formatea precios fijos y rangos. Si el evento procede del usuario técnico de scraping y tiene precio cero, se muestra como ``Consultar precio'' para evitar etiquetar como gratuitos eventos cuyo precio no venía especificado en la fuente original.
+    \item \textbf{Fechas}: \texttt{sevillaTime.ts} formatea fechas en la zona \texttt{Europe/Madrid}, contemplando horario de verano. \texttt{dateTime.ts} convierte fechas introducidas en hora local de Sevilla a ISO con offset explícito para que el backend guarde el instante correcto.
+    \item \textbf{Mapas}: \texttt{map.ts} parsea puntos GeoJSON o WKT, calcula distancias y centraliza las coordenadas de referencia de Sevilla.
+    \item \textbf{Errores}: \texttt{firebaseErrors.ts} y \texttt{getErrorMessage} traducen errores técnicos de Firebase, Axios y HTTP a mensajes comprensibles para el usuario.
+\end{itemize}
 
 \section{Implementación de funcionalidades principales}
 
@@ -220,7 +265,15 @@ Los usuarios pueden crear eventos introduciendo datos como título, descripción
 
 Los eventos públicos quedan pendientes de moderación antes de ser visibles para el resto de usuarios. En cambio, los eventos privados se gestionan mediante enlace de invitación y no aparecen en el listado general.
 
+En la creación y edición se incluye un selector de recurrencia con las opciones \textit{Sin recurrencia}, \textit{Diario}, \textit{Semanal}, \textit{Quincenal} y \textit{Mensual}. Cuando el usuario selecciona una recurrencia, las pantallas \texttt{CreateEventScreen}, \texttt{UserEditEventScreen} y \texttt{ModeratorEditEventScreen} muestran además el campo \texttt{recurrenciaFin}; ambos valores se envían al backend como \texttt{recurrencia} y \texttt{recurrenciaFin}. El backend genera registros independientes para las ocurrencias incluidas en el rango indicado. En paralelo, los eventos importados con varias fechas posibles pero sin regla fija se marcan con \texttt{hasMultipleDatesAvailable}, lo que se muestra en el detalle del evento, en los listados y en la vista previa de rutas.
+
 En la edición de eventos se mantienen las reglas de negocio definidas en el análisis, como la coherencia de fechas, la coherencia de precios y la validez de la ubicación geográfica.
+
+\subsection{Panel de administración}
+
+El panel de administración se implementa en \texttt{AdminScreen} mediante tres pestañas: \textit{Estadísticas}, \textit{Usuarios} y \textit{Scraping}. La primera consume el endpoint \texttt{GET /users/admin/stats} y muestra indicadores globales de la plataforma: número total de usuarios, total de eventos, eventos aprobados, pendientes y rechazados, eventos importados por scraping y eventos creados por usuarios.
+
+La pestaña \textit{Usuarios} permite consultar las cuentas registradas, cambiar su rol entre usuario, moderador y administrador, y eliminar cuentas cuando sea necesario. La pestaña \textit{Scraping} expone la acción administrativa de restablecer los eventos importados automáticamente, invocando \texttt{POST /scraping/reset} y limpiando la caché local de eventos para que el cliente vuelva a solicitar datos actualizados.
 
 \subsection{Moderación de eventos}
 
@@ -303,7 +356,7 @@ El perfil almacena, además de los datos básicos, la ubicación geográfica del
 
 El sistema implementa un módulo de amistad basado en seguimiento entre usuarios. Un usuario puede buscar a otras personas, acceder a su perfil público, seguirlas o dejar de seguirlas, iniciar una conversación privada y consultar los eventos a los que asisten. La relación se almacena en la tabla intermedia \texttt{user\_seguidores} como una relación muchos a muchos reflexiva sobre la entidad \texttt{User}, distinguiendo entre \texttt{seguidores} (quienes siguen al usuario) y \texttt{seguidos} (a quienes sigue el usuario).
 
-En la interfaz se muestra una pestaña de \textit{Siguiendo} con los usuarios seguidos por la cuenta actual y una pestaña de \textit{Seguidores} que actúa como lista de usuarios pendientes de correspondencia: incluye a quienes siguen al usuario actual pero desaparecen de esa pestaña cuando el usuario empieza a seguirlos, pasando entonces a mostrarse en \textit{Siguiendo}.
+En la interfaz se muestran tres pestañas sociales: \textit{Seguidos}, con los usuarios a los que sigue la cuenta actual; \textit{Seguidores}, con todos los usuarios que siguen a la cuenta actual; y \textit{Amigos}, calculada como la intersección entre seguidores y seguidos. Cuando un usuario empieza a seguir de vuelta a un seguidor, este no desaparece de \textit{Seguidores}, sino que pasa a aparecer también en \textit{Amigos}.
 
 Cuando un usuario empieza a seguir a otro, el sistema genera automáticamente una notificación de tipo \textbf{NuevoSeguidor} para el destinatario.
 
@@ -355,14 +408,15 @@ Los eventos importados se consideran públicos y aprobados automáticamente, lo 
 
 \subsection{Tareas programadas}\label{sec:scheduler}
 
-El backend incorpora un módulo de tareas programadas (\texttt{SchedulerModule}) basado en \textbf{@nestjs/schedule}. Este módulo ejecuta de forma autónoma dos tipos de tareas:
+El backend incorpora un módulo de tareas programadas (\texttt{SchedulerModule}) basado en \textbf{@nestjs/schedule}. Este módulo ejecuta de forma autónoma dos tipos de tareas y expone una tercera tarea para ser invocada desde un disparador externo:
 
 \begin{itemize}
     \item \textbf{Scraping diario}: se ejecuta automáticamente todos los días a las 3:00 AM mediante la expresión cron \texttt{EVERY\_DAY\_AT\_3AM}. Además, al arrancar el servidor se lanza una primera ejecución inmediata para garantizar que el catálogo esté actualizado desde el inicio.
     \item \textbf{Notificaciones automáticas}: se ejecutan cada hora y comprueban tres condiciones: eventos cercanos a la ubicación del usuario (radio de 1 km), eventos a los que el usuario está apuntado y que ocurren en los próximos siete días, y eventos que ocurren en menos de 24 horas. En cada caso, el sistema crea la notificación correspondiente solo si el usuario no ha sido notificado ya sobre ese evento, evitando duplicados.
+    \item \textbf{Purga de datos RGPD}: implementada en \texttt{PurgaDatosScheduler} y expuesta mediante \texttt{POST /scheduler/run-purga-datos}. El proceso elimina los mensajes privados huérfanos —aquellos en los que tanto el emisor como el receptor tienen \texttt{NULL} porque ambas cuentas han sido eliminadas— con más de 30 días de antigüedad. En el despliegue se programa un cron externo diario, en horario de baja actividad, para invocar este endpoint y garantizar que la purga se ejecute aunque el proveedor suspenda el proceso del backend por inactividad.
 \end{itemize}
 
-El módulo también expone un controlador HTTP que permite lanzar las tareas manualmente durante el desarrollo o desde un sistema de orquestación externo.
+El módulo también expone un controlador HTTP que permite lanzar las tres tareas manualmente durante el desarrollo o desde un sistema de orquestación externo, incluyendo los endpoints \texttt{POST /scheduler/run-scraping}, \texttt{POST /scheduler/run-notifications} y \texttt{POST /scheduler/run-purga-datos}. Para la purga RGPD se utiliza una planificación diaria con la expresión cron \texttt{0 4 * * *}, equivalente a una ejecución cada día a las 04:00.
 
 \section{Gestión de la base de datos}
 

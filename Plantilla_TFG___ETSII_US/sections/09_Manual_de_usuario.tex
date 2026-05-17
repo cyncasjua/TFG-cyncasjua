@@ -88,7 +88,7 @@ Las rutas son agrupaciones de eventos organizadas para facilitar la planificaci�
 \end{tcolorbox}
 
 \begin{tcolorbox}[title=\textbf{Notificaciones}]
-El sistema de notificaciones mantiene informado al usuario sobre sucesos relevantes ocurridos dentro de la aplicación. Gracias a este módulo, la plataforma puede comunicar cambios de estado, recordatorios y eventos cercanos de forma proactiva.
+El sistema de notificaciones mantiene informado al usuario sobre sucesos relevantes ocurridos dentro de la aplicación. Gracias a este módulo, la plataforma puede comunicar cambios de estado, recordatorios, eventos cercanos y actividad social de forma proactiva.
 
 \vspace{0.4em}
 \textbf{Funcionalidades}
@@ -96,6 +96,7 @@ El sistema de notificaciones mantiene informado al usuario sobre sucesos relevan
 \item Notificación de aprobación o rechazo de eventos.
 \item Recordatorios previos a eventos apuntados.
 \item Avisos sobre eventos cercanos según la ubicación.
+\item Notificación de nuevos seguidores.
 \end{itemize}
 \end{tcolorbox}
 
@@ -133,20 +134,23 @@ La administración cubre las funciones de gestión global de la plataforma reser
 \vspace{0.4em}
 \textbf{Funcionalidades}
 \begin{itemize}[leftmargin=1.5em]
+\item Consulta de estadísticas globales de usuarios y eventos.
 \item Gestión de usuarios y roles.
 \item Gestión de categorías.
+\item Restablecimiento administrativo de eventos importados por scraping.
 \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[title=\textbf{Moderación}]
-La moderación se ocupa de supervisar los contenidos que deben ser validados antes de su publicación, con el objetivo de mantener la coherencia y fiabilidad del sistema.
+La moderación se ocupa de supervisar los contenidos que deben ser validados antes de su publicación y de mantener la coherencia y fiabilidad de los eventos ya publicados.
 
 \vspace{0.4em}
 \textbf{Funcionalidades}
 \begin{itemize}[leftmargin=1.5em]
-\item Revisión de eventos pendientes.
+\item Revisión de eventos pendientes de aprobación.
 \item Edición previa a la publicación.
 \item Aprobación o rechazo de eventos.
+\item Edición y eliminación de cualquier evento público ya aprobado.
 \end{itemize}
 \end{tcolorbox}
 
@@ -172,6 +176,8 @@ Una vez definidas las entidades principales del sistema, en esta sección se des
 
 El primer paso para utilizar la aplicación consiste en crear una cuenta. Para ello, el usuario debe completar el formulario de registro con sus datos básicos. Aunque la plataforma contempla distintos roles, el proceso de alta está pensado para cuentas de usuario estándar, siendo el administrador principal el que decide cuantos moderadores y administradores se añaden. Para solicitar cualquier cambio en la aplicación, puede contactar a través del correo electrónico que se muestra al final de la página de inicio.
 
+Antes de completar el registro, el usuario debe aceptar de forma expresa la política de privacidad. Este documento puede abrirse desde el propio formulario de registro.
+
 Una vez creada la cuenta, el acceso al sistema se realiza desde la pantalla de inicio de sesión. En caso de no recordar la contraseña, la aplicación ofrece una funcionalidad de recuperación mediante correo electrónico.
 
 \bigskip
@@ -180,6 +186,7 @@ Una vez creada la cuenta, el acceso al sistema se realiza desde la pantalla de i
 \begin{itemize}[leftmargin=1.5em]
 \item El correo electrónico debe ser válido.
 \item La contraseña debe recordarse o recuperarse mediante el correo asociado.
+\item La aceptación de la política de privacidad es obligatoria para crear la cuenta.
 \item El registro crea cuentas con rol de usuario.
 \end{itemize}
 
@@ -457,9 +464,11 @@ Entre ellos se encuentran los eventos guardados, los eventos a los que el usuari
 
 \subsection{Gestión de administrador (rol de administrador)}
 
-El rol de administrador dispone de funcionalidades específicas para mantener la organización global del sistema. Estas funciones se encuentran disponibles desde el menú lateral y se orientan a la gestión de usuarios y categorías.
+El rol de administrador dispone de funcionalidades específicas para mantener la organización global del sistema. Estas funciones se encuentran disponibles desde el menú lateral y se orientan a la consulta de estadísticas, la gestión de usuarios, la gestión de categorías y el mantenimiento de eventos importados.
 
-En el panel de administración pueden modificarse roles y eliminarse usuarios cuando sea necesario. Además, existe una pantalla específica para la creación, edición y eliminación de categorías, fundamentales para la clasificación de eventos y preferencias.
+El panel de administración se divide en tres pestañas. La pestaña \textit{Estadísticas} muestra el número total de usuarios, el total de eventos, los eventos aprobados, pendientes y rechazados, y separa los eventos importados por scraping de los creados manualmente por usuarios. La pestaña \textit{Usuarios} permite modificar roles y eliminar cuentas cuando sea necesario. La pestaña \textit{Scraping} permite restablecer los eventos importados automáticamente para regenerar el catálogo externo.
+
+Además, existe una pantalla específica para la creación, edición y eliminación de categorías, fundamentales para la clasificación de eventos y preferencias.
 
 \bigskip
 

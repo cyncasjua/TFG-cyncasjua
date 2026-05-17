@@ -137,7 +137,12 @@ const makeQueryRunner = () => ({
   commitTransaction: jest.fn(),
   rollbackTransaction: jest.fn(),
   release: jest.fn(),
-  manager: { save: jest.fn() },
+  manager: {
+    findOne: (jest.fn() as AnyMock).mockResolvedValue(null),
+    create: jest.fn((_, data) => data),
+    save: jest.fn(),
+    update: jest.fn(),
+  },
   query: jest.fn(),
 });
 
@@ -156,8 +161,6 @@ const setupRecommendMocks = (
   (eventRepo.createQueryBuilder as AnyMock).mockReturnValue(makeQueryBuilder(events));
   (resenaRepo.find as AnyMock).mockResolvedValue(resenas);
   (resenaRepo.createQueryBuilder as AnyMock).mockReturnValue(makeResenaQueryBuilder(rawRatings));
-  (recomendacionRepo.findOne as AnyMock).mockResolvedValue(null);
-  (recomendacionRepo.create as AnyMock).mockImplementation((d) => d);
   (dataSource.createQueryRunner as AnyMock).mockReturnValue(makeQueryRunner());
 };
 

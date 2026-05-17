@@ -38,7 +38,7 @@ Ciudadano con responsabilidad de revisión del contenido publicado por otros usu
 
 \subsection{Administrador de la plataforma}
 
-Responsable de la configuración estructural del sistema. Gestiona el catálogo de categorías de eventos y los roles de los usuarios (puede promover a moderador o administrador, o eliminar cuentas). No interviene directamente en la revisión de contenido, separando así las responsabilidades de configuración y moderación.
+Responsable de la configuración estructural del sistema. Gestiona el catálogo de categorías de eventos y los roles de los usuarios (puede promover a moderador o administrador, o eliminar cuentas), consulta estadísticas globales de uso y puede restablecer los eventos importados por scraping. No interviene directamente en la revisión de contenido, separando así las responsabilidades de configuración y moderación.
 
 \textit{Casos de prueba relacionados:} \hyperref[cp:24]{CP-24} (panel de administración -- usuarios), \hyperref[cp:25]{CP-25} (gestión de categorías), \hyperref[cp:28]{CP-28} (verificación de acceso por rol).
 
@@ -176,8 +176,8 @@ Dado el número de funcionalidades del sistema, el diagrama de casos de uso se d
 \draw[draw=black!40, dashed, rounded corners=4pt]
     (-2.2, -12.0) rectangle (2.2, -15.5);
 \node[font=\tiny\bfseries] at (0, -12.15) {Administración};
-\node[uc] (g1) at (0, -12.9) {Gestionar usuarios};
-\node[uc] (g2) at (0, -14.4) {Gestionar categorías};
+\node[uc] (g1) at (0, -12.9) {Consultar estadísticas};
+\node[uc] (g2) at (0, -14.4) {Gestionar usuarios y categorías};
 
 %% -- Flechas Ciudadano --------------------------------------------
 \draw[arr] (ciudad) -- (e1);
@@ -286,13 +286,13 @@ RF-05 & Mapa de eventos & \textbf{Historia de usuario:} \textit{Como usuario aut
 \addlinespace
 RF-06 & Creación de eventos & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero crear eventos públicos o privados, para dar visibilidad a actividades que organizo o que quiero compartir con otras personas.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el formulario de creación permite seleccionar visibilidad. Un evento público queda en estado pendiente tras su creación; un evento privado es accesible inmediatamente por su creador. \\
 \addlinespace
-RF-07 & Moderación de eventos & \textbf{Historia de usuario:} \textit{Como moderador, quiero revisar los eventos públicos pendientes, editarlos si es necesario, y aprobarlos o rechazarlos, para garantizar la calidad y fiabilidad del contenido publicado.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el moderador ve en su panel los eventos pendientes, puede aprobarlos, rechazarlos o modificarlos. Tras la resolución, el creador recibe una notificación con el resultado. \\
+RF-07 & Moderación de eventos & \textbf{Historia de usuario:} \textit{Como moderador, quiero revisar los eventos públicos pendientes, editarlos si es necesario, y aprobarlos o rechazarlos; y además poder editar o eliminar cualquier evento público ya aprobado, para garantizar la calidad y fiabilidad del contenido publicado en todo momento.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el moderador ve en su panel los eventos pendientes, puede aprobarlos, rechazarlos o modificarlos. Tras la resolución, el creador recibe una notificación con el resultado. Adicionalmente, el moderador dispone de un listado independiente con todos los eventos públicos (aprobados) desde el que puede editarlos o eliminarlos sin afectar su estado de moderación. \\
 \addlinespace
 RF-08 & Participación en eventos & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero apuntarme a eventos públicos o acceder a eventos privados mediante enlace, para gestionar mi asistencia y organizar mis planes.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} un usuario puede apuntarse a un evento activo y aparece en la lista de asistentes. Un evento privado solo es accesible si el usuario dispone del enlace de invitación. \\
 \addlinespace
 RF-09 & Chat y mensajería & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero comunicarme con otros usuarios mediante el chat de un evento o con mensajes privados directos, para coordinarme y conocer a personas con intereses similares.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} los mensajes en el chat de un evento se reciben en tiempo real por todos los participantes. Los mensajes privados entre dos usuarios se entregan de forma inmediata. \\
 \addlinespace
-RF-10 & Gestión de imágenes & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero subir y visualizar imágenes en eventos, chats y perfiles, para enriquecer el contenido y compartir momentos de los eventos.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} las imágenes se suben correctamente y se muestran en el contexto correspondiente. Se rechaza la subida de archivos que superen 5 MB o que no sean de tipo permitido. \\
+RF-10 & Gestión de imágenes & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero subir y visualizar imágenes en eventos, chats y perfiles, para enriquecer el contenido y compartir momentos de los eventos.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} las imágenes se suben correctamente y se muestran en el contexto correspondiente. Se rechaza la subida de archivos que superen 10 MB o que no sean de tipo permitido. \\
 \addlinespace
 RF-11 & Valoraciones & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero valorar eventos mediante puntuaciones y comentarios, para compartir mi experiencia y ayudar a otros usuarios a decidir si asistir.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} un usuario puede dejar una puntuación de 1 a 5 estrellas y un comentario opcional. La valoración media del evento se actualiza y es visible en el detalle del evento. \\
 \addlinespace
@@ -306,7 +306,7 @@ RF-15 & Gestión de roles & \textbf{Historia de usuario:} \textit{Como administr
 \addlinespace
 RF-16 & Gestión de categorías & \textbf{Historia de usuario:} \textit{Como administrador, quiero crear, editar y eliminar categorías de eventos, para mantener una taxonomía coherente y representativa de la oferta cultural de la ciudad.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} las categorías creadas por el administrador aparecen disponibles inmediatamente en el formulario de creación de eventos y en los filtros de búsqueda. \\
 \addlinespace
-RF-17 & Gestión de usuarios & \textbf{Historia de usuario:} \textit{Como administrador, quiero editar el rol y eliminar usuarios, para mantener la integridad del sistema y gestionar el equipo de moderación.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el administrador puede cambiar el rol de un usuario desde el panel de administración. Un usuario eliminado no puede volver a iniciar sesión con esa cuenta. \\
+RF-17 & Gestión de usuarios y panel de administración & \textbf{Historia de usuario:} \textit{Como administrador, quiero consultar estadísticas, editar el rol de los usuarios y eliminar cuentas, para mantener la integridad del sistema y gestionar el equipo de moderación.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el administrador puede consultar totales de usuarios y eventos, cambiar el rol de un usuario desde el panel de administración y eliminar cuentas. Un usuario eliminado no puede volver a iniciar sesión con esa cuenta. \\
 \addlinespace
 RF-18 & Organización de eventos & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero guardar eventos, apuntarme a ellos y consultarlos en mi calendario, para organizar mis planes y no perder de vista las actividades que me interesan.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} los eventos guardados y los eventos a los que el usuario se ha apuntado aparecen en la sección correspondiente. Los eventos con fecha a los que el usuario está apuntado aparecen en el calendario en su fecha correcta. \\
 \addlinespace
@@ -471,7 +471,7 @@ Las reglas de negocio definen las restricciones y condiciones del sistema, asegu
 \begin{itemize}
     \item \textbf{RN-18}: Las imágenes deben ser de contenido adecuado; el cumplimiento de esta política queda bajo la responsabilidad del usuario.
     \item \textbf{RN-19}: Las imágenes deben ser de tipo permitido (JPEG, PNG, WEBP, HEIC, HEIF).
-    \item \textbf{RN-20}: Las imágenes no deben superar un tamaño máximo establecido de 5 MB.
+    \item \textbf{RN-20}: Las imágenes no deben superar un tamaño máximo establecido de 10 MB.
 \end{itemize}
 
 \subsection{Valoraciones y reseñas}
@@ -587,7 +587,7 @@ Para garantizar la seguridad de los datos se han implementado las siguientes med
 
 \subsection{Consentimiento explícito en el registro}
 
-La aplicación incorpora un mecanismo de consentimiento explícito en la pantalla de registro: el usuario debe marcar una casilla aceptando la política de privacidad antes de poder crear su cuenta. Esta pantalla, accesible desde el formulario de registro, detalla los datos recogidos, la finalidad del tratamiento, los terceros implicados, los derechos del usuario y las medidas de seguridad aplicadas.
+La aplicación incorpora un mecanismo de consentimiento explícito en la pantalla de registro: el usuario debe marcar una casilla aceptando la política de privacidad antes de poder crear su cuenta. Esta pantalla es accesible desde el formulario de registro y detalla los datos recogidos, la finalidad del tratamiento, los terceros implicados, los derechos del usuario y las medidas de seguridad aplicadas.
 
 \section{Conclusiones}
 

@@ -72,11 +72,11 @@ Sus responsabilidades son:
     \item Autenticación delegada en Firebase Authentication.
     \item Control de roles (usuario, moderador y administrador).
     \item Gestión de comunicación en tiempo real con Socket.IO.
-    \item Web scraping de eventos externos (Eventbrite, Ticketmaster y webs procesadas con Gemini AI).
-    \item Ejecución de tareas programadas (cron jobs) para scraping y notificaciones.
+    \item Web scraping de eventos externos (Eventbrite Sevilla, Ticketmaster, visitasevilla.es y webs procesadas con Gemini AI).
+    \item Ejecución de tareas programadas (cron jobs) para scraping, notificaciones y purga RGPD de mensajes privados huérfanos.
 \end{itemize}
 
-El backend se organiza en módulos funcionales independientes: \texttt{auth}, \texttt{events}, \texttt{users}, \texttt{rutas}, \texttt{chat}, \texttt{notificaciones}, \texttt{recomendaciones}, \texttt{categorias}, \texttt{scraping}, \texttt{scheduler} y \texttt{health}.
+El backend se organiza en módulos funcionales e infraestructurales independientes: \texttt{app}, \texttt{auth}, \texttt{events}, \texttt{users}, \texttt{rutas}, \texttt{chat}, \texttt{notificaciones}, \texttt{recomendaciones}, \texttt{categorias}, \texttt{scraping}, \texttt{scheduler}, \texttt{database} y \texttt{cloudinary}. El endpoint de comprobación de disponibilidad se expone desde el controlador de \texttt{scheduler}.
 
 \subsection{Base de datos}
 
@@ -98,8 +98,9 @@ El sistema integra los siguientes servicios externos:
     \item \textbf{Cloudinary}: almacenamiento y transformación de imágenes de eventos, perfiles y chats.
     \item \textbf{OpenStreetMap + react-native-maps}: visualización de mapas interactivos.
     \item \textbf{Nominatim}: geocodificación de direcciones cuando las fuentes externas no proporcionan coordenadas.
-    \item \textbf{Eventbrite}: importación de eventos mediante extracción HTML y JSON-LD.
-    \item \textbf{Google Gemini AI}: extracción inteligente de eventos mediante IA.
+    \item \textbf{Eventbrite}: importación de eventos de Sevilla mediante extracción HTML y JSON-LD.
+    \item \textbf{visitasevilla.es}: importación de eventos locales mediante extracción HTML.
+    \item \textbf{Google Gemini AI}: extracción inteligente de eventos desde webs externas mediante IA.
     \item \textbf{Ticketmaster API}: importación de eventos desde la plataforma Ticketmaster.
 \end{itemize}
 
@@ -300,20 +301,18 @@ sevillaneando/
 |   |   |   |-- notificaciones/ (sistema de notificaciones)
 |   |   |   |-- recomendaciones/(motor de recomendaciones)
 |   |   |   |-- categorias/     (categorias de eventos)
-|   |   |   |-- scraping/       (scrapers Eventbrite, Ticketmaster, Gemini)
-|   |   |   |-- scheduler/      (cron jobs scraping/notificaciones)
+|   |   |   |-- scraping/       (scrapers Eventbrite, Ticketmaster, Gemini, VisitaSevilla)
+|   |   |   |-- scheduler/      (cron jobs scraping/notificaciones/purga y health check)
 |   |   |   |-- database/       (configuracion y seed de datos)
 |   |   |   |-- common/         (utilidades, filtros, cloudinary)
-|   |   |   |-- health/         (endpoint de health check)
-|   |   |   `-- config/         (gestion de variables de entorno)
 |   |   |-- Dockerfile
 |   |   `-- package.json
 |   `-- frontend/
 |       |-- src/
-|       |   |-- screens/        (24 pantallas de la aplicacion)
+|       |   |-- screens/        (31 pantallas de la aplicacion)
 |       |   |-- components/     (componentes reutilizables)
 |       |   |-- navigation/     (navegacion + deep linking)
-|       |   |-- context/        (AuthContext, SocketContext, ThemeContext)
+|       |   |-- context/        (AuthContext, SocketContext, ThemeContext, NotificacionesContext)
 |       |   |-- hooks/          (useAuth, useTheme, useEvents)
 |       |   |-- services/       (llamadas a la API REST)
 |       |   |-- types/          (tipos TypeScript compartidos)
@@ -329,15 +328,15 @@ sevillaneando/
 El backend sigue la convención de módulos de NestJS. Cada módulo contiene su controlador, servicio, entidades y DTOs:
 
 \begin{itemize}
-    \item \textbf{auth}: integración con Firebase Admin SDK para validar tokens JWT. Incluye \texttt{FirebaseGuard} y \texttt{RolesGuard} aplicados globalmente.
+    \item \textbf{auth}: integración con Firebase Admin SDK para validar tokens JWT. Incluye \texttt{FirebaseAuthGuard} y \texttt{RolesGuard}, aplicados en los controladores y endpoints protegidos.
     \item \textbf{events}: módulo principal. Gestiona el ciclo de vida de eventos (creación, aprobación por moderadores, edición, eliminación) y reseñas. La autorización distingue entre creadores y moderadores: los creadores pueden modificar y eliminar sus propios eventos, mientras que los moderadores pueden actuar sobre eventos públicos, incluidos los ya aprobados, pero no sobre eventos privados ajenos.
     \item \textbf{users}: gestión de perfiles, cambio de contraseña, asignación de roles y módulo social basado en seguimiento entre usuarios, con seguidores, seguidos y amistades mutuas.
     \item \textbf{rutas}: rutas turísticas con puntos de interés y sistema de calificación.
     \item \textbf{chat}: mensajería en tiempo real implementada con Socket.IO. Incluye mensajes públicos en eventos y mensajes privados entre usuarios.
     \item \textbf{notificaciones}: generación y entrega de notificaciones en tiempo real mediante WebSockets, incluyendo referencias contextuales a usuarios o eventos cuando la notificación permite navegar al contenido relacionado.
     \item \textbf{recomendaciones}: motor de recomendaciones basado en preferencias de categoría y valoraciones previas.
-    \item \textbf{scraping}: scrapers para importar eventos de Eventbrite, Ticketmaster y webs procesadas mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
-    \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente y envía recordatorios de eventos próximos.
+    \item \textbf{scraping}: scrapers para importar eventos de Eventbrite Sevilla, Ticketmaster, visitasevilla.es y webs procesadas mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
+    \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente, envía recordatorios de eventos próximos y realiza la purga RGPD de mensajes privados de cuentas eliminadas.
 \end{itemize}
 
 \subsection{Pantallas del frontend}
@@ -347,10 +346,11 @@ El frontend organiza las vistas en grupos funcionales:
 \begin{itemize}
     \item \textbf{Autenticación}: \texttt{LoginScreen}, \texttt{SignUpScreen}, \texttt{EditPasswordScreen}.
     \item \textbf{Principal}: \texttt{HomeScreen}, \texttt{CategoriesScreen}.
-    \item \textbf{Eventos}: \texttt{EventsMapScreen}, \texttt{EventDetailScreen}, \texttt{CreateEventScreen}, \texttt{UserEditEventScreen}, \texttt{ModeratorEventsScreen}, \texttt{CalendarEventsScreen}, \texttt{SavedAndPrivateEventsScreen}, \texttt{AccessPrivateEventScreen}.
+    \item \textbf{Eventos}: \texttt{EventsMapScreen}, \texttt{EventDetailScreen}, \texttt{EventDetailLinkScreen}, \texttt{CreateEventScreen}, \texttt{UserEditEventScreen}, \texttt{UserEventsScreen}, \texttt{ModeratorEventsScreen}, \texttt{ModeratorEditEventScreen}, \texttt{CalendarEventsScreen}, \texttt{SavedAndPrivateEventsScreen}, \texttt{AccessPrivateEventScreen}.
     \item \textbf{Rutas}: \texttt{RoutesListScreen}, \texttt{RouteDetailScreen}, \texttt{RoutePreviewScreen}, \texttt{CreateRouteScreen}.
-    \item \textbf{Social}: \texttt{FriendsScreen}, \texttt{MessagesScreen}, \texttt{DirectMessageScreen}, \texttt{NotificacionesScreen}.
+    \item \textbf{Social}: \texttt{FriendsScreen}, \texttt{MessagesScreen}, \texttt{DirectMessageScreen}, \texttt{NotificacionesScreen}, \texttt{ProfileConnectionsScreen}.
     \item \textbf{Perfil}: \texttt{UserProfileScreen}, \texttt{EditProfileScreen}, \texttt{AdminScreen}.
+    \item \textbf{Información}: \texttt{HelpScreen}, \texttt{PrivacyPolicyScreen}, \texttt{LegalAttributionsScreen}.
 \end{itemize}
 
 %--------------------------------------------------

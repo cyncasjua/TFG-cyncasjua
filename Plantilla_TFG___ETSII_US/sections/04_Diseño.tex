@@ -38,11 +38,11 @@ La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecn
 
 \subsection{Aplicación móvil (frontend)}
 
-La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native}~\cite{reactnative} y \textbf{Expo}~\cite{expo}, lo que permite generar una única base de código compatible con Android e iOS. La arquitectura interna del frontend se estructura en cuatro niveles:
+La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native}~\cite{reactnative} y \textbf{Expo}~\cite{expo}, lo que permite generar una única base de código compatible con Android e iOS. La versión final del cliente contiene 83 ficheros TypeScript/TSX en \texttt{src}, con 17.774 líneas de código distribuidas en pantallas, componentes, navegación, servicios, contextos, hooks, tipos y utilidades. La arquitectura interna del frontend se estructura en los siguientes niveles:
 
 \begin{itemize}
-    \item \textbf{Pantallas}: componentes que representan vistas completas navegables.
-    \item \textbf{Componentes}: elementos reutilizables que componen la interfaz.
+    \item \textbf{Pantallas}: 31 componentes que representan vistas completas navegables.
+    \item \textbf{Componentes}: 11 elementos reutilizables que componen la interfaz, como botones temáticos, cabeceras de perfil, selectores, esqueletos de carga, modales y atribuciones de OpenStreetMap.
     \item \textbf{Servicios}: capa de comunicación con el backend mediante \textbf{Axios}. Todos los servicios comparten un cliente Axios centralizado que inyecta automáticamente el token de Firebase en la cabecera \texttt{Authorization} de cada petición, gestiona un \textit{timeout} global de 60 segundos y aplica un interceptor de reintento ante errores de red.
     \item \textbf{Contextos}: gestión del estado global compartido entre pantallas (\texttt{AuthContext} para la sesión, \texttt{SocketContext} para la conexión WebSocket, \texttt{ThemeContext} para el tema visual y \texttt{NotificacionesContext} para los avisos pendientes).
 \end{itemize}
@@ -166,11 +166,11 @@ El modelo de datos del sistema refleja las entidades identificadas en el anális
 
 \subsection{Usuario (\texttt{User})}
 
-Representa a cada persona registrada en el sistema. Sus atributos principales son el identificador UUID, el UID de Firebase, el correo electrónico, el nombre, la foto de perfil, la ubicación geográfica (punto PostGIS en SRID 4326), el rol (\texttt{user}, \texttt{moderator} o \texttt{admin}) y el array de intereses por categoría (\texttt{intereses}). Adicionalmente, almacena preferencias de personalización como el orden de categorías (\texttt{categoryOrder}) y los radios de búsqueda configurados (\texttt{radiusOptions}).
+Representa a cada persona registrada en el sistema. Sus atributos principales son el identificador UUID, el UID de Firebase, el correo electrónico, el nombre, la foto de perfil, el identificador público de la imagen en Cloudinary (\texttt{fotoPerfilPublicId}), la ubicación geográfica (punto PostGIS en SRID 4326), el rol (\texttt{user}, \texttt{moderator} o \texttt{admin}) y el array de intereses por categoría (\texttt{intereses}). Adicionalmente, almacena la fecha de aceptación de la política de privacidad (\texttt{privacyAcceptedAt}) y preferencias de personalización como el orden de categorías (\texttt{categoryOrder}) y los radios de búsqueda configurados (\texttt{radiusOptions}).
 
 \subsection{Evento (\texttt{Event})}
 
-Representa un evento cultural o de ocio. Sus atributos incluyen título, descripción, dirección, ubicación geográfica (punto PostGIS en SRID 4326), fechas de inicio y fin, precio (fijo o en rango), imágenes, estado de moderación (\texttt{Pendiente}, \texttt{Aprobado} o \texttt{Rechazado}), visibilidad (\texttt{privado}), enlace de acceso (\texttt{linkAcceso}) para eventos privados y recurrencia (\texttt{diario}, \texttt{semanal}, \texttt{quincenal} o \texttt{mensual}).
+Representa un evento cultural o de ocio. Sus atributos incluyen título, descripción, dirección, ubicación geográfica (punto PostGIS en SRID 4326), fechas de inicio y fin, precio (fijo o en rango), imagen principal, hasta cinco imágenes adicionales, estado de moderación (\texttt{Pendiente}, \texttt{Aprobado} o \texttt{Rechazado}), visibilidad (\texttt{privado}), enlace de acceso (\texttt{linkAcceso}) para eventos privados, recurrencia (\texttt{diario}, \texttt{semanal}, \texttt{quincenal} o \texttt{mensual}), fecha final de recurrencia (\texttt{recurrenciaFin}) y el indicador \texttt{hasMultipleDatesAvailable} para eventos importados con varias sesiones o fechas a consultar.
 
 \subsection{Categoría (\texttt{Categoria})}
 
@@ -191,6 +191,7 @@ Representa las conversaciones directas entre dos usuarios. Contiene el contenido
 \subsection{Notificación (\texttt{Notificacion})}
 
 Registra los avisos enviados a cada usuario. Incluye el tipo de notificación (aprobación, rechazo, evento cercano, evento próximo, mensaje privado, nuevo seguidor o recomendación), el mensaje y el estado de lectura.
+También puede almacenar referencias auxiliares al evento relacionado (\texttt{targetEventId}) o al usuario origen (\texttt{sourceUserId}), lo que permite abrir directamente la pantalla correspondiente desde la notificación.
 
 \subsection{Ruta (\texttt{Ruta})}
 
@@ -203,6 +204,10 @@ Registra la valoración que un usuario otorga a una ruta. Almacena la puntuació
 \subsection{Recomendación (\texttt{Recomendacion})}
 
 Almacena las sugerencias personalizadas generadas por el motor de recomendaciones para cada usuario, incluyendo los eventos recomendados, los criterios aplicados y si ya han sido visualizadas.
+
+\subsection{Solicitud de edición de evento (\texttt{EventEditRequest})}
+
+Registra las modificaciones propuestas sobre un evento cuando deben pasar por revisión. Almacena el evento original, el usuario solicitante, los campos editados (título, descripción, dirección, ubicación, fechas, precio, visibilidad, enlace e imágenes), la fecha de creación, el estado de la solicitud (\texttt{pendiente}, \texttt{aprobada} o \texttt{rechazada}) y un motivo de rechazo opcional. Esta entidad permite separar la información publicada de una propuesta de cambio pendiente de moderación.
 
 \subsection{Edición de eventos por moderación}
 
@@ -262,10 +267,10 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
 \hline
 \endlastfoot
 
-\multirow{16}{=}{Eventos}
- & POST /events & U & Body: \texttt{CreateEventDto} (title, description, address, location, fechaInicio, fechaFin, precio, privado, categoriaId, imagen) & 201, 400, 401 \\
+\multirow{19}{=}{Eventos}
+ & POST /events & U & Body: \texttt{CreateEventDto} (title, description, address, location, fechaInicio, fechaFin, precio, precioMin, precioMax, privado, categoriaId, imagen, imagenes, recurrencia, recurrenciaFin) & 201, 400, 401 \\
 \cline{2-5}
- & GET /events & — & — & 200 \\
+ & GET /events & — & Query: \texttt{userId?}, \texttt{lat?}, \texttt{lng?}, \texttt{radiusKm?}, \texttt{limit?}, \texttt{offset?} & 200 \\
 \cline{2-5}
  & GET /events/\{id\} & — & Path: \texttt{id} (UUID) & 200, 404 \\
 \cline{2-5}
@@ -289,14 +294,20 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
 \cline{2-5}
  & GET /events/\{id\}/attendees & — & Path: \texttt{id} & 200, 404 \\
 \cline{2-5}
+ & GET /events/\{id\}/attendees/me & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
  & POST /events/\{id\}/attendees & U & Path: \texttt{id} & 201, 401, 404 \\
 \cline{2-5}
  & DELETE /events/\{id\}/attendees & U & Path: \texttt{id} & 200, 401, 404 \\
 \cline{2-5}
  & GET /events/\{id\}/reviews & — & Path: \texttt{id} & 200 \\
+\cline{2-5}
+ & GET /events/user/\{userId\} & — & Path: \texttt{userId} & 200 \\
+\cline{2-5}
+ & GET /events/attending/\{userId\} & — & Path: \texttt{userId} & 200 \\
 \hline
 
-\multirow{11}{=}{Usuarios}
+\multirow{15}{=}{Usuarios}
  & GET /users/me & U & — & 200, 401 \\
 \cline{2-5}
  & PATCH /users/me/firebase & U & Body: \texttt{UpdateProfileDto} & 200, 400, 401 \\
@@ -304,6 +315,8 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
  & DELETE /users/me/firebase & U & — & 200, 401 \\
 \cline{2-5}
  & GET /users/search & U & Query: \texttt{q} (mín.\ 2 car.) & 200, 401 \\
+\cline{2-5}
+ & GET /users/admin/stats & A & — & 200, 401, 403 \\
 \cline{2-5}
  & GET /users & M & — & 200, 401, 403 \\
 \cline{2-5}
@@ -317,7 +330,13 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
 \cline{2-5}
  & DELETE /users/\{id\}/seguir & U & Path: \texttt{id} & 200, 401 \\
 \cline{2-5}
+ & GET /users/\{id\}/siguiendo & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
+ & GET /users/\{id\}/seguidos & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
  & GET /users/\{id\}/seguidores & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
+ & POST /users/upload-profile-image/firebase & U & Form: \texttt{file} (binary) & 201, 400, 401 \\
 \hline
 
 \multirow{4}{=}{Categorías}
@@ -330,7 +349,7 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
  & DELETE /categorias/\{id\} & A & Path: \texttt{id} & 200, 401, 403, 404 \\
 \hline
 
-\multirow{7}{=}{Rutas}
+\multirow{8}{=}{Rutas}
  & GET /rutas & — & Query: \texttt{userId?} & 200 \\
 \cline{2-5}
  & POST /rutas & U & Body: \texttt{CreateRutaDto} & 201, 400, 401 \\
@@ -339,6 +358,8 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
 \cline{2-5}
  & GET /rutas/\{id\} & — & Path: \texttt{id} & 200, 404 \\
 \cline{2-5}
+ & GET /rutas/\{id\}/mi-calificacion & U & Path: \texttt{id} & 200, 401 \\
+\cline{2-5}
  & PATCH /rutas/\{id\} & U & Path: \texttt{id}; Body: \texttt{UpdateRutaDto} & 200, 401, 403, 404 \\
 \cline{2-5}
  & DELETE /rutas/\{id\} & U & Path: \texttt{id} & 200, 401, 403, 404 \\
@@ -346,7 +367,7 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
  & POST /rutas/\{id\}/calificar & U & Path: \texttt{id} & 201, 400, 401, 404 \\
 \hline
 
-\multirow{7}{=}{Recomend.}
+\multirow{9}{=}{Recomend.}
  & GET /recomendaciones/me/events & U & Query: \texttt{lat?}, \texttt{lng?}, \texttt{radiusKm?}, \texttt{from?}, \texttt{to?}, \texttt{limit?} & 200, 401 \\
 \cline{2-5}
  & GET /recomendaciones/me/rutas & U & Query: \texttt{lat?}, \texttt{lng?}, \texttt{strategy?} (\texttt{walkable}/\texttt{score}/\texttt{balanced}), \texttt{limit?} & 200, 401 \\
@@ -359,7 +380,11 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
 \cline{2-5}
  & POST /recomendaciones/events/\{id\}/compartir & U & Path: \texttt{eventId} & 201, 401 \\
 \cline{2-5}
+ & POST /recomendaciones/events/\{id\}/visitar & U & Path: \texttt{eventId} & 201, 401 \\
+\cline{2-5}
  & POST /recomendaciones/events/\{id\}/valorar & U & Path: \texttt{eventId}; Body: \texttt{RateEventDto} & 201, 400, 401 \\
+\cline{2-5}
+ & GET /recomendaciones/events/\{id\}/valorar/me & U & Path: \texttt{eventId} & 200, 401 \\
 \hline
 
 \multirow{3}{=}{Notific.}
@@ -373,7 +398,19 @@ La tabla~\ref{tab:api} recoge los endpoints de cada módulo extraídos directame
 Chat & POST /chat/upload & U & Form: \texttt{file} (binary) & 201, 400, 401 \\
 \hline
 
-\multirow{4}{=}{Scraping}
+\multirow{5}{=}{Solic. edición}
+ & POST /event-edit-requests/\{eventId\}/\{userId\} & — & Path: \texttt{eventId}, \texttt{userId}; Body: \texttt{EventEditRequestDto} & 201, 400 \\
+\cline{2-5}
+ & PATCH /event-edit-requests/\{requestId\}/approve & — & Path: \texttt{requestId} & 200, 404 \\
+\cline{2-5}
+ & PATCH /event-edit-requests/\{requestId\}/reject & — & Path: \texttt{requestId}; Body: \texttt{motivoRechazo?} & 200, 404 \\
+\cline{2-5}
+ & GET /event-edit-requests/pending/\{eventId\} & — & Path: \texttt{eventId} & 200 \\
+\cline{2-5}
+ & GET /event-edit-requests & — & — & 200 \\
+\hline
+
+\multirow{5}{=}{Scraping}
  & POST /scraping/run-all & A & — & 200, 401 \\
 \cline{2-5}
  & POST /scraping/run/\{name\} & A & Path: \texttt{scraperName} & 200, 401 \\
@@ -381,12 +418,18 @@ Chat & POST /chat/upload & U & Form: \texttt{file} (binary) & 201, 400, 401 \\
  & GET /scraping/scrapers & A & — & 200, 401 \\
 \cline{2-5}
  & POST /scraping/reset & A & — & 200, 401, 500 \\
+\cline{2-5}
+ & POST /scraping/delete-all-events & A & — (solo fuera de producción) & 200, 403 \\
 \hline
 
-\multirow{2}{=}{Scheduler}
+\multirow{4}{=}{Scheduler}
+ & GET /scheduler/health & — & — & 200 \\
+\cline{2-5}
  & POST /scheduler/run-scraping & — & — & 200 \\
 \cline{2-5}
  & POST /scheduler/run-notifications & — & — & 200 \\
+\cline{2-5}
+ & POST /scheduler/run-purga-datos & — & — & 200 \\
 \hline
 
 \end{longtable}
@@ -394,9 +437,9 @@ Chat & POST /chat/upload & U & Form: \texttt{file} (binary) & 201, 400, 401 \\
 La API aplica limitación de velocidad (\textit{throttling}) mediante \texttt{@nestjs/throttler} con tres niveles configurables:
 
 \begin{itemize}
-    \item \textbf{Estricto} (5 req/min): operaciones sensibles como registro de cuenta.
-    \item \textbf{Moderado} (20 req/min): escrituras habituales.
-    \item \textbf{Subida} (10 req/min): carga de imágenes.
+    \item \textbf{Estricto} (5 req/min): operaciones costosas reservadas a administradores, como los endpoints de scraping (\texttt{POST /scraping/run-all}, \texttt{POST /scraping/reset}, \texttt{POST /scraping/run/:name}).
+    \item \textbf{Moderado} (20 req/min): escrituras habituales, como la creación de eventos (\texttt{POST /events}).
+    \item \textbf{Subida} (10 req/min): carga de imágenes (\texttt{POST /events/upload-image}, \texttt{POST /chat/upload}, \texttt{POST /users/upload-profile-image/firebase}).
 \end{itemize}
 
 % ═══════════════════════════════════════════════════════════════
@@ -478,7 +521,7 @@ La aplicación se divide en dos grupos de pantallas según el estado de autentic
 \label{fig:grafo_navegacion}
 \end{figure}
 
-El grupo de pantallas no autenticadas comprende únicamente las pantallas de inicio de sesión y registro. El grupo de pantallas autenticadas incluye todas las funcionalidades de la aplicación, organizadas alrededor de la pantalla principal.
+El grupo de pantallas no autenticadas comprende las pantallas de inicio de sesión, registro y política de privacidad. El grupo de pantallas autenticadas incluye todas las funcionalidades de la aplicación, organizadas alrededor de la pantalla principal.
 
 Las pantallas exclusivas de moderador y administrador solo son accesibles si el usuario dispone del rol correspondiente; de lo contrario, no aparecen en el menú lateral ni en ningún punto de entrada de la navegación.
 
@@ -515,13 +558,17 @@ Notificaciones & Listado de notificaciones del usuario & Todos \\
 Mensajes & Lista de conversaciones privadas & Todos \\
 Mensaje directo & Chat privado entre dos usuarios & Todos \\
 Perfil de usuario & Vista del perfil de otro usuario, con acciones sociales y eventos a los que asiste & Todos \\
-Amigos & Módulo de amistad con búsqueda de usuarios, siguiendo y seguidores no seguidos & Todos \\
+Amigos & Módulo social con búsqueda de usuarios, seguidores, seguidos y amistades mutuas & Todos \\
+Conexiones & Listado de seguidores y seguidos de un usuario concreto & Todos \\
 Editar perfil & Modificación de datos personales e intereses & Todos \\
 Cambiar contraseña & Modificación de la contraseña de la cuenta & Todos \\
-Panel de administración & Gestión de usuarios y roles & Administrador \\
+Panel de administración & Estadísticas globales, gestión de usuarios, roles y scraping & Administrador \\
 Gestión de categorías & Creación, edición y eliminación de categorías & Administrador \\
 Moderación de eventos & Revisión y aprobación de eventos pendientes & Moderador \\
 Edición moderada & Edición directa de un evento pendiente antes de aprobarlo & Moderador \\
+Ayuda & Preguntas frecuentes y guía de uso de la aplicación & Todos \\
+Política de privacidad & Política de tratamiento de datos personales & Todos \\
+Atribuciones legales & Licencias y atribuciones de recursos de terceros & Todos \\
 \hline
 \end{tabular}%
 }
@@ -793,7 +840,7 @@ La tarea de obtención de eventos externos (Eventbrite, Ticketmaster y webs inst
 
 \subsection{Por qué el cron job es externo y no interno al backend}
 
-La planificación de las tareas periódicas (scraping diario y envío de notificaciones) se gestiona mediante un servicio de \textit{cron} externo (cron-job.org) que invoca los endpoints \texttt{POST /scheduler/run-scraping} y \texttt{POST /scheduler/run-notifications}, en lugar de usar el planificador interno de NestJS (\texttt{@nestjs/schedule}).
+La planificación de las tareas periódicas (scraping diario, envío de notificaciones y purga RGPD de mensajes) se gestiona mediante un servicio de \textit{cron} externo (cron-job.org) que invoca los endpoints \texttt{POST /scheduler/run-scraping}, \texttt{POST /scheduler/run-notifications} y \texttt{POST /scheduler/run-purga-datos}, en lugar de usar el planificador interno de NestJS (\texttt{@nestjs/schedule}).
 
 La razón principal es la infraestructura de despliegue: el backend se aloja en Render con el plan gratuito, que suspende el proceso tras 15 minutos de inactividad. Cuando el proceso está suspendido, el planificador interno de NestJS no corre; y cuando Render lo reactiva ante una nueva petición, el planificador se reinicia desde cero. Esto hace que los \texttt{@Cron} internos sean poco fiables: la tarea diaria de las 3:00 AM o la de notificaciones horarias podrían no ejecutarse si el proceso lleva inactivo más de 15 minutos antes de la hora programada.
 
@@ -1027,7 +1074,7 @@ Ofrecer solo rutas automáticas habría eliminado el componente social y la fiab
 
 El sistema implementa un módulo de amistad apoyado en un grafo de seguimiento unidireccional entre usuarios: una persona puede seguir a otra sin que esa otra deba aceptar ni corresponder. En la interfaz, esta funcionalidad se presenta como un módulo de \textit{Amigos}, aunque internamente diferencia entre usuarios a los que se sigue y usuarios que siguen al usuario actual.
 
-La pantalla muestra una pestaña de \textit{Siguiendo} con las personas que el usuario sigue y una pestaña de \textit{Seguidores} con las personas que le siguen pero a las que todavía no sigue. Cuando el usuario empieza a seguir a una persona que aparecía en seguidores, deja de mostrarse en esa pestaña y pasa a aparecer en \textit{Siguiendo}. Este comportamiento evita duplicidades visuales y convierte la pantalla en una herramienta práctica para descubrir contactos pendientes, no en un simple listado simétrico de seguidores y seguidos.
+La pantalla muestra una pestaña de \textit{Seguidos} con las personas que el usuario sigue, una pestaña de \textit{Seguidores} con todas las personas que siguen al usuario actual y una pestaña de \textit{Amigos} con las relaciones mutuas, es decir, usuarios que aparecen simultáneamente como seguidores y seguidos. Esta separación evita perder información: una persona seguida de vuelta sigue apareciendo como seguidor, pero además queda reflejada como amistad mutua.
 
 Esta funcionalidad refuerza el carácter social de la aplicación al permitir descubrir planes a través de otras personas:
 
