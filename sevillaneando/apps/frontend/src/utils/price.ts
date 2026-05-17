@@ -8,8 +8,7 @@ export function isScrapedEvent(event: Pick<Event, 'creador'>): boolean {
 }
 
 function formatPrice(value: number, currency: string): string {
-  const formatted =
-    value % 1 === 0 ? String(value) : value.toFixed(2).replace('.', ',');
+  const formatted = value % 1 === 0 ? String(value) : value.toFixed(2).replace('.', ',');
   return `${formatted} ${currency}`;
 }
 
