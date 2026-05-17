@@ -66,6 +66,7 @@ import { Dimensions } from 'react-native';
 import { useSocket } from '../context/SocketContext';
 import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, parseEventPoint } from '../utils/map';
+import { formatEventPrice } from '../utils/price';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
 
@@ -374,14 +375,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const webLink = webPrivateLink || webEventLink;
     const eventLink = webLink || deepLink;
     const startText = formatEventDateRange(event.fechaInicio, event.fechaFin);
-    const isScraped = event.creador?.email === 'scraper.bot@sevillaneando.local';
-    const priceText = (() => {
-      if (event.precioMin != null && event.precioMax != null)
-        return `${event.precioMin} - ${event.precioMax} EUR`;
-      if (event.precio === 0) return isScraped ? 'Consultar precio' : 'Gratis';
-      if (event.precio != null) return `${event.precio} EUR`;
-      return 'Precio variable';
-    })();
+    const priceText = formatEventPrice(event, 'EUR');
 
     const shareMessage = [
       isPrivate
@@ -917,14 +911,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   alignSelf: 'flex-end',
                 }}
               >
-                {(() => {
-                  const scraped = event.creador?.email === 'scraper.bot@sevillaneando.local';
-                  if (event.precioMin != null && event.precioMax != null)
-                    return `${event.precioMin}€ - ${event.precioMax}€`;
-                  if (event.precio === 0) return scraped ? 'Consultar precio' : 'Gratis';
-                  if (event.precio != null) return `${event.precio} €`;
-                  return 'Precio variable';
-                })()}
+                {formatEventPrice(event)}
               </ThemedText>
             </ThemedView>
           </ThemedView>

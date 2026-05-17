@@ -45,7 +45,7 @@ export class VisitaSevillaScraperService implements IScraper {
     // Imagen del listado
     const imgStyle = $(el).find('.block__image').attr('style') || '';
     const imgMatch = imgStyle.match(/url\(\s*['"]?([^'")\s]+)['"]?\s*\)/i);
-    const imagenListado = imgMatch?.[1] ? this.absoluteUrl(imgMatch[1]) : undefined;
+    const imagenListado = imgMatch?.[1] ? this.normalizeImageUrl(imgMatch[1]) : undefined;
 
     const linkHref = $(el).find('a').first().attr('href') || '';
     const sourceUrl = linkHref ? this.absoluteUrl(linkHref) : LISTING_URL;
@@ -86,8 +86,12 @@ export class VisitaSevillaScraperService implements IScraper {
     const $ = cheerio.load(html);
 
     // Imagen de la página de detalle (más fiable que el listado)
-    const imagenSrc = $('.evento-imagen').attr('src');
-    const imagen = imagenSrc ? this.absoluteUrl(imagenSrc) : undefined;
+    const imagenSrc =
+      $('.evento-imagen').attr('src') ||
+      $('.evento-imagen').attr('data-src') ||
+      $('.evento-imagen').attr('data-lazy-src') ||
+      $('.evento-imagen').attr('data-original');
+    const imagen = imagenSrc ? this.normalizeImageUrl(imagenSrc) : undefined;
 
     // Coordenadas del iframe de Google Maps: ?q=37.389,-5.974
     let location: { type: 'Point'; coordinates: [number, number] } | null = null;
@@ -101,46 +105,71 @@ export class VisitaSevillaScraperService implements IScraper {
       }
     }
 
-    // Dirección: texto tras "Dirección:" dentro de .evento-descripcion
+    // Datos de detalle: la web alterna etiquetas como "Dirección", "Lugar", "Tarifas" y "Precio".
+    const descRoot = $('.evento-descripcion');
+    const descBlocks = descRoot
+      .find('p, li, div')
+      .toArray()
+      .map((node) => $(node).text().replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+    const descText = descRoot.text().replace(/\s+/g, ' ').trim();
+
     let address = 'Sevilla, España';
-    const descHtml = $('.evento-descripcion').html() || '';
-    const dirMatch = descHtml.match(/Direcci[oó]n[:\s]*<\/b>([\s\S]*?)<\/p>/i);
-    if (dirMatch) {
-      const dirText = cheerio.load(dirMatch[1]).text().replace(/\s+/g, ' ').trim();
-      if (dirText.length > 3) address = dirText;
+    const addressText = this.extractLabeledValue(descBlocks, ['direccion', 'lugar']);
+    if (addressText && addressText.length > 3) {
+      address = addressText;
     }
 
-    // Precio: texto tras "Tarifas:" — capturar el texto plano que lo sigue
+    // Precio: acepta "Tarifas", "Precio" y variantes como "PRECIOS;: Desde 45 €".
     let precio: number | null = null;
-    const tarifaMatch = descHtml.match(/Tarifas[:\s]*<\/b>([\s\S]*?)(?:<div><b>|<p><b>|$)/i);
-    if (tarifaMatch) {
-      const tarifaText = cheerio.load(tarifaMatch[1]).text().replace(/\s+/g, ' ').trim();
-      // Si dice "gratuito", "gratis", "entrada libre" → precio 0
-      if (/gratu[íi]to|gratis|entrada libre|free|sin cargo/i.test(tarifaText)) {
-        precio = 0;
-      }
-      // Si menciona un número de euros → extraer el primero
-      const euroMatch = tarifaText.match(/(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i);
-      if (euroMatch) {
-        precio = parseFloat(euroMatch[1].replace(',', '.'));
-      }
-    }
+    const tarifaText = this.extractLabeledValue(descBlocks, ['tarifas', 'tarifa', 'precio', 'precios']);
+    precio = this.extractPrecio(tarifaText || descText);
     // También buscar en el título: "Desde 17 euros"
     if (precio === null) {
       const titleEuroMatch = url.match(/desde-(\d+)-euros/i);
       if (titleEuroMatch) precio = parseFloat(titleEuroMatch[1]);
     }
 
-    // Descripción: texto limpio de .evento-descripcion quitando la parte de Dirección/Tarifas/Horario
-    const descText = $('.evento-descripcion')
-      .text()
-      .replace(/\s+/g, ' ')
-      .trim()
-      .substring(0, 800);
-
-    const description = `${descText}\n\nFuente: ${url}`;
+    // Descripción: texto limpio de .evento-descripcion.
+    const description = `${descText.substring(0, 800)}\n\nFuente: ${url}`;
 
     return { description, address, location, precio, imagen };
+  }
+
+  private extractLabeledValue(blocks: string[], labels: string[]): string | null {
+    for (const block of blocks) {
+      const normalized = this.normalizeLabelText(block);
+      for (const label of labels) {
+        const match = normalized.match(new RegExp(`^${label}\\s*[;:]\\s*(.+)$`, 'i'));
+        if (match?.[1]) {
+          return block.substring(block.length - match[1].length).trim();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private normalizeLabelText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  private extractPrecio(text: string): number | null {
+    if (!text) return null;
+
+    if (/gratuito|gratis|entrada libre|free|sin cargo/i.test(this.normalizeLabelText(text))) {
+      return 0;
+    }
+
+    const euroMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i);
+    if (!euroMatch) return null;
+
+    return parseFloat(euroMatch[1].replace(',', '.'));
   }
 
   // Parsea el formato DD.MM.YY o DD.MM.YY-DD.MM.YY de visitasevilla
@@ -157,6 +186,11 @@ export class VisitaSevillaScraperService implements IScraper {
     const matches = raw.match(datePattern) ?? [];
     const startStr = matches[0];
     const endStr = matches[1];
+
+    if (this.isPlaceholderDate(startStr ?? '')) {
+      this.logger.debug(`Evento sin fecha concreta (placeholder): ${title}`);
+      return empty;
+    }
 
     const fechaInicio = this.parseSingleDate(startStr ?? '');
 
@@ -182,6 +216,10 @@ export class VisitaSevillaScraperService implements IScraper {
     return { fechaInicio, fechaFin, hasMultipleDatesAvailable: false };
   }
 
+  private isPlaceholderDate(str: string): boolean {
+    return /^0?1\.0?1\.(?:19)?70$/.test(str);
+  }
+
   // Parsea "DD.MM.YY" → Date local al mediodía (evita problemas de zona horaria)
   private parseSingleDate(str: string): Date | null {
     if (!str) return null;
@@ -202,6 +240,14 @@ export class VisitaSevillaScraperService implements IScraper {
     if (!url) return '';
     if (/^https?:\/\//.test(url)) return url;
     return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+  }
+
+  private normalizeImageUrl(url: string): string {
+    const absolute = this.absoluteUrl(url.trim());
+    if (/^http:\/\/tic\.visitasevilla\.es\//i.test(absolute)) {
+      return absolute.replace(/^http:/i, 'https:');
+    }
+    return absolute;
   }
 
   private async fetchHtml(url: string): Promise<string | null> {

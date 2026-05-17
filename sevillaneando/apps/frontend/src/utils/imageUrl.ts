@@ -38,6 +38,10 @@ function getApiOrigin(): string | undefined {
 function normalizeAbsoluteUrl(rawUrl: string): string {
   let normalized = rawUrl;
 
+  if (/^http:\/\/tic\.visitasevilla\.es\//i.test(normalized)) {
+    normalized = normalized.replace(/^http:/i, 'https:');
+  }
+
   if (/^res\.cloudinary\.com\//i.test(normalized)) {
     normalized = `https://${normalized}`;
   }

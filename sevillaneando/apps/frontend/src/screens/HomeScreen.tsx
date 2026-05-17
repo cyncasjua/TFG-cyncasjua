@@ -36,6 +36,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNotificaciones } from '../context/NotificacionesContext';
 import { formatEventDateRange, formatSevillaTime, isEventFinished } from '../utils/sevillaTime';
 import { getFullImageUrl } from '../utils/imageUrl';
+import { formatEventPrice } from '../utils/price';
 
 import {
   ThemedView,
@@ -848,14 +849,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                           alignSelf: 'flex-end',
                         }}
                       >
-                        {(() => {
-                          const scraped = item.creador?.email === 'scraper.bot@sevillaneando.local';
-                          if (item.precioMin != null && item.precioMax != null)
-                            return `${item.precioMin}€ - ${item.precioMax}€`;
-                          if (item.precio === 0) return scraped ? 'Consultar precio' : 'Gratis';
-                          if (item.precio != null) return `${item.precio} €`;
-                          return 'Precio variable';
-                        })()}
+                        {formatEventPrice(item)}
                       </ThemedText>
                     </ThemedView>
                   </ThemedView>

@@ -141,7 +141,7 @@ export class EventsService {
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.categoria', 'categoria')
       .leftJoin('event.creador', 'creador')
-      .addSelect(['creador.id', 'creador.nombre', 'creador.fotoPerfil'])
+      .addSelect(['creador.id', 'creador.nombre', 'creador.email', 'creador.fotoPerfil'])
       .where(
         new Brackets((qb2) => {
           qb2.where('event.privado = false AND event.estado = :aprobado', {
