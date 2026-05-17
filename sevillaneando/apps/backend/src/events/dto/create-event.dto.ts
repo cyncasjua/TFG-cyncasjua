@@ -13,9 +13,9 @@ import {
   IsBoolean,
   IsEnum,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RecurrenciaEnum } from '../enums/recurrencia.enum';
-import { Type } from 'class-transformer';
 import { IsEndDateAfterStartDate } from './is-end-date-after-start-date.decorator';
 import type { GeoJsonPoint } from '../../common/geojson-point';
 import { GeoJsonPointDto } from '../../common/geojson-point.dto';
@@ -65,22 +65,22 @@ export class CreateEventDto {
   fechaFin?: string;
 
   @ApiPropertyOptional({ description: 'Precio de entrada (0 = gratuito)', minimum: 0 })
+  @IsOptional()
   @IsNumber({}, { message: 'El precio debe ser un número.' })
   @Min(0, { message: 'El precio no puede ser negativo.' })
-  @IsOptional()
-  precio!: number;
+  precio?: number | null;
 
   @ApiPropertyOptional({ description: 'Precio mínimo (rango de precios)', minimum: 0 })
+  @IsOptional()
   @IsNumber({}, { message: 'El precio mínimo debe ser un número.' })
   @Min(0, { message: 'El precio mínimo no puede ser negativo.' })
-  @IsOptional()
-  precioMin?: number;
+  precioMin?: number | null;
 
   @ApiPropertyOptional({ description: 'Precio máximo (rango de precios)', minimum: 0 })
+  @IsOptional()
   @IsNumber({}, { message: 'El precio máximo debe ser un número.' })
   @Min(0, { message: 'El precio máximo no puede ser negativo.' })
-  @IsOptional()
-  precioMax?: number;
+  precioMax?: number | null;
 
   @ApiPropertyOptional({ description: 'Si el evento es privado (requiere link de acceso)' })
   @IsBoolean({ message: 'El campo privado debe ser un valor booleano.' })

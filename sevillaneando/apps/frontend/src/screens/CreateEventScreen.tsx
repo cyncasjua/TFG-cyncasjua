@@ -279,27 +279,32 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     focusMapOnLocation(lat, lon);
   };
 
-  const buildCreateEventPayload = () => ({
-    title,
-    description,
-    address,
-    fechaInicio: toBackendDateTime(fechaInicio),
-    fechaFin: toBackendDateTime(fechaFin),
-    location: {
-      type: 'Point' as const,
-      coordinates: [longitude, latitude],
-    },
-    precio: parseOptionalNumber(precio),
-    precioMin: parseOptionalNumber(precioMin),
-    precioMax: parseOptionalNumber(precioMax),
-    privado,
-    categoriaId,
-    creadorId: user?.id,
-    imagenes: imageUrls || undefined,
-    imagen: coverImageUrl || undefined,
-    recurrencia: recurrencia || undefined,
-    recurrenciaFin: recurrenciaFin || undefined,
-  });
+  const buildCreateEventPayload = () => {
+    const precioVal = parseOptionalNumber(precio);
+    const precioMinVal = parseOptionalNumber(precioMin);
+    const precioMaxVal = parseOptionalNumber(precioMax);
+    return {
+      title,
+      description,
+      address,
+      fechaInicio: toBackendDateTime(fechaInicio),
+      fechaFin: toBackendDateTime(fechaFin),
+      location: {
+        type: 'Point' as const,
+        coordinates: [longitude, latitude],
+      },
+      ...(precioVal != null ? { precio: precioVal } : {}),
+      ...(precioMinVal != null ? { precioMin: precioMinVal } : {}),
+      ...(precioMaxVal != null ? { precioMax: precioMaxVal } : {}),
+      privado,
+      categoriaId,
+      creadorId: user?.id,
+      imagenes: imageUrls || undefined,
+      imagen: coverImageUrl || undefined,
+      recurrencia: recurrencia || undefined,
+      recurrenciaFin: recurrenciaFin || undefined,
+    };
+  };
 
   const handleCreateEvent = async () => {
     if (

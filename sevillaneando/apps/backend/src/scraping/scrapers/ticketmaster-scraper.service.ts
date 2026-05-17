@@ -165,7 +165,7 @@ export class TicketmasterScraperService implements IScraper {
 
       // Si no hay coordenadas exactas, descartar evento
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        this.logger.debug(`Evento descartado por falta de coordenadas exactas: ${title}`);
+        this.logger.log(`Evento descartado por falta de coordenadas exactas: ${title}`);
         return null;
       }
 
@@ -173,7 +173,7 @@ export class TicketmasterScraperService implements IScraper {
       const cityLower = city.toLowerCase();
       const isSevillaCity = cityLower.includes('sevilla') || cityLower.includes('seville');
       if (!isSevillaCity) {
-        this.logger.debug(
+        this.logger.log(
           `Evento descartado por ciudad fuera de Sevilla: ${title} (${city}, ${stateCode})`
         );
         return null;
@@ -183,28 +183,7 @@ export class TicketmasterScraperService implements IScraper {
       const safeLng = lng as number;
       const coordinates: [number, number] = [safeLng, safeLat];
 
-      let precio: number | null = null;
-      let precioMin: number | null = null;
-      let precioMax: number | null = null;
-
-      if (tmEvent.priceRanges && tmEvent.priceRanges.length > 0) {
-        const mins = tmEvent.priceRanges
-          .map((r: { min?: number }) => r.min)
-          .filter((v: unknown) => v != null && Number.isFinite(Number(v))) as number[];
-        const maxs = tmEvent.priceRanges
-          .map((r: { max?: number }) => r.max)
-          .filter((v: unknown) => v != null && Number.isFinite(Number(v))) as number[];
-
-        const globalMin = mins.length > 0 ? Math.min(...mins) : null;
-        const globalMax = maxs.length > 0 ? Math.max(...maxs) : null;
-
-        if (globalMin != null && globalMax != null && globalMin !== globalMax) {
-          precioMin = globalMin;
-          precioMax = globalMax;
-        } else {
-          precio = globalMin ?? globalMax ?? null;
-        }
-      }
+      const { precio, precioMin, precioMax } = this.extractTicketmasterPrice(tmEvent, description);
 
       const imagen = tmEvent.images?.[0]?.url;
 
@@ -229,6 +208,105 @@ export class TicketmasterScraperService implements IScraper {
       this.logger.error('Error parseando evento de Ticketmaster:', error);
       return null;
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private extractTicketmasterPrice(
+    tmEvent: any,
+    description: string
+  ): { precio: number | null; precioMin: number | null; precioMax: number | null } {
+    const ranges = Array.isArray(tmEvent.priceRanges) ? tmEvent.priceRanges : [];
+
+    if (ranges.length > 0) {
+      this.logger.log(
+        `priceRanges de "${tmEvent.name}": ${JSON.stringify(ranges)}`
+      );
+    } else {
+      this.logger.log(`Sin priceRanges para "${tmEvent.name}"`);
+    }
+
+    const parsedRanges = ranges
+      .map((range: { min?: unknown; max?: unknown }) => ({
+        min: this.toNonNegativeNumberOrNull(range?.min),
+        max: this.toNonNegativeNumberOrNull(range?.max),
+      }))
+      .filter((range) => range.min != null || range.max != null);
+
+    const paidRanges = parsedRanges.filter((range) => (range.min ?? range.max ?? 0) > 0);
+    const effectiveRanges = paidRanges.length > 0 ? paidRanges : parsedRanges;
+
+    const minCandidates = effectiveRanges
+      .map((range) => range.min ?? range.max)
+      .filter((value): value is number => value != null);
+    const maxCandidates = effectiveRanges
+      .map((range) => range.max ?? range.min)
+      .filter((value): value is number => value != null);
+
+    if (minCandidates.length > 0 && maxCandidates.length > 0) {
+      const min = Math.min(...minCandidates);
+      const max = Math.max(...maxCandidates);
+      if (min < max) {
+        this.logger.log(`Precio rango de "${tmEvent.name}": ${min} - ${max}`);
+        return { precio: null, precioMin: min, precioMax: max };
+      }
+      this.logger.log(`Precio fijo de "${tmEvent.name}": ${min}`);
+      return { precio: min, precioMin: null, precioMax: null };
+    }
+
+    const textFallback = [
+      tmEvent.name,
+      tmEvent.info,
+      tmEvent.description,
+      tmEvent.pleaseNote,
+      description,
+    ]
+      .filter((value) => typeof value === 'string')
+      .join(' ');
+
+    const textRange = this.extractPriceRangeFromText(textFallback);
+    if (textRange) {
+      this.logger.log(`Precio rango (texto) de "${tmEvent.name}": ${textRange.precioMin} - ${textRange.precioMax}`);
+      return { precio: null, ...textRange };
+    }
+
+    const fixedPrice = this.extractFixedPriceFromText(textFallback);
+    if (fixedPrice != null) {
+      this.logger.log(`Precio fijo (texto) de "${tmEvent.name}": ${fixedPrice}`);
+    } else {
+      this.logger.log(`Sin precio para "${tmEvent.name}"`);
+    }
+    return { precio: fixedPrice, precioMin: null, precioMax: null };
+  }
+
+  private toNonNegativeNumberOrNull(value: unknown): number | null {
+    if (value == null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+
+  private extractPriceRangeFromText(text: string): { precioMin: number; precioMax: number } | null {
+    const match = text.match(
+      /(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)?\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)/i
+    );
+    if (!match) return null;
+
+    const first = this.toNonNegativeNumberOrNull(match[1].replace(',', '.'));
+    const second = this.toNonNegativeNumberOrNull(match[2].replace(',', '.'));
+    if (first == null || second == null || first === second) return null;
+
+    return {
+      precioMin: Math.min(first, second),
+      precioMax: Math.max(first, second),
+    };
+  }
+
+  private extractFixedPriceFromText(text: string): number | null {
+    if (/gratuito|gratis|entrada libre|free|sin cargo/i.test(text)) return 0;
+
+    const match = text.match(/(?:desde|a partir de)?\s*(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)/i);
+    if (!match) return null;
+
+    return this.toNonNegativeNumberOrNull(match[1].replace(',', '.'));
   }
 
   private parseTicketmasterDateTime(

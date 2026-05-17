@@ -311,6 +311,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
     setLoading(true);
     let payload: any;
     try {
+      const precioVal = precio && precio.trim() !== '' ? parseFloat(precio) : null;
+      const precioMinVal = precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null;
+      const precioMaxVal = precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null;
       payload = {
         title,
         description,
@@ -318,9 +321,9 @@ export const ModeratorEditEventScreen: React.FC<Props> = ({ route, navigation })
         fechaInicio: toBackendDateTime(fechaInicio ?? ''),
         fechaFin: toBackendDateTime(fechaFin ?? ''),
         location: { type: 'Point', coordinates: [longitude, latitude] },
-        precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
-        precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
-        precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
+        ...(precioVal != null ? { precio: precioVal } : {}),
+        ...(precioMinVal != null ? { precioMin: precioMinVal } : {}),
+        ...(precioMaxVal != null ? { precioMax: precioMaxVal } : {}),
         categoriaId,
         estado,
         imagenes: imageUrls || undefined,

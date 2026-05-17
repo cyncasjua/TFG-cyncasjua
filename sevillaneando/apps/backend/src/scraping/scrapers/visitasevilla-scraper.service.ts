@@ -187,6 +187,11 @@ export class VisitaSevillaScraperService implements IScraper {
       return { precio: 0, precioMin: null, precioMax: null };
     }
 
+    const parsedRange = this.extractPriceRangeFromTextStable(text);
+    if (parsedRange) {
+      return { precio: null, ...parsedRange };
+    }
+
     const rangeMatch = text.match(
       /(\d+(?:[.,]\d+)?)\s*€\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)|(\d+(?:[.,]\d+)?)\s*(?:-|–|—)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
     );
@@ -216,6 +221,24 @@ export class VisitaSevillaScraperService implements IScraper {
     if (!euroMatch) return empty;
 
     return { precio: parseFloat(euroMatch[1].replace(',', '.')), precioMin: null, precioMax: null };
+  }
+
+  private extractPriceRangeFromTextStable(
+    text: string
+  ): { precioMin: number; precioMax: number } | null {
+    const match = text.match(
+      /(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)?\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)/i
+    );
+    if (!match) return null;
+
+    const first = parseFloat(match[1].replace(',', '.'));
+    const second = parseFloat(match[2].replace(',', '.'));
+    if (!Number.isFinite(first) || !Number.isFinite(second) || first === second) return null;
+
+    return {
+      precioMin: Math.min(first, second),
+      precioMax: Math.max(first, second),
+    };
   }
 
   // Parsea el formato DD.MM.YY o DD.MM.YY-DD.MM.YY de visitasevilla

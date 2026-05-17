@@ -141,9 +141,9 @@ export class ScrapingService {
           existingEvent.fechaFin = normalizedEvent.fechaFin;
           existingEvent.hasMultipleDatesAvailable =
             normalizedEvent.hasMultipleDatesAvailable ?? false;
-          existingEvent.precio = normalizedEvent.precio;
-          existingEvent.precioMin = normalizedEvent.precioMin;
-          existingEvent.precioMax = normalizedEvent.precioMax;
+          existingEvent.precio = normalizedEvent.precio ?? null;
+          existingEvent.precioMin = normalizedEvent.precioMin ?? null;
+          existingEvent.precioMax = normalizedEvent.precioMax ?? null;
           existingEvent.imagen = normalizedEvent.imagen ?? existingEvent.imagen;
           existingEvent.imagenes = normalizedEvent.imagenes ?? existingEvent.imagenes;
           existingEvent.estado = EstadoEnum.Aprobado;
@@ -168,9 +168,9 @@ export class ScrapingService {
           fechaInicio: normalizedEvent.fechaInicio,
           fechaFin: normalizedEvent.fechaFin,
           hasMultipleDatesAvailable: normalizedEvent.hasMultipleDatesAvailable ?? false,
-          precio: normalizedEvent.precio,
-          precioMin: normalizedEvent.precioMin,
-          precioMax: normalizedEvent.precioMax,
+          precio: normalizedEvent.precio ?? null,
+          precioMin: normalizedEvent.precioMin ?? null,
+          precioMax: normalizedEvent.precioMax ?? null,
           imagen: normalizedEvent.imagen,
           imagenes: normalizedEvent.imagenes,
           estado: EstadoEnum.Aprobado,
@@ -184,7 +184,10 @@ export class ScrapingService {
         savedCount++;
         this.logger.debug(`Evento guardado: ${normalizedEvent.title}`);
       } catch (error) {
-        this.logger.error(`Error guardando evento "${normalizedEvent.title}":`, error);
+        const msg = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Error guardando evento "${normalizedEvent.title}" (precio=${normalizedEvent.precio}, min=${normalizedEvent.precioMin}, max=${normalizedEvent.precioMax}): ${msg}`
+        );
       }
     }
     if (nullLocationCount > 0) {
@@ -442,13 +445,16 @@ export class ScrapingService {
     let precioMin = this.toNonNegativeNumberOrNull(event.precioMin);
     let precioMax = this.toNonNegativeNumberOrNull(event.precioMax);
 
-    // Solo inferir rango desde el texto si el scraper no extrajo ningún precio.
-    if (precio == null && precioMin == null && precioMax == null) {
-      const inferredRange = this.extractPriceRangeFromText(`${event.title} ${event.description}`);
-      if (inferredRange) {
-        precioMin = inferredRange.precioMin;
-        precioMax = inferredRange.precioMax;
-      }
+    const inferredRange = this.extractPriceRangeFromTextStable(`${event.title} ${event.description}`);
+    if (
+      inferredRange &&
+      precioMin == null &&
+      precioMax == null &&
+      (precio == null || precio === inferredRange.precioMin || precio === inferredRange.precioMax)
+    ) {
+      precio = null;
+      precioMin = inferredRange.precioMin;
+      precioMax = inferredRange.precioMax;
     }
 
     if (precioMin != null && precioMax != null) {
@@ -505,6 +511,24 @@ export class ScrapingService {
     }
 
     return trimmed;
+  }
+
+  private extractPriceRangeFromTextStable(
+    text: string
+  ): { precioMin: number; precioMax: number } | null {
+    const match = text.match(
+      /(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)?\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:\u20ac|eur|euros?)/i
+    );
+    if (!match) return null;
+
+    const first = this.toNonNegativeNumberOrNull(match[1].replace(',', '.'));
+    const second = this.toNonNegativeNumberOrNull(match[2].replace(',', '.'));
+    if (first == null || second == null || first === second) return null;
+
+    return {
+      precioMin: Math.min(first, second),
+      precioMax: Math.max(first, second),
+    };
   }
 
   private extractPriceRangeFromText(text: string): { precioMin: number; precioMax: number } | null {

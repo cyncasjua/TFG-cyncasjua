@@ -134,29 +134,33 @@ export class Event {
     if (this.fechaFin && this.fechaInicio && this.fechaFin <= this.fechaInicio) {
       throw new BadRequestException('La fecha de fin debe ser posterior a la fecha de inicio.');
     }
-    if (this.precio != null && this.precio < 0) {
+    const precio = this.precio != null ? Number(this.precio) : null;
+    const precioMin = this.precioMin != null ? Number(this.precioMin) : null;
+    const precioMax = this.precioMax != null ? Number(this.precioMax) : null;
+
+    if (precio != null && precio < 0) {
       throw new BadRequestException('El precio no puede ser negativo.');
     }
-    if (this.precioMin != null && this.precioMin < 0) {
+    if (precioMin != null && precioMin < 0) {
       throw new BadRequestException('El precio mínimo no puede ser negativo.');
     }
-    if (this.precioMax != null && this.precioMax < 0) {
+    if (precioMax != null && precioMax < 0) {
       throw new BadRequestException('El precio máximo no puede ser negativo.');
     }
-    if (this.precioMin != null && this.precioMax != null && this.precioMin >= this.precioMax) {
+    if (precioMin != null && precioMax != null && precioMin >= precioMax) {
       throw new BadRequestException('El precio mínimo debe ser menor que el precio máximo.');
     }
-    if (this.precio != null && (this.precioMin != null || this.precioMax != null)) {
+    if (precio != null && (precioMin != null || precioMax != null)) {
       throw new BadRequestException(
         'No puedes especificar un precio fijo junto con un intervalo. Deja vacío el campo de precio fijo si has especificado un intervalo, y viceversa.'
       );
     }
-    if (this.precioMin != null && this.precioMax == null) {
+    if (precioMin != null && precioMax == null) {
       throw new BadRequestException(
         'Si especificas un precio mínimo, también debes especificar un precio máximo.'
       );
     }
-    if (this.precioMax != null && this.precioMin == null) {
+    if (precioMax != null && precioMin == null) {
       throw new BadRequestException(
         'Si especificas un precio máximo, también debes especificar un precio mínimo.'
       );

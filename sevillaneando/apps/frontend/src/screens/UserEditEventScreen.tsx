@@ -326,6 +326,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
     setLoading(true);
     try {
+      const precioVal = precio && precio.trim() !== '' ? parseFloat(precio) : null;
+      const precioMinVal = precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null;
+      const precioMaxVal = precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null;
       const payload = {
         title,
         description,
@@ -336,9 +339,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
           type: 'Point',
           coordinates: [longitude, latitude],
         },
-        precio: precio && precio.trim() !== '' ? parseFloat(precio) : null,
-        precioMin: precioMin && precioMin.trim() !== '' ? parseFloat(precioMin) : null,
-        precioMax: precioMax && precioMax.trim() !== '' ? parseFloat(precioMax) : null,
+        ...(precioVal != null ? { precio: precioVal } : {}),
+        ...(precioMinVal != null ? { precioMin: precioMinVal } : {}),
+        ...(precioMaxVal != null ? { precioMax: precioMaxVal } : {}),
         privado,
         categoriaId,
         estado,

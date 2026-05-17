@@ -404,9 +404,16 @@ export class EventsService {
     event.title = dto.title !== undefined ? dto.title : event.title;
     event.description = dto.description !== undefined ? dto.description : event.description;
     event.address = dto.address !== undefined ? dto.address : event.address;
-    event.precio = dto.precio !== undefined ? dto.precio : event.precio;
-    event.precioMin = dto.precioMin !== undefined ? dto.precioMin : event.precioMin;
-    event.precioMax = dto.precioMax !== undefined ? dto.precioMax : event.precioMax;
+
+    // Si llega cualquier campo de precio, reescribir los tres para evitar estados inconsistentes
+    // (ej. precio fijo antiguo coexistiendo con nuevo rango).
+    const hasPrecioUpdate =
+      dto.precio !== undefined || dto.precioMin !== undefined || dto.precioMax !== undefined;
+    if (hasPrecioUpdate) {
+      event.precio = dto.precio ?? null;
+      event.precioMin = dto.precioMin ?? null;
+      event.precioMax = dto.precioMax ?? null;
+    }
     event.categoria = dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : event.categoria;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
 
