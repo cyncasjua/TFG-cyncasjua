@@ -594,21 +594,27 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
     const min = minPrice !== '' ? parseFloat(minPrice) : null;
     const max = maxPrice !== '' ? parseFloat(maxPrice) : null;
-    if (min !== null) {
+    if (min !== null || max !== null) {
       filtered = filtered.filter((ev) => {
-        const isGratis = ev.precio === 0 || (ev.precioMin === 0 && ev.precioMax === 0);
-        const isPrecioVariable = ev.precio == null && ev.precioMin == null && ev.precioMax == null;
-        if (isPrecioVariable) return true;
-        if (isGratis) return min === 0 || min === null;
-        if (ev.precio != null) return ev.precio >= min;
-        if (ev.precioMin != null) return ev.precioMin >= min;
-        return true;
-      });
-    }
-    if (max !== null) {
-      filtered = filtered.filter((ev) => {
-        if (ev.precio != null) return ev.precio <= max;
-        if (ev.precioMax != null) return ev.precioMax <= max;
+        // Precio desconocido (scraped sin dato) → no filtrar por precio
+        const isPrecioDesconocido =
+          ev.precio == null && ev.precioMin == null && ev.precioMax == null;
+        if (isPrecioDesconocido) return true;
+
+        // Precio fijo (incluye 0 = gratis para eventos de usuario)
+        if (ev.precio != null) {
+          if (min !== null && ev.precio < min) return false;
+          if (max !== null && ev.precio > max) return false;
+          return true;
+        }
+
+        // Rango: el rango debe solapar con [min, max]
+        if (ev.precioMin != null && ev.precioMax != null) {
+          if (min !== null && ev.precioMax < min) return false;
+          if (max !== null && ev.precioMin > max) return false;
+          return true;
+        }
+
         return true;
       });
     }

@@ -7,12 +7,18 @@ export function isScrapedEvent(event: Pick<Event, 'creador'>): boolean {
   return event.creador?.email === SCRAPER_EMAIL || event.creador?.nombre === SCRAPER_NAME;
 }
 
+function formatPrice(value: number, currency: string): string {
+  const formatted =
+    value % 1 === 0 ? String(value) : value.toFixed(2).replace('.', ',');
+  return `${formatted} ${currency}`;
+}
+
 export function formatEventPrice(
   event: Pick<Event, 'precio' | 'precioMin' | 'precioMax' | 'creador'>,
   currency = '€'
 ): string {
   if (event.precioMin != null && event.precioMax != null) {
-    return `${event.precioMin} ${currency} - ${event.precioMax} ${currency}`;
+    return `${formatPrice(event.precioMin, currency)} - ${formatPrice(event.precioMax, currency)}`;
   }
 
   if (event.precio === 0) {
@@ -20,7 +26,7 @@ export function formatEventPrice(
   }
 
   if (event.precio != null) {
-    return `${event.precio} ${currency}`;
+    return formatPrice(event.precio, currency);
   }
 
   return isScrapedEvent(event) ? 'Consultar precio' : 'Precio variable';
