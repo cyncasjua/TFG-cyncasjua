@@ -950,10 +950,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             >
               <UrlTile urlTemplate={OSM_TILE_URL_TEMPLATE} maximumZ={19} />
               <Marker coordinate={coords}>
-                <Callout
-                  onPress={openExternalNavigation}
-                  tooltip={false}
-                >
+                <Callout onPress={openExternalNavigation} tooltip={false}>
                   <View style={{ padding: 6, maxWidth: 200 }}>
                     <ThemedText style={{ fontWeight: '700', fontSize: 13 }}>
                       {event.title}
