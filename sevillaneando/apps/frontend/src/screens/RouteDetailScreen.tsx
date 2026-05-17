@@ -36,7 +36,7 @@ import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 
 function offsetDuplicateCoordinates(
-  coords: Array<{ latitude: number; longitude: number }>,
+  coords: Array<{ latitude: number; longitude: number }>
 ): Array<{ latitude: number; longitude: number }> {
   const OFFSET = 0.0002;
   const seen = new Map<string, number>();

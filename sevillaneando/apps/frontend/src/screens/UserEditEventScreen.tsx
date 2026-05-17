@@ -753,7 +753,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 onPress={() =>
                   Alert.alert(
                     'Recurrencia',
-                    'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.',
+                    'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.'
                   )
                 }
                 style={{ marginLeft: 6, marginTop: 10 }}
@@ -805,7 +805,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                     onPress={() =>
                       Alert.alert(
                         'Fecha fin de recurrencia',
-                        'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.',
+                        'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.'
                       )
                     }
                     style={{ marginLeft: 6, marginTop: 10 }}
