@@ -188,13 +188,21 @@ export class TicketmasterScraperService implements IScraper {
       let precioMax: number | null = null;
 
       if (tmEvent.priceRanges && tmEvent.priceRanges.length > 0) {
-        const min = tmEvent.priceRanges[0].min;
-        const max = tmEvent.priceRanges[0].max;
-        if (min != null && max != null && min !== max) {
-          precioMin = min;
-          precioMax = max;
+        const mins = tmEvent.priceRanges
+          .map((r: { min?: number }) => r.min)
+          .filter((v: unknown) => v != null && Number.isFinite(Number(v))) as number[];
+        const maxs = tmEvent.priceRanges
+          .map((r: { max?: number }) => r.max)
+          .filter((v: unknown) => v != null && Number.isFinite(Number(v))) as number[];
+
+        const globalMin = mins.length > 0 ? Math.min(...mins) : null;
+        const globalMax = maxs.length > 0 ? Math.max(...maxs) : null;
+
+        if (globalMin != null && globalMax != null && globalMin !== globalMax) {
+          precioMin = globalMin;
+          precioMax = globalMax;
         } else {
-          precio = min ?? max ?? null;
+          precio = globalMin ?? globalMax ?? null;
         }
       }
 
