@@ -225,14 +225,15 @@ export class TicketmasterScraperService implements IScraper {
       this.logger.log(`Sin priceRanges para "${tmEvent.name}"`);
     }
 
-    const parsedRanges = ranges
-      .map((range: { min?: unknown; max?: unknown }) => ({
+    type PriceRange = { min: number | null; max: number | null };
+    const parsedRanges: PriceRange[] = (ranges as { min?: unknown; max?: unknown }[])
+      .map((range) => ({
         min: this.toNonNegativeNumberOrNull(range?.min),
         max: this.toNonNegativeNumberOrNull(range?.max),
       }))
-      .filter((range) => range.min != null || range.max != null);
+      .filter((range): range is PriceRange => range.min != null || range.max != null);
 
-    const paidRanges = parsedRanges.filter((range) => (range.min ?? range.max ?? 0) > 0);
+    const paidRanges = parsedRanges.filter((range) => (range.max ?? range.min ?? 0) > 0);
     const effectiveRanges = paidRanges.length > 0 ? paidRanges : parsedRanges;
 
     const minCandidates = effectiveRanges
