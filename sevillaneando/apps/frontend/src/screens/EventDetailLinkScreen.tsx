@@ -5,12 +5,14 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { getErrorMessage, getEventById } from '../services';
 import type { RootStackParamList } from '../navigation/types';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventDetailLink'>;
 
 export function EventDetailLinkScreen({ route, navigation }: Props) {
   const [error, setError] = React.useState<string | null>(null);
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     let isMounted = true;
@@ -43,7 +45,7 @@ export function EventDetailLinkScreen({ route, navigation }: Props) {
       {!error ? (
         <>
           <ActivityIndicator size="large" />
-          <Text style={{ marginTop: 8 }}>Abriendo evento...</Text>
+          <Text style={{ marginTop: 8 }}>{t('eventDetailLink.opening')}</Text>
         </>
       ) : (
         <Text>{error}</Text>

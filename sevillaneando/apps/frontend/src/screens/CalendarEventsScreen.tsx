@@ -11,10 +11,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { formatSevillaTime, getSevillaDayKey } from '../utils/sevillaTime';
+import { useTranslation } from 'react-i18next';
 
 export const CalendarEventsScreen: React.FC = () => {
   const { user } = useAuth();
   const { colors, theme } = useTheme();
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export const CalendarEventsScreen: React.FC = () => {
     api
       .get(`/events/attending/${user.id}`)
       .then((res) => setEvents(res.data))
-      .catch(() => Alert.alert('Error', 'No se pudieron cargar tus eventos.'))
+      .catch(() => Alert.alert(t('common.error'), t('calendar.loadError')))
       .finally(() => setLoading(false));
   }, [user?.id]);
 
@@ -92,7 +94,7 @@ export const CalendarEventsScreen: React.FC = () => {
       />
 
       <ThemedView style={[styles.eventsContainer, { backgroundColor: colors.background }]}>
-        <ThemedText style={styles.title}>Eventos para el {selectedDate}</ThemedText>
+        <ThemedText style={styles.title}>{t('calendar.eventsFor')} {selectedDate}</ThemedText>
 
         <FlatList
           data={eventsForSelectedDate}
@@ -112,7 +114,7 @@ export const CalendarEventsScreen: React.FC = () => {
             </TouchableOpacity>
           )}
           ListEmptyComponent={
-            <ThemedText style={styles.emptyText}>No tienes eventos para este día.</ThemedText>
+            <ThemedText style={styles.emptyText}>{t('calendar.noEvents')}</ThemedText>
           }
         />
       </ThemedView>

@@ -26,6 +26,7 @@ import { getFullImageUrl } from '../utils/imageUrl';
 import type { Event } from '../types/event';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SavedAndPrivateEvents'>;
 
@@ -34,6 +35,7 @@ const ACCESSED_PRIVATE_LINKS_KEY = 'accessedPrivateLinks';
 export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { colors, theme } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const mode = route.params?.mode ?? 'both';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,10 +163,10 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       ]}
     >
       {isOngoing && (
-        <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>En curso</ThemedText>
+        <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>{t('savedEvents.ongoing')}</ThemedText>
       )}
       {!isOngoing && isWithinWeek && (
-        <ThemedText style={[styles.statusBadge, styles.statusSoon]}>En &lt; 7 días</ThemedText>
+        <ThemedText style={[styles.statusBadge, styles.statusSoon]}>{t('savedEvents.soonDays')}</ThemedText>
       )}
       <Image
         source={
@@ -199,7 +201,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
         <View style={styles.emptyContainer}>
           <Icon name="lock-outline" size={44} color={colors.text + '33'} />
           <ThemedTextSecondary style={styles.emptyText}>
-            No hay eventos en esta lista.
+            {t('savedEvents.empty')}
           </ThemedTextSecondary>
         </View>
       ) : (
@@ -238,7 +240,7 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
         <View style={styles.emptyContainer}>
           <Icon name="bookmark-off-outline" size={44} color={colors.text + '33'} />
           <ThemedTextSecondary style={styles.emptyText}>
-            No hay eventos en esta lista.
+            {t('savedEvents.empty')}
           </ThemedTextSecondary>
         </View>
       ) : (
@@ -286,10 +288,10 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       {!!error && (
         <ThemedText style={{ color: colors.error, marginBottom: 12 }}>{error}</ThemedText>
       )}
-      {(mode === 'both' || mode === 'saved') && renderList('Eventos guardados', savedEvents)}
+      {(mode === 'both' || mode === 'saved') && renderList(t('savedEvents.saved'), savedEvents)}
       {(mode === 'both' || mode === 'private') &&
-        renderPrivateList('Eventos privados', privateEvents)}
-      {mode === 'joined' && renderPrivateList('Eventos a los que estás apuntado', joinedEvents)}
+        renderPrivateList(t('savedEvents.private'), privateEvents)}
+      {mode === 'joined' && renderPrivateList(t('savedEvents.attending'), joinedEvents)}
     </ScrollView>
   );
 };

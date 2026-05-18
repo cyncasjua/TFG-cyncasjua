@@ -14,6 +14,7 @@ import { useSocket } from '../context/SocketContext';
 import { reportWarning } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 import { api } from '../services';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Messages'>;
 
@@ -29,6 +30,7 @@ type Conversation = {
 export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { socket, isConnected } = useSocket();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [userPhotoById, setUserPhotoById] = useState<Record<string, string | null>>({});
@@ -195,7 +197,7 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <ThemedText>Cargando mensajes…</ThemedText>
+        <ThemedText>{t('messages.loading')}</ThemedText>
       </View>
     );
   }
@@ -206,10 +208,10 @@ export const MessagesScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.emptyContainer}>
           <MaterialIcons name="mail-outline" size={64} color={colors.text + '50'} />
           <ThemedText style={{ marginTop: 16, textAlign: 'center' }}>
-            No hay conversaciones
+            {t('messages.empty')}
           </ThemedText>
           <ThemedTextSecondary style={{ marginTop: 8, textAlign: 'center', fontSize: 12 }}>
-            Inicia una conversación privada desde un evento o perfil de usuario
+            {t('messages.emptyHint')}
           </ThemedTextSecondary>
         </View>
       ) : (

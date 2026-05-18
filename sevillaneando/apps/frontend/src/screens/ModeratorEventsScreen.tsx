@@ -19,12 +19,14 @@ import { getFullImageUrl } from '../utils/imageUrl';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { RootStackParamList } from '../navigation/types';
 import type { Event } from '../types/event';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModeratorEvents'>;
 
 export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
   const { role } = useAuth();
   const { colors, theme } = useTheme();
+  const { t } = useTranslation();
 
   const [pendingEvents, setPendingEvents] = useState<Event[]>([]);
   const [publicEvents, setPublicEvents] = useState<Event[]>([]);
@@ -41,11 +43,11 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       setPendingEvents(pendingRes.data);
       setPublicEvents(publicRes.data);
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err));
+      Alert.alert(t('common.error'), getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -56,27 +58,27 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
   const handleAprobar = async (id: string) => {
     try {
       await api.patch(`/events/${id}/aprobar`);
-      Alert.alert('Evento aprobado');
+      Alert.alert(t('moderatorEvents.approved'));
       fetchModeratorEvents();
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err));
+      Alert.alert(t('common.error'), getErrorMessage(err));
     }
   };
 
   const handleRechazar = async (id: string) => {
     try {
       await api.patch(`/events/${id}/rechazar`);
-      Alert.alert('Evento rechazado');
+      Alert.alert(t('moderatorEvents.rejected'));
       fetchModeratorEvents();
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err));
+      Alert.alert(t('common.error'), getErrorMessage(err));
     }
   };
 
   if (role !== 'moderator') {
     return (
       <ThemedView style={styles.centered}>
-        <ThemedText>No tienes permisos para ver esta pantalla.</ThemedText>
+        <ThemedText>{t('moderatorEvents.noPermission')}</ThemedText>
       </ThemedView>
     );
   }
@@ -86,7 +88,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
         <ThemedTextSecondary style={{ marginTop: 8 }}>
-          Cargando eventos de moderación…
+          {t('moderatorEvents.loading')}
         </ThemedTextSecondary>
       </ThemedView>
     );
@@ -94,7 +96,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.screenTitle}>Moderación de eventos</ThemedTitle>
+      <ThemedTitle style={styles.screenTitle}>{t('moderatorEvents.title')}</ThemedTitle>
       <View style={[styles.tabs, { borderColor: colors.border }]}>
         <TouchableOpacity
           style={[styles.tab, activeList === 'pending' && styles.tabPending]}
@@ -107,13 +109,13 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
           />
           <View>
             <ThemedText style={[styles.tabText, activeList === 'pending' && styles.activeTabText]}>
-              Pendientes
+              {t('moderatorEvents.pending')}
             </ThemedText>
             {pendingEvents.length > 0 && (
               <ThemedText
                 style={[styles.tabCount, activeList === 'pending' && styles.activeTabText]}
               >
-                {pendingEvents.length} evento{pendingEvents.length !== 1 ? 's' : ''}
+                {pendingEvents.length} {pendingEvents.length !== 1 ? t('moderatorEvents.events') : t('moderatorEvents.event')}
               </ThemedText>
             )}
           </View>
@@ -125,13 +127,13 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
           <Icon name="earth" size={18} color={activeList === 'public' ? '#fff' : colors.primary} />
           <View>
             <ThemedText style={[styles.tabText, activeList === 'public' && styles.activeTabText]}>
-              Públicos
+              {t('moderatorEvents.public')}
             </ThemedText>
             {publicEvents.length > 0 && (
               <ThemedText
                 style={[styles.tabCount, activeList === 'public' && styles.activeTabText]}
               >
-                {publicEvents.length} evento{publicEvents.length !== 1 ? 's' : ''}
+                {publicEvents.length} {publicEvents.length !== 1 ? t('moderatorEvents.events') : t('moderatorEvents.event')}
               </ThemedText>
             )}
           </View>
@@ -196,7 +198,7 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
                     onPress={() => navigation.navigate('ModeratorEditEvent', { event: item })}
                   >
                     <Icon name="pencil" size={18} color="#fff" />
-                    <ThemedText style={styles.editButtonText}>Editar</ThemedText>
+                    <ThemedText style={styles.editButtonText}>{t('common.edit')}</ThemedText>
                   </TouchableOpacity>
                 </View>
               )}
@@ -212,8 +214,8 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
             />
             <ThemedTextSecondary style={styles.emptyText}>
               {activeList === 'pending'
-                ? 'No hay eventos pendientes de revisión.'
-                : 'No hay eventos públicos editables.'}
+                ? t('moderatorEvents.noPending')
+                : t('moderatorEvents.noPublic')}
             </ThemedTextSecondary>
           </View>
         }

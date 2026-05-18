@@ -28,9 +28,11 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { RootStackParamList } from '../navigation/types';
 import { reportError } from '../utils/telemetry';
+import { useTranslation } from 'react-i18next';
 
 export const RoutesListScreen: React.FC = () => {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [routes, setRoutes] = useState<UserRoute[]>([]);
@@ -44,7 +46,7 @@ export const RoutesListScreen: React.FC = () => {
       setRoutes(allRoutes);
     } catch (err) {
       reportError('routes-list.fetch', getErrorMessage(err), err);
-      Alert.alert('Error', getErrorMessage(err));
+      Alert.alert(t('common.error'), getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -58,7 +60,7 @@ export const RoutesListScreen: React.FC = () => {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: 'Rutas',
+      headerTitle: t('routes.title'),
       headerTitleAlign: 'center',
       headerTitleStyle: {
         fontWeight: 'bold',
@@ -91,7 +93,7 @@ export const RoutesListScreen: React.FC = () => {
     return (
       <ThemedView style={[styles.centered, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando rutas...</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>{t('routes.loading')}</ThemedTextSecondary>
       </ThemedView>
     );
   }
@@ -108,7 +110,7 @@ export const RoutesListScreen: React.FC = () => {
         <MaterialIcons name="search" size={20} color={colors.textSecondary} />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
-          placeholder="Buscar rutas..."
+          placeholder={t('routes.searchPlaceholder')}
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -125,7 +127,7 @@ export const RoutesListScreen: React.FC = () => {
         icon={<MaterialIcons name="add" size={18} color="white" />}
         style={styles.createButton}
       >
-        Nueva ruta
+        {t('routes.newRoute')}
       </ThemedButton>
 
       {/* Routes List */}
@@ -134,8 +136,8 @@ export const RoutesListScreen: React.FC = () => {
           <MaterialIcons name="directions" size={48} color={colors.textSecondary} />
           <ThemedTextSecondary style={{ marginTop: 12, textAlign: 'center' }}>
             {routes.length === 0
-              ? 'No hay rutas disponibles.\n¡Crea la primera!'
-              : 'No se encontraron rutas que coincidan con tu búsqueda.'}
+              ? t('routes.empty')
+              : t('routes.noResults')}
           </ThemedTextSecondary>
         </View>
       ) : (
@@ -182,7 +184,7 @@ export const RoutesListScreen: React.FC = () => {
                   <View style={styles.infoItem}>
                     <MaterialIcons name="location-on" size={14} color={colors.primary} />
                     <ThemedTextSecondary>
-                      {item.secuenciaEventos.length} paradas
+                      {item.secuenciaEventos.length} {t('routes.stops')}
                     </ThemedTextSecondary>
                   </View>
 

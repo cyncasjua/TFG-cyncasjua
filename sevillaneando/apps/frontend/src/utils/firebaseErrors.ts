@@ -1,28 +1,27 @@
-const FIREBASE_ERROR_MESSAGES: Record<string, string> = {
-  'auth/invalid-email': 'El formato del email no es válido.',
-  'auth/user-not-found': 'No existe ninguna cuenta con este email.',
-  'auth/wrong-password': 'La contraseña es incorrecta.',
-  'auth/invalid-credential': 'Email o contraseña incorrectos.',
-  'auth/email-already-in-use': 'Ya existe una cuenta con este email.',
-  'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
-  'auth/too-many-requests':
-    'Demasiados intentos fallidos. Espera unos minutos e inténtalo de nuevo.',
-  'auth/user-disabled': 'Esta cuenta ha sido desactivada. Contacta con soporte.',
-  'auth/network-request-failed': 'Error de conexión. Comprueba tu internet e inténtalo de nuevo.',
-  'auth/popup-closed-by-user': 'Inicio de sesión cancelado.',
-  'auth/requires-recent-login':
-    'Por seguridad, vuelve a iniciar sesión antes de realizar esta acción.',
-  'auth/account-exists-with-different-credential':
-    'Ya existe una cuenta con este email usando otro método de inicio de sesión.',
-  'auth/missing-email': 'Introduce tu email.',
-  'auth/missing-password': 'Introduce tu contraseña.',
-  'auth/operation-not-allowed': 'Este método de inicio de sesión no está habilitado.',
+import i18n from '../i18n/i18n';
+
+const FIREBASE_ERROR_KEY_MAP: Record<string, string> = {
+  'auth/invalid-email': 'firebase.invalidEmail',
+  'auth/user-not-found': 'firebase.userNotFound',
+  'auth/wrong-password': 'firebase.wrongPassword',
+  'auth/invalid-credential': 'firebase.invalidCredential',
+  'auth/email-already-in-use': 'firebase.emailInUse',
+  'auth/weak-password': 'firebase.weakPassword',
+  'auth/too-many-requests': 'firebase.tooManyRequests',
+  'auth/user-disabled': 'firebase.userDisabled',
+  'auth/network-request-failed': 'firebase.networkFailed',
+  'auth/popup-closed-by-user': 'firebase.popupClosed',
+  'auth/requires-recent-login': 'firebase.requiresRecentLogin',
+  'auth/account-exists-with-different-credential': 'firebase.accountExistsDifferentCredential',
+  'auth/missing-email': 'firebase.missingEmail',
+  'auth/missing-password': 'firebase.missingPassword',
+  'auth/operation-not-allowed': 'firebase.operationNotAllowed',
 };
 
 export function getFirebaseErrorMessage(err: unknown): string {
   const code = (err as any)?.code as string | undefined;
-  if (code && FIREBASE_ERROR_MESSAGES[code]) {
-    return FIREBASE_ERROR_MESSAGES[code];
+  if (code && FIREBASE_ERROR_KEY_MAP[code]) {
+    return i18n.t(FIREBASE_ERROR_KEY_MAP[code]);
   }
-  return 'Ocurrió un error inesperado. Inténtalo de nuevo.';
+  return i18n.t('firebase.unknownError');
 }

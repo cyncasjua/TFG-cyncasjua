@@ -12,6 +12,7 @@ import { ThemedView, ThemedText } from '../components';
 import type { Event } from '../types/event';
 import { reportError } from '../utils/telemetry';
 import { haversineDistanceKm, OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventsMap'>;
 
@@ -20,6 +21,7 @@ type EventWithDistance = Event & { distance?: number };
 export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const { colors, theme } = useTheme();
+  const { t } = useTranslation();
   const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [radius, setRadius] = useState(1000);
@@ -133,7 +135,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#333' }}>📍 Tú</Text>
+                  <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#333' }}>{t('eventsMap.youPin')}</Text>
                 </View>
               </Callout>
             </Marker>
@@ -152,7 +154,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           )
           .map((event) => {
             const descriptionPreview =
-              event.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
+              event.description?.split('\n')[0]?.substring(0, 60) || t('eventsMap.noDescription');
             const isAndroid = Platform.OS === 'android';
 
             return (
@@ -252,7 +254,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                             fontStyle: 'italic',
                           }}
                         >
-                          Toca para ver detalles
+                          {t('eventsMap.tapDetails')}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -269,7 +271,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           const selectedEvent = events.find((e) => e.id === selectedEventId);
           if (!selectedEvent) return null;
           const descriptionPreview =
-            selectedEvent.description?.split('\n')[0]?.substring(0, 60) || 'Sin descripción';
+            selectedEvent.description?.split('\n')[0]?.substring(0, 60) || t('eventsMap.noDescription');
 
           return (
             <View
@@ -357,7 +359,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>Ver detalles</Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>{t('eventsMap.viewDetails')}</Text>
               </TouchableOpacity>
             </View>
           );
@@ -366,7 +368,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
       {hasUserLocation && (
         <ThemedView style={[styles.radiusBox, { backgroundColor: colors.card }]}>
           <ThemedText style={{ fontSize: 12, color: colors.text }}>
-            Radio: {(radius / 1000).toFixed(1)} km
+            {t('eventsMap.radius')} {(radius / 1000).toFixed(1)} {t('eventsMap.km')}
           </ThemedText>
           <Slider
             style={{ width: '100%' }}
@@ -393,7 +395,7 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
         <ThemedView style={[styles.infoBox, { backgroundColor: colors.card }]}>
           <MaterialIcons name="info" size={20} color={colors.primary} />
           <ThemedText style={{ marginLeft: 8, fontSize: 12, color: colors.primary }}>
-            Configura tu ubicación para ver los eventos en el mapa
+            {t('eventsMap.locationHint')}
           </ThemedText>
         </ThemedView>
       )}

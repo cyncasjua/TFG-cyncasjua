@@ -27,6 +27,7 @@ import { useAuth } from '../hooks/useAuth';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
+import { useTranslation } from 'react-i18next';
 
 // Desplaza ligeramente los marcadores que comparten coordenadas exactas para que sean visibles
 function offsetDuplicateCoordinates(
@@ -53,6 +54,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -69,7 +71,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: 'Crear ruta',
+      headerTitle: t('createRoute.title'),
       headerTitleAlign: 'center',
       headerTitleStyle: {
         fontWeight: 'bold',
@@ -90,7 +92,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
         const { events: allEventos } = await getEvents();
         setEventos(allEventos);
       } catch (error) {
-        Alert.alert('Error', getErrorMessage(error));
+        Alert.alert(t('common.error'), getErrorMessage(error));
       } finally {
         setEventsLoading(false);
       }
@@ -143,22 +145,22 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleCreateRoute = async () => {
     if (!titulo.trim()) {
-      Alert.alert('Error', 'El título de la ruta es obligatorio');
+      Alert.alert(t('common.error'), t('createRoute.titleRequired'));
       return;
     }
 
     if (selectedEventosIds.length === 0) {
-      Alert.alert('Error', 'Debes seleccionar al menos un evento');
+      Alert.alert(t('common.error'), t('createRoute.eventsRequired'));
       return;
     }
 
     if (routeCoordinates.length === 0) {
-      Alert.alert('Error', 'Los eventos seleccionados deben tener ubicaciones válidas');
+      Alert.alert(t('common.error'), t('createRoute.locationsRequired'));
       return;
     }
 
     if (!temporizacion || parseInt(temporizacion) <= 0) {
-      Alert.alert('Error', 'La temporización debe ser un número positivo');
+      Alert.alert(t('common.error'), t('createRoute.durationRequired'));
       return;
     }
 
@@ -177,21 +179,21 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
         temporizacion: parseInt(temporizacion),
       });
 
-      Alert.alert('Éxito', 'Ruta creada correctamente', [
+      Alert.alert(t('common.success'), t('createRoute.createSuccess'), [
         {
-          text: 'Ver ruta',
+          text: t('createRoute.viewRoute'),
           onPress: () => {
             navigation.replace('RouteDetail', { routeId: route.id });
           },
         },
         {
-          text: 'Volver',
+          text: t('common.back'),
           onPress: () => navigation.goBack(),
         },
       ]);
     } catch (error) {
       reportError('create-route.failed', getErrorMessage(error), error);
-      Alert.alert('Error', getErrorMessage(error));
+      Alert.alert(t('common.error'), getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -212,10 +214,10 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedView
             style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <ThemedText style={styles.label}>Título de la ruta</ThemedText>
+            <ThemedText style={styles.label}>{t('createRoute.titlePlaceholder')}</ThemedText>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-              placeholder="Ej: Mi viaje por el centro"
+              placeholder={t('createRoute.exampleTitle')}
               placeholderTextColor={colors.textSecondary}
               value={titulo}
               onChangeText={setTitulo}
@@ -227,13 +229,13 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedView
             style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <ThemedText style={styles.label}>Descripción</ThemedText>
+            <ThemedText style={styles.label}>{t('common.description')}</ThemedText>
             <TextInput
               style={[
                 styles.input,
                 { color: colors.text, borderColor: colors.border, minHeight: 80 },
               ]}
-              placeholder="Describe brevemente tu ruta..."
+              placeholder={t('createRoute.descriptionPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={descripcion}
               onChangeText={setDescripcion}
@@ -244,7 +246,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Mapa para mostrar las ubicaciones de los eventos */}
           <ThemedView style={[styles.section, { backgroundColor: colors.card }]}>
-            <ThemedText style={styles.label}>Ubicaciones de los eventos seleccionados</ThemedText>
+            <ThemedText style={styles.label}>{t('createRoute.selectedLocations')}</ThemedText>
             <MapView
               ref={mapRef}
               style={styles.map}
@@ -295,7 +297,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedView
             style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <ThemedText style={styles.label}>Duración estimada (minutos)</ThemedText>
+            <ThemedText style={styles.label}>{t('createRoute.duration')}</ThemedText>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border }]}
               placeholder="60"
@@ -308,12 +310,12 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Seleccionar Eventos */}
           <ThemedView style={[styles.section, { backgroundColor: colors.card }]}>
-            <ThemedText style={styles.label}>Selecciona eventos para la ruta</ThemedText>
+            <ThemedText style={styles.label}>{t('createRoute.selectEvents')}</ThemedText>
 
             {selectedEventosIds.length > 0 && (
               <>
                 <ThemedText style={{ fontWeight: '600', marginBottom: 8, marginTop: 12 }}>
-                  Orden de visita ({selectedEventosIds.length} eventos)
+                  {t('createRoute.visitOrder')} ({selectedEventosIds.length} eventos)
                 </ThemedText>
                 <ScrollView style={styles.eventsList} nestedScrollEnabled>
                   {selectedEventosIds.map((eventId, index) => {
@@ -375,13 +377,13 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
             )}
 
             <ThemedText style={{ fontWeight: '600', marginBottom: 8, marginTop: 12 }}>
-              Eventos disponibles
+              {t('createRoute.availableEvents')}
             </ThemedText>
 
             {eventsLoading ? (
               <ActivityIndicator size="large" color={colors.primary} />
             ) : eventos.length === 0 ? (
-              <ThemedTextSecondary>No hay eventos disponibles</ThemedTextSecondary>
+              <ThemedTextSecondary>{t('createRoute.noEvents')}</ThemedTextSecondary>
             ) : (
               <ScrollView style={styles.eventsList} nestedScrollEnabled>
                 {eventos.map((evento) => (
@@ -439,7 +441,7 @@ export const CreateRouteScreen: React.FC<Props> = ({ navigation }) => {
               )
             }
           >
-            {loading ? 'Creando ruta...' : 'Crear ruta'}
+            {loading ? t('createRoute.creating') : t('createRoute.title')}
           </ThemedButton>
         </ThemedView>
       </ThemedView>

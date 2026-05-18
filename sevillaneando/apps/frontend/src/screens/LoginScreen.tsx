@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -22,6 +23,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { login } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -50,15 +52,13 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleForgotPassword = async () => {
     if (!email) {
-      setError('Introduce tu email para recuperar la contraseña.');
+      setError(t('login.emailRequired'));
       return;
     }
     try {
       await sendPasswordResetEmail(getAuth(), email.trim());
       setError(null);
-      alert(
-        'Te hemos enviado un email para restablecer tu contraseña. Si no lo ves, revisa la carpeta de spam.'
-      );
+      alert(t('login.resetEmailSent'));
     } catch (err: unknown) {
       setError(getFirebaseErrorMessage(err));
     }
@@ -72,16 +72,16 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
-        <ThemedTitle style={styles.title}>Inicia sesión</ThemedTitle>
+        <ThemedTitle style={styles.title}>{t('login.title')}</ThemedTitle>
         <ThemedTextSecondary style={styles.subtitle}>
-          Accede con tu cuenta para continuar.
+          {t('login.subtitle')}
         </ThemedTextSecondary>
 
         <ThemedView style={styles.form}>
           <TextInput
             value={email}
             onChangeText={setEmail}
-            placeholder="Email"
+            placeholder={t('login.email')}
             autoCapitalize="none"
             keyboardType="email-address"
             style={[
@@ -94,7 +94,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="Contraseña"
+              placeholder={t('login.password')}
               secureTextEntry={!showPassword}
               style={[
                 styles.inputPassword,
@@ -125,14 +125,14 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 <ThemedText style={[styles.checkmark, { color: colors.background }]}>✓</ThemedText>
               )}
             </TouchableOpacity>
-            <ThemedText style={styles.checkboxLabel}>Mantener sesión iniciada</ThemedText>
+            <ThemedText style={styles.checkboxLabel}>{t('login.keepSession')}</ThemedText>
           </ThemedView>
 
           {error && (
             <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>
           )}
           <ThemedButton
-            title={loading ? 'Entrando...' : 'Entrar'}
+            title={loading ? t('login.signingIn') : t('login.signIn')}
             onPress={onSubmit}
             disabled={loading}
           />
@@ -140,13 +140,13 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
         <TouchableOpacity onPress={handleForgotPassword} style={{ marginTop: 16 }}>
           <ThemedText style={[styles.link, { color: colors.primary }]}>
-            ¿Has olvidado tu contraseña?
+            {t('login.forgotPassword')}
           </ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={{ marginTop: 32 }}>
           <ThemedText style={[styles.link, { color: colors.primary }]}>
-            ¿No tienes cuenta? Regístrate aquí
+            {t('login.noAccount')}
           </ThemedText>
         </TouchableOpacity>
       </SafeAreaView>

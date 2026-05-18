@@ -8,16 +8,18 @@ import { Avatar, ThemedText } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import type { PublicUser } from '../types/user';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProfileConnections'>;
 
 export const ProfileConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { userId, type } = route.params;
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const title = type === 'seguidores' ? 'Seguidores' : 'Seguidos';
+  const title = type === 'seguidores' ? t('profileConnections.followers') : t('profileConnections.following');
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -63,7 +65,7 @@ export const ProfileConnectionsScreen: React.FC<Props> = ({ route, navigation })
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <ThemedText style={styles.empty}>
-              {type === 'seguidores' ? 'Aún no hay seguidores.' : 'Aún no sigue a nadie.'}
+              {type === 'seguidores' ? t('profileConnections.noFollowers') : t('profileConnections.noFollowing')}
             </ThemedText>
           }
         />

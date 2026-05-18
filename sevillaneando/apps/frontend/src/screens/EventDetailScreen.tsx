@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Callout, Marker, UrlTile } from 'react-native-maps';
@@ -80,6 +81,7 @@ type ChatMessage = {
 };
 
 export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [mapActive, setMapActive] = useState(false);
   const { event: initialEvent } = route.params;
@@ -174,7 +176,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       })
       .catch((err) => {
         if (!mounted) return;
-        setAttendeesError(getErrorMessage(err) || 'No se pudo cargar la lista de asistentes');
+        setAttendeesError(getErrorMessage(err) || t('eventDetail.attendeesError'));
       });
 
     return () => {
@@ -253,7 +255,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleToggleAttend = async () => {
     if (!token) return;
     if (isPastEvent) {
-      setAttendeesError('No puedes apuntarte a un evento finalizado.');
+      setAttendeesError(t('eventDetail.cannotAttendPast'));
       return;
     }
     setAttendeesError('');
@@ -268,7 +270,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         setIsAttending(true);
       }
     } catch (err) {
-      setAttendeesError(getErrorMessage(err) || 'No se pudo actualizar tu asistencia');
+      setAttendeesError(getErrorMessage(err) || t('eventDetail.errorAttendance'));
     }
   };
 
@@ -325,7 +327,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         setIsSaved(true);
       }
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err) || 'No se pudo actualizar el guardado del evento.');
+      Alert.alert(t('common.error'), getErrorMessage(err) || t('eventDetail.errorSave'));
     } finally {
       setIsRecommendationLoading(false);
     }
@@ -338,8 +340,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     if (isPrivate && !isPrivateCreator) {
       Alert.alert(
-        'Acceso restringido',
-        'Solo el creador puede compartir el enlace de este evento privado.'
+        t('eventDetail.restrictedAccess'),
+        t('eventDetail.onlyCreatorSharePrivate')
       );
       return;
     }
@@ -354,8 +356,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         }
       } catch (err) {
         Alert.alert(
-          'Error',
-          getErrorMessage(err) || 'No se pudo obtener el enlace privado para compartir.'
+          t('common.error'),
+          getErrorMessage(err) || t('eventDetail.errorPrivateLink')
         );
         return;
       }
@@ -363,7 +365,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     const canBuildPrivateLink = Boolean(isPrivate && privateLinkAcceso);
     if (isPrivate && !canBuildPrivateLink) {
-      Alert.alert('Error', 'No se pudo generar el enlace de invitacion para el evento privado.');
+      Alert.alert(t('common.error'), t('eventDetail.errorGeneratingLink'));
       return;
     }
 
@@ -380,17 +382,17 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     const shareMessage = [
       isPrivate
-        ? `Te invito a un evento privado en Sevillaneando: ${event.title}`
-        : `Te recomiendo este plan en Sevillaneando: ${event.title}`,
+        ? t('eventDetail.shareMessagePrivate', { title: event.title })
+        : t('eventDetail.shareMessagePublic', { title: event.title }),
       '',
-      `Cuando: ${startText}`,
-      `Dónde: ${event.address}`,
-      `Categoría: ${event.categoria?.nombre || 'General'}`,
-      `Precio: ${priceText}`,
+      t('eventDetail.shareWhen', { date: startText }),
+      t('eventDetail.shareWhere', { address: event.address }),
+      t('eventDetail.shareCategory', { category: event.categoria?.nombre || t('eventDetail.general') }),
+      t('eventDetail.sharePrice', { price: priceText }),
       '',
-      `Acceso directo: ${eventLink}`,
-      webLink ? `Abrir en la app: ${deepLink}` : null,
-      webLink ? 'Si no tienes la app, usa el enlace web.' : null,
+      t('eventDetail.shareDirectLink', { link: eventLink }),
+      webLink ? t('eventDetail.shareOpenApp', { link: deepLink }) : null,
+      webLink ? t('eventDetail.shareNoApp') : null,
     ]
       .filter((line): line is string => !!line)
       .join('\n');
@@ -409,7 +411,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         await shareRecommendedEvent(event.id);
       }
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err) || 'No se pudo compartir el evento.');
+      Alert.alert(t('common.error'), getErrorMessage(err) || t('eventDetail.errorShare'));
     }
   };
 
@@ -429,9 +431,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       await Promise.all([refreshEventDetails(), refreshReviews()]);
       setHasExistingRating(true);
       setRatingModalVisible(false);
-      Alert.alert('Gracias', 'Tu valoración se ha guardado correctamente.');
+      Alert.alert(t('eventDetail.thankYou'), t('eventDetail.ratingSaved'));
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err) || 'No se pudo guardar la valoración.');
+      Alert.alert(t('common.error'), getErrorMessage(err) || t('eventDetail.errorRating'));
     } finally {
       setRatingSubmitting(false);
     }
@@ -505,8 +507,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const start = dayjs(event.fechaInicio);
     const end = dayjs(event.fechaFin);
     const totalMinutes = end.diff(start, 'minute');
-    return formatDuration(totalMinutes, 'Duración');
-  }, [event.fechaInicio, event.fechaFin]);
+    return formatDuration(totalMinutes, t('eventDetail.duration'));
+  }, [event.fechaInicio, event.fechaFin, t]);
 
   const isPastEvent = useMemo(
     () => isEventFinished(event.fechaInicio, event.fechaFin),
@@ -518,15 +520,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const end = dayjs(event.fechaFin);
     const now = dayjs();
 
-    if (now.isAfter(end)) return 'Tiempo restante: Evento finalizado';
+    if (now.isAfter(end)) return t('eventDetail.eventEnded');
     if (now.isBefore(start)) {
       const minutesToStart = start.diff(now, 'minute');
-      return formatDuration(minutesToStart, 'Tiempo restante');
+      return formatDuration(minutesToStart, t('eventDetail.remaining'));
     }
 
     const minutesToEnd = end.diff(now, 'minute');
-    return formatDuration(minutesToEnd, 'Termina en');
-  }, [event.fechaInicio, event.fechaFin]);
+    return formatDuration(minutesToEnd, t('eventDetail.endsIn'));
+  }, [event.fechaInicio, event.fechaFin, t]);
 
   const openExternalNavigation = () => {
     if (!coords) return;
@@ -542,7 +544,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!token) {
-      setChatError('Necesitas iniciar sesión para subir imágenes');
+      setChatError(t('eventDetail.needLoginImages'));
       return;
     }
     if (!asset?.uri) return;
@@ -572,7 +574,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       });
 
       if (!response.ok) {
-        setChatError('No se pudo subir la imagen');
+        setChatError(t('eventDetail.imageUploadFail'));
         setPendingImageLocalUri(null);
         setPendingImageUrl(null);
         return;
@@ -580,7 +582,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
       const data = await response.json();
       if (!data?.imageUrl) {
-        setChatError('Respuesta de imagen invalida');
+        setChatError(t('eventDetail.imageResponseInvalid'));
         setPendingImageLocalUri(null);
         setPendingImageUrl(null);
         return;
@@ -593,7 +595,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         'Error al subir imagen en chat de evento',
         error
       );
-      setChatError('Error al subir la imagen');
+      setChatError(t('eventDetail.imageUploadError'));
       setPendingImageLocalUri(null);
       setPendingImageUrl(null);
     } finally {
@@ -603,7 +605,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handlePickImage = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesión para subir imágenes');
+      setChatError(t('eventDetail.needLoginImages'));
       return;
     }
 
@@ -611,7 +613,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       setChatError('');
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permission.status !== 'granted') {
-        setChatError('Permiso requerido para acceder a fotos');
+        setChatError(t('eventDetail.photoPermission'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -629,13 +631,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         'Error al seleccionar imagen del chat de evento',
         error
       );
-      setChatError('Error al seleccionar la imagen');
+      setChatError(t('eventDetail.photoSelectError'));
     }
   };
 
   const handleTakePhoto = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesión para subir imágenes');
+      setChatError(t('eventDetail.needLoginImages'));
       return;
     }
 
@@ -643,7 +645,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       setChatError('');
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (permission.status !== 'granted') {
-        setChatError('Permiso requerido para usar la camara');
+        setChatError(t('eventDetail.cameraPermission'));
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -657,15 +659,15 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       await uploadChatImage(asset);
     } catch (error) {
       reportError('event-detail.take-photo', 'Error al abrir cámara en chat de evento', error);
-      setChatError('Error al abrir la camara');
+      setChatError(t('eventDetail.cameraError'));
     }
   };
 
   const handleDeleteEventMessage = (messageId: string) => {
-    Alert.alert('Borrar mensaje', '¿Estás seguro de que quieres borrar este mensaje?', [
-      { text: 'Cancelar', onPress: () => {}, style: 'cancel' },
+    Alert.alert(t('eventDetail.deleteMessage'), t('eventDetail.deleteMessageConfirm'), [
+      { text: t('common.cancel'), onPress: () => {}, style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t('common.delete'),
         onPress: () => {
           sendMessage('delete_event_message', {
             eventId: event?.id,
@@ -736,7 +738,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   if (!coords) {
     return (
       <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}>
-        <ThemedText>No hay coordenadas para este evento.</ThemedText>
+        <ThemedText>{t('eventDetail.noCoords')}</ThemedText>
       </SafeAreaView>
     );
   }
@@ -846,7 +848,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   <>
                     {before}
                     {'\n\n'}
-                    <ThemedText style={styles.description}>Fuente: </ThemedText>
+                    <ThemedText style={styles.description}>{t('eventDetail.source')}: </ThemedText>
                     <ThemedText
                       style={[
                         styles.description,
@@ -864,7 +866,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <MaterialIcons name="event" size={16} color="#6c2eb7" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
                 {event.hasMultipleDatesAvailable
-                  ? 'Consultar fechas'
+                  ? t('eventDetail.consultDates')
                   : formatEventDateRange(event.fechaInicio, event.fechaFin)}
               </ThemedTextSecondary>
             </ThemedView>
@@ -886,18 +888,16 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                 <MaterialIcons name="repeat" size={16} color="#6c2eb7" />
                 <ThemedTextSecondary style={{ marginLeft: 4 }}>
-                  {`Evento recurrente: ${
-                    {
-                      diario: 'cada día',
-                      semanal: 'cada semana',
-                      quincenal: 'cada 2 semanas',
-                      mensual: 'cada mes',
-                    }[event.recurrencia]
-                  }${
-                    event.recurrenciaFin
-                      ? ` hasta el ${dayjs(event.recurrenciaFin).format('DD/MM/YYYY')}`
-                      : ''
-                  }`}
+                  {t('eventDetail.recurrenceLabel', {
+                    freq: {
+                      diario: t('eventDetail.recurrenceDaily'),
+                      semanal: t('eventDetail.recurrenceWeekly'),
+                      quincenal: t('eventDetail.recurrenceBiweekly'),
+                      mensual: t('eventDetail.recurrenceMonthly'),
+                    }[event.recurrencia],
+                  }) + (event.recurrenciaFin
+                    ? t('eventDetail.recurrenceUntil', { date: dayjs(event.recurrenciaFin).format('DD/MM/YYYY') })
+                    : '')}
                 </ThemedTextSecondary>
               </ThemedView>
             )}
@@ -905,8 +905,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <MaterialIcons name="star" size={16} color="#f39c12" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
                 {event.ratingAverage != null
-                  ? `${event.ratingAverage.toFixed(1)} (${event.ratingsCount ?? 0} valoraciones)`
-                  : 'Sin valoraciones'}
+                  ? t('eventDetail.ratings', { avg: event.ratingAverage.toFixed(1), count: event.ratingsCount ?? 0 })
+                  : t('eventDetail.noRatings')}
               </ThemedTextSecondary>
             </ThemedView>
             <ThemedView style={{ alignItems: 'flex-end', marginBottom: 8 }}>
@@ -972,7 +972,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     >
                       <MaterialIcons name="open-in-new" size={12} color={colors.primary} />
                       <ThemedText style={{ fontSize: 11, color: colors.primary }}>
-                        Abrir en mapas
+                        {t('eventDetail.openInMaps')}
                       </ThemedText>
                     </View>
                   </View>
@@ -1010,24 +1010,24 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           >
             <View style={styles.actionsHeader}>
               <ThemedText style={[styles.actionsHeaderTitle, { color: colors.text }]}>
-                Acciones del evento
+                {t('eventDetail.actionsTitle')}
               </ThemedText>
               <ThemedTextSecondary style={styles.actionsHeaderHint}>
-                Guarda, comparte y valora para mejorar recomendaciones
+                {t('eventDetail.actionsHint')}
               </ThemedTextSecondary>
             </View>
             {renderActionButton({
               icon: isAttending ? 'event-busy' : 'event-available',
               title: isPastEvent
-                ? 'Evento finalizado'
+                ? t('eventDetail.finished')
                 : isAttending
-                ? 'Ya no asistiré'
-                : 'Asistiré',
+                ? t('eventDetail.unattend')
+                : t('eventDetail.attending'),
               subtitle: isPastEvent
-                ? 'No se puede apuntar a eventos pasados'
+                ? t('eventDetail.attendeesPast')
                 : isAttending
-                ? 'Eliminar de tu agenda'
-                : 'Añadir a tu agenda',
+                ? t('eventDetail.removeFromAgenda')
+                : t('eventDetail.addToAgenda'),
               onPress: handleToggleAttend,
               accent: true,
               disabled: isPastEvent,
@@ -1035,13 +1035,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <View style={styles.actionsRow}>
               {renderActionButton({
                 icon: 'groups',
-                title: `Asistentes (${attendees.length})`,
-                subtitle: 'Ver quiénes van',
+                title: t('eventDetail.attendees', { count: attendees.length }),
+                subtitle: t('eventDetail.whoIsGoing'),
                 onPress: () => setShowAttendeesModal(true),
               })}
               {renderActionButton({
                 icon: 'map',
-                title: 'Abrir mapa',
+                title: t('eventDetail.openMap'),
                 subtitle: 'Google/Apple Maps',
                 onPress: openExternalNavigation,
               })}
@@ -1049,27 +1049,27 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <View style={styles.actionsRow}>
               {renderActionButton({
                 icon: isSaved ? 'bookmark-remove' : 'bookmark-add',
-                title: isSaved ? 'Quitar guardado' : 'Guardar evento',
-                subtitle: 'Para recomendaciones',
+                title: isSaved ? t('eventDetail.unsaveEvent') : t('eventDetail.saveEvent'),
+                subtitle: t('eventDetail.forRecommendations'),
                 onPress: handleToggleSave,
                 disabled: isRecommendationLoading,
               })}
               {renderActionButton({
                 icon: 'share',
-                title: event.privado ? 'Invitar' : 'Compartir',
+                title: event.privado ? t('eventDetail.invite') : t('eventDetail.share'),
                 subtitle: event.privado
                   ? event.creador?.id === user?.id
-                    ? 'Enviar enlace de acceso privado'
-                    : 'Solo el creador puede compartir'
-                  : 'Enviar a tus contactos',
+                    ? t('eventDetail.sendPrivateLink')
+                    : t('eventDetail.onlyCreatorShare')
+                  : t('eventDetail.sendToContacts'),
                 onPress: handleShareEvent,
                 disabled: Boolean(event.privado && event.creador?.id !== user?.id),
               })}
             </View>
             {renderActionButton({
               icon: 'star-rate',
-              title: hasExistingRating ? 'Editar valoración' : 'Valorar evento',
-              subtitle: hasExistingRating ? 'Tu opinión guardada' : 'Tu opinión mejora las rutas',
+              title: hasExistingRating ? t('eventDetail.editRating') : t('eventDetail.rateEvent'),
+              subtitle: hasExistingRating ? t('eventDetail.savedOpinion') : t('eventDetail.ratingImproves'),
               onPress: () => setRatingModalVisible(true),
             })}
           </ThemedView>
@@ -1079,7 +1079,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             </ThemedTextSecondary>
           )}
           <ThemedView style={{ marginTop: 16, marginBottom: 12 }}>
-            <ThemedTitle style={{ fontSize: 18, marginBottom: 12 }}>Opiniones</ThemedTitle>
+            <ThemedTitle style={{ fontSize: 18, marginBottom: 12 }}>{t('eventDetail.opinions')}</ThemedTitle>
             {reviewsLoading ? (
               <ActivityIndicator
                 size="small"
@@ -1088,7 +1088,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               />
             ) : reviews.length === 0 ? (
               <ThemedTextSecondary style={{ fontSize: 14, fontStyle: 'italic' }}>
-                No hay opiniones aún. ¡Sé el primero en valorar este evento!
+                {t('eventDetail.noOpinions')}
               </ThemedTextSecondary>
             ) : (
               <ScrollView scrollEnabled={false} nestedScrollEnabled={false}>
@@ -1171,7 +1171,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 }}
               >
                 <ThemedTitle style={{ marginBottom: 12 }}>
-                  Asistentes ({attendees.length})
+                  {t('eventDetail.attendees', { count: attendees.length })}
                 </ThemedTitle>
                 <ScrollView style={{ maxHeight: 350 }}>
                   {attendees.map((att) => (
@@ -1197,7 +1197,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   ))}
                 </ScrollView>
                 <ThemedButton
-                  title="Cerrar"
+                  title={t('common.close')}
                   variant="secondary"
                   onPress={() => setShowAttendeesModal(false)}
                 />
@@ -1227,12 +1227,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 }}
               >
                 <ThemedTitle style={{ marginBottom: 12 }}>
-                  {hasExistingRating ? 'Tu valoración' : 'Valorar evento'}
+                  {hasExistingRating ? t('eventDetail.yourRating') : t('eventDetail.rateEvent')}
                 </ThemedTitle>
                 <ThemedTextSecondary style={{ marginBottom: 10 }}>
                   {hasExistingRating
-                    ? 'Puedes editar tu puntuación y comentario cuando quieras.'
-                    : 'Tu puntuación ayuda a mejorar recomendaciones y rutas.'}
+                    ? t('eventDetail.editScoreHint')
+                    : t('eventDetail.newRatingHint')}
                 </ThemedTextSecondary>
                 <View
                   style={{
@@ -1258,7 +1258,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <TextInput
                   value={ratingComment}
                   onChangeText={setRatingComment}
-                  placeholder="Escribe tu opinión (opcional)"
+                  placeholder={t('eventDetail.writeOpinion')}
                   multiline
                   style={{
                     minHeight: 90,
@@ -1273,13 +1273,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 />
                 <ThemedView style={{ flexDirection: 'row', gap: 8 }}>
                   <ThemedButton
-                    title="Cancelar"
+                    title={t('common.cancel')}
                     variant="secondary"
                     onPress={() => setRatingModalVisible(false)}
                     style={{ flex: 1 }}
                   />
                   <ThemedButton
-                    title={ratingSubmitting ? 'Guardando...' : 'Enviar'}
+                    title={ratingSubmitting ? t('common.saving') : t('common.send')}
                     onPress={handleSubmitRating}
                     style={{ flex: 1 }}
                     disabled={ratingSubmitting}
@@ -1293,7 +1293,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.chatOverlay}>
             <ThemedView style={[styles.chatPanel, { backgroundColor: colors.card }]}>
               <ThemedView style={styles.chatHeader}>
-                <ThemedTitle>Chat del evento</ThemedTitle>
+                <ThemedTitle>{t('eventDetail.chatTitle')}</ThemedTitle>
               </ThemedView>
               {!!chatError && (
                 <ThemedTextSecondary style={{ marginBottom: 6, color: '#c0392b' }}>
@@ -1369,7 +1369,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                               ellipsizeMode="tail"
                               style={[styles.chatMetaText, { color: nameColor }]}
                             >
-                              {isOwn ? 'Tú' : item.usuario?.nombre ?? 'Anónimo'}
+                              {isOwn ? t('common.you') : item.usuario?.nombre ?? t('common.anonymous')}
                             </ThemedTextSecondary>
                           </TouchableOpacity>
                           {!!item.contenido?.trim() && (
@@ -1436,7 +1436,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                               if (item.usuario?.id) {
                                 navigation.navigate('DirectMessage', {
                                   userId: item.usuario.id,
-                                  userName: item.usuario.nombre ?? 'Usuario',
+                                  userName: item.usuario.nombre ?? t('common.user'),
                                 });
                               }
                             }}
@@ -1459,7 +1459,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <ThemedView style={styles.chatAttachment}>
                   <MaterialIcons name="image" size={18} color={colors.text} />
                   <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
-                    Imagen lista para enviar
+                    {t('eventDetail.imageSending')}
                   </ThemedTextSecondary>
                   <TouchableOpacity
                     onPress={() => {
@@ -1476,7 +1476,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <ThemedView style={[styles.chatAttachment, { opacity: 0.7 }]}>
                   <MaterialIcons name="cloud-upload" size={18} color={colors.text} />
                   <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
-                    Cargando imagen...
+                    {t('eventDetail.imageLoading')}
                   </ThemedTextSecondary>
                 </ThemedView>
               )}
@@ -1503,7 +1503,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <TextInput
                   value={input}
                   onChangeText={setInput}
-                  placeholder="Escribe un mensaje..."
+                  placeholder={t('eventDetail.typeMessage')}
                   style={{
                     flex: 1,
                     borderWidth: 1,
@@ -1524,7 +1524,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     borderRadius: 16,
                   }}
                 >
-                  <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
+                  <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>{t('common.send')}</ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             </ThemedView>

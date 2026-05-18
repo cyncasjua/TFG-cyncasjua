@@ -40,6 +40,7 @@ import { PrivateEventLinkModal } from '../components';
 import { reportWarning } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 import { formatDateTime, toBackendDateTime } from '../utils/dateTime';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateEvent'>;
 
@@ -62,6 +63,7 @@ const parseOptionalNumber = (value: string) => {
 export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const mapRef = useRef<MapView | null>(null);
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const { user } = useAuth();
   const [title, setTitle] = useState('');
@@ -133,14 +135,14 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         const res = await api.get('/categorias');
         setDropdownItems(res.data.map((cat: Categoria) => ({ label: cat.nombre, value: cat.id })));
       } catch (e) {
-        Alert.alert('Error', 'No se pudieron cargar las categorías.');
+        Alert.alert(t('common.error'), t('createEvent.noCategoriesError'));
       } finally {
         setCategoriasLoading(false);
       }
     };
     fetchCategorias();
     return () => {};
-  }, []);
+  }, [t]);
 
   const uploadEventImage = async (uri: string) => {
     const formData = new FormData();
@@ -163,7 +165,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
   const pickImages = async () => {
     const remainingSlots = 5 - imageUrls.length;
     if (remainingSlots <= 0) {
-      Alert.alert('Límite alcanzado', 'No puedes añadir más de 5 imágenes.');
+      Alert.alert(t('createEvent.limitReached'), t('createEvent.maxImagesMsg'));
       return;
     }
 
@@ -186,7 +188,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
           const url = await uploadEventImage(uri);
           newUrls.push(url);
         } catch (e) {
-          Alert.alert('Error', 'No se pudo subir una imagen.');
+          Alert.alert(t('common.error'), t('createEvent.imageUploadError'));
           reportWarning('create-event.upload-image', 'Error subiendo imagen', e);
         }
       }
@@ -235,10 +237,10 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
           focusMapOnLocation(lat, lon);
         }, 100);
       } else {
-        Alert.alert('No encontrado', 'No se ha encontrado la dirección o lugar especificado.');
+        Alert.alert(t('createEvent.addressNotFound'), t('createEvent.addressNotFoundMsg'));
       }
     } catch (e) {
-      Alert.alert('Error', 'No se pudo buscar la dirección o lugar.');
+      Alert.alert(t('common.error'), t('createEvent.addressError'));
     } finally {
       if (showLoading) setSearchLoading(false);
     }
@@ -320,7 +322,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       longitude === null ||
       !categoriaId
     ) {
-      Alert.alert('Error', 'Asegúrate de completar todos los campos obligatorios.');
+      Alert.alert(t('common.error'), t('createEvent.requiredFieldsMsg'));
       return;
     }
     const precioVal = precio.trim() !== '' ? parseFloat(precio) : null;
@@ -329,15 +331,15 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
     const rangoIncompleto = (precioMinVal !== null) !== (precioMaxVal !== null);
     const conflicto = precioVal !== null && (precioMinVal !== null || precioMaxVal !== null);
     if (rangoIncompleto) {
-      Alert.alert('Error', 'Si usas rango de precio, rellena tanto el mínimo como el máximo.');
+      Alert.alert(t('common.error'), t('createEvent.priceRangeError'));
       return;
     }
     if (conflicto) {
-      Alert.alert('Error', 'Usa solo precio fijo o rango (mín-máx), no ambos a la vez.');
+      Alert.alert(t('common.error'), t('createEvent.priceConflict'));
       return;
     }
     if (!user?.id) {
-      Alert.alert('Error', 'No se ha encontrado el usuario actual.');
+      Alert.alert(t('common.error'), t('createEvent.noUserError'));
       return;
     }
     setLoading(true);
@@ -348,14 +350,11 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
       if (privado && response.data.linkAcceso) {
         setShowPrivateLinkModal(true);
       } else {
-        Alert.alert(
-          'Éxito',
-          'Evento enviado para revisión. Será visible tras la aprobación de un moderador.'
-        );
+        Alert.alert(t('common.success'), t('createEvent.submitSuccess'));
         navigation.goBack();
       }
     } catch (error: unknown) {
-      Alert.alert('Error', getErrorMessage(error));
+      Alert.alert(t('common.error'), getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -374,9 +373,9 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
         onScrollBeginDrag={Keyboard.dismiss}
       >
         <ThemedView style={styles.container}>
-          <ThemedTitle style={{ marginBottom: 16 }}>Crear Evento</ThemedTitle>
+          <ThemedTitle style={{ marginBottom: 16 }}>{t('createEvent.title')}</ThemedTitle>
           <ThemedTextSecondary style={styles.requiredHint}>
-            Los campos marcados como obligatorios deben completarse para enviar el evento.
+            {t('createEvent.requiredHint')}
           </ThemedTextSecondary>
           <FieldLabel title="Título" status="required" />
           <TextInput
@@ -533,7 +532,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 style={{ color: address ? colors.text : colors.text + '99', fontSize: 16 }}
                 numberOfLines={3}
               >
-                {address || 'Dirección'}
+                {address || t('createEvent.address')}
               </ThemedText>
             </View>
           </View>
@@ -597,7 +596,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
           <ThemedText style={{ marginBottom: 8, color: colors.text + '99' }}>
             {latitude && longitude
               ? `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
-              : 'Toca el mapa para seleccionar la ubicación'}
+              : t('createEvent.tapMap')}
           </ThemedText>
 
           <FieldLabel
@@ -697,12 +696,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             />
           </>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <FieldLabel title="Recurrencia" status="optional" />
+            <FieldLabel title={t('createEvent.recurrence')} status="optional" />
             <TouchableOpacity
               onPress={() =>
                 Alert.alert(
-                  'Recurrencia',
-                  'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.'
+                  t('createEvent.recurrence'),
+                  t('createEvent.recurrenceHint')
                 )
               }
               style={{ marginLeft: 6, marginTop: 10 }}
@@ -733,13 +732,13 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 }}
               >
                 {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ??
-                  'Sin recurrencia'}
+                  t('createEvent.noRecurrence')}
               </ThemedText>
               <Icon name="chevron-down" size={22} color={colors.text} />
             </TouchableOpacity>
             <AppPickerModal
               visible={openRecurrencia}
-              title="Recurrencia"
+              title={t('createEvent.recurrence')}
               items={recurrenciaItems}
               value={recurrencia ?? ''}
               onSelect={(val) => setRecurrencia(val || null)}
@@ -749,12 +748,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
           {!!recurrencia && (
             <>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                <FieldLabel title={t('createEvent.recurrenceEnd')} status="optional" />
                 <TouchableOpacity
                   onPress={() =>
                     Alert.alert(
-                      'Fecha fin de recurrencia',
-                      'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.'
+                      t('createEvent.recurrenceEnd'),
+                      t('createEvent.recurrenceEndHint')
                     )
                   }
                   style={{ marginLeft: 6, marginTop: 10 }}
@@ -776,7 +775,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                 <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
                   {recurrenciaFin
                     ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
-                    : 'Seleccionar fecha límite'}
+                    : t('createEvent.selectEndDate')}
                 </ThemedText>
               </TouchableOpacity>
               <DateTimePickerModal
@@ -900,7 +899,7 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
                       ]}
                     >
                       <ThemedText style={{ color: '#fff', fontSize: 12 }}>
-                        {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
+                        {coverImageUrl === imageUrls[idx] ? t('createEvent.cover') : t('createEvent.chooseCover')}
                       </ThemedText>
                     </TouchableOpacity>
                   </View>
@@ -933,12 +932,12 @@ export const CreateEventScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
               <Icon name="image-plus" size={24} color={colors.primary} />
               <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
-                Añadir imágenes
+                {t('createEvent.addImages')}
               </ThemedText>
             </TouchableOpacity>
           )}
           <ThemedButton
-            title={loading ? 'Creando...' : 'Crear Evento'}
+            title={loading ? t('createEvent.creating') : t('createEvent.title')}
             onPress={handleCreateEvent}
             disabled={loading}
             style={{ marginTop: 16 }}

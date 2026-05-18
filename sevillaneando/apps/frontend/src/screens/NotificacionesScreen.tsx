@@ -18,6 +18,7 @@ import type { RootStackParamList } from '../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { reportError } from '../utils/telemetry';
 import { formatSevillaDateTime } from '../utils/sevillaTime';
+import { useTranslation } from 'react-i18next';
 
 type Notificacion = {
   id: string;
@@ -34,6 +35,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
 export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const { colors, theme } = useTheme();
+  const { t } = useTranslation();
   const { refresh } = useNotificaciones();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,8 +86,8 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const getActionLabel = (item: Notificacion) => {
-    if (item.targetUserId) return 'Ver perfil';
-    if (item.targetEventId) return 'Ver evento';
+    if (item.targetUserId) return t('notifications.viewProfile');
+    if (item.targetEventId) return t('notifications.viewEvent');
     return null;
   };
 
@@ -101,7 +103,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
         `Error marcando todas como leídas: ${getErrorMessage(err)}`,
         err
       );
-      Alert.alert('Error', 'No se pudieron marcar todas las notificaciones como leídas');
+      Alert.alert(t('common.error'), t('notifications.markAllError'));
     } finally {
       setMarcandoTodas(false);
     }
@@ -122,9 +124,9 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const confirmarBorrado = (id: string) => {
-    Alert.alert('Eliminar', '¿Estás seguro de que quieres eliminar esta notificación?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Eliminar', style: 'destructive', onPress: () => borrarNotificacion(id) },
+    Alert.alert(t('notifications.deleteTitle'), t('notifications.deleteMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('notifications.deleteBtn'), style: 'destructive', onPress: () => borrarNotificacion(id) },
     ]);
   };
 
@@ -132,7 +134,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando notificaciones…</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>{t('notifications.loading')}</ThemedTextSecondary>
       </ThemedView>
     );
   }
@@ -140,7 +142,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <ThemedTitle style={styles.title}>Notificaciones</ThemedTitle>
+        <ThemedTitle style={styles.title}>{t('notifications.title')}</ThemedTitle>
         <TouchableOpacity
           onPress={marcarTodasLeidas}
           disabled={marcandoTodas}
@@ -184,7 +186,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
               <View style={styles.cardFooter}>
                 {!item.leida && (
                   <ThemedText style={[styles.badge, { backgroundColor: colors.primary }]}>
-                    Nueva
+                    {t('notifications.new')}
                   </ThemedText>
                 )}
                 <View style={{ flex: 1 }} />
@@ -218,7 +220,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.emptyContainer}>
             <Icon name="bell-off-outline" size={48} color={colors.text + '44'} />
             <ThemedTextSecondary style={styles.emptyText}>
-              Todo al día, no hay notificaciones nuevas
+              {t('notifications.empty')}
             </ThemedTextSecondary>
           </View>
         }

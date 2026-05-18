@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -25,6 +26,7 @@ type Props = {
 export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const { token, user } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -40,15 +42,15 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
     setError(null);
 
     if (!currentPassword || !newPassword || !repeatPassword) {
-      setError('Por favor, rellena todos los campos.');
+      setError(t('editPassword.fillAllFields'));
       return;
     }
     if (newPassword !== repeatPassword) {
-      setError('Las contraseñas nuevas no coinciden.');
+      setError(t('editPassword.passwordMismatch'));
       return;
     }
     if (newPassword.length < 6) {
-      setError('La nueva contraseña debe tener al menos 6 caracteres.');
+      setError(t('editPassword.passwordTooShort'));
       return;
     }
 
@@ -57,20 +59,20 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
       const auth = getAuth();
       const currentUser = auth.currentUser;
       if (!currentUser || !currentUser.email) {
-        setError('No hay usuario autenticado.');
+        setError(t('editPassword.noUser'));
         setLoading(false);
         return;
       }
       const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
       await reauthenticateWithCredential(currentUser, credential);
       await updatePassword(currentUser, newPassword);
-      alert('Contraseña cambiada correctamente');
+      alert(t('editPassword.changeSuccess'));
       navigation.goBack();
     } catch (e: any) {
       if (e.code === 'auth/wrong-password') {
-        setError('La contraseña actual es incorrecta.');
+        setError(t('editPassword.wrongPassword'));
       } else {
-        setError(e.message || 'No se pudo cambiar la contraseña');
+        setError(e.message || t('editPassword.changeError'));
       }
     }
     setLoading(false);
@@ -80,15 +82,15 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
     setError(null);
 
     if (!currentPassword || !newPassword || !repeatPassword) {
-      setError('Por favor, rellena todos los campos.');
+      setError(t('editPassword.fillAllFields'));
       return;
     }
     if (newPassword !== repeatPassword) {
-      setError('Las contraseñas nuevas no coinciden.');
+      setError(t('editPassword.passwordMismatch'));
       return;
     }
     if (newPassword.length < 6) {
-      setError('La nueva contraseña debe tener al menos 6 caracteres.');
+      setError(t('editPassword.passwordTooShort'));
       return;
     }
 
@@ -108,10 +110,10 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
         alert(data.message);
         navigation.goBack();
       } else {
-        setError(data.message || 'No se pudo cambiar la contraseña');
+        setError(data.message || t('editPassword.changeError'));
       }
     } catch (e) {
-      setError('No se pudo conectar con el servidor');
+      setError(t('editPassword.changeError'));
     }
     setLoading(false);
   };
@@ -125,10 +127,10 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ThemedTitle style={styles.title}>Cambiar contraseña</ThemedTitle>
+      <ThemedTitle style={styles.title}>{t('editPassword.title')}</ThemedTitle>
       <View style={styles.inputWrapper}>
         <TextInput
-          placeholder="Contraseña actual"
+          placeholder={t('editPassword.currentPassword')}
           placeholderTextColor={colors.text + '99'}
           secureTextEntry={!showCurrent}
           value={currentPassword}
@@ -142,7 +144,7 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
       </View>
       <View style={styles.inputWrapper}>
         <TextInput
-          placeholder="Nueva contraseña"
+          placeholder={t('editPassword.newPassword')}
           placeholderTextColor={colors.text + '99'}
           secureTextEntry={!showNew}
           value={newPassword}
@@ -156,7 +158,7 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
       </View>
       <View style={styles.inputWrapper}>
         <TextInput
-          placeholder="Repite la nueva contraseña"
+          placeholder={t('editPassword.repeatPassword')}
           placeholderTextColor={colors.text + '99'}
           secureTextEntry={!showRepeat}
           value={repeatPassword}
@@ -170,13 +172,13 @@ export const EditPasswordScreen: React.FC<Props> = ({ navigation }) => {
       </View>
       {error && <ThemedText style={{ color: '#d32f2f', marginBottom: 8 }}>{error}</ThemedText>}
       <ThemedButton
-        title={loading ? 'Cambiando...' : 'Cambiar contraseña'}
+        title={loading ? t('common.saving') : t('editPassword.title')}
         onPress={loading ? undefined : handleChangePassword}
         disabled={loading}
         style={styles.saveButton}
       />
       <ThemedButton
-        title="Cancelar"
+        title={t('common.cancel')}
         variant="secondary"
         onPress={() => navigation.goBack()}
         style={styles.cancelButton}

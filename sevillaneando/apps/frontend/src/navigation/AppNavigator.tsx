@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -49,6 +50,7 @@ export function AppNavigator() {
   const { user, loading, role } = useAuth();
   const { colors, theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -63,7 +65,7 @@ export function AppNavigator() {
         }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 8, color: colors.text }}>Comprobando sesión...</Text>
+        <Text style={{ marginTop: 8, color: colors.text }}>{t('nav.checkingSession')}</Text>
       </View>
     );
   }
@@ -105,17 +107,17 @@ export function AppNavigator() {
           <AppStack.Screen
             name="EventDetail"
             component={EventDetailScreen}
-            options={{ title: 'Detalle del evento' }}
+            options={{ title: t('nav.eventDetail') }}
           />
           <AppStack.Screen
             name="EventDetailLink"
             component={EventDetailLinkScreen}
-            options={{ title: 'Abriendo evento...' }}
+            options={{ title: t('nav.openingEvent') }}
           />
           <AppStack.Screen
             name="EventsMap"
             component={EventsMapScreen}
-            options={{ title: 'Mapa de eventos', headerShown: false }}
+            options={{ title: t('nav.eventsMap'), headerShown: false }}
           />
 
           {role === 'admin' && (
@@ -123,12 +125,12 @@ export function AppNavigator() {
               <AppStack.Screen
                 name="Admin"
                 component={AdminScreen}
-                options={{ title: 'Panel de Admin' }}
+                options={{ title: t('nav.admin') }}
               />
               <AppStack.Screen
                 name="Categories"
                 component={CategoriesScreen}
-                options={{ title: 'Gestión de categorías' }}
+                options={{ title: t('nav.categories') }}
               />
             </>
           )}
@@ -136,17 +138,17 @@ export function AppNavigator() {
           <AppStack.Screen
             name="EditProfile"
             component={EditProfileScreen}
-            options={{ title: 'Editar perfil' }}
+            options={{ title: t('nav.editProfile') }}
           />
           <AppStack.Screen
             name="EditPassword"
             component={EditPasswordScreen}
-            options={{ title: 'Cambiar contraseña' }}
+            options={{ title: t('nav.editPassword') }}
           />
           <AppStack.Screen
             name="CreateEvent"
             component={CreateEventScreen}
-            options={{ title: 'Crear evento' }}
+            options={{ title: t('nav.createEvent') }}
           />
 
           {role === 'moderator' && (
@@ -154,12 +156,12 @@ export function AppNavigator() {
               <AppStack.Screen
                 name="ModeratorEvents"
                 component={ModeratorEventsScreen}
-                options={{ title: 'Moderación' }}
+                options={{ title: t('nav.moderation') }}
               />
               <AppStack.Screen
                 name="ModeratorEditEvent"
                 component={ModeratorEditEventScreen}
-                options={{ title: 'Editar evento' }}
+                options={{ title: t('nav.editEvent') }}
               />
             </>
           )}
@@ -167,62 +169,62 @@ export function AppNavigator() {
           <AppStack.Screen
             name="Notifications"
             component={NotificacionesScreen}
-            options={{ title: 'Notificaciones' }}
+            options={{ title: t('nav.notifications') }}
           />
           <AppStack.Screen
             name="Messages"
             component={MessagesScreen}
-            options={{ title: 'Mensajes' }}
+            options={{ title: t('nav.messages') }}
           />
           <AppStack.Screen
             name="UserProfile"
             component={UserProfileScreen}
-            options={{ title: 'Perfil' }}
+            options={{ title: t('nav.profile') }}
           />
           <AppStack.Screen
             name="DirectMessage"
             component={DirectMessageScreen}
-            options={{ title: 'Mensaje privado' }}
+            options={{ title: t('nav.directMessage') }}
           />
           <AppStack.Screen
             name="AccessPrivateEvent"
             component={AccessPrivateEventScreen}
-            options={{ title: 'Acceso privado' }}
+            options={{ title: t('nav.privateAccess') }}
           />
           <AppStack.Screen
             name="EditEvent"
             component={UserEditEventScreen}
-            options={{ title: 'Editar evento' }}
+            options={{ title: t('nav.editEvent') }}
           />
           <AppStack.Screen
             name="UserEvents"
             component={UserEventsScreen}
-            options={{ title: 'Mis eventos' }}
+            options={{ title: t('nav.myEvents') }}
           />
           <AppStack.Screen
             name="CalendarEvents"
             component={CalendarEventsScreen}
-            options={{ title: 'Calendario' }}
+            options={{ title: t('nav.calendar') }}
           />
           <AppStack.Screen
             name="RoutePreview"
             component={RoutePreviewScreen}
-            options={{ title: 'Ruta recomendada' }}
+            options={{ title: t('nav.recommendedRoute') }}
           />
           <AppStack.Screen
             name="Routes"
             component={RoutesListScreen}
-            options={{ title: 'Rutas' }}
+            options={{ title: t('nav.routes') }}
           />
           <AppStack.Screen
             name="CreateRoute"
             component={CreateRouteScreen}
-            options={{ title: 'Crear ruta' }}
+            options={{ title: t('nav.createRoute') }}
           />
           <AppStack.Screen
             name="RouteDetail"
             component={RouteDetailScreen}
-            options={{ title: 'Detalle de ruta' }}
+            options={{ title: t('nav.routeDetail') }}
           />
           <AppStack.Screen
             name="SavedAndPrivateEvents"
@@ -232,19 +234,19 @@ export function AppNavigator() {
           <AppStack.Screen
             name="LegalAttributions"
             component={LegalAttributionsScreen}
-            options={{ title: 'Licencias y atribuciones' }}
+            options={{ title: t('nav.legalAttributions') }}
           />
           <AppStack.Screen
             name="PrivacyPolicy"
             component={PrivacyPolicyScreen}
-            options={{ title: 'Política de privacidad' }}
+            options={{ title: t('nav.privacyPolicy') }}
           />
-          <AppStack.Screen name="Help" component={HelpScreen} options={{ title: 'Guía de uso' }} />
-          <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: 'Amigos' }} />
+          <AppStack.Screen name="Help" component={HelpScreen} options={{ title: t('nav.help') }} />
+          <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: t('nav.friends') }} />
           <AppStack.Screen
             name="ProfileConnections"
             component={ProfileConnectionsScreen}
-            options={{ title: 'Usuarios' }}
+            options={{ title: t('nav.users') }}
           />
         </AppStack.Navigator>
       ) : (
@@ -254,7 +256,7 @@ export function AppNavigator() {
           <AuthStack.Screen
             name="PrivacyPolicy"
             component={PrivacyPolicyScreen}
-            options={{ headerShown: true, title: 'Política de privacidad' }}
+            options={{ headerShown: true, title: t('nav.privacyPolicy') }}
           />
         </AuthStack.Navigator>
       )}

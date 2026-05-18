@@ -21,6 +21,7 @@ import {
 } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { reportError } from '../utils/telemetry';
+import { useTranslation } from 'react-i18next';
 
 type Category = {
   id?: string;
@@ -31,6 +32,7 @@ type Category = {
 const CategoriesScreen = () => {
   const { user } = useAuthContext();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -50,7 +52,7 @@ const CategoriesScreen = () => {
       const data = res.data;
       setCategories(data);
     } catch (error) {
-      Alert.alert('Error', getErrorMessage(error));
+      Alert.alert(t('common.error'), getErrorMessage(error));
     }
     setLoading(false);
   };
@@ -72,7 +74,7 @@ const CategoriesScreen = () => {
       setEditMode(false);
       setEditId(null);
     } catch (error) {
-      Alert.alert('Error', getErrorMessage(error));
+      Alert.alert(t('common.error'), getErrorMessage(error));
     }
     setLoading(false);
     fetchCategories();
@@ -124,19 +126,19 @@ const CategoriesScreen = () => {
                       style={{ padding: 4, marginLeft: 2 }}
                       onPress={async () => {
                         Alert.alert(
-                          'Borrar categoría',
-                          `¿Seguro que quieres borrar "${item.nombre}"?`,
+                          t('categories.deleteTitle'),
+                          t('categories.deleteMsg', { name: item.nombre }),
                           [
-                            { text: 'Cancelar', style: 'cancel' },
+                            { text: t('common.cancel'), style: 'cancel' },
                             {
-                              text: 'Borrar',
+                              text: t('common.delete'),
                               style: 'destructive',
                               onPress: async () => {
                                 try {
                                   setLoading(true);
                                   await api.delete(`/categorias/${item.id}`);
                                   fetchCategories();
-                                  Alert.alert('Eliminada', 'Categoría borrada correctamente');
+                                  Alert.alert(t('categories.deleted'), t('categories.deleteSuccess'));
                                 } catch (error: any) {
                                   reportError(
                                     'categories.delete',
@@ -146,11 +148,11 @@ const CategoriesScreen = () => {
                                       responseData: error?.response?.data,
                                     }
                                   );
-                                  let msg = 'No se pudo borrar la categoría';
+                                  let msg = t('categories.deleteError');
                                   if (error?.response?.data?.message) {
                                     msg += `: ${error.response.data.message}`;
                                   }
-                                  Alert.alert('Error', msg);
+                                  Alert.alert(t('common.error'), msg);
                                 }
                                 setLoading(false);
                               },
@@ -178,7 +180,7 @@ const CategoriesScreen = () => {
                 color={colors.primary}
                 style={{ marginRight: 10 }}
               />
-              <ThemedTitle style={styles.title}>Categorías</ThemedTitle>
+              <ThemedTitle style={styles.title}>{t('categories.title')}</ThemedTitle>
             </ThemedView>
           }
           ListEmptyComponent={
@@ -186,7 +188,7 @@ const CategoriesScreen = () => {
               <ThemedTextSecondary
                 style={{ textAlign: 'center', marginVertical: 28, fontSize: 14 }}
               >
-                No hay categorías disponibles.
+                {t('categories.empty')}
               </ThemedTextSecondary>
             ) : null
           }
@@ -233,7 +235,7 @@ const CategoriesScreen = () => {
                     style={{ marginRight: 8 }}
                   />
                   <ThemedTitle style={styles.formTitle}>
-                    {editMode ? 'Editar categoría' : 'Nueva categoría'}
+                    {editMode ? t('categories.editTitle') : t('categories.newTitle')}
                   </ThemedTitle>
                 </ThemedView>
                 <TouchableOpacity
@@ -254,7 +256,7 @@ const CategoriesScreen = () => {
                     fontSize: 15,
                   },
                 ]}
-                placeholder="Nombre"
+                placeholder={t('categories.namePlaceholder')}
                 placeholderTextColor={colors.textSecondary}
                 value={nombre}
                 onChangeText={setNombre}
@@ -272,7 +274,7 @@ const CategoriesScreen = () => {
                     fontSize: 14,
                   },
                 ]}
-                placeholder="Descripción"
+                placeholder={t('categories.descriptionPlaceholder')}
                 placeholderTextColor={colors.textSecondary}
                 value={descripcion}
                 onChangeText={setDescripcion}
@@ -294,7 +296,7 @@ const CategoriesScreen = () => {
                   activeOpacity={0.8}
                 >
                   <MaterialIcons name="close" size={20} color="#fff" />
-                  <ThemedText style={styles.createButtonText}>Cancelar</ThemedText>
+                  <ThemedText style={styles.createButtonText}>{t('common.cancel')}</ThemedText>
                 </TouchableOpacity>
                 <ThemedView style={{ width: 18 }} />
                 <TouchableOpacity
@@ -311,7 +313,7 @@ const CategoriesScreen = () => {
                 >
                   <MaterialIcons name="check" size={20} color="#fff" />
                   <ThemedText style={styles.createButtonText}>
-                    {editMode ? 'Guardar' : 'Crear'}
+                    {editMode ? t('categories.save') : t('categories.create')}
                   </ThemedText>
                 </TouchableOpacity>
               </ThemedView>

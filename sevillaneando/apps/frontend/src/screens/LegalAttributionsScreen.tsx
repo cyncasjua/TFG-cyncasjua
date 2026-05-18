@@ -2,9 +2,11 @@ import React from 'react';
 import { Linking, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText, ThemedTextSecondary, ThemedTitle, ThemedView } from '../components';
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 export const LegalAttributionsScreen: React.FC = () => {
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const openUrl = (url: string) => {
     Linking.openURL(url).catch(() => {
@@ -15,22 +17,21 @@ export const LegalAttributionsScreen: React.FC = () => {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <ThemedTitle style={styles.title}>Licencias y atribuciones</ThemedTitle>
+        <ThemedTitle style={styles.title}>{t('legal.title')}</ThemedTitle>
 
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>OpenStreetMap</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.osmTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Map data © OpenStreetMap contributors, ODbL 1.0.
+            {t('legal.osmData')}
           </ThemedTextSecondary>
           <ThemedTextSecondary style={styles.bodyText}>
-            Esta app usa datos de OpenStreetMap y debe mantener atribución visible en pantallas de
-            mapa.
+            {t('legal.osmDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity onPress={() => openUrl('https://www.openstreetmap.org/copyright')}>
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Ver aviso oficial de copyright
+              {t('legal.osmLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -38,15 +39,15 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>Nominatim (geocodificación)</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.nominatimTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Se usa Nominatim para búsquedas de direcciones y geocodificación inversa.
+            {t('legal.nominatimDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://operations.osmfoundation.org/policies/nominatim/')}
           >
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Política de uso de Nominatim
+              {t('legal.nominatimLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -54,15 +55,15 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>React Native / Expo</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.rnTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Esta app está construida con React Native y Expo, distribuidos bajo la licencia MIT.
+            {t('legal.rnDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://github.com/facebook/react-native/blob/main/LICENSE')}
           >
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Licencia MIT — React Native
+              {t('legal.rnLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -70,16 +71,15 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>NestJS</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.nestTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            El servidor de esta aplicación está desarrollado con NestJS, distribuido bajo la
-            licencia MIT.
+            {t('legal.nestDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://github.com/nestjs/nest/blob/master/LICENSE')}
           >
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Licencia MIT — NestJS
+              {t('legal.nestLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -87,15 +87,15 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>TypeORM</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.typeormTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            La capa de acceso a datos del servidor usa TypeORM, distribuido bajo la licencia MIT.
+            {t('legal.typeormDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://github.com/typeorm/typeorm/blob/master/LICENSE')}
           >
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Licencia MIT — TypeORM
+              {t('legal.typeormLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -103,14 +103,13 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>Firebase</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.firebaseTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            La autenticación de usuarios se gestiona a través de Firebase (Google LLC), sujeto a los
-            Términos de Servicio de Firebase.
+            {t('legal.firebaseDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity onPress={() => openUrl('https://firebase.google.com/terms')}>
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Términos de Servicio de Firebase
+              {t('legal.firebaseLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -118,14 +117,13 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>Cloudinary</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.cloudinaryTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Las imágenes de la app se almacenan y sirven a través de Cloudinary, sujeto a sus
-            Términos de Servicio.
+            {t('legal.cloudinaryDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity onPress={() => openUrl('https://cloudinary.com/tos')}>
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Términos de Servicio de Cloudinary
+              {t('legal.cloudinaryLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -133,16 +131,15 @@ export const LegalAttributionsScreen: React.FC = () => {
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ThemedText style={styles.sectionTitle}>Ticketmaster API</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('legal.ticketmasterTitle')}</ThemedText>
           <ThemedTextSecondary style={styles.bodyText}>
-            Algunos eventos se obtienen a través de la API de Ticketmaster, sujeto a sus Términos de
-            Uso.
+            {t('legal.ticketmasterDesc')}
           </ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://developer.ticketmaster.com/support/terms-of-use/')}
           >
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              Términos de Uso — Ticketmaster Developer
+              {t('legal.ticketmasterLink')}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>

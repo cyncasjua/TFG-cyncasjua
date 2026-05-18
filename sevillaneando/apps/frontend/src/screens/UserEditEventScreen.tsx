@@ -39,6 +39,7 @@ import { reportWarning } from '../utils/telemetry';
 import { getFullImageUrl, getImageUrlCandidates } from '../utils/imageUrl';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
 import { toBackendDateTime } from '../utils/dateTime';
+import { useTranslation } from 'react-i18next';
 
 const DateTimePickerModal = DateTimePickerModalOriginal as unknown as ComponentType<any>;
 
@@ -74,6 +75,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const mapRef = useRef<any>(null);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [showPrivateLinkModal, setShowPrivateLinkModal] = useState(false);
   const [eventLinkAcceso, setEventLinkAcceso] = useState<string | null>(null);
 
@@ -165,18 +167,18 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         setCategorias(res.data);
         setDropdownItems(res.data.map((cat: Categoria) => ({ label: cat.nombre, value: cat.id })));
       } catch (e) {
-        Alert.alert('Error', 'No se pudieron cargar las categorías.');
+        Alert.alert(t('common.error'), t('createEvent.noCategoriesError'));
       } finally {
         setCategoriasLoading(false);
       }
     };
     fetchCategorias();
-  }, []);
+  }, [t]);
 
   const pickImages = async () => {
     const remainingSlots = 5 - imageUrls.length;
     if (remainingSlots <= 0) {
-      Alert.alert('Límite alcanzado', 'No puedes añadir más de 5 imágenes.');
+      Alert.alert(t('createEvent.limitReached'), t('createEvent.maxImagesMsg'));
       return;
     }
 
@@ -212,7 +214,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
           const url = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
           newUrls.push(url);
         } catch (e) {
-          Alert.alert('Error', 'No se pudo subir una imagen.');
+          Alert.alert(t('common.error'), t('createEvent.imageUploadError'));
         }
       }
 
@@ -250,10 +252,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
           );
         }, 100);
       } else {
-        Alert.alert('No encontrado', 'No se ha encontrado la dirección o lugar especificado.');
+        Alert.alert(t('createEvent.addressNotFound'), t('createEvent.addressNotFoundMsg'));
       }
     } catch (e) {
-      Alert.alert('Error', 'No se pudo buscar la dirección o lugar.');
+      Alert.alert(t('common.error'), t('createEvent.addressError'));
     } finally {
       if (showLoading) setSearchLoading(false);
     }
@@ -300,7 +302,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
       longitude === null ||
       !categoriaId
     ) {
-      Alert.alert('Error', 'Asegúrate de completar todos los campos obligatorios.');
+      Alert.alert(t('common.error'), t('createEvent.requiredFieldsMsg'));
       return;
     }
     const precioVal = precio.trim() !== '' ? parseFloat(precio) : null;
@@ -309,15 +311,15 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
     const rangoIncompleto = (precioMinVal !== null) !== (precioMaxVal !== null);
     const conflicto = precioVal !== null && (precioMinVal !== null || precioMaxVal !== null);
     if (rangoIncompleto) {
-      Alert.alert('Error', 'Si usas rango de precio, rellena tanto el mínimo como el máximo.');
+      Alert.alert(t('common.error'), t('createEvent.priceRangeError'));
       return;
     }
     if (conflicto) {
-      Alert.alert('Error', 'Usa solo precio fijo o rango (mín-máx), no ambos a la vez.');
+      Alert.alert(t('common.error'), t('createEvent.priceConflict'));
       return;
     }
     if (!user?.id) {
-      Alert.alert('Error', 'No se ha encontrado el usuario actual.');
+      Alert.alert(t('common.error'), t('createEvent.noUserError'));
       return;
     }
 
@@ -358,44 +360,44 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         setEventLinkAcceso(linkAcceso);
         setShowPrivateLinkModal(true);
       } else {
-        Alert.alert('Éxito', 'El evento ha sido actualizado correctamente.');
+        Alert.alert(t('common.success'), t('userEditEvent.updateSuccess'));
         if (onEventEdited) onEventEdited();
         navigation.goBack();
       }
     } catch (error: any) {
-      let msg = 'No se pudo actualizar el evento.';
+      let msg = t('userEditEvent.updateError');
       if (error?.response?.data?.message) {
         msg = error.response.data.message;
       } else if (error?.message) {
         msg = error.message;
       }
-      Alert.alert('Error', msg);
+      Alert.alert(t('common.error'), msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteEvent = () => {
-    Alert.alert('Eliminar evento', 'Esta accion eliminara el evento definitivamente.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('userEditEvent.deleteEvent'), t('userEditEvent.deleteEventMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Eliminar',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           setLoading(true);
           try {
             await api.delete(`/events/${event.id}`);
-            Alert.alert('Evento eliminado', 'El evento se ha eliminado correctamente.');
+            Alert.alert(t('userEditEvent.deleteSuccess'), t('userEditEvent.deleteSuccessMsg'));
             if (onEventEdited) onEventEdited();
             navigation.goBack();
           } catch (error: any) {
-            let msg = 'No se pudo eliminar el evento.';
+            let msg = t('userEditEvent.updateError');
             if (error?.response?.data?.message) {
               msg = error.response.data.message;
             } else if (error?.message) {
               msg = error.message;
             }
-            Alert.alert('Error', msg);
+            Alert.alert(t('common.error'), msg);
           } finally {
             setLoading(false);
           }
@@ -429,10 +431,10 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               }}
             />
           )}
-          <ThemedTitle style={{ marginBottom: 16 }}>Editar Evento</ThemedTitle>
+          <ThemedTitle style={{ marginBottom: 16 }}>{t('userEditEvent.title')}</ThemedTitle>
 
           <ThemedTextSecondary style={styles.requiredHint}>
-            Los campos marcados como obligatorios deben completarse para guardar los cambios.
+            {t('userEditEvent.requiredHint')}
           </ThemedTextSecondary>
 
           <FieldLabel title="Título" status="required" />
@@ -760,12 +762,12 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
           </>
 
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <FieldLabel title="Recurrencia" status="optional" />
+            <FieldLabel title={t('createEvent.recurrence')} status="optional" />
             <TouchableOpacity
               onPress={() =>
                 Alert.alert(
-                  'Recurrencia',
-                  'Si el evento se repite periódicamente, selecciona cada cuánto. Se crearán eventos independientes de forma automática para cada repetición.'
+                  t('createEvent.recurrence'),
+                  t('createEvent.recurrenceHint')
                 )
               }
               style={{ marginLeft: 6, marginTop: 10 }}
@@ -796,13 +798,13 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 }}
               >
                 {recurrenciaItems.find((i) => i.value === (recurrencia ?? ''))?.label ??
-                  'Sin recurrencia'}
+                  t('createEvent.noRecurrence')}
               </ThemedText>
               <Icon name="chevron-down" size={22} color={colors.text} />
             </TouchableOpacity>
             <AppPickerModal
               visible={openRecurrencia}
-              title="Recurrencia"
+              title={t('createEvent.recurrence')}
               items={recurrenciaItems}
               value={recurrencia ?? ''}
               onSelect={(val) => setRecurrencia(val || null)}
@@ -812,12 +814,12 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
           {!!recurrencia && (
             <>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <FieldLabel title="Fecha fin de recurrencia" status="optional" />
+                <FieldLabel title={t('createEvent.recurrenceEnd')} status="optional" />
                 <TouchableOpacity
                   onPress={() =>
                     Alert.alert(
-                      'Fecha fin de recurrencia',
-                      'Última fecha en la que se generará una repetición del evento. La fecha indicada se incluye en la serie.'
+                      t('createEvent.recurrenceEnd'),
+                      t('createEvent.recurrenceEndHint')
                     )
                   }
                   style={{ marginLeft: 6, marginTop: 10 }}
@@ -839,7 +841,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 <ThemedText style={{ color: recurrenciaFin ? colors.text : colors.text + '99' }}>
                   {recurrenciaFin
                     ? dayjs(recurrenciaFin).format('DD/MM/YYYY')
-                    : 'Seleccionar fecha límite'}
+                    : t('createEvent.selectEndDate')}
                 </ThemedText>
               </TouchableOpacity>
               <DateTimePickerModal
@@ -986,7 +988,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                         ]}
                       >
                         <ThemedText style={{ color: '#fff', fontSize: 12 }}>
-                          {coverImageUrl === imageUrls[idx] ? 'Portada' : 'Elegir portada'}
+                          {coverImageUrl === imageUrls[idx] ? t('createEvent.cover') : t('createEvent.chooseCover')}
                         </ThemedText>
                       </TouchableOpacity>
                     </View>
@@ -1016,14 +1018,14 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImages}>
               <Icon name="image-plus" size={24} color={colors.primary} />
               <ThemedText style={{ color: colors.primary, marginLeft: 8 }}>
-                Añadir imágenes
+                {t('createEvent.addImages')}
               </ThemedText>
             </TouchableOpacity>
           )}
 
           <View style={{ marginTop: 24 }}>
             <ThemedButton
-              title={loading ? 'Enviando...' : 'Guardar Cambios'}
+              title={loading ? t('common.sending') : t('moderatorEditEvent.saveChanges')}
               onPress={handleEditEvent}
               disabled={loading}
             />
@@ -1034,7 +1036,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             disabled={loading}
           >
             <Icon name="trash-can-outline" size={20} color="#d32f2f" />
-            <ThemedText style={styles.deleteEventText}>Eliminar evento</ThemedText>
+            <ThemedText style={styles.deleteEventText}>{t('userEditEvent.deleteEvent')}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ScrollView>

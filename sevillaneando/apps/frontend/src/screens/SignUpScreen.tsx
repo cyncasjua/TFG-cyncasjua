@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
   StyleSheet,
@@ -32,6 +33,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const { setUser } = useAuthContext();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -48,22 +50,22 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
     try {
       if (!nombre.trim()) {
-        setError('Por favor ingresa tu nombre.');
+        setError(t('signup.nameRequired'));
         setLoading(false);
         return;
       }
       if (password !== confirmPassword) {
-        setError('Las contraseñas no coinciden.');
+        setError(t('signup.passwordMismatch'));
         setLoading(false);
         return;
       }
       if (password.length < 6) {
-        setError('La contraseña debe tener al menos 6 caracteres.');
+        setError(t('signup.passwordTooShort'));
         setLoading(false);
         return;
       }
       if (!privacyAccepted) {
-        setError('Debes aceptar la política de privacidad para continuar.');
+        setError(t('signup.privacyRequired'));
         setLoading(false);
         return;
       }
@@ -90,14 +92,14 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.container}>
-          <ThemedTitle style={styles.title}>Crear cuenta</ThemedTitle>
-          <ThemedTextSecondary style={styles.subtitle}>Únete a Sevillaneando</ThemedTextSecondary>
+          <ThemedTitle style={styles.title}>{t('signup.title')}</ThemedTitle>
+          <ThemedTextSecondary style={styles.subtitle}>{t('signup.subtitle')}</ThemedTextSecondary>
 
           <ThemedView style={styles.form}>
             <TextInput
               value={nombre}
               onChangeText={setNombre}
-              placeholder="Nombre completo"
+              placeholder={t('signup.fullName')}
               autoCapitalize="words"
               style={[
                 styles.input,
@@ -121,7 +123,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Contraseña"
+                placeholder={t('signup.password')}
                 secureTextEntry={!showPassword}
                 style={[
                   styles.inputPassword,
@@ -140,7 +142,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                placeholder="Confirmar contraseña"
+                placeholder={t('signup.confirmPassword')}
                 secureTextEntry={!showConfirmPassword}
                 style={[
                   styles.inputPassword,
@@ -173,12 +175,12 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
                 {privacyAccepted && <Ionicons name="checkmark" size={14} color="white" />}
               </View>
               <ThemedTextSecondary style={styles.privacyText}>
-                He leído y acepto la{' '}
+                {t('signup.privacyAccept')}
                 <ThemedText
                   style={[styles.privacyLink, { color: colors.primary }]}
                   onPress={() => navigation.navigate('PrivacyPolicy')}
                 >
-                  política de privacidad
+                  {t('signup.privacyLink')}
                 </ThemedText>
               </ThemedTextSecondary>
             </TouchableOpacity>
@@ -187,7 +189,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText style={[styles.error, { color: colors.error }]}>{error}</ThemedText>
             )}
             <ThemedButton
-              title={loading ? 'Creando cuenta...' : 'Registrarse'}
+              title={loading ? t('signup.creatingAccount') : t('signup.register')}
               onPress={onSubmit}
               disabled={loading}
             />
@@ -195,7 +197,7 @@ export const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <ThemedText style={[styles.link, { color: colors.primary }]}>
-              ¿Ya tienes cuenta? Inicia sesión
+              {t('signup.alreadyHaveAccount')}
             </ThemedText>
           </TouchableOpacity>
         </SafeAreaView>

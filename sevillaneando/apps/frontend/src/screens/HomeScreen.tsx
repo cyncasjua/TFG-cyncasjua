@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -95,6 +96,7 @@ function EventCardImage({
 }
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { t } = useTranslation();
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [recommendedEvents, setRecommendedEvents] = useState<RecommendedEvent[]>([]);
   const [recommendedRoutes, setRecommendedRoutes] = useState<RecommendedRoute[]>([]);
@@ -165,7 +167,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const handlePrivateAccessSubmit = () => {
     const raw = privateAccessInput.trim();
     if (!raw) {
-      Alert.alert('Enlace inválido', 'Introduce un enlace o código de acceso.');
+      Alert.alert(t('home.invalidLink'), t('home.invalidLinkMsg'));
       return;
     }
     const extractAccessCode = (input: string): string => {
@@ -194,7 +196,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
     const normalized = extractAccessCode(raw);
     if (!normalized) {
-      Alert.alert('Enlace inválido', 'No se pudo extraer el código de acceso.');
+      Alert.alert(t('home.invalidLink'), t('home.noAccessCode'));
       return;
     }
 
@@ -458,7 +460,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const fetchAdjustedRoutes = useCallback(async () => {
     if (routeStrategies.length === 0) {
-      setAdjustedRoutesError('Selecciona al menos una prioridad.');
+      setAdjustedRoutesError(t('home.strategy'));
       return;
     }
 
@@ -542,7 +544,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         const event = await getEventById(eventId);
         navigation.navigate('EventDetail', { event });
       } catch (err) {
-        Alert.alert('Error', getErrorMessage(err) || 'No se pudo abrir el evento recomendado.');
+        Alert.alert(t('common.error'), getErrorMessage(err) || t('home.noEvents'));
       }
     },
     [items, navigation]
@@ -648,8 +650,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   const discoveryTitle = useMemo(() => {
-    if (filterNearby) return 'Descubre cerca de ti';
-    return 'Descubre algo nuevo';
+    if (filterNearby) return t('home.nearby');
+    return t('home.recommended');
   }, [filterNearby]);
 
   const visibleRecommendedEvents = useMemo(
@@ -700,7 +702,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando eventos...</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>{t('common.loading')}</ThemedTextSecondary>
       </ThemedView>
     );
   }
@@ -832,7 +834,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       <MaterialIcons name="event" size={16} color="#6c2eb7" />
                       <ThemedTextSecondary style={{ marginLeft: 4 }}>
                         {item.hasMultipleDatesAvailable
-                          ? 'Consultar fechas'
+                          ? t('home.checkDates')
                           : formatEventDateRange(item.fechaInicio, item.fechaFin)}
                       </ThemedTextSecondary>
                     </ThemedView>
@@ -912,7 +914,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="auto-awesome" size={16} color={colors.primary} />
                     </View>
-                    <ThemedTitle style={styles.recommendationTitle}>Para ti</ThemedTitle>
+                    <ThemedTitle style={styles.recommendationTitle}>{t('home.recommended')}</ThemedTitle>
                   </ThemedView>
                   <View style={styles.recommendationHeaderActions}>
                     <TouchableOpacity
@@ -935,14 +937,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </ThemedView>
                 {showRecommendedEvents &&
                   (loadingRecommendations ? (
-                    <ThemedTextSecondary>Cargando recomendaciones...</ThemedTextSecondary>
+                    <ThemedTextSecondary>{t('common.loading')}</ThemedTextSecondary>
                   ) : recommendationsError ? (
                     <ThemedTextSecondary style={{ color: colors.error }}>
                       {recommendationsError}
                     </ThemedTextSecondary>
                   ) : recommendedEvents.length === 0 ? (
                     <ThemedTextSecondary>
-                      Aún no hay suficientes señales para recomendarte eventos.
+                      {t('home.noRecommendations')}
                     </ThemedTextSecondary>
                   ) : (
                     <>
@@ -978,7 +980,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                               )}
                               {event.hasMultipleDatesAvailable && (
                                 <ThemedTextSecondary numberOfLines={1}>
-                                  Consultar fechas
+                                  {t('home.checkDates')}
                                 </ThemedTextSecondary>
                               )}
                               <ThemedView style={styles.recommendedMetaRow}>
@@ -1037,7 +1039,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                               )}
                               {event.hasMultipleDatesAvailable && (
                                 <ThemedTextSecondary numberOfLines={1}>
-                                  Consultar fechas
+                                  {t('home.checkDates')}
                                 </ThemedTextSecondary>
                               )}
                               <ThemedView style={styles.recommendedMetaRow}>
@@ -1074,8 +1076,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                             style={[styles.recommendedMoreButtonText, { color: colors.primary }]}
                           >
                             {showAllRecommendedEvents
-                              ? 'Ver menos'
-                              : `Ver más (${recommendedEvents.length})`}
+                              ? t('home.showLess')
+                              : `${t('home.showAll')} (${recommendedEvents.length})`}
                           </ThemedText>
                           <MaterialIcons
                             name={showAllRecommendedEvents ? 'expand-less' : 'expand-more'}
@@ -1104,7 +1106,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="route" size={16} color={colors.primary} />
                     </View>
-                    <ThemedTitle style={styles.recommendationTitle}>Rutas recomendadas</ThemedTitle>
+                    <ThemedTitle style={styles.recommendationTitle}>{t('home.recommendedRoutes')}</ThemedTitle>
                   </ThemedView>
                   <View style={styles.recommendationHeaderActions}>
                     <TouchableOpacity
@@ -1127,10 +1129,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </ThemedView>
                 {showRecommendedRoutes &&
                   (loadingRecommendations ? (
-                    <ThemedTextSecondary>Preparando rutas...</ThemedTextSecondary>
+                    <ThemedTextSecondary>{t('common.loading')}</ThemedTextSecondary>
                   ) : recommendedRoutes.length === 0 ? (
                     <ThemedTextSecondary>
-                      Todavia no hay rutas optimizadas para tus gustos.
+                      {t('home.noRoutes')}
                     </ThemedTextSecondary>
                   ) : (
                     <ThemedView style={styles.routesList}>
@@ -1147,11 +1149,11 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                           <View style={styles.routeCardTop}>
                             <ThemedText style={styles.routeCardTitle}>
                               {route.day === 'Sin fecha'
-                                ? '📅 Consultar fechas'
+                                ? t('home.checkDates')
                                 : dayjs(route.day).locale('es').format('dddd DD/MM')}
                             </ThemedText>
                             <ThemedTextSecondary>
-                              Score {route.scoreMedio.toFixed(1)}
+                              {t('home.score')} {route.scoreMedio.toFixed(1)}
                             </ThemedTextSecondary>
                           </View>
                           <ThemedTextSecondary>
@@ -1169,18 +1171,18 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 {showRecommendedRoutes && (
                   <ThemedView style={{ marginTop: 10 }}>
                     <ThemedText style={{ fontWeight: '700', marginBottom: 6 }}>
-                      Según tus ajustes
+                      {t('home.routesSettings')}
                     </ThemedText>
 
                     {loadingAdjustedRoutes ? (
-                      <ThemedTextSecondary>Generando rutas personalizadas...</ThemedTextSecondary>
+                      <ThemedTextSecondary>{t('common.loading')}</ThemedTextSecondary>
                     ) : adjustedRoutesError ? (
                       <ThemedTextSecondary style={{ color: colors.error }}>
                         {adjustedRoutesError}
                       </ThemedTextSecondary>
                     ) : adjustedRoutes.length === 0 ? (
                       <ThemedTextSecondary>
-                        Pulsa en ajustes para generar rutas alternativas.
+                        {t('home.noRoutes')}
                       </ThemedTextSecondary>
                     ) : (
                       <ThemedView style={styles.routesList}>
@@ -1203,19 +1205,19 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                                   : dayjs(route.day).locale('es').format('dddd DD/MM')}
                               </ThemedText>
                               <ThemedTextSecondary>
-                                Score {route.scoreMedio.toFixed(1)}
+                                {t('home.score')} {route.scoreMedio.toFixed(1)}
                               </ThemedTextSecondary>
                             </View>
                             <View style={styles.routeMetaRow}>
                               <ThemedTextSecondary>
-                                Calidad {Number(route.quality ?? 0).toFixed(0)}%
+                                {t('home.score')} {Number(route.quality ?? 0).toFixed(0)}%
                               </ThemedTextSecondary>
                               <ThemedTextSecondary>
                                 {route.sourceStrategy === 'walkable'
-                                  ? 'Caminable'
+                                  ? t('home.walkable')
                                   : route.sourceStrategy === 'score'
-                                  ? 'Top score'
-                                  : 'Equilibrada'}
+                                  ? t('home.score')
+                                  : t('home.balanced')}
                               </ThemedTextSecondary>
                             </View>
                             <ThemedTextSecondary>
@@ -1244,7 +1246,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       color: colors.primary,
                     }}
                   >
-                    Mostrar hasta:
+                    {t('home.radius')}:
                   </ThemedText>
                   <ScrollView
                     horizontal
@@ -1313,7 +1315,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       color: colors.primary,
                     }}
                   >
-                    Categoría:
+                    {t('home.filterByCategory')}:
                   </ThemedText>
                   <View style={styles.heroActionsRow}>
                     {user?.ubicacion && (
@@ -1344,7 +1346,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                             fontSize: 11,
                           }}
                         >
-                          Cerca
+                          {t('home.nearby')}
                         </ThemedText>
                       </TouchableOpacity>
                     )}
@@ -1390,7 +1392,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         fontSize: 13,
                       }}
                     >
-                      Activos
+                      {t('home.activeEvents')}
                     </ThemedText>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -1411,7 +1413,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         fontSize: 13,
                       }}
                     >
-                      Finalizados
+                      {t('home.pastEvents')}
                     </ThemedText>
                   </TouchableOpacity>
                 </View>
@@ -1450,7 +1452,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                             fontSize: 13,
                           }}
                         >
-                          Todas
+                          {t('home.allCategories')}
                         </ThemedText>
                       </TouchableOpacity>
                     }
@@ -1506,7 +1508,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     style={{ marginRight: 8 }}
                   />
                   <ThemedText style={{ flex: 1, fontSize: 13, color: colors.primary }}>
-                    Configura tu ubicación para ver eventos ordenados por cercanía
+                    {t('home.privateEventHint')}
                   </ThemedText>
                   <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
                 </TouchableOpacity>
@@ -1594,7 +1596,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               )}
             </View>
             <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
-              Notificaciones
+              {t('home.notifications')}
             </ThemedText>
           </TouchableOpacity>
 
@@ -1630,7 +1632,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 <MaterialIcons name="add" size={20} color="#fff" />
               </View>
               <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
-                Crear
+                {t('home.createEvent')}
               </ThemedText>
             </TouchableOpacity>
           ) : (
@@ -1645,7 +1647,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   <MaterialIcons name="check" size={20} color="#fff" />
                 </View>
                 <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
-                  Moderar
+                  {t('home.moderatorEvents')}
                 </ThemedText>
               </TouchableOpacity>
             )
@@ -1661,7 +1663,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <MaterialIcons name="people" size={18} color={colors.primary} />
             </View>
             <ThemedText style={styles.bottomDockLabel} numberOfLines={1}>
-              Amigos
+              {t('home.friends')}
             </ThemedText>
           </TouchableOpacity>
         </View>
@@ -1688,7 +1690,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 padding: 20,
               }}
             >
-              <ThemedTitle style={{ marginBottom: 12 }}>Buscar y filtrar</ThemedTitle>
+              <ThemedTitle style={{ marginBottom: 12 }}>{t('home.searchEvents')}</ThemedTitle>
               <TextInput
                 style={{
                   backgroundColor: colors.background,
@@ -1700,7 +1702,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   borderColor: colors.primary + '33',
                   marginBottom: 12,
                 }}
-                placeholder="Buscar por título o descripción"
+                placeholder={t('home.searchEvents')}
                 placeholderTextColor={colors.text + '66'}
                 value={searchText}
                 onChangeText={setSearchText}
@@ -1717,7 +1719,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     borderWidth: 1,
                     borderColor: colors.primary + '33',
                   }}
-                  placeholder="Min €"
+                  placeholder={t('home.minPrice')}
                   placeholderTextColor={colors.text + '66'}
                   value={minPrice}
                   onChangeText={setMinPrice}
@@ -1734,7 +1736,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     borderWidth: 1,
                     borderColor: colors.primary + '33',
                   }}
-                  placeholder="Max €"
+                  placeholder={t('home.maxPrice')}
                   placeholderTextColor={colors.text + '66'}
                   value={maxPrice}
                   onChangeText={setMaxPrice}
@@ -1756,7 +1758,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   onPress={() => setShowDateFromPicker(true)}
                 >
                   <ThemedText style={{ color: dateFrom ? colors.text : colors.text + '66' }}>
-                    {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : 'Desde '}
+                    {dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : t('home.searchDateFrom')}
                   </ThemedText>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -1773,7 +1775,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   onPress={() => setShowDateToPicker(true)}
                 >
                   <ThemedText style={{ color: dateTo ? colors.text : colors.text + '66' }}>
-                    {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : 'Hasta'}
+                    {dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : t('home.searchDateTo')}
                   </ThemedText>
                 </TouchableOpacity>
               </View>
@@ -1800,7 +1802,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <View style={{ gap: 8 }}>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <ThemedButton
-                    title="Limpiar"
+                    title={t('home.clearFilters')}
                     variant="secondary"
                     onPress={() => {
                       setSearchText('');
@@ -1814,13 +1816,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <ThemedButton
-                    title="Cerrar"
+                    title={t('common.cancel')}
                     variant="secondary"
                     onPress={() => setSearchModalVisible(false)}
                     style={{ flex: 1 }}
                   />
                   <ThemedButton
-                    title="Buscar"
+                    title={t('home.search')}
                     variant="primary"
                     onPress={() => setSearchModalVisible(false)}
                     style={{ flex: 1 }}
@@ -1851,16 +1853,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 <View style={[styles.privateModalIcon, { backgroundColor: colors.primary }]}>
                   <MaterialIcons name="lock-open" size={18} color="#fff" />
                 </View>
-                <ThemedText style={styles.privateModalTitle}>Acceder a evento privado</ThemedText>
+                <ThemedText style={styles.privateModalTitle}>{t('home.privateEvent')}</ThemedText>
               </View>
               <ThemedTextSecondary style={styles.privateModalHint}>
-                Introduce el enlace completo o solo el código final.
+                {t('home.enterAccessCode')}
               </ThemedTextSecondary>
 
               <TextInput
                 value={privateAccessInput}
                 onChangeText={setPrivateAccessInput}
-                placeholder="Pega el enlace o código"
+                placeholder={t('home.accessCodePlaceholder')}
                 placeholderTextColor={theme === 'dark' ? '#aaa' : '#666'}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -1876,13 +1878,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
               <View style={styles.privateModalActions}>
                 <ThemedButton
-                  title="Cancelar"
+                  title={t('common.cancel')}
                   variant="secondary"
                   onPress={closePrivateAccess}
                   style={{ flex: 1, borderColor: colors.primary }}
                 />
                 <ThemedButton
-                  title="Entrar"
+                  title={t('home.access')}
                   onPress={handlePrivateAccessSubmit}
                   style={{ flex: 1 }}
                 />
@@ -1899,16 +1901,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         >
           <View style={styles.modalOverlay}>
             <ThemedView style={[styles.modalContainer, { backgroundColor: colors.card }]}>
-              <ThemedTitle style={styles.modalTitle}>Ajustes de rutas</ThemedTitle>
+              <ThemedTitle style={styles.modalTitle}>{t('home.routesSettings')}</ThemedTitle>
 
               <ThemedTextSecondary style={{ marginBottom: 6 }}>
-                Prioridad (puedes elegir varias)
+                {t('home.strategy')}
               </ThemedTextSecondary>
               <View style={styles.routeStrategyRow}>
                 {[
-                  { key: 'balanced', label: 'Equilibrada' },
-                  { key: 'walkable', label: 'Caminable' },
-                  { key: 'score', label: 'Top score' },
+                  { key: 'balanced', label: t('home.balanced') },
+                  { key: 'walkable', label: t('home.walkable') },
+                  { key: 'score', label: t('home.score') },
                 ].map((option) => (
                   <TouchableOpacity
                     key={option.key}
@@ -1944,7 +1946,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <View style={styles.routeStepRow}>
-                <ThemedTextSecondary>Número de rutas</ThemedTextSecondary>
+                <ThemedTextSecondary>{t('home.routeCount')}</ThemedTextSecondary>
                 <View style={styles.routeStepper}>
                   <TouchableOpacity onPress={() => setRouteCount((prev) => Math.max(1, prev - 1))}>
                     <MaterialIcons name="remove-circle-outline" size={24} color={colors.primary} />
@@ -1957,7 +1959,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <View style={styles.routeStepRow}>
-                <ThemedTextSecondary>Eventos máximos por ruta</ThemedTextSecondary>
+                <ThemedTextSecondary>{t('home.maxEvents')}</ThemedTextSecondary>
                 <View style={styles.routeStepper}>
                   <TouchableOpacity
                     onPress={() => setRouteMaxEvents((prev) => Math.max(3, prev - 1))}
@@ -1974,7 +1976,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <View style={styles.routeStepRow}>
-                <ThemedTextSecondary>Hueco máximo entre eventos</ThemedTextSecondary>
+                <ThemedTextSecondary>{t('home.maxGap')}</ThemedTextSecondary>
                 <View style={styles.routeStepper}>
                   <TouchableOpacity
                     onPress={() => setRouteMaxGapMinutes((prev) => Math.max(30, prev - 30))}
@@ -1993,7 +1995,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <View style={styles.routeStepRow}>
-                <ThemedTextSecondary>Solape máximo permitido</ThemedTextSecondary>
+                <ThemedTextSecondary>{t('home.maxOverlap')}</ThemedTextSecondary>
                 <View style={styles.routeStepper}>
                   <TouchableOpacity
                     onPress={() => setRouteMaxOverlapMinutes((prev) => Math.max(0, prev - 5))}
@@ -2013,13 +2015,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
               <View style={styles.modalButtonsContainer}>
                 <ThemedButton
-                  title="Cancelar"
+                  title={t('common.cancel')}
                   variant="secondary"
                   onPress={() => setRoutesSettingsVisible(false)}
                   style={{ flex: 1 }}
                 />
                 <ThemedButton
-                  title="Generar"
+                  title={t('home.generateRoutes')}
                   variant="primary"
                   onPress={fetchAdjustedRoutes}
                   style={{ flex: 1 }}
@@ -2099,7 +2101,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="map" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Mapa de eventos</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.map')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -2110,7 +2112,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="bookmark" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Eventos guardados</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.savedEvents')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -2121,7 +2123,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="lock" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Eventos privados</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.privateEvent')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -2132,7 +2134,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="how-to-reg" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Eventos apuntados</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.myEvents')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -2144,7 +2146,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   >
                     <MaterialIcons name="vpn-key" size={20} color={colors.primary} />
                     <ThemedText style={styles.menuActionLabel}>
-                      Entrar con enlace privado
+                      {t('home.privateEvent')}
                     </ThemedText>
                   </TouchableOpacity>
                 </ThemedView>
@@ -2162,7 +2164,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="notifications" size={20} color="#ffd700" />
-                    <ThemedText style={styles.menuActionLabel}>Notificaciones</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.notifications')}</ThemedText>
                     {unread > 0 && (
                       <View style={styles.menuActionBadge}>
                         <Text style={styles.menuActionBadgeText}>{unread}</Text>
@@ -2193,7 +2195,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="people" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Amigos</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.friends')}</ThemedText>
                   </TouchableOpacity>
                 </ThemedView>
 
@@ -2210,7 +2212,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="edit" size={20} color={colors.primary} />
-                      <ThemedText style={styles.menuActionLabel}>Mis eventos</ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>{t('home.myEvents')}</ThemedText>
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
@@ -2221,7 +2223,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="calendar-today" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Calendario</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.calendarEvents')}</ThemedText>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
@@ -2231,7 +2233,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="route" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Rutas</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.routesList')}</ThemedText>
                   </TouchableOpacity>
                 </ThemedView>
 
@@ -2248,7 +2250,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="check-circle" size={20} color="#4caf50" />
-                      <ThemedText style={styles.menuActionLabel}>Aprobar eventos</ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>{t('home.moderatorEvents')}</ThemedText>
                     </TouchableOpacity>
                   </ThemedView>
                 )}
@@ -2267,7 +2269,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
                       <ThemedText style={styles.menuActionLabel}>
-                        Panel de administracion
+                        {t('home.adminPanel')}
                       </ThemedText>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -2278,7 +2280,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="category" size={20} color={colors.primary} />
-                      <ThemedText style={styles.menuActionLabel}>Gestionar categorías</ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>{t('home.filterByCategory')}</ThemedText>
                     </TouchableOpacity>
                   </ThemedView>
                 )}
@@ -2295,7 +2297,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="help-outline" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Guía de uso</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.help')}</ThemedText>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
@@ -2305,12 +2307,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="policy" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>Licencias y atribuciones</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.legalAttributions')}</ThemedText>
                   </TouchableOpacity>
                 </ThemedView>
 
                 <ThemedButton
-                  title="Cerrar sesión"
+                  title={t('home.logout')}
                   variant="danger"
                   onPress={onLogout}
                   style={styles.menuButtonOption}
@@ -2333,9 +2335,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         >
           <View style={styles.modalOverlay}>
             <ThemedView style={[styles.modalContainer, { backgroundColor: colors.card }]}>
-              <ThemedTitle style={styles.modalTitle}>Radio personalizado</ThemedTitle>
+              <ThemedTitle style={styles.modalTitle}>{t('home.customRadius')}</ThemedTitle>
               <ThemedText style={{ marginBottom: 12, color: colors.text }}>
-                Ingresa el radio en kilómetros
+                {t('home.customRadius')}
               </ThemedText>
               <TextInput
                 style={[
@@ -2346,7 +2348,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     borderColor: colors.primary,
                   },
                 ]}
-                placeholder="Ej: 3, 7.5, 15"
+                placeholder={t('home.customRadiusPlaceholder')}
                 placeholderTextColor={colors.text + '66'}
                 value={customRadiusInput}
                 onChangeText={setCustomRadiusInput}
@@ -2354,7 +2356,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               />
               <View style={styles.modalButtonsContainer}>
                 <ThemedButton
-                  title="Cancelar"
+                  title={t('common.cancel')}
                   variant="secondary"
                   onPress={() => {
                     setCustomRadiusVisible(false);
@@ -2363,7 +2365,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   style={{ flex: 1 }}
                 />
                 <ThemedButton
-                  title="Añadir"
+                  title={t('home.apply')}
                   variant="primary"
                   onPress={handleAddCustomRadius}
                   style={{ flex: 1, marginLeft: 8 }}

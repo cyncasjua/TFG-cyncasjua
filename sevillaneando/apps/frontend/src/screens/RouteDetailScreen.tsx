@@ -34,6 +34,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { OSM_TILE_URL_TEMPLATE, SEVILLE_COORDINATES } from '../utils/map';
+import { useTranslation } from 'react-i18next';
 
 function offsetDuplicateCoordinates(
   coords: Array<{ latitude: number; longitude: number }>
@@ -58,6 +59,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'RouteDetail'>;
 export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigation }) => {
   const { colors, theme } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { routeId } = routeParam.params;
 
   const [route, setRoute] = useState<UserRoute | null>(null);
@@ -69,7 +71,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: 'Detalle de ruta',
+      headerTitle: t('routeDetail.title'),
       headerTitleAlign: 'center',
       headerTitleStyle: {
         fontWeight: 'bold',
@@ -103,7 +105,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
         }
       } catch (error) {
         reportError('route-detail.fetch', getErrorMessage(error), error);
-        Alert.alert('Error', getErrorMessage(error));
+        Alert.alert(t('common.error'), getErrorMessage(error));
         navigation.goBack();
       } finally {
         setLoading(false);
@@ -147,23 +149,23 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
   }, [coordinates]);
 
   const handleDeleteRoute = () => {
-    Alert.alert('Eliminar ruta', '¿Estás seguro de que deseas eliminar esta ruta?', [
+    Alert.alert(t('routeDetail.title'), t('routeDetail.deleteConfirm'), [
       {
-        text: 'Cancelar',
+        text: t('common.cancel'),
         onPress: () => {},
         style: 'cancel',
       },
       {
-        text: 'Eliminar',
+        text: t('common.delete'),
         onPress: async () => {
           setDeleting(true);
           try {
             await deleteRoute(routeId);
-            Alert.alert('Éxito', 'Ruta eliminada correctamente');
+            Alert.alert(t('common.success'), t('routeDetail.deleteSuccess'));
             navigation.goBack();
           } catch (error) {
             reportError('route-detail.delete', getErrorMessage(error), error);
-            Alert.alert('Error', getErrorMessage(error));
+            Alert.alert(t('common.error'), getErrorMessage(error));
           } finally {
             setDeleting(false);
           }
@@ -180,10 +182,10 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
       setRoute(updated);
       setUserRating(stars);
       setTempRating(0);
-      Alert.alert('Éxito', `Ruta calificada con ${stars} estrella${stars > 1 ? 's' : ''}`);
+      Alert.alert(t('common.success'), t('routeDetail.ratedSuccess', { stars, plural: stars > 1 ? 's' : '' }));
     } catch (error) {
       reportError('route-detail.rate', getErrorMessage(error), error);
-      Alert.alert('Error', getErrorMessage(error));
+      Alert.alert(t('common.error'), getErrorMessage(error));
     } finally {
       setRatingLoading(false);
     }
@@ -220,7 +222,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             <View style={{ flex: 1 }}>
               <ThemedTitle>{route.titulo}</ThemedTitle>
               <ThemedTextSecondary>
-                {route.secuenciaEventos.length} paradas · {route.temporizacion} minutos
+                {route.secuenciaEventos.length} {t('routeDetail.stops')} · {route.temporizacion} {t('routeDetail.minutes')}
               </ThemedTextSecondary>
             </View>
             {isOwner && (
@@ -246,7 +248,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             ]}
           >
             <View style={{ flex: 1 }}>
-              <ThemedTextSecondary style={{ fontSize: 12 }}>Creado por</ThemedTextSecondary>
+              <ThemedTextSecondary style={{ fontSize: 12 }}>{t('routeDetail.createdBy')}</ThemedTextSecondary>
               <ThemedText>{route.creador.nombre}</ThemedText>
             </View>
             <View>
@@ -308,13 +310,13 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             },
           ]}
         >
-          <ThemedTitle style={{ marginBottom: 12 }}>Puntuación</ThemedTitle>
+          <ThemedTitle style={{ marginBottom: 12 }}>{t('routeDetail.score')}</ThemedTitle>
           <View style={styles.ratingRow}>
             <View style={{ flex: 1 }}>
               <ThemedText style={{ fontSize: 24, fontWeight: 'bold' }}>
                 {route.puntuacionPromedio.toFixed(1)}
               </ThemedText>
-              <ThemedTextSecondary>{route.numCalificaciones} calificaciones</ThemedTextSecondary>
+              <ThemedTextSecondary>{route.numCalificaciones} {t('routeDetail.ratings')}</ThemedTextSecondary>
             </View>
 
             {!isOwner && (
@@ -341,7 +343,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
                 </View>
                 {userRating && !tempRating && (
                   <ThemedTextSecondary style={{ marginTop: 8, textAlign: 'right' }}>
-                    Tu calificación: {userRating} ⭐
+                    {t('routeDetail.yourRating')} {userRating} ⭐
                   </ThemedTextSecondary>
                 )}
               </View>
@@ -360,7 +362,7 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
           ]}
         >
           <ThemedTitle style={{ marginBottom: 12 }}>
-            Paradas ({route.secuenciaEventos.length})
+            {t('routeDetail.waypoints')} ({route.secuenciaEventos.length})
           </ThemedTitle>
           <FlatList
             data={route.secuenciaEventos}

@@ -26,6 +26,7 @@ import type { Event } from '../types/event';
 import { getFullImageUrl } from '../utils/imageUrl';
 import dayjs from 'dayjs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserProfile'>;
 
@@ -87,6 +88,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const { userId } = route.params;
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<PublicUser | null>(null);
   const [siguiendo, setSiguiendo] = useState(false);
   const [numSeguidores, setNumSeguidores] = useState(0);
@@ -165,7 +167,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         ListHeaderComponent={
           <ThemedView style={[styles.card, { backgroundColor: colors.card }]}>
             <Avatar photoUrl={profile?.fotoPerfil} size={96} style={styles.avatar} />
-            <ThemedTitle style={{ marginTop: 8 }}>{profile?.nombre ?? 'Usuario'}</ThemedTitle>
+            <ThemedTitle style={{ marginTop: 8 }}>{profile?.nombre ?? t('common.user')}</ThemedTitle>
 
             <View style={styles.statsRow}>
               <TouchableOpacity
@@ -175,7 +177,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 }
               >
                 <ThemedText style={styles.statNumber}>{numSeguidores}</ThemedText>
-                <ThemedText style={styles.statLabel}>seguidores</ThemedText>
+                <ThemedText style={styles.statLabel}>{t('userProfile.followers')}</ThemedText>
               </TouchableOpacity>
               <View style={[styles.statDivider, { backgroundColor: colors.border ?? '#ccc' }]} />
               <TouchableOpacity
@@ -185,20 +187,20 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 }
               >
                 <ThemedText style={styles.statNumber}>{numSeguidos}</ThemedText>
-                <ThemedText style={styles.statLabel}>seguidos</ThemedText>
+                <ThemedText style={styles.statLabel}>{t('userProfile.following')}</ThemedText>
               </TouchableOpacity>
             </View>
 
             {!!profile?.intereses?.length && (
               <ThemedText style={{ marginTop: 6, textAlign: 'center' }}>
-                Intereses: {profile.intereses.join(', ')}
+                {t('userProfile.interests')} {profile.intereses.join(', ')}
               </ThemedText>
             )}
 
             {!esPropioPerfil && (
               <View style={styles.actions}>
                 <ThemedButton
-                  title={loadingFollow ? '' : siguiendo ? 'Dejar de seguir' : 'Seguir'}
+                  title={loadingFollow ? '' : siguiendo ? t('userProfile.unfollow') : t('friends.follow')}
                   icon={
                     <Icon
                       name={siguiendo ? 'account-check' : 'account-plus'}
@@ -212,14 +214,14 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 />
                 {loadingFollow && <ActivityIndicator style={StyleSheet.absoluteFill} />}
                 <ThemedButton
-                  title="Enviar mensaje privado"
+                  title={t('userProfile.sendMessage')}
                   variant="secondary"
                   icon={<Icon name="message-text-outline" size={18} color={colors.primary} />}
                   style={[styles.secondaryActionButton, { borderColor: colors.primary }]}
                   onPress={() =>
                     navigation.navigate('DirectMessage', {
                       userId,
-                      userName: profile?.nombre ?? 'Usuario',
+                      userName: profile?.nombre ?? t('common.user'),
                     })
                   }
                 />
@@ -228,7 +230,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
             {eventosAsistidos.length > 0 && (
               <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-                Eventos a los que asiste
+                {t('userProfile.attendingEvents')}
               </ThemedText>
             )}
           </ThemedView>

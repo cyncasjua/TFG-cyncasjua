@@ -12,6 +12,7 @@ import type { Event } from '../types/event';
 import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { haversineDistanceKm, SEVILLE_COORDINATES } from '../utils/map';
+import { useTranslation } from 'react-i18next';
 
 type RoutePreviewStackParamList = {
   RoutePreview: { routePlan: RecommendedRoute };
@@ -22,6 +23,7 @@ type Props = NativeStackScreenProps<RoutePreviewStackParamList, 'RoutePreview'>;
 
 export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { colors, theme } = useTheme();
+  const { t } = useTranslation();
   const { routePlan } = route.params;
 
   const coordinates = useMemo(
@@ -97,17 +99,17 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <ThemedTitle style={styles.summaryTitle}>
           {routePlan.day === 'Sin fecha'
-            ? 'Ruta sin fecha concreta'
-            : `Ruta de ${dayjs(routePlan.day).locale('es').format('dddd DD/MM')}`}
+            ? t('routePreview.noDate')
+            : t('routePreview.dateTitle', { date: dayjs(routePlan.day).locale('es').format('dddd DD/MM') })}
         </ThemedTitle>
         <ThemedTextSecondary>
-          {routePlan.eventos.length} paradas · {routePlan.distanceTotalKm.toFixed(1)} km ·{' '}
+          {routePlan.eventos.length} {t('routePreview.stops')} · {routePlan.distanceTotalKm.toFixed(1)} {t('routePreview.km')} ·{' '}
           {formatDuration(routePlan.temporizacionMinutos)}
         </ThemedTextSecondary>
-        <ThemedTextSecondary>Score medio: {routePlan.scoreMedio.toFixed(2)}</ThemedTextSecondary>
+        <ThemedTextSecondary>{t('routePreview.avgScore')} {routePlan.scoreMedio.toFixed(2)}</ThemedTextSecondary>
         {routePlan.quality != null && (
           <ThemedTextSecondary>
-            Calidad de ruta: {routePlan.quality.toFixed(0)}%
+            {t('routePreview.quality')} {routePlan.quality.toFixed(0)}%
           </ThemedTextSecondary>
         )}
       </ThemedView>
@@ -156,11 +158,10 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             }}
           >
             <ThemedText style={{ fontWeight: '600', marginBottom: 4 }}>
-              ℹ️ Eventos con múltiples fechas
+              ℹ️ {t('routePreview.multiDateTitle')}
             </ThemedText>
             <ThemedTextSecondary>
-              Estos eventos tienen varias fechas y horas disponibles. Mire la disponibilidad de
-              horarios en la web.
+              {t('routePreview.multiDateMsg')}
             </ThemedTextSecondary>
           </ThemedView>
         )}
@@ -254,7 +255,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     <View style={styles.segmentInfoItem}>
                       <MaterialIcons name="schedule" size={14} color={colors.primary} />
                       <ThemedTextSecondary>
-                        hueco {formatDuration(transitionGapMin)}
+                        {t('routePreview.gap')} {formatDuration(transitionGapMin)}
                       </ThemedTextSecondary>
                     </View>
                   )}

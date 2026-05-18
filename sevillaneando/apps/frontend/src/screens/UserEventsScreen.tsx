@@ -19,10 +19,12 @@ import { ThemedView, ThemedText, ThemedTextSecondary, ThemedTitle } from '../com
 import { getFullImageUrl } from '../utils/imageUrl';
 import type { RootStackParamList } from '../navigation/types';
 import type { Event } from '../types/event';
+import { useTranslation } from 'react-i18next';
 
 export const UserEventsScreen: React.FC = () => {
   const { user } = useAuth();
   const { colors, theme } = useTheme();
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'UserEvents'>>();
 
   const [events, setEvents] = useState<Event[]>([]);
@@ -43,7 +45,7 @@ export const UserEventsScreen: React.FC = () => {
       setEvents(visible);
       setPendingCount(pending);
     } catch (err) {
-      Alert.alert('Error', getErrorMessage(err));
+      Alert.alert(t('common.error'), getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export const UserEventsScreen: React.FC = () => {
   if (!user?.id) {
     return (
       <ThemedView style={styles.centered}>
-        <ThemedText>Debes iniciar sesión para ver tus eventos.</ThemedText>
+        <ThemedText>{t('userEvents.loginRequired')}</ThemedText>
       </ThemedView>
     );
   }
@@ -71,14 +73,14 @@ export const UserEventsScreen: React.FC = () => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>Cargando tus eventos...</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>{t('userEvents.loading')}</ThemedTextSecondary>
       </ThemedView>
     );
   }
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedTitle style={styles.title}>Mis eventos</ThemedTitle>
+      <ThemedTitle style={styles.title}>{t('userEvents.title')}</ThemedTitle>
       <ThemedView
         style={[
           styles.infoBox,
@@ -92,15 +94,7 @@ export const UserEventsScreen: React.FC = () => {
           style={{ marginTop: 1 }}
         />
         <ThemedTextSecondary style={styles.infoText}>
-          ¿Quieres saber el estado de un evento en moderación o proponer una mejora? Escríbele a{' '}
-          <ThemedText style={[styles.infoHighlight, { color: colors.primary }]}>
-            Admin Demo
-          </ThemedText>{' '}
-          o{' '}
-          <ThemedText style={[styles.infoHighlight, { color: colors.primary }]}>
-            Moderator Demo
-          </ThemedText>{' '}
-          desde el chat de la app.
+          {t('userEvents.infoMsg')}
         </ThemedTextSecondary>
       </ThemedView>
       {pendingCount > 0 && (
@@ -111,11 +105,11 @@ export const UserEventsScreen: React.FC = () => {
           <ThemedTextSecondary style={styles.infoText}>
             Tienes{' '}
             <ThemedText style={[styles.infoHighlight, { color: '#e67400' }]}>
-              {pendingCount} {pendingCount === 1 ? 'evento público' : 'eventos públicos'}
+              {pendingCount} {pendingCount === 1 ? t('userEvents.publicSingular') : t('userEvents.publicPlural')}
             </ThemedText>{' '}
-            pendiente{pendingCount > 1 ? 's' : ''} de moderación. No{' '}
-            {pendingCount === 1 ? 'aparece' : 'aparecen'} aquí hasta que{' '}
-            {pendingCount === 1 ? 'sea aprobado' : 'sean aprobados'}.
+            {pendingCount === 1 ? t('userEvents.pendingSingular') : t('userEvents.pendingPlural')} de moderación. No{' '}
+            {pendingCount === 1 ? t('userEvents.appearsSingular') : t('userEvents.appearsPlural')} aquí hasta que{' '}
+            {pendingCount === 1 ? t('userEvents.approvedSingular') : t('userEvents.approvedPlural')}.
           </ThemedTextSecondary>
         </ThemedView>
       )}
@@ -147,19 +141,19 @@ export const UserEventsScreen: React.FC = () => {
                 {item.estado === 'Rechazado' && (
                   <View style={[styles.estadoBadge, { backgroundColor: '#d32f2f' }]}>
                     <Icon name="close-circle-outline" size={13} color="#fff" />
-                    <ThemedText style={styles.estadoBadgeText}>Rechazado</ThemedText>
+                    <ThemedText style={styles.estadoBadgeText}>{t('userEvents.rejected')}</ThemedText>
                   </View>
                 )}
                 {item.estado === 'Aprobado' && !item.privado && (
                   <View style={[styles.estadoBadge, { backgroundColor: '#4caf50' }]}>
                     <Icon name="check-circle-outline" size={13} color="#fff" />
-                    <ThemedText style={styles.estadoBadgeText}>Aprobado</ThemedText>
+                    <ThemedText style={styles.estadoBadgeText}>{t('userEvents.approved')}</ThemedText>
                   </View>
                 )}
                 {item.privado && (
                   <View style={[styles.estadoBadge, { backgroundColor: '#5c6bc0' }]}>
                     <Icon name="lock-outline" size={13} color="#fff" />
-                    <ThemedText style={styles.estadoBadgeText}>Privado</ThemedText>
+                    <ThemedText style={styles.estadoBadgeText}>{t('userEvents.private')}</ThemedText>
                   </View>
                 )}
               </View>
@@ -169,14 +163,14 @@ export const UserEventsScreen: React.FC = () => {
               </ThemedText>
 
               <ThemedTextSecondary style={styles.eventInfo}>
-                Fecha:{' '}
+                {t('userEvents.dateLabel')}{' '}
                 {item.fechaInicio
                   ? dayjs(item.fechaInicio).format('YYYY/MM/DD HH:mm')
-                  : 'No definida'}
+                  : t('userEvents.undefinedDate')}
               </ThemedTextSecondary>
 
               <ThemedTextSecondary style={styles.eventInfo}>
-                Ubicación: {item.address}
+                {t('userEvents.locationLabel')} {item.address}
               </ThemedTextSecondary>
 
               <View style={styles.actions}>
@@ -185,7 +179,7 @@ export const UserEventsScreen: React.FC = () => {
                   onPress={() => handleEdit(item)}
                 >
                   <Icon name="pencil" size={18} color="#fff" />
-                  <ThemedText style={styles.buttonText}>Editar</ThemedText>
+                  <ThemedText style={styles.buttonText}>{t('common.edit')}</ThemedText>
                 </TouchableOpacity>
               </View>
             </ThemedView>
@@ -195,7 +189,7 @@ export const UserEventsScreen: React.FC = () => {
           <View style={styles.emptyContainer}>
             <Icon name="calendar-plus-outline" size={48} color={colors.text + '44'} />
             <ThemedTextSecondary style={styles.emptyText}>
-              Aún no has creado ningún evento.{'\n'}¡Anímate a crear el primero!
+              {t('userEvents.empty')}
             </ThemedTextSecondary>
           </View>
         }

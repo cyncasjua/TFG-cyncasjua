@@ -18,6 +18,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import type { PublicUser } from '../types/user';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
 
@@ -26,6 +27,7 @@ type Tab = 'seguidores' | 'seguidos' | 'amigos' | 'buscar';
 export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('seguidores');
   const [seguidores, setSeguidores] = useState<PublicUser[]>([]);
   const [seguidos, setSeguidos] = useState<PublicUser[]>([]);
@@ -156,7 +158,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.userInfo}>
             <ThemedText style={styles.userName}>{item.nombre}</ThemedText>
             <ThemedText style={[styles.subText, { color: colors.text + '88' }]}>
-              Te sigue
+              {t('friends.follows')}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -168,7 +170,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <ThemedText style={styles.followBackText}>Seguir</ThemedText>
+            <ThemedText style={styles.followBackText}>{t('friends.follow')}</ThemedText>
           )}
         </TouchableOpacity>
       </View>
@@ -178,7 +180,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedView style={styles.header}>
-        <ThemedTitle style={styles.title}>Amigos</ThemedTitle>
+        <ThemedTitle style={styles.title}>{t('friends.title')}</ThemedTitle>
         <View style={styles.tabRow}>
           <View style={[styles.tabs, { backgroundColor: colors.card, flex: 1 }]}>
             {(['seguidores', 'seguidos', 'amigos'] as Tab[]).map((item) => {
@@ -189,7 +191,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
                   ? 'account-arrow-right-outline'
                   : 'account-heart-outline';
               const label =
-                item === 'seguidores' ? 'Seguidores' : item === 'seguidos' ? 'Seguidos' : 'Amigos';
+                item === 'seguidores' ? t('friends.followers') : item === 'seguidos' ? t('friends.following') : t('friends.title');
               return (
                 <TouchableOpacity
                   key={item}
@@ -234,7 +236,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Icon name="account-arrow-left-outline" size={44} color={colors.text + '33'} />
-                <ThemedText style={styles.empty}>Aún no tienes seguidores.</ThemedText>
+                <ThemedText style={styles.empty}>{t('friends.noFollowers')}</ThemedText>
               </View>
             }
           />
@@ -251,7 +253,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Icon name="account-arrow-right-outline" size={44} color={colors.text + '33'} />
-                <ThemedText style={styles.empty}>Aún no sigues a nadie.</ThemedText>
+                <ThemedText style={styles.empty}>{t('friends.noFollowing')}</ThemedText>
               </View>
             }
           />
@@ -269,7 +271,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
               <View style={styles.emptyContainer}>
                 <Icon name="account-heart-outline" size={44} color={colors.text + '33'} />
                 <ThemedText style={styles.empty}>
-                  Aún no tienes amigos. ¡Sigue a alguien que te siga de vuelta!
+                  {t('friends.noFriends')}
                 </ThemedText>
               </View>
             }
@@ -287,7 +289,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
               <Icon name="magnify" size={20} color={colors.text + '88'} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Buscar usuarios por nombre..."
+                placeholder={t('friends.searchPlaceholder')}
                 placeholderTextColor={colors.text + '66'}
                 value={searchQuery}
                 onChangeText={handleSearch}
@@ -304,7 +306,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
               keyboardShouldPersistTaps="handled"
               ListEmptyComponent={
                 searchQuery.length >= 2 && !searching ? (
-                  <ThemedText style={styles.empty}>No se encontraron usuarios.</ThemedText>
+                  <ThemedText style={styles.empty}>{t('friends.noResults')}</ThemedText>
                 ) : null
               }
             />

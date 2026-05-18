@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage, SupportedLanguage } from '../i18n/i18n';
 import {
   StyleSheet,
   TextInput,
@@ -32,6 +34,7 @@ type Props = {
 export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const { user, setUser, token } = useAuth();
+  const { t, i18n } = useTranslation();
   const [nombre, setNombre] = useState(user?.nombre ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [latitud, setLatitud] = useState<number | null>(user?.ubicacion?.coordinates[1] ?? null);
@@ -110,7 +113,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         setFotoPerfil(url);
         if (user) setUser({ ...user, fotoPerfil: url });
       } catch (e) {
-        setError('No se pudo subir la imagen.');
+        setError(t('editProfile.imageUploadError'));
       }
     }
   };
@@ -143,7 +146,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
       setUser(updated);
       navigation.goBack();
     } catch (e) {
-      setError('No se pudo actualizar el perfil.');
+      setError(t('editProfile.profileUpdateError'));
     } finally {
       setSaving(false);
     }
@@ -164,12 +167,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleDeleteAccount = async () => {
     Alert.alert(
-      'Eliminar cuenta',
-      '¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.',
+      t('editProfile.deleteAccountTitle'),
+      t('editProfile.deleteAccountMsg'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Eliminar',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -180,7 +183,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                   Authorization: `Bearer ${token}`,
                 },
               });
-              if (!res.ok) throw new Error('No se pudo eliminar la cuenta en el servidor');
+              if (!res.ok) throw new Error(t('editProfile.deleteAccountError'));
 
               const auth = getAuth();
               if (auth.currentUser) {
@@ -191,11 +194,11 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             } catch (e: any) {
               if (e.code === 'auth/requires-recent-login') {
                 Alert.alert(
-                  'Reautenticación requerida',
-                  'Por seguridad, vuelve a iniciar sesión y vuelve a intentar eliminar la cuenta.'
+                  t('editProfile.reauthRequired'),
+                  t('editProfile.reauthMsg')
                 );
               } else {
-                Alert.alert('Error', e.message || 'No se pudo eliminar la cuenta.');
+                Alert.alert(t('common.error'), e.message || t('editProfile.deleteAccountError'));
               }
             }
           },
@@ -214,12 +217,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <ThemedTitle style={styles.title}>Editar perfil</ThemedTitle>
+        <ThemedTitle style={styles.title}>{t('editProfile.title')}</ThemedTitle>
         <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
           {resolvedFotoPerfil ? (
             <>
               <Image source={{ uri: resolvedFotoPerfil }} style={styles.profileImage} />
-              <Button title="Quitar foto" onPress={quitarFotoPerfil} color="red" />
+              <Button title={t('editProfile.removePhoto')} onPress={quitarFotoPerfil} color="red" />
             </>
           ) : (
             <View
@@ -228,20 +231,20 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                 { backgroundColor: colors.card, justifyContent: 'center', alignItems: 'center' },
               ]}
             >
-              <ThemedText style={{ color: colors.text + '99' }}>Subir foto</ThemedText>
+              <ThemedText style={{ color: colors.text + '99' }}>{t('editProfile.uploadPhoto')}</ThemedText>
             </View>
           )}
         </TouchableOpacity>
         <TextInput
           style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-          placeholder="Nombre"
+          placeholder={t('common.name')}
           placeholderTextColor={colors.text + '99'}
           value={nombre}
           onChangeText={setNombre}
         />
         <TextInput
           style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-          placeholder="Correo electrónico"
+          placeholder={t('editProfile.email')}
           placeholderTextColor={colors.text + '99'}
           value={email}
           onChangeText={setEmail}
@@ -253,7 +256,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholder="Buscar dirección o lugar..."
+              placeholder={t('editProfile.searchAddress')}
               placeholderTextColor={colors.text + '99'}
               style={[
                 styles.mapSearchInput,
@@ -282,7 +285,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                     setLongitud(lon);
                     setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
                   } else {
-                    setError('No se ha encontrado la dirección o lugar especificado.');
+                    setError(t('editProfile.addressNotFound'));
                   }
                 } catch (err) {
                   reportWarning(
@@ -290,7 +293,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                     'Error buscando dirección por submit',
                     err
                   );
-                  setError('No se pudo buscar la dirección o lugar.');
+                  setError(t('editProfile.addressError'));
                 } finally {
                   setSearchLoading(false);
                 }
@@ -315,7 +318,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                     setLongitud(lon);
                     setMapDelta({ latitudeDelta: 0.0015, longitudeDelta: 0.0015 });
                   } else {
-                    setError('No se ha encontrado la dirección o lugar especificado.');
+                    setError(t('editProfile.addressNotFound'));
                   }
                 } catch (err) {
                   reportWarning(
@@ -323,7 +326,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                     'Error buscando dirección por botón',
                     err
                   );
-                  setError('No se pudo buscar la dirección o lugar.');
+                  setError(t('editProfile.addressError'));
                 } finally {
                   setSearchLoading(false);
                 }
@@ -385,7 +388,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             <ThemedText style={{ color: colors.text + '99' }}>
               {latitud !== null && longitud !== null
                 ? `Lat: ${latitud.toFixed(6)}, Lng: ${longitud.toFixed(6)}`
-                : 'Toca el mapa para seleccionar la ubicación'}
+                : t('editProfile.tapMapLocation')}
             </ThemedText>
             {latitud !== null && longitud !== null && (
               <TouchableOpacity
@@ -402,10 +405,10 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
         <View style={styles.interestsContainer}>
-          <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>Intereses</ThemedText>
+          <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>{t('editProfile.interests')}</ThemedText>
           {categorias.length === 0 ? (
             <ThemedText style={{ color: colors.text + '99', marginBottom: 12 }}>
-              No se pudieron cargar categorías.
+              {t('editProfile.noCategoriesLoaded')}
             </ThemedText>
           ) : (
             <View style={styles.interestsChipsWrap}>
@@ -441,13 +444,13 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
         {error && <ThemedText style={{ color: colors.error, marginBottom: 8 }}>{error}</ThemedText>}
         <View style={styles.actionsGroup}>
           <ThemedButton
-            title={saving ? 'Guardando...' : 'Guardar'}
+            title={saving ? t('common.saving') : t('common.save')}
             onPress={handleSave}
             disabled={saving}
             style={styles.primaryAction}
           />
           <ThemedButton
-            title="Cambiar contraseña"
+            title={t('editProfile.changePassword')}
             variant="secondary"
             onPress={() => navigation.navigate('EditPassword')}
             style={[
@@ -457,8 +460,33 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             ]}
             textStyle={{ color: colors.primary }}
           />
+
+          {/* Language selector */}
+          <ThemedText style={{ fontWeight: '700', marginTop: 8 }}>{t('editProfile.language')}</ThemedText>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+            {(['es', 'en'] as SupportedLanguage[]).map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                onPress={() => changeLanguage(lang)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 30,
+                  borderWidth: 2,
+                  borderColor: i18n.language === lang ? colors.primary : colors.border,
+                  backgroundColor: i18n.language === lang ? colors.primary : 'transparent',
+                  alignItems: 'center',
+                }}
+              >
+                <ThemedText style={{ color: i18n.language === lang ? '#fff' : colors.primary, fontWeight: '600' }}>
+                  {lang === 'es' ? t('editProfile.languageEs') : t('editProfile.languageEn')}
+                </ThemedText>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <ThemedButton
-            title="Eliminar cuenta"
+            title={t('editProfile.deleteAccount')}
             variant="secondary"
             onPress={handleDeleteAccount}
             style={[styles.secondaryAction, { backgroundColor: colors.error }]}

@@ -7,6 +7,7 @@ import { ThemedView, ThemedText, ThemedButton } from '../components';
 import { useTheme } from '../hooks/useTheme';
 import { getErrorMessage, getEventByAccessLink } from '../services';
 import { Event } from '../types/event';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AccessPrivateEvent'>;
 
@@ -18,6 +19,7 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -32,7 +34,7 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
           await AsyncStorage.setItem(ACCESSED_PRIVATE_LINKS_KEY, JSON.stringify(links));
         }
       } catch (err) {
-        setError(getErrorMessage(err) || 'No se pudo cargar el evento privado');
+        setError(getErrorMessage(err) || t('accessPrivateEvent.loadError'));
       } finally {
         setLoading(false);
       }
@@ -52,8 +54,8 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
   if (error || !event) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
-        <ThemedButton onPress={() => navigation.goBack()} title="Volver" />
+        <ThemedText style={styles.errorText}>{t('accessPrivateEvent.errorPrefix')} {error}</ThemedText>
+        <ThemedButton onPress={() => navigation.goBack()} title={t('common.back')} />
       </ThemedView>
     );
   }
@@ -65,12 +67,12 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
         <ThemedButton
           variant="secondary"
           onPress={() => navigation.goBack()}
-          title="Volver"
+          title={t('common.back')}
           style={[styles.btn, { borderColor: colors.primary }]}
         />
         <ThemedButton
           onPress={() => navigation.navigate('EventDetail', { event })}
-          title="Ver evento completo"
+          title={t('accessPrivateEvent.viewFull')}
           style={styles.btn}
         />
       </View>

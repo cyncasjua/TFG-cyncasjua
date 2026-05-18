@@ -34,6 +34,7 @@ import { formatSevillaTime } from '../utils/sevillaTime';
 import { reportError } from '../utils/telemetry';
 import { Avatar, ThemedText, ThemedTextSecondary, ThemedView } from '../components';
 import { api } from '../services';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DirectMessage'>;
 
@@ -49,6 +50,7 @@ type DirectMessage = {
 export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
   const { userId, userName } = route.params;
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const { user, token } = useAuth();
   const { refresh: refreshNotificaciones } = useNotificaciones();
   const { socket, isConnected, sendMessage } = useSocket();
@@ -180,7 +182,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!token) {
-      setChatError('Necesitas iniciar sesión para subir imágenes');
+      setChatError(t('directMessage.needLogin'));
       return;
     }
     if (!asset?.uri) return;
@@ -210,7 +212,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       });
 
       if (!response.ok) {
-        setChatError('No se pudo subir la imagen');
+        setChatError(t('directMessage.imageUploadFail'));
         setPendingImageLocalUri(null);
         setPendingImageUrl(null);
         return;
@@ -218,7 +220,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
       const data = await response.json();
       if (!data?.imageUrl) {
-        setChatError('Respuesta de imagen invalida');
+        setChatError(t('directMessage.imageResponseInvalid'));
         setPendingImageLocalUri(null);
         setPendingImageUrl(null);
         return;
@@ -227,7 +229,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       setPendingImageUrl(data.imageUrl);
     } catch (error) {
       reportError('dm.upload-image', 'Error al subir imagen de chat directo', error);
-      setChatError('Error al subir la imagen');
+      setChatError(t('directMessage.imageUploadError'));
       setPendingImageLocalUri(null);
       setPendingImageUrl(null);
     } finally {
@@ -237,7 +239,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handlePickImage = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesión para subir imágenes');
+      setChatError(t('directMessage.needLogin'));
       return;
     }
 
@@ -245,7 +247,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       setChatError('');
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permission.status !== 'granted') {
-        setChatError('Permiso requerido para acceder a fotos');
+        setChatError(t('directMessage.photoPermission'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -259,13 +261,13 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       await uploadChatImage(asset);
     } catch (error) {
       reportError('dm.pick-image', 'Error al seleccionar imagen de galería', error);
-      setChatError('Error al seleccionar la imagen');
+      setChatError(t('directMessage.photoError'));
     }
   };
 
   const handleTakePhoto = async () => {
     if (!token) {
-      setChatError('Necesitas iniciar sesión para subir imágenes');
+      setChatError(t('directMessage.needLogin'));
       return;
     }
 
@@ -273,7 +275,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       setChatError('');
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (permission.status !== 'granted') {
-        setChatError('Permiso requerido para usar la camara');
+        setChatError(t('directMessage.cameraPermission'));
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -287,15 +289,15 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
       await uploadChatImage(asset);
     } catch (error) {
       reportError('dm.take-photo', 'Error al tomar foto en chat directo', error);
-      setChatError('Error al tomar la foto');
+      setChatError(t('directMessage.cameraError'));
     }
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    Alert.alert('Borrar mensaje', '¿Estás seguro de que quieres borrar este mensaje?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('directMessage.deleteMessage'), t('directMessage.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t('common.delete'),
         onPress: () => {
           sendMessage('delete_dm', { messageId });
         },
@@ -426,7 +428,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                         ellipsizeMode="tail"
                         style={[styles.chatMetaText, { color: nameColor }]}
                       >
-                        {isOwn ? 'Tú' : item.emisor?.nombre ?? 'Usuario'}
+                        {isOwn ? t('directMessage.you') : item.emisor?.nombre ?? t('directMessage.user')}
                       </ThemedTextSecondary>
                     </TouchableOpacity>
 
@@ -504,7 +506,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           <ThemedView style={styles.chatAttachment}>
             <MaterialIcons name="image" size={18} color={colors.text} />
             <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
-              Imagen lista para enviar
+              {t('directMessage.imageSending')}
             </ThemedTextSecondary>
             <TouchableOpacity
               onPress={() => {
@@ -522,7 +524,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           <ThemedView style={[styles.chatAttachment, { opacity: 0.7 }]}>
             <MaterialIcons name="cloud-upload" size={18} color={colors.text} />
             <ThemedTextSecondary style={{ marginLeft: 8, color: colors.text + '99' }}>
-              Cargando imagen...
+              {t('directMessage.imageLoading')}
             </ThemedTextSecondary>
           </ThemedView>
         )}
@@ -550,7 +552,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
           <TextInput
             value={input}
             onChangeText={setInput}
-            placeholder="Escribe un mensaje..."
+            placeholder={t('directMessage.typeMessage')}
             style={{
               flex: 1,
               borderWidth: 1,
@@ -571,7 +573,7 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
               borderRadius: 16,
             }}
           >
-            <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Enviar</ThemedText>
+            <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>{t('directMessage.send')}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
