@@ -163,10 +163,14 @@ export const SavedAndPrivateEventsScreen: React.FC<Props> = ({ navigation, route
       ]}
     >
       {isOngoing && (
-        <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>{t('savedEvents.ongoing')}</ThemedText>
+        <ThemedText style={[styles.statusBadge, styles.statusOngoing]}>
+          {t('savedEvents.ongoing')}
+        </ThemedText>
       )}
       {!isOngoing && isWithinWeek && (
-        <ThemedText style={[styles.statusBadge, styles.statusSoon]}>{t('savedEvents.soonDays')}</ThemedText>
+        <ThemedText style={[styles.statusBadge, styles.statusSoon]}>
+          {t('savedEvents.soonDays')}
+        </ThemedText>
       )}
       <Image
         source={

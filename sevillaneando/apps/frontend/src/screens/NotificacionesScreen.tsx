@@ -126,7 +126,11 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const confirmarBorrado = (id: string) => {
     Alert.alert(t('notifications.deleteTitle'), t('notifications.deleteMsg'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('notifications.deleteBtn'), style: 'destructive', onPress: () => borrarNotificacion(id) },
+      {
+        text: t('notifications.deleteBtn'),
+        style: 'destructive',
+        onPress: () => borrarNotificacion(id),
+      },
     ]);
   };
 
@@ -134,7 +138,9 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>{t('notifications.loading')}</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>
+          {t('notifications.loading')}
+        </ThemedTextSecondary>
       </ThemedView>
     );
   }

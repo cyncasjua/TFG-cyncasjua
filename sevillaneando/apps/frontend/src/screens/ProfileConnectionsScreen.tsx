@@ -19,7 +19,8 @@ export const ProfileConnectionsScreen: React.FC<Props> = ({ route, navigation })
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const title = type === 'seguidores' ? t('profileConnections.followers') : t('profileConnections.following');
+  const title =
+    type === 'seguidores' ? t('profileConnections.followers') : t('profileConnections.following');
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -65,7 +66,9 @@ export const ProfileConnectionsScreen: React.FC<Props> = ({ route, navigation })
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <ThemedText style={styles.empty}>
-              {type === 'seguidores' ? t('profileConnections.noFollowers') : t('profileConnections.noFollowing')}
+              {type === 'seguidores'
+                ? t('profileConnections.noFollowers')
+                : t('profileConnections.noFollowing')}
             </ThemedText>
           }
         />

@@ -339,10 +339,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const isPrivateCreator = Boolean(isPrivate && user?.id && event.creador?.id === user.id);
 
     if (isPrivate && !isPrivateCreator) {
-      Alert.alert(
-        t('eventDetail.restrictedAccess'),
-        t('eventDetail.onlyCreatorSharePrivate')
-      );
+      Alert.alert(t('eventDetail.restrictedAccess'), t('eventDetail.onlyCreatorSharePrivate'));
       return;
     }
 
@@ -355,10 +352,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           setEvent((prev) => ({ ...prev, linkAcceso: privateLinkAcceso }));
         }
       } catch (err) {
-        Alert.alert(
-          t('common.error'),
-          getErrorMessage(err) || t('eventDetail.errorPrivateLink')
-        );
+        Alert.alert(t('common.error'), getErrorMessage(err) || t('eventDetail.errorPrivateLink'));
         return;
       }
     }
@@ -387,7 +381,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       '',
       t('eventDetail.shareWhen', { date: startText }),
       t('eventDetail.shareWhere', { address: event.address }),
-      t('eventDetail.shareCategory', { category: event.categoria?.nombre || t('eventDetail.general') }),
+      t('eventDetail.shareCategory', {
+        category: event.categoria?.nombre || t('eventDetail.general'),
+      }),
       t('eventDetail.sharePrice', { price: priceText }),
       '',
       t('eventDetail.shareDirectLink', { link: eventLink }),
@@ -895,9 +891,12 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       quincenal: t('eventDetail.recurrenceBiweekly'),
                       mensual: t('eventDetail.recurrenceMonthly'),
                     }[event.recurrencia],
-                  }) + (event.recurrenciaFin
-                    ? t('eventDetail.recurrenceUntil', { date: dayjs(event.recurrenciaFin).format('DD/MM/YYYY') })
-                    : '')}
+                  }) +
+                    (event.recurrenciaFin
+                      ? t('eventDetail.recurrenceUntil', {
+                          date: dayjs(event.recurrenciaFin).format('DD/MM/YYYY'),
+                        })
+                      : '')}
                 </ThemedTextSecondary>
               </ThemedView>
             )}
@@ -905,7 +904,10 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               <MaterialIcons name="star" size={16} color="#f39c12" />
               <ThemedTextSecondary style={{ marginLeft: 4 }}>
                 {event.ratingAverage != null
-                  ? t('eventDetail.ratings', { avg: event.ratingAverage.toFixed(1), count: event.ratingsCount ?? 0 })
+                  ? t('eventDetail.ratings', {
+                      avg: event.ratingAverage.toFixed(1),
+                      count: event.ratingsCount ?? 0,
+                    })
                   : t('eventDetail.noRatings')}
               </ThemedTextSecondary>
             </ThemedView>
@@ -1069,7 +1071,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             {renderActionButton({
               icon: 'star-rate',
               title: hasExistingRating ? t('eventDetail.editRating') : t('eventDetail.rateEvent'),
-              subtitle: hasExistingRating ? t('eventDetail.savedOpinion') : t('eventDetail.ratingImproves'),
+              subtitle: hasExistingRating
+                ? t('eventDetail.savedOpinion')
+                : t('eventDetail.ratingImproves'),
               onPress: () => setRatingModalVisible(true),
             })}
           </ThemedView>
@@ -1079,7 +1083,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             </ThemedTextSecondary>
           )}
           <ThemedView style={{ marginTop: 16, marginBottom: 12 }}>
-            <ThemedTitle style={{ fontSize: 18, marginBottom: 12 }}>{t('eventDetail.opinions')}</ThemedTitle>
+            <ThemedTitle style={{ fontSize: 18, marginBottom: 12 }}>
+              {t('eventDetail.opinions')}
+            </ThemedTitle>
             {reviewsLoading ? (
               <ActivityIndicator
                 size="small"
@@ -1369,7 +1375,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                               ellipsizeMode="tail"
                               style={[styles.chatMetaText, { color: nameColor }]}
                             >
-                              {isOwn ? t('common.you') : item.usuario?.nombre ?? t('common.anonymous')}
+                              {isOwn
+                                ? t('common.you')
+                                : item.usuario?.nombre ?? t('common.anonymous')}
                             </ThemedTextSecondary>
                           </TouchableOpacity>
                           {!!item.contenido?.trim() && (
@@ -1524,7 +1532,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     borderRadius: 16,
                   }}
                 >
-                  <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>{t('common.send')}</ThemedText>
+                  <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>
+                    {t('common.send')}
+                  </ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             </ThemedView>

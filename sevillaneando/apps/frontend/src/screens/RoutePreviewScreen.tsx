@@ -100,13 +100,18 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         <ThemedTitle style={styles.summaryTitle}>
           {routePlan.day === 'Sin fecha'
             ? t('routePreview.noDate')
-            : t('routePreview.dateTitle', { date: dayjs(routePlan.day).locale('es').format('dddd DD/MM') })}
+            : t('routePreview.dateTitle', {
+                date: dayjs(routePlan.day).locale('es').format('dddd DD/MM'),
+              })}
         </ThemedTitle>
         <ThemedTextSecondary>
-          {routePlan.eventos.length} {t('routePreview.stops')} · {routePlan.distanceTotalKm.toFixed(1)} {t('routePreview.km')} ·{' '}
+          {routePlan.eventos.length} {t('routePreview.stops')} ·{' '}
+          {routePlan.distanceTotalKm.toFixed(1)} {t('routePreview.km')} ·{' '}
           {formatDuration(routePlan.temporizacionMinutos)}
         </ThemedTextSecondary>
-        <ThemedTextSecondary>{t('routePreview.avgScore')} {routePlan.scoreMedio.toFixed(2)}</ThemedTextSecondary>
+        <ThemedTextSecondary>
+          {t('routePreview.avgScore')} {routePlan.scoreMedio.toFixed(2)}
+        </ThemedTextSecondary>
         {routePlan.quality != null && (
           <ThemedTextSecondary>
             {t('routePreview.quality')} {routePlan.quality.toFixed(0)}%
@@ -160,9 +165,7 @@ export const RoutePreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             <ThemedText style={{ fontWeight: '600', marginBottom: 4 }}>
               ℹ️ {t('routePreview.multiDateTitle')}
             </ThemedText>
-            <ThemedTextSecondary>
-              {t('routePreview.multiDateMsg')}
-            </ThemedTextSecondary>
+            <ThemedTextSecondary>{t('routePreview.multiDateMsg')}</ThemedTextSecondary>
           </ThemedView>
         )}
         {routePlan.eventos.map((event, index) => {

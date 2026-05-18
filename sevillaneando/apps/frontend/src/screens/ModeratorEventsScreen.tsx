@@ -115,7 +115,10 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText
                 style={[styles.tabCount, activeList === 'pending' && styles.activeTabText]}
               >
-                {pendingEvents.length} {pendingEvents.length !== 1 ? t('moderatorEvents.events') : t('moderatorEvents.event')}
+                {pendingEvents.length}{' '}
+                {pendingEvents.length !== 1
+                  ? t('moderatorEvents.events')
+                  : t('moderatorEvents.event')}
               </ThemedText>
             )}
           </View>
@@ -133,7 +136,10 @@ export const ModeratorEventsScreen: React.FC<Props> = ({ navigation }) => {
               <ThemedText
                 style={[styles.tabCount, activeList === 'public' && styles.activeTabText]}
               >
-                {publicEvents.length} {publicEvents.length !== 1 ? t('moderatorEvents.events') : t('moderatorEvents.event')}
+                {publicEvents.length}{' '}
+                {publicEvents.length !== 1
+                  ? t('moderatorEvents.events')
+                  : t('moderatorEvents.event')}
               </ThemedText>
             )}
           </View>

@@ -135,9 +135,7 @@ export const RoutesListScreen: React.FC = () => {
         <View style={styles.emptyContainer}>
           <MaterialIcons name="directions" size={48} color={colors.textSecondary} />
           <ThemedTextSecondary style={{ marginTop: 12, textAlign: 'center' }}>
-            {routes.length === 0
-              ? t('routes.empty')
-              : t('routes.noResults')}
+            {routes.length === 0 ? t('routes.empty') : t('routes.noResults')}
           </ThemedTextSecondary>
         </View>
       ) : (

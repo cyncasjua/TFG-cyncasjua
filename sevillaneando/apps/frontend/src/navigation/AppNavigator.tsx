@@ -242,7 +242,11 @@ export function AppNavigator() {
             options={{ title: t('nav.privacyPolicy') }}
           />
           <AppStack.Screen name="Help" component={HelpScreen} options={{ title: t('nav.help') }} />
-          <AppStack.Screen name="Friends" component={FriendsScreen} options={{ title: t('nav.friends') }} />
+          <AppStack.Screen
+            name="Friends"
+            component={FriendsScreen}
+            options={{ title: t('nav.friends') }}
+          />
           <AppStack.Screen
             name="ProfileConnections"
             component={ProfileConnectionsScreen}

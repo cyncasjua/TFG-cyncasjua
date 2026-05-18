@@ -54,7 +54,9 @@ export const AccessPrivateEventScreen: React.FC<Props> = ({ route, navigation })
   if (error || !event) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={styles.errorText}>{t('accessPrivateEvent.errorPrefix')} {error}</ThemedText>
+        <ThemedText style={styles.errorText}>
+          {t('accessPrivateEvent.errorPrefix')} {error}
+        </ThemedText>
         <ThemedButton onPress={() => navigation.goBack()} title={t('common.back')} />
       </ThemedView>
     );

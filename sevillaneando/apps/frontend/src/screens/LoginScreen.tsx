@@ -73,9 +73,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     >
       <SafeAreaView style={styles.container}>
         <ThemedTitle style={styles.title}>{t('login.title')}</ThemedTitle>
-        <ThemedTextSecondary style={styles.subtitle}>
-          {t('login.subtitle')}
-        </ThemedTextSecondary>
+        <ThemedTextSecondary style={styles.subtitle}>{t('login.subtitle')}</ThemedTextSecondary>
 
         <ThemedView style={styles.form}>
           <TextInput
