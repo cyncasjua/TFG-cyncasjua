@@ -651,7 +651,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const discoveryTitle = useMemo(() => {
     if (filterNearby) return t('home.nearby');
-    return t('home.recommended');
+    return t('home.discoverNew');
   }, [filterNearby]);
 
   const visibleRecommendedEvents = useMemo(
@@ -668,10 +668,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const hour = dayjs().hour();
     const name = user?.nombre || 'sevillaneante';
 
-    if (hour < 13) return `Buenos días, ${name}`;
-    if (hour < 21) return `Buenas tardes, ${name}`;
-    return `Buenas noches, ${name}`;
-  }, [user?.nombre]);
+    if (hour < 13) return t('home.greetingMorning', { name });
+    if (hour < 21) return t('home.greetingAfternoon', { name });
+    return t('home.greetingNight', { name });
+  }, [user?.nombre, t]);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
