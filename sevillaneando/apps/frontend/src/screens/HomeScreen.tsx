@@ -652,7 +652,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const discoveryTitle = useMemo(() => {
     if (filterNearby) return t('home.nearby');
     return t('home.discoverNew');
-  }, [filterNearby]);
+  }, [filterNearby, t]);
 
   const visibleRecommendedEvents = useMemo(
     () =>
