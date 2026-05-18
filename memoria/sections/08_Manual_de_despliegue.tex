@@ -1,0 +1,463 @@
+\chapter{Manual de despliegue}\label{cap:manual_despliegue}
+
+%--------------------------------------------------
+\section{Objetivo}
+
+El presente documento describe el proceso de despliegue del sistema \textbf{Sevillaneando} en un entorno de producción. Su finalidad es servir como guía para poner en funcionamiento la aplicación fuera del entorno local de desarrollo, asegurando que todos los componentes del sistema queden correctamente configurados y comunicados entre sí.
+
+Se detalla la arquitectura de despliegue, la configuración de la base de datos, la publicación del backend y la distribución de la aplicación móvil. Asimismo, se incluyen instrucciones para validar el correcto funcionamiento del sistema una vez desplegado, un checklist de verificación y la estrategia de rollback ante incidencias.
+
+%--------------------------------------------------
+\section{Arquitectura de despliegue}
+
+El sistema \textbf{Sevillaneando} se despliega mediante una arquitectura distribuida compuesta por tres elementos principales: la aplicación móvil, el servidor backend y la base de datos. Cada componente se despliega de forma independiente en su plataforma correspondiente.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.8cm,
+        box/.style={
+            rectangle,
+            rounded corners,
+            draw=black,
+            thick,
+            minimum width=9cm,
+            minimum height=1.4cm,
+            align=center,
+            fill=gray!10
+        },
+        svcbox/.style={
+            rectangle,
+            rounded corners,
+            draw=black,
+            dashed,
+            minimum width=4cm,
+            minimum height=1.0cm,
+            align=center,
+            fill=blue!5
+        },
+        arrow/.style={
+            -{Latex[length=3mm]},
+            thick
+        }
+    ]
+
+    \node[box] (client) {\textbf{Aplicación móvil}\\Expo / React Native\\(APK Android / Expo Go)};
+    \node[box, below=of client] (backend) {\textbf{Backend API}\\NestJS + HTTPS + WebSockets\\Render (Web Service)};
+    \node[box, below=of backend] (db) {\textbf{Base de datos}\\PostgreSQL 15 + PostGIS 3.3\\Servicio gestionado};
+
+    \node[svcbox, right=2cm of backend] (firebase) {Firebase\\Auth};
+    \node[svcbox, right=2cm of client] (cloudinary) {Cloudinary\\Imágenes};
+
+    \draw[arrow] (client) -- node[right]{HTTPS / WSS} (backend);
+    \draw[arrow] (backend) -- node[right]{SQL} (db);
+    \draw[arrow] (backend) -- (firebase);
+    \draw[arrow] (backend) -- (cloudinary);
+
+    \end{tikzpicture}
+    \caption{Arquitectura general de despliegue del sistema}
+    \label{fig:arquitectura_despliegue}
+\end{figure}
+
+\subsection{Componentes principales}
+
+\begin{itemize}
+    \item \textbf{Aplicación móvil}: se distribuye como cliente final mediante APK de Android (instalación directa) o mediante Expo Go. Se conecta al backend mediante HTTPS para consumir la API REST y mediante WebSockets para la mensajería en tiempo real.
+
+    \item \textbf{Backend}: se despliega como servicio web en \textbf{Render}, plataforma de hosting en la nube que permite publicar servicios Node.js directamente desde un repositorio Git. Centraliza la lógica de negocio, la autenticación, la gestión de eventos y la comunicación con servicios externos.
+
+    \item \textbf{Base de datos}: se despliega como instancia independiente de PostgreSQL 15 con la extensión PostGIS, preferiblemente como servicio gestionado para garantizar persistencia, disponibilidad y backups automáticos.
+
+    \item \textbf{Firebase}: servicio externo de Google que gestiona la autenticación de usuarios. No requiere despliegue propio.
+
+    \item \textbf{Cloudinary}: servicio externo para el almacenamiento y transformación de imágenes de eventos, perfiles y chats. No requiere despliegue propio.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Versiones}
+
+Las versiones de los componentes del sistema deben mantenerse alineadas con el entorno de desarrollo para evitar incompatibilidades:
+
+\begin{longtable}{|l|l|}
+\hline
+\textbf{Componente} & \textbf{Versión} \\
+\hline
+Node.js & 20.x LTS \\
+NestJS & 11.x \\
+TypeORM & 0.3.20 \\
+Expo SDK & 54.x \\
+EAS CLI & >= 13 \\
+React Native & 0.81.5 \\
+PostgreSQL & 15 \\
+PostGIS & 3.3 \\
+Firebase Admin SDK & 12.7.0 \\
+\hline
+\end{longtable}
+
+%--------------------------------------------------
+\section{Despliegue de la base de datos}
+
+La base de datos debe desplegarse en primer lugar, ya que el backend depende de ella para poder iniciarse correctamente.
+
+\subsection{Opción recomendada: servicio gestionado}
+
+Para producción se recomienda utilizar un servicio gestionado de PostgreSQL, que simplifica la administración y proporciona backups automáticos, alta disponibilidad y soporte para extensiones. Las opciones compatibles son:
+
+\begin{itemize}
+    \item \textbf{Supabase} (incluye PostGIS nativo, plan gratuito disponible).
+    \item \textbf{AWS RDS} para PostgreSQL.
+    \item \textbf{DigitalOcean Managed Databases}.
+    \item \textbf{Railway} (sencillo de configurar, compatible con monorepos).
+\end{itemize}
+
+Una vez creada la instancia, es imprescindible habilitar la extensión \texttt{PostGIS}, ya que el sistema utiliza funcionalidades geoespaciales para búsquedas por proximidad:
+
+\begin{lstlisting}
+CREATE EXTENSION IF NOT EXISTS postgis;
+\end{lstlisting}
+
+Tras habilitar la extensión, se deben anotar los datos de conexión (host, puerto, usuario, contraseña y nombre de la base de datos) para configurarlos como variables de entorno en el backend.
+
+\subsection{Configuración de SSL}
+
+En producción, la conexión a la base de datos debe realizarse mediante SSL. En el \texttt{.env} del backend debe incluirse:
+
+\begin{lstlisting}
+DATABASE_SSL=true
+\end{lstlisting}
+
+\subsection{Creación del esquema de base de datos en producción}
+
+En producción, TypeORM tiene la opción \texttt{synchronize} desactivada para evitar que altere el esquema automáticamente. Por tanto, las tablas deben existir antes del primer arranque del backend.
+
+La forma más sencilla para un entorno académico es lanzar el backend una única vez apuntando a la base de datos de producción pero con \texttt{NODE\_ENV=development}, de modo que TypeORM cree todas las tablas. Para ello, configurar temporalmente las variables \texttt{DATABASE\_*} en \texttt{.env.development} con los datos de la BD de producción y arrancar con \texttt{npm run start:dev}. Una vez creadas las tablas, revertir \texttt{.env.development} a los valores locales.
+
+Alternativamente, si el proveedor permite conectarse directamente, ejecutar el backend en modo producción con \texttt{synchronize: true} temporalmente (modificando \texttt{app.module.ts} para la primera puesta en marcha y revirtiendo el cambio tras el primer arranque).
+
+\subsection{Activación de Row-Level Security (RLS)}
+
+Si se utiliza \textbf{Supabase} como proveedor de base de datos, es imprescindible activar las políticas de seguridad a nivel de fila (\textit{Row-Level Security}) en todas las tablas del esquema público. Supabase notifica mediante un aviso de seguridad crítico cuando estas políticas no están configuradas, ya que sin ellas cualquier petición autenticada puede acceder a todos los registros.
+
+Para activar RLS en todas las tablas del esquema \texttt{public}, ejecutar el siguiente bloque SQL desde el editor de Supabase o mediante un cliente PostgreSQL:
+
+\begin{lstlisting}[language=SQL]
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOR t IN
+    SELECT tablename FROM pg_tables
+    WHERE schemaname = 'public'
+  LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', t);
+  END LOOP;
+END;
+$$;
+\end{lstlisting}
+
+A continuación, definir las políticas de acceso apropiadas para cada tabla según el rol que deba tener acceso. El backend accede a la base de datos mediante el rol de servicio de Supabase (\texttt{service\_role}), que omite RLS por diseño, por lo que esta configuración no afecta al funcionamiento del backend pero protege el acceso directo a los datos a través del cliente público de Supabase.
+
+\subsection{Alternativa: despliegue con Docker}
+
+Para entornos de demostración o pruebas, la base de datos puede desplegarse mediante Docker:
+
+\begin{lstlisting}
+docker run -d \
+  --name sevillaneando-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=secure-password \
+  -e POSTGRES_DB=sevillaneando \
+  -p 5432:5432 \
+  postgis/postgis:15-3.3
+\end{lstlisting}
+
+Esta opción no se recomienda para producción real, ya que no proporciona persistencia garantizada ni mecanismos de backup automático.
+
+%--------------------------------------------------
+\section{Despliegue del backend}
+
+El backend constituye el núcleo operativo del sistema. Antes de desplegarlo en producción es recomendable verificar que compila correctamente en local.
+
+\subsection{Construcción local previa}
+
+\begin{lstlisting}
+cd apps/backend
+npm install
+npm run build
+\end{lstlisting}
+
+Si el proceso finaliza sin errores, el directorio \texttt{dist/} contendrá la versión compilada lista para producción.
+
+\subsection{Variables de entorno de producción}
+
+El backend requiere las siguientes variables de entorno en producción. Deben configurarse en el panel del proveedor de hosting elegido, no en un archivo \texttt{.env} público:
+
+\begin{lstlisting}
+NODE_ENV=production
+PORT=3000
+
+# Base de datos (servicio gestionado, SSL obligatorio)
+DATABASE_HOST=<host-del-servicio-gestionado>
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=<password-segura>
+DATABASE_NAME=sevillaneando
+DATABASE_SSL=true
+
+# CORS: dejar vacio si solo hay clientes moviles nativos.
+# Si se accede a Swagger desde navegador, anadir el dominio del frontend web.
+ALLOWED_ORIGINS=
+
+# Firebase Authentication (Admin SDK)
+FIREBASE_PROJECT_ID=<proyecto-firebase>
+FIREBASE_CLIENT_EMAIL=<email-service-account>
+# Incluir los \n literales: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_PRIVATE_KEY=<clave-privada-firebase>
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=<cloud-name>
+CLOUDINARY_API_KEY=<api-key>
+CLOUDINARY_API_SECRET=<api-secret>
+
+# APIs externas
+TICKETMASTER_API_KEY=<api-key>
+GEMINI_API_KEY=<api-key>
+
+# Usuario de sistema para scraping
+SCRAPER_SYSTEM_UID=system-scraper-uid
+SCRAPER_SYSTEM_EMAIL=scraper.bot@sevillaneando.local
+SCRAPER_SYSTEM_NAME=Sevillaneando Bot
+LEGACY_SCRAPER_EMAIL=mod@demo.com
+\end{lstlisting}
+
+\textbf{Importante}: la variable \texttt{FIREBASE\_PRIVATE\_KEY} debe incluir los saltos de línea como \texttt{\textbackslash n} literales dentro de comillas dobles, exactamente como los proporciona Firebase al descargar el archivo de credenciales JSON.
+
+\subsection{Despliegue en Render}
+
+El backend está configurado para desplegarse en \textbf{Render} como Web Service. El proceso es el siguiente:
+
+\subsubsection{Creación del servicio}
+
+\begin{enumerate}
+    \item Crear una cuenta en \texttt{https://render.com} y conectarla con la cuenta de GitHub donde está alojado el repositorio.
+    \item Seleccionar \textit{New > Web Service} y elegir el repositorio del proyecto.
+    \item Seleccionar la rama \texttt{main} como rama de despliegue.
+\end{enumerate}
+
+\subsubsection{Configuración del proceso de build}
+
+En la pantalla de configuración del servicio, establecer los siguientes valores:
+
+\begin{lstlisting}
+Root Directory: apps/backend
+Build Command: npm install && npm run build
+Start Command: node dist/main.js
+\end{lstlisting}
+
+Seleccionar \textbf{Node 20} como entorno de ejecución.
+
+\subsubsection{Configuración de variables de entorno}
+
+Añadir todas las variables listadas en la sección anterior desde el panel \textit{Environment} del servicio en Render. Este paso es crítico: sin las variables correctas, el backend no podrá conectar con la base de datos ni con los servicios externos.
+
+\subsubsection{Publicación}
+
+Una vez completada la configuración, Render realiza el primer despliegue automáticamente y genera una URL pública del tipo:
+
+\begin{lstlisting}
+https://sevillaneando-backend.onrender.com
+\end{lstlisting}
+
+Esta URL debe usarse como valor de \texttt{EXPO\_PUBLIC\_API\_URL} en el frontend.
+
+\textbf{Nota}: el plan gratuito de Render suspende los servicios tras 15 minutos de inactividad. Para una disponibilidad continua se recomienda un plan de pago.
+
+%--------------------------------------------------
+\section{Distribución de la aplicación móvil}
+
+Al tratarse de un proyecto académico, la distribución de la aplicación móvil no se realiza a través de tiendas de aplicaciones, ya que publicar en Google Play requiere una tarifa de registro única de 25 USD y publicar en App Store requiere una cuenta de desarrollador de Apple con un coste de 99 USD anuales. En su lugar, la aplicación se distribuye mediante dos mecanismos sin coste: instalación directa mediante APK en Android y acceso mediante Expo Go.
+
+Durante el desarrollo se valoró también el uso de \textbf{EAS Update} para compartir un código QR asociado a la versión publicada en Expo. Sin embargo, desde el 12 de mayo de 2026 Expo modificó el comportamiento de carga de proyectos en Expo Go: las actualizaciones publicadas mediante EAS Update solo pueden abrirse en Expo Go si el usuario autenticado es propietario del proyecto o pertenece a la organización propietaria~\cite{expoGoLoading2026}. Por este motivo, este mecanismo deja de ser adecuado para una defensa o prueba abierta con evaluadores externos no registrados en el proyecto.
+
+La alternativa adoptada para la demostración en iOS y Android es el uso de \textbf{Expo Go con túnel}. Este mecanismo no publica una versión permanente de la aplicación en Expo, sino que expone temporalmente el servidor de desarrollo local mediante un túnel accesible desde Internet. La aplicación móvil se carga desde el equipo de desarrollo, pero sus peticiones siguen apuntando al backend desplegado en Render mediante la variable \texttt{EXPO\_PUBLIC\_API\_URL}; por tanto, los datos utilizados son los del entorno de producción y no una base de datos local.
+
+\subsection{Variables de entorno del frontend}
+
+El frontend dispone de dos ficheros de entorno: \texttt{apps/frontend/.env.development} (para local) y \texttt{apps/frontend/.env.production} (para producción). Para arrancar apuntando al backend de producción sin generar un build completo, ejecutar:
+
+\begin{lstlisting}
+cd apps/frontend
+npm run start:prod   # copia .env.production a .env y lanza Expo
+\end{lstlisting}
+
+El archivo \texttt{apps/frontend/.env.production} debe contener:
+
+\begin{lstlisting}
+EXPO_PUBLIC_API_URL=https://sevillaneando-backend.onrender.com
+EXPO_PUBLIC_SHARE_BASE_URL=https://sevillaneando-backend.onrender.com/events
+
+EXPO_PUBLIC_FIREBASE_API_KEY=<api-key>
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=<proyecto>.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=<proyecto>
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=<proyecto>.appspot.com
+# Android e iOS tienen APP_ID distintos:
+#   iOS:     1:NNNNN:ios:XXXX
+#   Android: 1:NNNNN:android:XXXX
+EXPO_PUBLIC_FIREBASE_APP_ID=<app-id>
+\end{lstlisting}
+
+\subsection{Opción 1: APK para Android}
+
+La opción más directa para dispositivos Android consiste en generar un archivo \texttt{.apk} e instalarlo directamente en el dispositivo sin pasar por ninguna tienda. Para ello se utiliza \textbf{EAS CLI}:
+
+\begin{lstlisting}
+npm install -g eas-cli
+eas login
+cd apps/frontend
+eas build -p android --profile preview
+\end{lstlisting}
+
+El perfil \texttt{preview} genera un \texttt{.apk} instalable directamente, a diferencia del perfil \texttt{production} que genera un \texttt{.aab} pensado para Google Play. Una vez finalizada la construcción en los servidores de Expo, se descarga el \texttt{.apk} y se transfiere al dispositivo Android. Es necesario habilitar la opción \textit{Instalar aplicaciones de fuentes desconocidas} en los ajustes del dispositivo.
+
+\textbf{Nota}: esta opción solo es válida para Android. iOS no permite la instalación de aplicaciones fuera de la App Store sin una cuenta de desarrollador de Apple, por lo que en ese caso se utiliza Expo Go con túnel.
+
+\subsection{Opción 2: Expo Go con túnel}
+
+\textbf{Expo Go} permite ejecutar la aplicación directamente desde el código fuente sin necesidad de generar ninguna build. Es compatible con iOS y Android y no tiene ningún coste. Para permitir el acceso desde dispositivos que no están en la misma red local que el equipo de desarrollo, se utiliza el modo túnel:
+
+\begin{lstlisting}
+cd apps/frontend
+npx expo start --tunnel
+\end{lstlisting}
+
+Expo muestra un código QR en la terminal. El evaluador o usuario que desee probar la aplicación solo necesita:
+
+\begin{enumerate}
+    \item Instalar la aplicación \textbf{Expo Go} desde la App Store o Google Play (gratuita).
+    \item Escanear el código QR con la cámara del dispositivo (iOS) o desde dentro de Expo Go (Android).
+\end{enumerate}
+
+La aplicación se carga directamente en el dispositivo conectándose al servidor de desarrollo a través del túnel. Para que funcione, el equipo de desarrollo debe permanecer encendido y el proceso de Expo debe seguir ejecutándose. Este método se utiliza únicamente como mecanismo de demostración y validación, no como despliegue permanente de la aplicación.
+
+%--------------------------------------------------
+\section{Programación externa de la purga RGPD}
+
+La lógica de purga de mensajes privados huérfanos está implementada en el backend y se expone mediante el endpoint:
+
+\begin{lstlisting}
+POST https://sevillaneando-backend.onrender.com/scheduler/run-purga-datos
+\end{lstlisting}
+
+Para garantizar que esta tarea se ejecute de forma periódica aunque el proveedor de hosting suspenda el proceso del backend por inactividad, se configura un cron externo que invoque dicho endpoint una vez al día, en horario de baja actividad. La planificación recomendada es:
+
+\begin{lstlisting}
+0 4 * * *
+\end{lstlisting}
+
+Esta expresión ejecuta la purga diariamente a las 04:00. La frecuencia diaria es suficiente porque la política de retención elimina mensajes privados huérfanos únicamente cuando han superado los 30 días de antigüedad.
+
+En un despliegue real, este endpoint debería protegerse mediante un secreto compartido enviado en cabecera o mediante autenticación administrativa. En el contexto académico del proyecto se documenta la necesidad de dicha protección como medida previa a una publicación abierta al público.
+
+%--------------------------------------------------
+\section{Validación posterior al despliegue}
+
+Una vez desplegado el sistema, es necesario verificar el correcto funcionamiento de todos los componentes en producción.
+
+\subsection{Verificación del backend}
+
+Comprobar que el endpoint de health check responde:
+
+\begin{lstlisting}
+curl https://sevillaneando-backend.onrender.com/scheduler/health
+\end{lstlisting}
+
+La respuesta esperada es un JSON con el estado del sistema:
+
+\begin{lstlisting}
+{"status": "ok"}
+\end{lstlisting}
+
+\subsection{Funcionalidades a validar}
+
+\begin{itemize}
+    \item \textbf{Autenticación}: registro de nuevo usuario, inicio de sesión y cierre de sesión.
+    \item \textbf{Eventos}: consulta del listado de eventos, visualización en el mapa y acceso al detalle.
+    \item \textbf{Creación y gestión de eventos}: flujo completo de creación, edición y eliminación con imágenes (verifica Cloudinary).
+    \item \textbf{Moderación}: revisión de eventos pendientes, listado independiente con todos los eventos públicos editables y eliminación de eventos públicos por parte del moderador.
+    \item \textbf{Chat}: envío y recepción de mensajes en tiempo real (verifica WebSockets).
+    \item \textbf{Notificaciones}: recepción de notificaciones en la aplicación.
+    \item \textbf{Carga de imágenes}: subida de foto de perfil (verifica Cloudinary).
+    \item \textbf{Mapas}: visualización de eventos en el mapa interactivo (verifica OpenStreetMap).
+    \item \textbf{Geolocalización}: búsqueda de eventos cercanos (verifica PostGIS).
+\end{itemize}
+
+Esta validación permite detectar errores de configuración que no se manifiestan en local, como problemas de CORS, certificados SSL, credenciales incorrectas o URLs mal apuntadas.
+
+%--------------------------------------------------
+\section{Checklist de despliegue}
+
+Lista de verificación antes de dar por concluido el despliegue:
+
+\begin{itemize}
+    \item[$\square$] La base de datos está activa y la extensión PostGIS está habilitada.
+    \item[$\square$] El backend compila y arranca correctamente (\texttt{npm run build} sin errores).
+    \item[$\square$] Todas las variables de entorno están configuradas en el proveedor de hosting.
+    \item[$\square$] El endpoint \texttt{/scheduler/health} responde con estado \texttt{ok}.
+    \item[$\square$] El cron externo diario de purga RGPD invoca \texttt{POST /scheduler/run-purga-datos}.
+    \item[$\square$] La conexión SSL con la base de datos está activa.
+    \item[$\square$] Las credenciales de Firebase, Cloudinary, Ticketmaster y Gemini son válidas.
+    \item[$\square$] El frontend apunta a la URL correcta del backend de producción.
+    \item[$\square$] El APK de Android se genera sin errores o la aplicación carga correctamente mediante Expo Go con túnel.
+    \item[$\square$] Las funcionalidades principales se han validado en el entorno de producción.
+    \item[$\square$] El CORS está configurado para aceptar únicamente los orígenes esperados.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Actualización del sistema}
+
+Para desplegar una nueva versión del backend en Render, simplemente se hace push a la rama \texttt{main} del repositorio. Render detecta el nuevo commit y lanza automáticamente un nuevo despliegue.
+
+Para actualizar la aplicación móvil, se genera una nueva build con los cambios aplicados (APK para Android) o se reinicia el servidor de Expo Go con túnel apuntando al código actualizado.
+
+%--------------------------------------------------
+\section{Rollback y recuperación}
+
+En caso de que una nueva versión desplegada introduzca errores graves, es necesario revertir a la versión anterior estable.
+
+\subsection{Rollback del backend en Render}
+
+\begin{enumerate}
+    \item Acceder al panel de Render y seleccionar el servicio del backend.
+    \item Ir a la sección \textit{Events} o \textit{Deploys}.
+    \item Localizar el último despliegue estable en el historial.
+    \item Hacer clic en \textit{Rollback to this deploy}.
+    \item Verificar que el sistema vuelve a responder correctamente mediante el endpoint \texttt{/scheduler/health}.
+\end{enumerate}
+
+\subsection{Rollback de la aplicación móvil}
+
+Para el APK de Android, basta con regenerar la build a partir del commit estable anterior y redistribuir el nuevo \texttt{.apk}:
+
+\begin{lstlisting}
+git checkout <commit-estable>
+cd apps/frontend
+eas build -p android --profile preview
+\end{lstlisting}
+
+Para Expo Go, al ejecutar \texttt{npx expo start --tunnel} siempre se sirve el código fuente actual, por lo que el rollback consiste simplemente en volver al commit anterior con \texttt{git checkout} y reiniciar el servidor.
+
+\subsection{Respaldo de la base de datos}
+
+Si se utiliza un servicio gestionado (Supabase, AWS RDS, etc.), los backups automáticos están disponibles en el panel de administración del servicio. Para restaurar:
+
+\begin{enumerate}
+    \item Identificar el punto de restauración más reciente anterior al incidente.
+    \item Seguir el proceso de restauración del proveedor (generalmente un botón \textit{Restore to point in time}).
+    \item Verificar la integridad de los datos restaurados.
+    \item Reiniciar el backend para que reconecte con la base de datos restaurada.
+\end{enumerate}
+
+%--------------------------------------------------
+\section{Referencias}
+
+Las referencias técnicas empleadas en este manual corresponden a la documentación oficial de cada plataforma y se recogen en la bibliografía del documento principal: Render~\cite{render}, Expo EAS Build~\cite{expoeas}, cambios en Expo Go~\cite{expoGoLoading2026}, NestJS~\cite{nestjs}, PostGIS~\cite{postgisdocs} y Supabase~\cite{supabase}.

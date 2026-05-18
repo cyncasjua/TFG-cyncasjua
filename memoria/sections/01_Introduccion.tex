@@ -1,0 +1,78 @@
+\chapter{Introducción}\label{cap:introduccion}
+
+Sevilla es una ciudad que no para. Cada semana hay talleres, conciertos en salas pequeñas, exposiciones temporales, rutas guiadas, mercadillos, festividades de barrio y decenas de actividades que pasan desapercibidas para la mayoría de sus habitantes. No es que no existan: es que nadie las reúne en un mismo sitio. La información cultural de la ciudad llega fragmentada, a través de redes sociales, carteles físicos, webs de organismos públicos desconectadas entre sí o, simplemente, por recomendación de un conocido.
+
+Esta situación no es exclusiva de Sevilla. Según el Informe de Hábitos y Prácticas Culturales del Ministerio de Cultura y Deporte~\cite{mcd2023habitos}, el 43\% de la población española declara no asistir a actividades culturales por falta de información sobre la oferta disponible en su entorno. En ciudades con una programación cultural densa y descentralizada como Sevilla, con más de 700.000 habitantes y una agenda que combina patrimonio histórico, cultura popular y escena emergente, esta fragmentación informativa tiene un impacto directo en la visibilidad de los eventos más pequeños y en la participación ciudadana.
+
+La consecuencia es una brecha real: los eventos grandes tienen visibilidad, pero los pequeños y emergentes, a menudo los más interesantes, mueren sin audiencia. Al mismo tiempo, mucha gente busca planes sin saber qué tiene a diez minutos de casa, y descubre lo que se perdió días después, al verlo por redes sociales o leer un cartel ya caducado.
+
+Más allá del impacto social, existe también una dimensión económica de peso. El ocio y la cultura constituyen un sector de enorme relevancia para la economía española: según datos del INE, los hogares españoles destinan en torno al 9\% de su gasto total al ocio, cultura y espectáculos, lo que supone más de 70.000 millones de euros anuales a nivel nacional~\cite{ine2023presupuestos}. En Sevilla, referente turístico y cultural del sur de Europa, el sector turístico genera más de 3.000 millones de euros al año y emplea a más de 60.000 personas en la provincia, según la Encuesta de Ocupación Hotelera del INE~\cite{ine2023eoh}. Tanto los grandes eventos como los pequeños contribuyen a esta actividad económica: los primeros atraen visitantes y generan gasto directo, mientras que los segundos dinamizan el comercio local, la hostelería de proximidad y la escena cultural emergente. Una plataforma que mejore la visibilidad de toda la oferta, no solo la de los eventos consolidados, tiene por tanto un impacto económico real en el tejido comercial y cultural de la ciudad.
+
+\section{Motivación}
+
+La motivación de este proyecto surge de esa experiencia cotidiana: enterarse tarde. Alguien sube una foto de un concierto increíble, preguntas dónde fue y ya terminó. Un cartel en la calle anuncia una exposición que lleva dos semanas abierta. Un amigo te habla de una ruta por el Aljarafe que no encontrarías por tu cuenta en ninguna web. La información existe, pero no está donde la gente la busca ni cuando la necesita.
+
+\textit{Sevillaneando} nace para resolver este problema. Es una aplicación móvil multiplataforma que centraliza la oferta de ocio y cultura de Sevilla en una única plataforma participativa, donde la propia comunidad construye y enriquece el contenido. Cualquier usuario puede publicar un evento, seguir a otras personas con sus mismos intereses, chatear con los asistentes antes y durante el evento, y recibir recomendaciones personalizadas según lo que le gusta y dónde se encuentra.
+
+El enfoque participativo es clave: frente a los directorios estáticos de eventos gestionados por instituciones, \textit{Sevillaneando} apuesta por un modelo donde el contenido lo genera la ciudadanía, con un sistema de moderación que garantiza la calidad y veracidad de lo publicado. Esto permite dar visibilidad tanto a la programación oficial como a iniciativas emergentes que de otro modo no tendrían canal de difusión.
+
+Desde el punto de vista técnico, el proyecto afronta retos relevantes y actuales: comunicación bidireccional en tiempo real, consultas espaciales sobre datos geográficos, extracción automática de datos de fuentes externas mediante scraping, un motor de recomendaciones personalizado y una arquitectura distribuida cliente-servidor con múltiples servicios integrados.
+
+Los objetivos del proyecto y del sistema se desarrollan de forma explícita en el capítulo~\ref{cap:planificación}; los requisitos funcionales, no funcionales y de información se detallan en el capítulo~\ref{cap:analisis}; y las tecnologías empleadas se describen en los capítulos~\ref{cap:diseño} y~\ref{cap:implementacion}, donde se justifica la arquitectura y su materialización técnica.
+
+\section{Soluciones existentes}
+
+Existen diversas plataformas que abordan, de forma parcial, el problema de la difusión de eventos. Sin embargo, ninguna de ellas cubre de forma integrada las necesidades que motivaron este proyecto.
+
+\textbf{Eventbrite}~\cite{eventbrite} es la plataforma de gestión de eventos más extendida a nivel global. Está orientada principalmente a eventos de pago con registro formal, lo que deja fuera la mayoría de actividades informales, gratuitas o de pequeña escala. No ofrece funcionalidades sociales ni de comunidad entre asistentes.
+
+\textbf{Facebook Events}~\cite{facebook} permite crear y descubrir eventos dentro del ecosistema de Facebook. Su principal limitación es la dependencia de una red social generalista, lo que provoca que la información quede enterrada entre otro tipo de contenido. Además, su uso entre jóvenes ha decaído significativamente en los últimos años~\cite{pewresearch2023}.
+
+\textbf{Meetup}~\cite{meetup} está orientado a grupos de interés y reuniones recurrentes, especialmente en el ámbito tecnológico y profesional. No está pensado para eventos culturales puntuales ni para el ocio urbano en general.
+
+\textbf{Plan de ocio del Ayuntamiento de Sevilla}~\cite{ayuntamientosevilla} y webs institucionales similares ofrecen una agenda cultural oficial, pero son unidireccionales (sin interacción), no personalizadas, y no recogen la oferta privada o emergente.
+
+\textbf{Fever}~\cite{fever} es una aplicación móvil de reciente lanzamiento orientada al descubrimiento de planes y eventos locales. Permite crear y compartir eventos y cuenta con funcionalidades de personalización básicas. Sin embargo, no incorpora un sistema de gestión de rutas entre eventos ni moderación de contenido por parte de usuarios con rol específico, lo que la diferencia de \textit{Sevillaneando} en cuanto a profundidad de las funcionalidades sociales y calidad garantizada del contenido.
+
+La tabla~\ref{tab:comparativa} resume las principales diferencias entre estas soluciones y \textit{Sevillaneando}:
+
+\begin{table}[H]
+\centering
+\caption{Comparativa de soluciones existentes}
+\label{tab:comparativa}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Característica} & \textbf{Eventbrite} & \textbf{Facebook Events} & \textbf{Meetup} & \textbf{Web Ayto.} & \textbf{Fever} & \textbf{Sevillaneando} \\
+\hline
+Enfoque local (Sevilla) & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark \\
+\hline
+Eventos emergentes/gratuitos & \xmark & \cmark & \xmark & \xmark & \cmark & \cmark \\
+\hline
+Contenido generado por usuarios & \xmark & \cmark & \cmark & \xmark & \cmark & \cmark \\
+\hline
+Moderación de contenido & \xmark & Parcial & \xmark & \cmark & \xmark & \cmark \\
+\hline
+Chat / comunidad en el evento & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark \\
+\hline
+Mensajería directa entre usuarios & \xmark & \cmark & \xmark & \xmark & \xmark & \cmark \\
+\hline
+Eventos privados con acceso restringido & \xmark & \cmark & \xmark & \xmark & \xmark & \cmark \\
+\hline
+Mapa interactivo de eventos cercanos & \xmark & \cmark & \xmark & \xmark & \cmark & \cmark \\
+\hline
+Rutas turísticas personalizadas & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark \\
+\hline
+Recomendaciones personalizadas & \xmark & Parcial & \cmark & \xmark & Parcial & \cmark \\
+\hline
+Moderación automática de imágenes (IA) & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+Como se observa, \textit{Sevillaneando} es la única solución que combina el enfoque local, la participación ciudadana, las funcionalidades sociales en tiempo real, la moderación de contenido por parte de usuarios con rol específico y la personalización mediante recomendaciones en una misma plataforma orientada específicamente al ocio y la cultura en Sevilla. Aunque Fever ofrece funcionalidades de descubrimiento local y personalización básica, no dispone del sistema de gestión de rutas entre eventos ni de la moderación por roles que caracterizan a \textit{Sevillaneando}.
+
+\section{Estructura del documento}
+
+El presente documento está organizado de la siguiente manera. El capítulo~\ref{cap:planificación} describe el estudio previo, incluyendo los objetivos del proyecto, la metodología de desarrollo y la planificación temporal. El capítulo~\ref{cap:analisis} recoge el análisis del problema y los requisitos del sistema. El capítulo~\ref{cap:diseño} presenta el diseño de la solución. El capítulo~\ref{cap:implementacion} detalla la implementación de los módulos principales. El capítulo~\ref{cap:pruebas} describe las pruebas realizadas. El capítulo~\ref{cap:conclusiones} recoge las conclusiones y líneas de trabajo futuro. A continuación se incluyen los anexos: el glosario de términos, el manual de desarrollo~(\ref{cap:manual_desarrollo}), el manual de despliegue~(\ref{cap:manual_despliegue}), el manual de usuario~(\ref{cap:manual_usuario}), el reporte de horas, los informes de avance y cambios, la validación con usuarios piloto, las actas de reunión y la declaración de autoría.
