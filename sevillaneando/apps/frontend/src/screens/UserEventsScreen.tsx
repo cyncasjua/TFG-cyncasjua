@@ -73,7 +73,9 @@ export const UserEventsScreen: React.FC = () => {
     return (
       <ThemedView style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedTextSecondary style={{ marginTop: 8 }}>{t('userEvents.loading')}</ThemedTextSecondary>
+        <ThemedTextSecondary style={{ marginTop: 8 }}>
+          {t('userEvents.loading')}
+        </ThemedTextSecondary>
       </ThemedView>
     );
   }
@@ -93,9 +95,7 @@ export const UserEventsScreen: React.FC = () => {
           color={colors.primary}
           style={{ marginTop: 1 }}
         />
-        <ThemedTextSecondary style={styles.infoText}>
-          {t('userEvents.infoMsg')}
-        </ThemedTextSecondary>
+        <ThemedTextSecondary style={styles.infoText}>{t('userEvents.infoMsg')}</ThemedTextSecondary>
       </ThemedView>
       {pendingCount > 0 && (
         <ThemedView
@@ -105,11 +105,15 @@ export const UserEventsScreen: React.FC = () => {
           <ThemedTextSecondary style={styles.infoText}>
             Tienes{' '}
             <ThemedText style={[styles.infoHighlight, { color: '#e67400' }]}>
-              {pendingCount} {pendingCount === 1 ? t('userEvents.publicSingular') : t('userEvents.publicPlural')}
+              {pendingCount}{' '}
+              {pendingCount === 1 ? t('userEvents.publicSingular') : t('userEvents.publicPlural')}
             </ThemedText>{' '}
-            {pendingCount === 1 ? t('userEvents.pendingSingular') : t('userEvents.pendingPlural')} de moderación. No{' '}
-            {pendingCount === 1 ? t('userEvents.appearsSingular') : t('userEvents.appearsPlural')} aquí hasta que{' '}
-            {pendingCount === 1 ? t('userEvents.approvedSingular') : t('userEvents.approvedPlural')}.
+            {pendingCount === 1 ? t('userEvents.pendingSingular') : t('userEvents.pendingPlural')}{' '}
+            de moderación. No{' '}
+            {pendingCount === 1 ? t('userEvents.appearsSingular') : t('userEvents.appearsPlural')}{' '}
+            aquí hasta que{' '}
+            {pendingCount === 1 ? t('userEvents.approvedSingular') : t('userEvents.approvedPlural')}
+            .
           </ThemedTextSecondary>
         </ThemedView>
       )}
@@ -141,19 +145,25 @@ export const UserEventsScreen: React.FC = () => {
                 {item.estado === 'Rechazado' && (
                   <View style={[styles.estadoBadge, { backgroundColor: '#d32f2f' }]}>
                     <Icon name="close-circle-outline" size={13} color="#fff" />
-                    <ThemedText style={styles.estadoBadgeText}>{t('userEvents.rejected')}</ThemedText>
+                    <ThemedText style={styles.estadoBadgeText}>
+                      {t('userEvents.rejected')}
+                    </ThemedText>
                   </View>
                 )}
                 {item.estado === 'Aprobado' && !item.privado && (
                   <View style={[styles.estadoBadge, { backgroundColor: '#4caf50' }]}>
                     <Icon name="check-circle-outline" size={13} color="#fff" />
-                    <ThemedText style={styles.estadoBadgeText}>{t('userEvents.approved')}</ThemedText>
+                    <ThemedText style={styles.estadoBadgeText}>
+                      {t('userEvents.approved')}
+                    </ThemedText>
                   </View>
                 )}
                 {item.privado && (
                   <View style={[styles.estadoBadge, { backgroundColor: '#5c6bc0' }]}>
                     <Icon name="lock-outline" size={13} color="#fff" />
-                    <ThemedText style={styles.estadoBadgeText}>{t('userEvents.private')}</ThemedText>
+                    <ThemedText style={styles.estadoBadgeText}>
+                      {t('userEvents.private')}
+                    </ThemedText>
                   </View>
                 )}
               </View>

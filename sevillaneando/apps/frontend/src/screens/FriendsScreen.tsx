@@ -191,7 +191,11 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
                   ? 'account-arrow-right-outline'
                   : 'account-heart-outline';
               const label =
-                item === 'seguidores' ? t('friends.followers') : item === 'seguidos' ? t('friends.following') : t('friends.title');
+                item === 'seguidores'
+                  ? t('friends.followers')
+                  : item === 'seguidos'
+                  ? t('friends.following')
+                  : t('friends.title');
               return (
                 <TouchableOpacity
                   key={item}
@@ -270,9 +274,7 @@ export const FriendsScreen: React.FC<Props> = ({ navigation }) => {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Icon name="account-heart-outline" size={44} color={colors.text + '33'} />
-                <ThemedText style={styles.empty}>
-                  {t('friends.noFriends')}
-                </ThemedText>
+                <ThemedText style={styles.empty}>{t('friends.noFriends')}</ThemedText>
               </View>
             }
           />

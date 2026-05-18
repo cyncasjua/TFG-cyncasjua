@@ -135,7 +135,9 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#333' }}>{t('eventsMap.youPin')}</Text>
+                  <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#333' }}>
+                    {t('eventsMap.youPin')}
+                  </Text>
                 </View>
               </Callout>
             </Marker>
@@ -271,7 +273,8 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
           const selectedEvent = events.find((e) => e.id === selectedEventId);
           if (!selectedEvent) return null;
           const descriptionPreview =
-            selectedEvent.description?.split('\n')[0]?.substring(0, 60) || t('eventsMap.noDescription');
+            selectedEvent.description?.split('\n')[0]?.substring(0, 60) ||
+            t('eventsMap.noDescription');
 
           return (
             <View
@@ -359,7 +362,9 @@ export const EventsMapScreen: React.FC<Props> = ({ navigation }) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>{t('eventsMap.viewDetails')}</Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#fff' }}>
+                  {t('eventsMap.viewDetails')}
+                </Text>
               </TouchableOpacity>
             </View>
           );

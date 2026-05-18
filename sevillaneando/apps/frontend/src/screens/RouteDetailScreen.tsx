@@ -182,7 +182,10 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
       setRoute(updated);
       setUserRating(stars);
       setTempRating(0);
-      Alert.alert(t('common.success'), t('routeDetail.ratedSuccess', { stars, plural: stars > 1 ? 's' : '' }));
+      Alert.alert(
+        t('common.success'),
+        t('routeDetail.ratedSuccess', { stars, plural: stars > 1 ? 's' : '' })
+      );
     } catch (error) {
       reportError('route-detail.rate', getErrorMessage(error), error);
       Alert.alert(t('common.error'), getErrorMessage(error));
@@ -222,7 +225,8 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             <View style={{ flex: 1 }}>
               <ThemedTitle>{route.titulo}</ThemedTitle>
               <ThemedTextSecondary>
-                {route.secuenciaEventos.length} {t('routeDetail.stops')} · {route.temporizacion} {t('routeDetail.minutes')}
+                {route.secuenciaEventos.length} {t('routeDetail.stops')} · {route.temporizacion}{' '}
+                {t('routeDetail.minutes')}
               </ThemedTextSecondary>
             </View>
             {isOwner && (
@@ -248,7 +252,9 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
             ]}
           >
             <View style={{ flex: 1 }}>
-              <ThemedTextSecondary style={{ fontSize: 12 }}>{t('routeDetail.createdBy')}</ThemedTextSecondary>
+              <ThemedTextSecondary style={{ fontSize: 12 }}>
+                {t('routeDetail.createdBy')}
+              </ThemedTextSecondary>
               <ThemedText>{route.creador.nombre}</ThemedText>
             </View>
             <View>
@@ -316,7 +322,9 @@ export const RouteDetailScreen: React.FC<Props> = ({ route: routeParam, navigati
               <ThemedText style={{ fontSize: 24, fontWeight: 'bold' }}>
                 {route.puntuacionPromedio.toFixed(1)}
               </ThemedText>
-              <ThemedTextSecondary>{route.numCalificaciones} {t('routeDetail.ratings')}</ThemedTextSecondary>
+              <ThemedTextSecondary>
+                {route.numCalificaciones} {t('routeDetail.ratings')}
+              </ThemedTextSecondary>
             </View>
 
             {!isOwner && (

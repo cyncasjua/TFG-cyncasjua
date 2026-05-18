@@ -23,12 +23,8 @@ export const LegalAttributionsScreen: React.FC = () => {
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <ThemedText style={styles.sectionTitle}>{t('legal.osmTitle')}</ThemedText>
-          <ThemedTextSecondary style={styles.bodyText}>
-            {t('legal.osmData')}
-          </ThemedTextSecondary>
-          <ThemedTextSecondary style={styles.bodyText}>
-            {t('legal.osmDesc')}
-          </ThemedTextSecondary>
+          <ThemedTextSecondary style={styles.bodyText}>{t('legal.osmData')}</ThemedTextSecondary>
+          <ThemedTextSecondary style={styles.bodyText}>{t('legal.osmDesc')}</ThemedTextSecondary>
           <TouchableOpacity onPress={() => openUrl('https://www.openstreetmap.org/copyright')}>
             <ThemedText style={[styles.link, { color: colors.primary }]}>
               {t('legal.osmLink')}
@@ -56,9 +52,7 @@ export const LegalAttributionsScreen: React.FC = () => {
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <ThemedText style={styles.sectionTitle}>{t('legal.rnTitle')}</ThemedText>
-          <ThemedTextSecondary style={styles.bodyText}>
-            {t('legal.rnDesc')}
-          </ThemedTextSecondary>
+          <ThemedTextSecondary style={styles.bodyText}>{t('legal.rnDesc')}</ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://github.com/facebook/react-native/blob/main/LICENSE')}
           >
@@ -72,9 +66,7 @@ export const LegalAttributionsScreen: React.FC = () => {
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <ThemedText style={styles.sectionTitle}>{t('legal.nestTitle')}</ThemedText>
-          <ThemedTextSecondary style={styles.bodyText}>
-            {t('legal.nestDesc')}
-          </ThemedTextSecondary>
+          <ThemedTextSecondary style={styles.bodyText}>{t('legal.nestDesc')}</ThemedTextSecondary>
           <TouchableOpacity
             onPress={() => openUrl('https://github.com/nestjs/nest/blob/master/LICENSE')}
           >

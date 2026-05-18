@@ -114,69 +114,65 @@ export const AdminScreen: React.FC<Props> = () => {
   };
 
   const resetScraping = () => {
-    Alert.alert(
-      t('admin.resetScrapingTitle'),
-      t('admin.resetScrapingMsg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('admin.resetScraping_confirm'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setResetting(true);
-              const res = await api.post('/scraping/reset', null, { timeout: 300000 });
-              await AsyncStorage.removeItem('events_cache_v1');
-              Alert.alert(
-                t('admin.resetDone'),
-                t('admin.resetResult', { message: res.data.message, deleted: res.data.deleted, saved: res.data.saved })
-              );
-            } catch (err) {
-              Alert.alert(t('common.error'), getErrorMessage(err));
-              reportError('admin.reset-scraping', 'Error restableciendo eventos scrapeados', err);
-            } finally {
-              setResetting(false);
-            }
-          },
+    Alert.alert(t('admin.resetScrapingTitle'), t('admin.resetScrapingMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('admin.resetScraping_confirm'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setResetting(true);
+            const res = await api.post('/scraping/reset', null, { timeout: 300000 });
+            await AsyncStorage.removeItem('events_cache_v1');
+            Alert.alert(
+              t('admin.resetDone'),
+              t('admin.resetResult', {
+                message: res.data.message,
+                deleted: res.data.deleted,
+                saved: res.data.saved,
+              })
+            );
+          } catch (err) {
+            Alert.alert(t('common.error'), getErrorMessage(err));
+            reportError('admin.reset-scraping', 'Error restableciendo eventos scrapeados', err);
+          } finally {
+            setResetting(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const deleteUser = async (userId: string) => {
-    Alert.alert(
-      t('admin.deleteUser'),
-      t('admin.deleteUserMsg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('admin.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setChangingRole(true);
-              await api.delete(`/users/${userId}`);
-              setUsers((prev) => prev.filter((u) => u.id !== userId));
-              setShowModal(false);
-              Alert.alert(t('common.success'), t('admin.userDeleted'));
-            } catch (err: unknown) {
-              const error = err as AxiosError<{ message: string }> | Error;
-              const errorMsg =
-                error instanceof Error && 'response' in error
-                  ? (error as AxiosError<{ message: string }>).response?.data?.message ||
-                    error.message ||
-                    t('admin.userDeleteError')
-                  : error instanceof Error
-                  ? error.message
-                  : t('admin.userDeleteError');
-              Alert.alert(t('common.error'), errorMsg);
-            } finally {
-              setChangingRole(false);
-            }
-          },
+    Alert.alert(t('admin.deleteUser'), t('admin.deleteUserMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('admin.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setChangingRole(true);
+            await api.delete(`/users/${userId}`);
+            setUsers((prev) => prev.filter((u) => u.id !== userId));
+            setShowModal(false);
+            Alert.alert(t('common.success'), t('admin.userDeleted'));
+          } catch (err: unknown) {
+            const error = err as AxiosError<{ message: string }> | Error;
+            const errorMsg =
+              error instanceof Error && 'response' in error
+                ? (error as AxiosError<{ message: string }>).response?.data?.message ||
+                  error.message ||
+                  t('admin.userDeleteError')
+                : error instanceof Error
+                ? error.message
+                : t('admin.userDeleteError');
+            Alert.alert(t('common.error'), errorMsg);
+          } finally {
+            setChangingRole(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   if (loading) {
@@ -244,37 +240,49 @@ export const AdminScreen: React.FC<Props> = () => {
                     <ThemedText style={[styles.statValue, { color: colors.primary }]}>
                       {stats.totalEventos}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.total')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.total')}
+                    </ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={[styles.statValue, { color: colors.primary }]}>
                       {stats.eventosAprobados}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.approved')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.approved')}
+                    </ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={[styles.statValue, { color: '#e67e22' }]}>
                       {stats.eventosPendientes}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.pending')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.pending')}
+                    </ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={[styles.statValue, { color: colors.error }]}>
                       {stats.eventosRechazados}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.rejected')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.rejected')}
+                    </ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={[styles.statValue, { color: colors.primary }]}>
                       {stats.eventosScrapeados}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.scraped')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.scraped')}
+                    </ThemedTextSecondary>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={[styles.statValue, { color: colors.primary }]}>
                       {stats.eventosUsuario}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.userCreated')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.userCreated')}
+                    </ThemedTextSecondary>
                   </View>
                 </View>
               </ThemedCard>
@@ -285,7 +293,9 @@ export const AdminScreen: React.FC<Props> = () => {
                     <ThemedText style={[styles.statValue, { color: colors.primary }]}>
                       {stats.totalUsuarios}
                     </ThemedText>
-                    <ThemedTextSecondary style={styles.statLabel}>{t('admin.registered')}</ThemedTextSecondary>
+                    <ThemedTextSecondary style={styles.statLabel}>
+                      {t('admin.registered')}
+                    </ThemedTextSecondary>
                   </View>
                 </View>
               </ThemedCard>
@@ -367,7 +377,9 @@ export const AdminScreen: React.FC<Props> = () => {
                 <ThemedButton
                   key={role}
                   title={
-                    changingRole ? t('admin.updating') : role.charAt(0).toUpperCase() + role.slice(1)
+                    changingRole
+                      ? t('admin.updating')
+                      : role.charAt(0).toUpperCase() + role.slice(1)
                   }
                   variant={selectedUser.rol === role ? 'primary' : 'secondary'}
                   onPress={() =>

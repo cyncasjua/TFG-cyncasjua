@@ -914,7 +914,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="auto-awesome" size={16} color={colors.primary} />
                     </View>
-                    <ThemedTitle style={styles.recommendationTitle}>{t('home.recommended')}</ThemedTitle>
+                    <ThemedTitle style={styles.recommendationTitle}>
+                      {t('home.recommended')}
+                    </ThemedTitle>
                   </ThemedView>
                   <View style={styles.recommendationHeaderActions}>
                     <TouchableOpacity
@@ -943,9 +945,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       {recommendationsError}
                     </ThemedTextSecondary>
                   ) : recommendedEvents.length === 0 ? (
-                    <ThemedTextSecondary>
-                      {t('home.noRecommendations')}
-                    </ThemedTextSecondary>
+                    <ThemedTextSecondary>{t('home.noRecommendations')}</ThemedTextSecondary>
                   ) : (
                     <>
                       {showAllRecommendedEvents ? (
@@ -1106,7 +1106,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="route" size={16} color={colors.primary} />
                     </View>
-                    <ThemedTitle style={styles.recommendationTitle}>{t('home.recommendedRoutes')}</ThemedTitle>
+                    <ThemedTitle style={styles.recommendationTitle}>
+                      {t('home.recommendedRoutes')}
+                    </ThemedTitle>
                   </ThemedView>
                   <View style={styles.recommendationHeaderActions}>
                     <TouchableOpacity
@@ -1131,9 +1133,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   (loadingRecommendations ? (
                     <ThemedTextSecondary>{t('common.loading')}</ThemedTextSecondary>
                   ) : recommendedRoutes.length === 0 ? (
-                    <ThemedTextSecondary>
-                      {t('home.noRoutes')}
-                    </ThemedTextSecondary>
+                    <ThemedTextSecondary>{t('home.noRoutes')}</ThemedTextSecondary>
                   ) : (
                     <ThemedView style={styles.routesList}>
                       {recommendedRoutes.map((route, index) => (
@@ -1181,9 +1181,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                         {adjustedRoutesError}
                       </ThemedTextSecondary>
                     ) : adjustedRoutes.length === 0 ? (
-                      <ThemedTextSecondary>
-                        {t('home.noRoutes')}
-                      </ThemedTextSecondary>
+                      <ThemedTextSecondary>{t('home.noRoutes')}</ThemedTextSecondary>
                     ) : (
                       <ThemedView style={styles.routesList}>
                         {adjustedRoutes.map((route, index) => (
@@ -2145,9 +2143,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="vpn-key" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>
-                      {t('home.privateEvent')}
-                    </ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.privateEvent')}</ThemedText>
                   </TouchableOpacity>
                 </ThemedView>
 
@@ -2164,7 +2160,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="notifications" size={20} color="#ffd700" />
-                    <ThemedText style={styles.menuActionLabel}>{t('home.notifications')}</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>
+                      {t('home.notifications')}
+                    </ThemedText>
                     {unread > 0 && (
                       <View style={styles.menuActionBadge}>
                         <Text style={styles.menuActionBadgeText}>{unread}</Text>
@@ -2223,7 +2221,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="calendar-today" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>{t('home.calendarEvents')}</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>
+                      {t('home.calendarEvents')}
+                    </ThemedText>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.menuActionRow, { borderColor: colors.border }]}
@@ -2250,7 +2250,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="check-circle" size={20} color="#4caf50" />
-                      <ThemedText style={styles.menuActionLabel}>{t('home.moderatorEvents')}</ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>
+                        {t('home.moderatorEvents')}
+                      </ThemedText>
                     </TouchableOpacity>
                   </ThemedView>
                 )}
@@ -2268,9 +2270,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
-                      <ThemedText style={styles.menuActionLabel}>
-                        {t('home.adminPanel')}
-                      </ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>{t('home.adminPanel')}</ThemedText>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.menuActionRow, { borderColor: colors.border }]}
@@ -2280,7 +2280,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     >
                       <MaterialIcons name="category" size={20} color={colors.primary} />
-                      <ThemedText style={styles.menuActionLabel}>{t('home.filterByCategory')}</ThemedText>
+                      <ThemedText style={styles.menuActionLabel}>
+                        {t('home.filterByCategory')}
+                      </ThemedText>
                     </TouchableOpacity>
                   </ThemedView>
                 )}
@@ -2307,7 +2309,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="policy" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>{t('home.legalAttributions')}</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>
+                      {t('home.legalAttributions')}
+                    </ThemedText>
                   </TouchableOpacity>
                 </ThemedView>
 

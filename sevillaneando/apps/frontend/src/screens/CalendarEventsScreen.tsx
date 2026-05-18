@@ -94,7 +94,9 @@ export const CalendarEventsScreen: React.FC = () => {
       />
 
       <ThemedView style={[styles.eventsContainer, { backgroundColor: colors.background }]}>
-        <ThemedText style={styles.title}>{t('calendar.eventsFor')} {selectedDate}</ThemedText>
+        <ThemedText style={styles.title}>
+          {t('calendar.eventsFor')} {selectedDate}
+        </ThemedText>
 
         <FlatList
           data={eventsForSelectedDate}

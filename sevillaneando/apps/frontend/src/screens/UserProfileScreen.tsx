@@ -167,7 +167,9 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         ListHeaderComponent={
           <ThemedView style={[styles.card, { backgroundColor: colors.card }]}>
             <Avatar photoUrl={profile?.fotoPerfil} size={96} style={styles.avatar} />
-            <ThemedTitle style={{ marginTop: 8 }}>{profile?.nombre ?? t('common.user')}</ThemedTitle>
+            <ThemedTitle style={{ marginTop: 8 }}>
+              {profile?.nombre ?? t('common.user')}
+            </ThemedTitle>
 
             <View style={styles.statsRow}>
               <TouchableOpacity
@@ -200,7 +202,9 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             {!esPropioPerfil && (
               <View style={styles.actions}>
                 <ThemedButton
-                  title={loadingFollow ? '' : siguiendo ? t('userProfile.unfollow') : t('friends.follow')}
+                  title={
+                    loadingFollow ? '' : siguiendo ? t('userProfile.unfollow') : t('friends.follow')
+                  }
                   icon={
                     <Icon
                       name={siguiendo ? 'account-check' : 'account-plus'}

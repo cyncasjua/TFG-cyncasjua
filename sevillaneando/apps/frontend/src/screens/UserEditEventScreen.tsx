@@ -765,10 +765,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <FieldLabel title={t('createEvent.recurrence')} status="optional" />
             <TouchableOpacity
               onPress={() =>
-                Alert.alert(
-                  t('createEvent.recurrence'),
-                  t('createEvent.recurrenceHint')
-                )
+                Alert.alert(t('createEvent.recurrence'), t('createEvent.recurrenceHint'))
               }
               style={{ marginLeft: 6, marginTop: 10 }}
             >
@@ -817,10 +814,7 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 <FieldLabel title={t('createEvent.recurrenceEnd')} status="optional" />
                 <TouchableOpacity
                   onPress={() =>
-                    Alert.alert(
-                      t('createEvent.recurrenceEnd'),
-                      t('createEvent.recurrenceEndHint')
-                    )
+                    Alert.alert(t('createEvent.recurrenceEnd'), t('createEvent.recurrenceEndHint'))
                   }
                   style={{ marginLeft: 6, marginTop: 10 }}
                 >
@@ -988,7 +982,9 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
                         ]}
                       >
                         <ThemedText style={{ color: '#fff', fontSize: 12 }}>
-                          {coverImageUrl === imageUrls[idx] ? t('createEvent.cover') : t('createEvent.chooseCover')}
+                          {coverImageUrl === imageUrls[idx]
+                            ? t('createEvent.cover')
+                            : t('createEvent.chooseCover')}
                         </ThemedText>
                       </TouchableOpacity>
                     </View>

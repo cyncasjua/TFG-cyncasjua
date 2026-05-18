@@ -12,9 +12,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedTitle style={styles.title}>{t('privacy.title')}</ThemedTitle>
-        <ThemedTextSecondary style={styles.updated}>
-          {t('privacy.lastUpdated')}
-        </ThemedTextSecondary>
+        <ThemedTextSecondary style={styles.updated}>{t('privacy.lastUpdated')}</ThemedTextSecondary>
 
         <ThemedView
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}

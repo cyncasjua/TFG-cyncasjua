@@ -166,45 +166,38 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleDeleteAccount = async () => {
-    Alert.alert(
-      t('editProfile.deleteAccountTitle'),
-      t('editProfile.deleteAccountMsg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const endpoint = '/users/me/firebase';
-              const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method: 'DELETE',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              if (!res.ok) throw new Error(t('editProfile.deleteAccountError'));
+    Alert.alert(t('editProfile.deleteAccountTitle'), t('editProfile.deleteAccountMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const endpoint = '/users/me/firebase';
+            const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            if (!res.ok) throw new Error(t('editProfile.deleteAccountError'));
 
-              const auth = getAuth();
-              if (auth.currentUser) {
-                await deleteUser(auth.currentUser);
-              }
-
-              setUser(null);
-            } catch (e: any) {
-              if (e.code === 'auth/requires-recent-login') {
-                Alert.alert(
-                  t('editProfile.reauthRequired'),
-                  t('editProfile.reauthMsg')
-                );
-              } else {
-                Alert.alert(t('common.error'), e.message || t('editProfile.deleteAccountError'));
-              }
+            const auth = getAuth();
+            if (auth.currentUser) {
+              await deleteUser(auth.currentUser);
             }
-          },
+
+            setUser(null);
+          } catch (e: any) {
+            if (e.code === 'auth/requires-recent-login') {
+              Alert.alert(t('editProfile.reauthRequired'), t('editProfile.reauthMsg'));
+            } else {
+              Alert.alert(t('common.error'), e.message || t('editProfile.deleteAccountError'));
+            }
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
   return (
     <KeyboardAvoidingView
@@ -231,7 +224,9 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                 { backgroundColor: colors.card, justifyContent: 'center', alignItems: 'center' },
               ]}
             >
-              <ThemedText style={{ color: colors.text + '99' }}>{t('editProfile.uploadPhoto')}</ThemedText>
+              <ThemedText style={{ color: colors.text + '99' }}>
+                {t('editProfile.uploadPhoto')}
+              </ThemedText>
             </View>
           )}
         </TouchableOpacity>
@@ -405,7 +400,9 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
         <View style={styles.interestsContainer}>
-          <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>{t('editProfile.interests')}</ThemedText>
+          <ThemedText style={{ marginBottom: 8, fontWeight: '700' }}>
+            {t('editProfile.interests')}
+          </ThemedText>
           {categorias.length === 0 ? (
             <ThemedText style={{ color: colors.text + '99', marginBottom: 12 }}>
               {t('editProfile.noCategoriesLoaded')}
@@ -462,7 +459,9 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           />
 
           {/* Language selector */}
-          <ThemedText style={{ fontWeight: '700', marginTop: 8 }}>{t('editProfile.language')}</ThemedText>
+          <ThemedText style={{ fontWeight: '700', marginTop: 8 }}>
+            {t('editProfile.language')}
+          </ThemedText>
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
             {(['es', 'en'] as SupportedLanguage[]).map((lang) => (
               <TouchableOpacity
@@ -478,7 +477,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
                   alignItems: 'center',
                 }}
               >
-                <ThemedText style={{ color: i18n.language === lang ? '#fff' : colors.primary, fontWeight: '600' }}>
+                <ThemedText
+                  style={{
+                    color: i18n.language === lang ? '#fff' : colors.primary,
+                    fontWeight: '600',
+                  }}
+                >
                   {lang === 'es' ? t('editProfile.languageEs') : t('editProfile.languageEn')}
                 </ThemedText>
               </TouchableOpacity>

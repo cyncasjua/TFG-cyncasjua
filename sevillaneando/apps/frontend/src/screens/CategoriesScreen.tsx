@@ -138,7 +138,10 @@ const CategoriesScreen = () => {
                                   setLoading(true);
                                   await api.delete(`/categorias/${item.id}`);
                                   fetchCategories();
-                                  Alert.alert(t('categories.deleted'), t('categories.deleteSuccess'));
+                                  Alert.alert(
+                                    t('categories.deleted'),
+                                    t('categories.deleteSuccess')
+                                  );
                                 } catch (error: any) {
                                   reportError(
                                     'categories.delete',

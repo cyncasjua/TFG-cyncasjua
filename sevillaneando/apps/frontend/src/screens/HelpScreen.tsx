@@ -17,22 +17,46 @@ export const HelpScreen: React.FC = () => {
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const SECTIONS: Section[] = [
-    { icon: 'calendar-plus-outline', title: t('help.createEventTitle'), content: t('help.createEventBody') },
+    {
+      icon: 'calendar-plus-outline',
+      title: t('help.createEventTitle'),
+      content: t('help.createEventBody'),
+    },
     { icon: 'currency-eur', title: t('help.priceTitle'), content: t('help.priceBody') },
     { icon: 'repeat', title: t('help.recurrenceTitle'), content: t('help.recurrenceBody') },
     { icon: 'lock-outline', title: t('help.privateTitle'), content: t('help.privateBody') },
-    { icon: 'shield-check-outline', title: t('help.moderationTitle'), content: t('help.moderationBody') },
+    {
+      icon: 'shield-check-outline',
+      title: t('help.moderationTitle'),
+      content: t('help.moderationBody'),
+    },
     { icon: 'bookmark-outline', title: t('help.saveTitle'), content: t('help.saveBody') },
     { icon: 'calendar-check-outline', title: t('help.attendTitle'), content: t('help.attendBody') },
-    { icon: 'calendar-month-outline', title: t('help.calendarTitle'), content: t('help.calendarBody') },
+    {
+      icon: 'calendar-month-outline',
+      title: t('help.calendarTitle'),
+      content: t('help.calendarBody'),
+    },
     { icon: 'map-search-outline', title: t('help.mapTitle'), content: t('help.mapBody') },
-    { icon: 'tag-multiple-outline', title: t('help.categoriesTitle'), content: t('help.categoriesBody') },
+    {
+      icon: 'tag-multiple-outline',
+      title: t('help.categoriesTitle'),
+      content: t('help.categoriesBody'),
+    },
     { icon: 'map-marker-path', title: t('help.routesTitle'), content: t('help.routesBody') },
     { icon: 'account-cog-outline', title: t('help.profileTitle'), content: t('help.profileBody') },
-    { icon: 'account-group-outline', title: t('help.friendsTitle'), content: t('help.friendsBody') },
+    {
+      icon: 'account-group-outline',
+      title: t('help.friendsTitle'),
+      content: t('help.friendsBody'),
+    },
     { icon: 'star-outline', title: t('help.rateTitle'), content: t('help.rateBody') },
     { icon: 'chat-outline', title: t('help.chatTitle'), content: t('help.chatBody') },
-    { icon: 'message-question-outline', title: t('help.contactTitle'), content: t('help.contactBody') },
+    {
+      icon: 'message-question-outline',
+      title: t('help.contactTitle'),
+      content: t('help.contactBody'),
+    },
   ];
 
   const toggle = (i: number) => setExpanded((prev) => (prev === i ? null : i));
@@ -40,9 +64,7 @@ export const HelpScreen: React.FC = () => {
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <ThemedTextSecondary style={styles.intro}>
-          {t('help.intro')}
-        </ThemedTextSecondary>
+        <ThemedTextSecondary style={styles.intro}>{t('help.intro')}</ThemedTextSecondary>
 
         {SECTIONS.map((section, i) => {
           const isOpen = expanded === i;

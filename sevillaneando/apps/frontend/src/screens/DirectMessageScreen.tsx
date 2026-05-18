@@ -428,7 +428,9 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
                         ellipsizeMode="tail"
                         style={[styles.chatMetaText, { color: nameColor }]}
                       >
-                        {isOwn ? t('directMessage.you') : item.emisor?.nombre ?? t('directMessage.user')}
+                        {isOwn
+                          ? t('directMessage.you')
+                          : item.emisor?.nombre ?? t('directMessage.user')}
                       </ThemedTextSecondary>
                     </TouchableOpacity>
 
@@ -573,7 +575,9 @@ export const DirectMessageScreen: React.FC<Props> = ({ route, navigation }) => {
               borderRadius: 16,
             }}
           >
-            <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>{t('directMessage.send')}</ThemedText>
+            <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>
+              {t('directMessage.send')}
+            </ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
