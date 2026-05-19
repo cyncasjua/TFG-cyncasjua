@@ -381,7 +381,6 @@ export class ScrapingService {
       return { ...event, fechaFin: null };
     }
 
-
     const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
     if (diffDays > 7) {
       this.logger.debug(
@@ -403,7 +402,6 @@ export class ScrapingService {
       const startMinutes = start.getMinutes();
       const endHour = end.getHours();
       const endMinutes = end.getMinutes();
-
 
       const startsEarly = startHour <= 2 || (startHour === 2 && startMinutes === 0);
       const endsLate = endHour >= 23 || (endHour === 23 && endMinutes >= 0);
