@@ -579,6 +579,8 @@ export class RecomendacionesService {
             this.eventPointFromResult(routeEvents, candidate.id);
           const distanceKm =
             currentPoint && candidatePoint ? this.haversineKm(currentPoint, candidatePoint) : 2.5;
+          const maxConsecutiveDistanceKm = strategy === 'walkable' ? 3 : 5;
+          if (distanceKm > maxConsecutiveDistanceKm) continue;
           const value =
             Number(candidate.score ?? 0) * (strategy === 'score' ? 1.4 : 1.1) -
             distanceKm * (strategy === 'walkable' ? 0.35 : 0.25);
@@ -1134,6 +1136,8 @@ export class RecomendacionesService {
         const candidatePoint = this.eventPointFromResult(fullPool, candidate.id);
         const distanceKm =
           currentPoint && candidatePoint ? this.haversineKm(currentPoint, candidatePoint) : 2.5;
+        const maxConsecutiveDistanceKm = strategy === 'walkable' ? 3 : 5;
+        if (distanceKm > maxConsecutiveDistanceKm) continue;
 
         const gapMin = (candidateStart - effectiveCurrentEnd) / (1000 * 60);
         if (gapMin > maxAllowedGapMin) {
@@ -1184,6 +1188,8 @@ export class RecomendacionesService {
           const candidatePoint = this.eventPointFromResult(fullPool, candidate.id);
           const distanceKm =
             currentPoint && candidatePoint ? this.haversineKm(currentPoint, candidatePoint) : 2.5;
+          const maxConsecutiveDistanceKm = strategy === 'walkable' ? 3 : 5;
+          if (distanceKm > maxConsecutiveDistanceKm) continue;
 
           const gapMin = (candidateStart - currentEnd) / (1000 * 60);
           if (gapMin > maxAllowedGapMin || gapMin < 0) {

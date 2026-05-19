@@ -124,13 +124,22 @@ export class ScrapingService {
           continue;
         }
 
-        const existingEvent = await this.eventRepo
-          .createQueryBuilder('event')
-          .leftJoinAndSelect('event.creador', 'creador')
-          .where('LOWER(TRIM(event.title)) = LOWER(TRIM(:title))', {
-            title: normalizedEvent.title,
-          })
-          .getOne();
+        // Buscar primero por sourceUrl para evitar duplicados aunque el título haya cambiado
+        let existingEvent = normalizedEvent.sourceUrl
+          ? await this.eventRepo
+              .createQueryBuilder('event')
+              .where('event.sourceUrl = :sourceUrl', { sourceUrl: normalizedEvent.sourceUrl })
+              .getOne()
+          : null;
+
+        if (!existingEvent) {
+          existingEvent = await this.eventRepo
+            .createQueryBuilder('event')
+            .where('LOWER(TRIM(event.title)) = LOWER(TRIM(:title))', {
+              title: normalizedEvent.title,
+            })
+            .getOne();
+        }
 
         if (existingEvent) {
           this.logger.debug(`Evento ya existente, omitido: ${normalizedEvent.title}`);
@@ -156,6 +165,7 @@ export class ScrapingService {
           creador: systemUser,
           privado: false,
           categoria,
+          sourceUrl: normalizedEvent.sourceUrl ?? null,
         });
 
         await this.eventRepo.save(event);
@@ -371,9 +381,7 @@ export class ScrapingService {
       return { ...event, fechaFin: null };
     }
 
-    // Si el evento dura más de 7 días es casi seguro que Gemini extrajo un rango
-    // de festival/ciclo en lugar de la fecha de una sesión concreta. En ese caso
-    // quitamos las fechas y lo marcamos como "consultar fechas".
+
     const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
     if (diffDays > 7) {
       this.logger.debug(
@@ -387,19 +395,16 @@ export class ScrapingService {
       };
     }
 
-    // Obtener la fecha sin hora para ambas
     const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
     const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
 
-    // Si son del mismo día
     if (startDate.getTime() === endDate.getTime()) {
       const startHour = start.getHours();
       const startMinutes = start.getMinutes();
       const endHour = end.getHours();
       const endMinutes = end.getMinutes();
 
-      // Si empieza a las 2:00 o antes y termina a las 23:00 o después
-      // (considera como evento que cubre casi todo el día)
+
       const startsEarly = startHour <= 2 || (startHour === 2 && startMinutes === 0);
       const endsLate = endHour >= 23 || (endHour === 23 && endMinutes >= 0);
 
@@ -443,17 +448,14 @@ export class ScrapingService {
         [precioMin, precioMax] = [precioMax, precioMin];
       }
 
-      // Si hay rango válido, se prioriza sobre precio fijo para cumplir la entidad.
       if (precioMin < precioMax) {
         precio = null;
       } else {
-        // min == max, se degrada a precio fijo
         precio = precioMin;
         precioMin = null;
         precioMax = null;
       }
     } else if (precioMin != null || precioMax != null) {
-      // Rango incompleto: se degrada a precio fijo
       precio = precioMin ?? precioMax;
       precioMin = null;
       precioMax = null;
@@ -485,8 +487,6 @@ export class ScrapingService {
     const trimmed = image.trim();
     if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return undefined;
 
-    // Normaliza http→https para dominios que lo soporten; los de BLOCKED_IMAGE_HOSTS
-    // se procesarán después en reHostImageIfNeeded (descarga + resubida a Cloudinary).
     if (/^http:\/\//i.test(trimmed)) {
       return trimmed.replace(/^http:/i, 'https:');
     }
@@ -513,9 +513,6 @@ export class ScrapingService {
   }
 
   private extractPriceRangeFromText(text: string): { precioMin: number; precioMax: number } | null {
-    // El primer número debe ir seguido de € (o "euros"), o el separador debe ser
-    // un guion/dash/em-dash (no "a"/"hasta"/"y"), para evitar falsos positivos
-    // en frases como "exposición de 10 a 20 artistas con entrada de 5€".
     const match = text.match(
       /(\d+(?:[.,]\d+)?)\s*€\s*(?:-|–|—|a\b|hasta\b|y\b)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)|(\d+(?:[.,]\d+)?)\s*(?:-|–|—)\s*(\d+(?:[.,]\d+)?)\s*(?:€|euros?)/i
     );
@@ -564,7 +561,7 @@ export class ScrapingService {
     const text = `${scrapedEvent.title} ${scrapedEvent.description}`.toLowerCase();
 
     if (
-      /(concierto|music|musica|flamenco|dj|festival|banda|orquesta|electr[oó]nica|jazz|rock|pop|ticketmaster)/.test(
+      /(concierto|music|musica|flamenco|dj|festival|banda|orquesta|electr[oó]nica|jazz|rock|pop|ticketmaster|conciertos)/.test(
         text
       )
     ) {

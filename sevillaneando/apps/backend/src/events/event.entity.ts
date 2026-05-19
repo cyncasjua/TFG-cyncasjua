@@ -95,6 +95,10 @@ export class Event {
   @ManyToOne(() => User, (user) => user.eventos, { nullable: false, onDelete: 'CASCADE' })
   creador!: User;
 
+  @ApiPropertyOptional({ description: 'URL de la fuente externa de scraping' })
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  sourceUrl?: string | null;
+
   @ApiPropertyOptional({ description: 'URL de la imagen principal' })
   @Column({ type: 'varchar', length: 512, nullable: true })
   imagen?: string;
