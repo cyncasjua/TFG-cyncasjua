@@ -2,7 +2,7 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {2.1}{\ignorespaces Estructura de Desglose del Trabajo del proyecto}}{15}{figure.caption.28}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagrama de Gantt -- planificación temporal por fases}}{16}{figure.caption.29}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagrama de Gantt -- planificación temporal por fases}}{17}{figure.caption.29}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Diagrama de actores del sistema Sevillaneando}}{23}{figure.caption.34}%
 \contentsline {figure}{\numberline {3.2}{\ignorespaces Diagrama de casos de uso (parte 1): acceso, perfil, descubrimiento y gestión de eventos}}{24}{figure.caption.35}%
@@ -32,38 +32,39 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {B.1}{\ignorespaces Visión general de la arquitectura del sistema}}{135}{figure.caption.156}%
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Visión general de la arquitectura del sistema}}{137}{figure.caption.156}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {C.1}{\ignorespaces Arquitectura general de despliegue del sistema}}{147}{figure.caption.157}%
+\contentsline {figure}{\numberline {C.1}{\ignorespaces Arquitectura general de despliegue del sistema}}{149}{figure.caption.157}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {D.1}{\ignorespaces Acceso a la aplicación}}{164}{figure.caption.162}%
-\contentsline {figure}{\numberline {D.2}{\ignorespaces Acceso y opciones del perfil}}{165}{figure.caption.163}%
-\contentsline {figure}{\numberline {D.3}{\ignorespaces Gestión del perfil}}{166}{figure.caption.164}%
-\contentsline {figure}{\numberline {D.4}{\ignorespaces Mapa de eventos}}{167}{figure.caption.165}%
-\contentsline {figure}{\numberline {D.5}{\ignorespaces Filtros de búsqueda}}{168}{figure.caption.166}%
-\contentsline {figure}{\numberline {D.6}{\ignorespaces Pantalla del evento}}{169}{figure.caption.167}%
-\contentsline {figure}{\numberline {D.7}{\ignorespaces Interacción dentro del evento}}{170}{figure.caption.168}%
-\contentsline {figure}{\numberline {D.8}{\ignorespaces Listado de eventos guardados}}{171}{figure.caption.169}%
-\contentsline {figure}{\numberline {D.9}{\ignorespaces Listado de eventos apuntados}}{172}{figure.caption.170}%
-\contentsline {figure}{\numberline {D.10}{\ignorespaces Calendario de eventos}}{172}{figure.caption.171}%
-\contentsline {figure}{\numberline {D.11}{\ignorespaces Funcionalidades de administración}}{173}{figure.caption.172}%
-\contentsline {figure}{\numberline {D.12}{\ignorespaces Gestión de categorías}}{174}{figure.caption.173}%
-\contentsline {figure}{\numberline {D.13}{\ignorespaces Recomendaciones y rutas}}{175}{figure.caption.174}%
-\contentsline {figure}{\numberline {D.14}{\ignorespaces Rutas creadas por usuarios}}{177}{figure.caption.175}%
-\contentsline {figure}{\numberline {D.15}{\ignorespaces Creación de eventos}}{178}{figure.caption.176}%
-\contentsline {figure}{\numberline {D.16}{\ignorespaces Creación de eventos }}{179}{figure.caption.177}%
-\contentsline {figure}{\numberline {D.17}{\ignorespaces Acceso a evento privado}}{180}{figure.caption.178}%
-\contentsline {figure}{\numberline {D.18}{\ignorespaces Consulta de evento privado}}{181}{figure.caption.179}%
-\contentsline {figure}{\numberline {D.19}{\ignorespaces Gestión de eventos privados}}{182}{figure.caption.180}%
-\contentsline {figure}{\numberline {D.20}{\ignorespaces Eventos creados por el usuario}}{184}{figure.caption.181}%
-\contentsline {figure}{\numberline {D.21}{\ignorespaces Moderación de eventos}}{185}{figure.caption.182}%
-\contentsline {figure}{\numberline {D.22}{\ignorespaces Notificaciones}}{186}{figure.caption.183}%
-\contentsline {figure}{\numberline {D.23}{\ignorespaces Amistad y perfil de usuario}}{187}{figure.caption.184}%
-\contentsline {figure}{\numberline {D.24}{\ignorespaces Mensajes privados}}{188}{figure.caption.185}%
-\contentsline {figure}{\numberline {D.25}{\ignorespaces Consulta de mensajes privados}}{189}{figure.caption.186}%
-\contentsline {figure}{\numberline {D.26}{\ignorespaces Evento finalizado}}{190}{figure.caption.187}%
-\contentsline {figure}{\numberline {D.27}{\ignorespaces Guía de uso integrada en la aplicación}}{192}{figure.caption.188}%
-\contentsline {figure}{\numberline {D.28}{\ignorespaces Grafo de navegabilidad de la aplicación}}{193}{figure.caption.189}%
+\contentsline {figure}{\numberline {D.1}{\ignorespaces Acceso a la aplicación}}{166}{figure.caption.162}%
+\contentsline {figure}{\numberline {D.2}{\ignorespaces Acceso y opciones del perfil}}{168}{figure.caption.163}%
+\contentsline {figure}{\numberline {D.3}{\ignorespaces Gestión del perfil}}{169}{figure.caption.164}%
+\contentsline {figure}{\numberline {D.4}{\ignorespaces Mapa de eventos}}{171}{figure.caption.165}%
+\contentsline {figure}{\numberline {D.5}{\ignorespaces Filtros de búsqueda}}{173}{figure.caption.166}%
+\contentsline {figure}{\numberline {D.6}{\ignorespaces Pantalla del evento}}{175}{figure.caption.167}%
+\contentsline {figure}{\numberline {D.7}{\ignorespaces Interacción dentro del evento}}{176}{figure.caption.168}%
+\contentsline {figure}{\numberline {D.8}{\ignorespaces Listado de eventos guardados}}{178}{figure.caption.169}%
+\contentsline {figure}{\numberline {D.9}{\ignorespaces Listado de eventos apuntados}}{178}{figure.caption.170}%
+\contentsline {figure}{\numberline {D.10}{\ignorespaces Calendario de eventos}}{179}{figure.caption.171}%
+\contentsline {figure}{\numberline {D.11}{\ignorespaces Funcionalidades de administración}}{181}{figure.caption.172}%
+\contentsline {figure}{\numberline {D.12}{\ignorespaces Panel de estadísticas y scraping}}{182}{figure.caption.173}%
+\contentsline {figure}{\numberline {D.13}{\ignorespaces Gestión de categorías}}{183}{figure.caption.174}%
+\contentsline {figure}{\numberline {D.14}{\ignorespaces Recomendaciones y rutas}}{185}{figure.caption.175}%
+\contentsline {figure}{\numberline {D.15}{\ignorespaces Rutas creadas por usuarios}}{187}{figure.caption.176}%
+\contentsline {figure}{\numberline {D.16}{\ignorespaces Creación de eventos}}{189}{figure.caption.177}%
+\contentsline {figure}{\numberline {D.17}{\ignorespaces Creación de eventos }}{190}{figure.caption.178}%
+\contentsline {figure}{\numberline {D.18}{\ignorespaces Acceso a evento privado}}{191}{figure.caption.179}%
+\contentsline {figure}{\numberline {D.19}{\ignorespaces Consulta de evento privado}}{192}{figure.caption.180}%
+\contentsline {figure}{\numberline {D.20}{\ignorespaces Gestión de eventos privados}}{193}{figure.caption.181}%
+\contentsline {figure}{\numberline {D.21}{\ignorespaces Eventos creados por el usuario}}{195}{figure.caption.182}%
+\contentsline {figure}{\numberline {D.22}{\ignorespaces Moderación de eventos}}{197}{figure.caption.183}%
+\contentsline {figure}{\numberline {D.23}{\ignorespaces Notificaciones}}{199}{figure.caption.184}%
+\contentsline {figure}{\numberline {D.24}{\ignorespaces Amistad y perfil de usuario}}{201}{figure.caption.185}%
+\contentsline {figure}{\numberline {D.25}{\ignorespaces Mensajes privados}}{202}{figure.caption.186}%
+\contentsline {figure}{\numberline {D.26}{\ignorespaces Consulta de mensajes privados}}{203}{figure.caption.187}%
+\contentsline {figure}{\numberline {D.27}{\ignorespaces Evento finalizado}}{204}{figure.caption.188}%
+\contentsline {figure}{\numberline {D.28}{\ignorespaces Guía de uso integrada en la aplicación}}{206}{figure.caption.189}%
+\contentsline {figure}{\numberline {D.29}{\ignorespaces Grafo de navegabilidad de la aplicación}}{207}{figure.caption.190}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

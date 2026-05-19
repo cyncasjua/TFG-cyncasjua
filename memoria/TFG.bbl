@@ -53,6 +53,16 @@ Ken Schwaber and Jeff Sutherland.
   game, 2020.
 \newblock Último acceso: mayo 2025.
 
+\bibitem{cohn2005estimating}
+Mike Cohn.
+\newblock {\em Agile Estimating and Planning}.
+\newblock Prentice Hall, Upper Saddle River, NJ, 2005.
+
+\bibitem{cohn2004userstories}
+Mike Cohn.
+\newblock {\em User Stories Applied: For Agile Software Development}.
+\newblock Addison-Wesley, Boston, MA, 2004.
+
 \bibitem{githubactions}
 {GitHub, Inc.}
 \newblock Github actions -- automate your workflow from idea to production,
@@ -82,9 +92,58 @@ Ken Schwaber and Jeff Sutherland.
 \newblock Informe local consultado:
   references/informe\_precios\_perfiles\_informaticos.pdf.
 
+\bibitem{rgpd2016}
+{Parlamento Europeo y Consejo de la Unión Europea}.
+\newblock Reglamento (ue) 2016/679 del parlamento europeo y del consejo, de 27
+  de abril de 2016, relativo a la protección de las personas físicas en lo
+  que respecta al tratamiento de datos personales y a la libre circulación de
+  estos datos (rgpd), 2016.
+\newblock Diario Oficial de la Unión Europea L 119, 4.5.2016. Último acceso:
+  mayo 2025.
+
+\bibitem{lopdgdd2018}
+{Jefatura del Estado (España)}.
+\newblock Ley orgánica 3/2018, de 5 de diciembre, de protección de datos
+  personales y garantía de los derechos digitales, 2018.
+\newblock Boletín Oficial del Estado (BOE) núm. 294, 6.12.2018. Último
+  acceso: mayo 2025.
+
+\bibitem{classvalidator}
+{TypeStack}.
+\newblock class-validator -- decorator-based property validation for classes,
+  2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{nestjsthrottler}
+{NestJS}.
+\newblock Nestjs throttler -- a rate-limiting module for nestjs, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{owasp2021}
+{OWASP Foundation}.
+\newblock Owasp top 10:2021 -- the ten most critical web application security
+  risks, 2021.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{helmetjs}
+{Helmet contributors}.
+\newblock Helmet -- help secure express apps with various http headers, 2024.
+\newblock Último acceso: mayo 2025.
+
 \bibitem{reactnative}
 {Meta Open Source}.
 \newblock React native -- learn once, write anywhere, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{eisenman2018reactnative}
+Bonnie Eisenman.
+\newblock {\em Learning React Native: Building Native Mobile Apps with
+  JavaScript}.
+\newblock O'Reilly Media, Sebastopol, CA, 2 edition, 2018.
+
+\bibitem{react}
+{Meta Open Source}.
+\newblock React -- the library for web and native user interfaces, 2024.
 \newblock Último acceso: mayo 2025.
 
 \bibitem{expo}
@@ -92,6 +151,16 @@ Ken Schwaber and Jeff Sutherland.
 \newblock Expo -- build one javascript/typescript project that runs natively on
   all your users' devices, 2024.
 \newblock Último acceso: mayo 2025.
+
+\bibitem{axios}
+{Axios contributors}.
+\newblock Axios -- promise based http client for the browser and node.js, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{jwtrfc}
+Michael Jones, John Bradley, and Nat Sakimura.
+\newblock Rfc 7519: Json web token (jwt), 2015.
+\newblock Internet Engineering Task Force (IETF). Último acceso: mayo 2025.
 
 \bibitem{reactnavigation}
 {React Navigation contributors}.
@@ -104,15 +173,58 @@ Ken Schwaber and Jeff Sutherland.
 \newblock Nestjs -- a progressive node.js framework, 2024.
 \newblock Último acceso: mayo 2025.
 
+\bibitem{nestjsdocs}
+{NestJS}.
+\newblock Nestjs documentation -- modules, controllers, providers and guards,
+  2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{nodejs}
+{OpenJS Foundation}.
+\newblock Node.js -- javascript runtime built on chrome's v8 javascript engine,
+  2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{typescript}
+{Microsoft Corporation}.
+\newblock Typescript -- javascript with syntax for types, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{cherny2019typescript}
+Boris Cherny.
+\newblock {\em Programming TypeScript: Making Your JavaScript Applications
+  Scale}.
+\newblock O'Reilly Media, Sebastopol, CA, 2019.
+
 \bibitem{socketio}
 {Socket.IO}.
 \newblock Socket.io -- bidirectional and low-latency communication for every
   platform, 2024.
 \newblock Último acceso: mayo 2025.
 
+\bibitem{websocketrfc}
+Ian Fette and Alexey Melnikov.
+\newblock Rfc 6455: The websocket protocol, 2011.
+\newblock Internet Engineering Task Force (IETF). Último acceso: mayo 2025.
+
+\bibitem{postgresql15}
+{The PostgreSQL Global Development Group}.
+\newblock Postgresql 15 documentation, 2023.
+\newblock Último acceso: mayo 2025.
+
 \bibitem{postgisdocs}
 {PostGIS Project Steering Committee}.
 \newblock Postgis 3.3 manual, 2023.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{obe2020postgis}
+Regina~O. Obe and Leo~S. Hsu.
+\newblock {\em PostGIS in Action}.
+\newblock Manning Publications, Shelter Island, NY, 3 edition, 2020.
+
+\bibitem{wgs84}
+{International Association of Oil \& Gas Producers}.
+\newblock Epsg:4326 -- wgs 84: Geodetic coordinate system for world, 2024.
 \newblock Último acceso: mayo 2025.
 
 \bibitem{typeorm}
@@ -135,9 +247,25 @@ Ken Schwaber and Jeff Sutherland.
 \newblock Openstreetmap, 2024.
 \newblock Último acceso: mayo 2025.
 
+\bibitem{reactnativemaps}
+{React Native Community}.
+\newblock react-native-maps -- react native mapview component for ios +
+  android, 2024.
+\newblock Último acceso: mayo 2025.
+
 \bibitem{ticketmaster}
 {Ticketmaster Entertainment, Inc.}
 \newblock Ticketmaster -- tickets to concerts, sports, theatre and more, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{nominatim}
+{OpenStreetMap Foundation}.
+\newblock Nominatim -- open-source geocoding with openstreetmap data, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{gemini}
+{Google LLC}.
+\newblock Gemini api -- build with google's most capable ai models, 2024.
 \newblock Último acceso: mayo 2025.
 
 \bibitem{fielding2000rest}
@@ -145,6 +273,16 @@ Roy~Thomas Fielding.
 \newblock {\em Architectural Styles and the Design of Network-based Software
   Architectures}.
 \newblock PhD thesis, University of California, Irvine, 2000.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{newman2021microservices}
+Sam Newman.
+\newblock {\em Building Microservices: Designing Fine-Grained Systems}.
+\newblock O'Reilly Media, Sebastopol, CA, 2 edition, 2021.
+
+\bibitem{openapi}
+{OpenAPI Initiative}.
+\newblock Openapi specification 3.0.3, 2020.
 \newblock Último acceso: mayo 2025.
 
 \bibitem{ricci2015recommender}
@@ -157,15 +295,51 @@ Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
 \newblock {\em Design Patterns: Elements of Reusable Object-Oriented Software}.
 \newblock Addison-Wesley, Reading, MA, 1994.
 
+\bibitem{fowler2002peaa}
+Martin Fowler.
+\newblock {\em Patterns of Enterprise Application Architecture}.
+\newblock Addison-Wesley, Boston, MA, 2002.
+
+\bibitem{cronjoborg}
+{cron-job.org}.
+\newblock cron-job.org -- free cronjobs from the cloud, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{posixcron}
+{The Open Group}.
+\newblock crontab(5) -- tables for driving cron, 2018.
+\newblock IEEE Std 1003.1-2017 (POSIX.1-2017). Último acceso: mayo 2025.
+
 \bibitem{postgresql}
 {The PostgreSQL Global Development Group}.
 \newblock Postgresql: The world's most advanced open source relational
   database, 2024.
 \newblock Último acceso: mayo 2025.
 
+\bibitem{cheerio}
+{Cheerio contributors}.
+\newblock Cheerio -- fast, flexible \& lean implementation of core jquery
+  designed specifically for the server, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{robusto1957cosine}
+C.~Carl Robusto.
+\newblock The cosine-haversine formula.
+\newblock {\em The American Mathematical Monthly}, 64(1):38--40, 1957.
+
 \bibitem{jest}
 {OpenJS Foundation}.
 \newblock Jest -- delightful javascript testing, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{firebaseadmin}
+{Google LLC}.
+\newblock Firebase admin sdk -- server-side libraries for firebase, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{docker}
+{Docker, Inc.}
+\newblock Docker -- accelerated container application development, 2024.
 \newblock Último acceso: mayo 2025.
 
 \bibitem{render}

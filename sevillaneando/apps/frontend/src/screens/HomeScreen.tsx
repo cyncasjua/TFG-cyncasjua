@@ -2132,7 +2132,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                   >
                     <MaterialIcons name="how-to-reg" size={20} color={colors.primary} />
-                    <ThemedText style={styles.menuActionLabel}>{t('home.myEvents')}</ThemedText>
+                    <ThemedText style={styles.menuActionLabel}>{t('home.joinedEvents')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -2281,7 +2281,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <MaterialIcons name="category" size={20} color={colors.primary} />
                       <ThemedText style={styles.menuActionLabel}>
-                        {t('home.filterByCategory')}
+                        {t('home.manageCategories')}
                       </ThemedText>
                     </TouchableOpacity>
                   </ThemedView>

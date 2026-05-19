@@ -21,12 +21,12 @@ La figura~\ref{fig:vista_logica} muestra la vista lógica del sistema con los co
 
 \subsection{Aplicación móvil (frontend)}
 
-La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native}~\cite{reactnative} y \textbf{Expo}~\cite{expo}, lo que permite generar una única base de código compatible con Android e iOS. La versión final del cliente contiene 83 ficheros TypeScript/TSX en \texttt{src}, con 17.774 líneas de código distribuidas en pantallas, componentes, navegación, servicios, contextos, hooks, tipos y utilidades. La arquitectura interna del frontend se estructura en los siguientes niveles:
+La aplicación móvil actúa como único punto de interacción con el usuario. Ha sido desarrollada con \textbf{React Native}~\cite{reactnative,eisenman2018reactnative} sobre \textbf{React}~\cite{react} y empaquetada con \textbf{Expo}~\cite{expo}, lo que permite generar una única base de código compatible con Android e iOS. La versión final del cliente contiene 83 ficheros TypeScript/TSX en \texttt{src}, con 18.992 líneas de código distribuidas en pantallas, componentes, navegación, servicios, contextos, hooks, tipos y utilidades. La arquitectura interna del frontend se estructura en los siguientes niveles:
 
 \begin{itemize}
     \item \textbf{Pantallas}: 31 componentes que representan vistas completas navegables.
     \item \textbf{Componentes}: 11 elementos reutilizables que componen la interfaz, como botones temáticos, cabeceras de perfil, selectores, esqueletos de carga, modales y atribuciones de OpenStreetMap.
-    \item \textbf{Servicios}: capa de comunicación con el backend mediante \textbf{Axios}. Todos los servicios comparten un cliente Axios centralizado que inyecta automáticamente el token de Firebase en la cabecera \texttt{Authorization} de cada petición, gestiona un \textit{timeout} global de 60 segundos y aplica un interceptor de reintento ante errores de red.
+    \item \textbf{Servicios}: capa de comunicación con el backend mediante \textbf{Axios}~\cite{axios}. Todos los servicios comparten un cliente Axios centralizado que inyecta automáticamente el token de Firebase~\cite{jwtrfc} en la cabecera \texttt{Authorization} de cada petición, gestiona un \textit{timeout} global de 60 segundos y aplica un interceptor de reintento ante errores de red.
     \item \textbf{Contextos}: gestión del estado global compartido entre pantallas (\texttt{AuthContext} para la sesión, \texttt{SocketContext} para la conexión WebSocket, \texttt{ThemeContext} para el tema visual y \texttt{NotificacionesContext} para los avisos pendientes).
 \end{itemize}
 
@@ -43,7 +43,7 @@ La figura~\ref{fig:flujo_frontend} muestra cómo interactúan estos niveles desd
 
 \subsection{Servidor backend}
 
-El backend es una API REST desarrollada con \textbf{NestJS}~\cite{nestjs} sobre \textbf{Node.js}. NestJS organiza el servidor en módulos independientes, cada uno con sus controladores, servicios y entidades. Esta separación facilita el mantenimiento y permite extender el sistema sin afectar al resto de componentes.
+El backend es una API REST desarrollada con \textbf{NestJS}~\cite{nestjs,nestjsdocs} sobre \textbf{Node.js}~\cite{nodejs} y \textbf{TypeScript}~\cite{typescript,cherny2019typescript}. NestJS organiza el servidor en módulos independientes, cada uno con sus controladores, servicios y entidades. Esta separación facilita el mantenimiento y permite extender el sistema sin afectar al resto de componentes.
 
 Cada petición HTTP entrante pasa por la siguiente cadena de responsabilidades:
 
@@ -124,11 +124,11 @@ La figura~\ref{fig:flujo_autenticacion} muestra en detalle el flujo completo de 
 \label{fig:flujo_autenticacion}
 \end{figure}
 
-Además de la API REST, el backend integra un servidor \textbf{Socket.IO}~\cite{socketio} para la comunicación en tiempo real del chat. La conexión WebSocket se autentica en el \textit{handshake} inicial mediante el mismo mecanismo que la API REST: el cliente envía el token de Firebase como parámetro de la URL de conexión, y el middleware de Socket.IO lo verifica antes de aceptar la conexión. Una vez autenticada, la conexión se mantiene abierta y el servidor puede emitir eventos al cliente en cualquier momento sin necesidad de una nueva petición.
+Además de la API REST, el backend integra un servidor \textbf{Socket.IO}~\cite{socketio}, construido sobre el protocolo WebSocket~\cite{websocketrfc}, para la comunicación en tiempo real del chat. La conexión WebSocket se autentica en el \textit{handshake} inicial mediante el mismo mecanismo que la API REST: el cliente envía el token de Firebase como parámetro de la URL de conexión, y el middleware de Socket.IO lo verifica antes de aceptar la conexión. Una vez autenticada, la conexión se mantiene abierta y el servidor puede emitir eventos al cliente en cualquier momento sin necesidad de una nueva petición.
 
 \subsection{Base de datos}
 
-La persistencia de datos se gestiona con \textbf{PostgreSQL 15} junto con la extensión \textbf{PostGIS}~\cite{postgisdocs}. PostgreSQL cubre el modelo relacional general del sistema, mientras que PostGIS añade soporte para datos geográficos, permitiendo almacenar coordenadas como puntos \texttt{geography} en SRID 4326 y ejecutar consultas espaciales eficientes como el filtrado por radio (\texttt{ST\_DWithin}) o el cálculo de distancias en metros (\texttt{ST\_Distance}). La comunicación entre el backend y la base de datos se realiza a través de \textbf{TypeORM}~\cite{typeorm}, que mapea las entidades TypeScript a tablas SQL y genera las consultas correspondientes.
+La persistencia de datos se gestiona con \textbf{PostgreSQL 15}~\cite{postgresql15} junto con la extensión \textbf{PostGIS}~\cite{postgisdocs,obe2020postgis}. PostgreSQL cubre el modelo relacional general del sistema, mientras que PostGIS añade soporte para datos geográficos, permitiendo almacenar coordenadas como puntos \texttt{geography} en SRID 4326~\cite{wgs84} y ejecutar consultas espaciales eficientes como el filtrado por radio (\texttt{ST\_DWithin}) o el cálculo de distancias en metros (\texttt{ST\_Distance}). La comunicación entre el backend y la base de datos se realiza a través de \textbf{TypeORM}~\cite{typeorm}, que mapea las entidades TypeScript a tablas SQL y genera las consultas correspondientes.
 
 \subsection{Servicios externos}
 
@@ -137,12 +137,12 @@ El sistema delega en servicios externos las siguientes responsabilidades:
 \begin{itemize}
     \item \textbf{Firebase Authentication}~\cite{firebase}: gestión del ciclo de vida de la sesión del usuario (registro, inicio de sesión y tokens JWT). El cliente móvil usa el SDK de Firebase para obtener y renovar tokens; el backend usa el SDK de administración para verificarlos sin almacenar contraseñas ni gestionar sesiones propias.
     \item \textbf{Cloudinary}~\cite{cloudinary}: almacenamiento y servicio de imágenes asociadas a eventos, perfiles y chats. El backend sube las imágenes directamente a Cloudinary mediante su SDK y almacena únicamente la URL resultante en PostgreSQL. Cloudinary sirve las imágenes desde su CDN (Content Delivery Network) con transformaciones automáticas de formato y calidad.
-    \item \textbf{OpenStreetMap}~\cite{openstreetmap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}. Los \textit{tiles} cartográficos se obtienen directamente del servidor de OpenStreetMap sin pasar por el backend.
+    \item \textbf{OpenStreetMap}~\cite{openstreetmap}: visualización de mapas interactivos en el frontend mediante \texttt{react-native-maps}~\cite{reactnativemaps}. Los \textit{tiles} cartográficos se obtienen directamente del servidor de OpenStreetMap sin pasar por el backend.
     \item \textbf{Eventbrite}~\cite{eventbrite} \textbf{/ Ticketmaster}~\cite{ticketmaster} \textbf{/ Visita Sevilla / webs institucionales y de ocio de Sevilla}: fuentes externas de eventos consultadas automáticamente mediante scraping. Eventbrite se procesa extrayendo tarjetas de eventos y bloques JSON-LD del HTML; la API oficial de Ticketmaster se consume directamente; el portal \texttt{visitasevilla.es} dispone de un scraper dedicado que interpreta su formato de fechas propio; el resto de webs (portal municipal, guías de ocio, teatros y fundaciones) se procesan mediante el \texttt{GeminiScraperService}, que envía el texto limpio de cada página al modelo \textbf{Gemini 2.5 Flash} (Google Generative AI) y obtiene los eventos en formato JSON estructurado. El backend ejecuta diariamente un \textit{cron job} que invoca cada scraper, transforma los datos al modelo interno y los persiste en PostgreSQL asignándolos al usuario técnico \textit{scraper-bot}.
 \end{itemize}
 
 \begin{itemize}
-    \item \textbf{Nominatim (OpenStreetMap)}: API de geocodificación utilizada por el \texttt{GeminiScraperService} para resolver las coordenadas geográficas de los eventos cuando Gemini no puede deducirlas directamente del texto. Se realizan hasta tres variantes de búsqueda por dirección para maximizar la cobertura.
+    \item \textbf{Nominatim (OpenStreetMap)}~\cite{nominatim}: API de geocodificación utilizada por el \texttt{GeminiScraperService}~\cite{gemini} para resolver las coordenadas geográficas de los eventos cuando Gemini no puede deducirlas directamente del texto. Se realizan hasta tres variantes de búsqueda por dirección para maximizar la cobertura.
 \end{itemize}
 
 La figura~\ref{fig:conexion_tecnologias} resume cómo se conectan todas las tecnologías del sistema en tiempo de ejecución, mostrando el camino que recorre una petición desde que el usuario interactúa con la aplicación hasta que los datos son persistidos o devueltos.
@@ -234,7 +234,7 @@ Las relaciones principales entre entidades son las siguientes:
 
 \section{Diseño de la API REST}
 
-El backend expone una API REST~\cite{fielding2000rest} cuya organización sigue la estructura modular de NestJS. Cada módulo define un conjunto de endpoints agrupados por recurso. La documentación interactiva completa se genera automáticamente mediante \texttt{@nestjs/swagger} y queda disponible en \texttt{/api/docs} cuando el servidor está en ejecución.
+El backend expone una API REST~\cite{fielding2000rest} cuya organización sigue la estructura modular de NestJS~\cite{newman2021microservices}. Cada módulo define un conjunto de endpoints agrupados por recurso. La documentación interactiva completa se genera automáticamente mediante \texttt{@nestjs/swagger} siguiendo la especificación OpenAPI~\cite{openapi} y queda disponible en \texttt{/api/docs} cuando el servidor está en ejecución.
 
 \subsection{Versionado}
 
@@ -727,7 +727,7 @@ A lo largo del desarrollo de \textbf{Sevillaneando} se han aplicado varios patro
 \hline
 Módulo & Backend NestJS & Cada dominio (\textit{EventosModule}, \textit{UsuariosModule}, etc.) encapsula controlador, servicio y entidades. Facilita el mantenimiento y la extensión sin afectar a otros módulos. \\
 \hline
-Repositorio & TypeORM & Los servicios acceden a la base de datos a través de repositorios tipados, desacoplando la lógica de negocio del SQL y permitiendo sustituirlos por dobles en pruebas unitarias. \\
+Repositorio~\cite{fowler2002peaa} & TypeORM & Los servicios acceden a la base de datos a través de repositorios tipados, desacoplando la lógica de negocio del SQL y permitiendo sustituirlos por dobles en pruebas unitarias. \\
 \hline
 Guard & \texttt{FirebaseAuthGuard}, \texttt{RolesGuard} & Centraliza la autenticación y la autorización interceptando cada petición antes del controlador, evitando duplicar esa lógica en cada endpoint. \\
 \hline
@@ -892,7 +892,7 @@ La tarea de obtención de eventos externos (Eventbrite, Ticketmaster y webs inst
 
 \subsubsection{Por qué el cron job es externo y no interno al backend}
 
-La planificación de las tareas periódicas (scraping diario y envío de notificaciones) se gestiona mediante un servicio de \textit{cron} externo (cron-job.org) que invoca los endpoints \texttt{POST /scheduler/run-scraping} y \texttt{POST /scheduler/run-notifications}, en lugar de usar el planificador interno de NestJS (\texttt{@nestjs/schedule}).
+La planificación de las tareas periódicas (scraping diario y envío de notificaciones) se gestiona mediante un servicio de \textit{cron} externo (cron-job.org)~\cite{cronjoborg}, basado en el formato cron estándar~\cite{posixcron}, que invoca los endpoints \texttt{POST /scheduler/run-scraping} y \texttt{POST /scheduler/run-notifications}, en lugar de usar el planificador interno de NestJS (\texttt{@nestjs/schedule}).
 
 La razón principal es la infraestructura de despliegue: el backend se aloja en Render con el plan gratuito, que suspende el proceso tras 15 minutos de inactividad. Cuando el proceso está suspendido, el planificador interno de NestJS no corre; y cuando Render lo reactiva ante una nueva petición, el planificador se reinicia desde cero. Esto hace que los \texttt{@Cron} internos sean poco fiables: la tarea diaria de las 3:00 AM o la de notificaciones horarias podrían no ejecutarse si el proceso lleva inactivo más de 15 minutos antes de la hora programada.
 

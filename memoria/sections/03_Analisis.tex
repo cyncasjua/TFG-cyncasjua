@@ -523,7 +523,7 @@ Las reglas de negocio definen las restricciones y condiciones del sistema, asegu
 
 \section{Cumplimiento del Reglamento General de Protección de Datos (RGPD)}\label{sec:rgpd}
 
-El sistema \textbf{Sevillaneando} trata datos de carácter personal de sus usuarios, por lo que está sujeto al Reglamento (UE) 2016/679, de 27 de abril de 2016, relativo a la protección de las personas físicas en lo que respecta al tratamiento de datos personales (RGPD), así como a la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD).
+El sistema \textbf{Sevillaneando} trata datos de carácter personal de sus usuarios, por lo que está sujeto al Reglamento (UE) 2016/679, de 27 de abril de 2016, relativo a la protección de las personas físicas en lo que respecta al tratamiento de datos personales (RGPD)~\cite{rgpd2016}, así como a la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD)~\cite{lopdgdd2018}.
 
 \subsection{Datos personales tratados}
 
@@ -581,9 +581,9 @@ Para garantizar la seguridad de los datos se han implementado las siguientes med
 \begin{itemize}
     \item Comunicaciones cifradas mediante HTTPS/TLS en todas las peticiones entre cliente y servidor.
     \item Autenticación delegada a Firebase, que implementa mecanismos de seguridad reconocidos industrialmente.
-    \item Validación y saneamiento de todas las entradas de usuario en el servidor (NestJS + \texttt{class-validator}).
-    \item Limitación de peticiones (\textit{rate limiting}) para prevenir ataques de fuerza bruta.
-    \item Cabeceras de seguridad HTTP configuradas mediante Helmet.js.
+    \item Validación y saneamiento de todas las entradas de usuario en el servidor (NestJS + \texttt{class-validator}~\cite{classvalidator}).
+    \item Limitación de peticiones (\textit{rate limiting}) mediante \texttt{@nestjs/throttler}~\cite{nestjsthrottler} para prevenir ataques de fuerza bruta, en línea con las recomendaciones del OWASP Top 10~\cite{owasp2021}.
+    \item Cabeceras de seguridad HTTP configuradas mediante Helmet.js~\cite{helmetjs}.
     \item Control de acceso basado en roles (\textit{RBAC}): usuario, moderador y administrador.
 \end{itemize}
 

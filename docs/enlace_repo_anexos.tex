@@ -1,0 +1,60 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{parskip}
+\hypersetup{
+  colorlinks=true,
+  urlcolor=blue!60!black,
+  linkcolor=black,
+  pdftitle={Sevillaneando - Repositorio y anexos},
+  pdfauthor={Cynthia Casta\~no Juan}
+}
+
+\title{\textbf{Sevillaneando} \\ \large Enlace al repositorio, contenido y descripci\'on de los anexos}
+\author{Cynthia Casta\~no Juan}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Repositorio del proyecto}
+
+El Trabajo de Fin de Grado completo est\'a disponible p\'ublicamente en GitHub en el siguiente enlace:
+
+\begin{center}
+\large\url{https://github.com/cyncasjua/TFG-cyncasjua}
+\end{center}
+
+\section*{Contenido del repositorio}
+
+El repositorio se organiza como un monorepo en el que conviven tanto el c\'odigo fuente de la aplicaci\'on como toda la documentaci\'on del proyecto. En concreto, en el repositorio se encuentran:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{El c\'odigo fuente completo de la aplicaci\'on}, dentro de la carpeta \texttt{sevillaneando/}. Esta carpeta incluye el backend desarrollado en NestJS (\texttt{apps/backend/}), el frontend desarrollado en React Native / Expo (\texttt{apps/frontend/}), la configuraci\'on de \texttt{docker-compose} para la base de datos PostgreSQL con PostGIS, y la documentaci\'on auxiliar t\'ecnica del proyecto (manuales de desarrollo, planes de despliegue, etc.).
+
+    \item \textbf{La memoria del Trabajo de Fin de Grado}, dentro de la carpeta \texttt{memoria/}, tanto en sus fuentes \LaTeX{} (\texttt{TFG.tex}, junto a las secciones individuales en \texttt{sections/} y las figuras en \texttt{figures/}) como en su versi\'on ya compilada en PDF (\texttt{TFG.pdf}).
+
+    \item \textbf{Los anexos de la memoria}, incorporados al final del propio documento de la memoria. No se entregan como ficheros independientes, sino que forman parte del PDF principal del TFG.
+\end{itemize}
+
+\section*{Anexos incluidos en la memoria}
+
+Los anexos se sit\'uan al final del documento principal de la memoria y son los siguientes:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Glosario de t\'erminos.} Recoge los principales conceptos t\'ecnicos utilizados a lo largo de la memoria con el objetivo de unificar su significado y facilitar la lectura.
+
+    \item \textbf{Reporte de horas.} Incluye el informe exportado desde Clockify utilizado como evidencia del seguimiento temporal del proyecto y referencia para contrastar la estimaci\'on presupuestaria por fases.
+
+    \item \textbf{Actas de reuni\'on.} Refleja el estado del proyecto y las decisiones discutidas en cada una de las reuniones celebradas con el tutor durante el desarrollo, recogiendo la evoluci\'on de los acuerdos a lo largo del tiempo.
+
+    \item \textbf{Usuarios piloto.} Documenta la fase final de validaci\'on con usuarios reales externos al desarrollo, incluyendo el perfil de los participantes, los problemas de usabilidad detectados y los ajustes derivados de su retroalimentaci\'on.
+
+    \item \textbf{Informes de avance y cambios.} Resume la evoluci\'on del proyecto a lo largo de sus principales fases, recogiendo el avance funcional, las decisiones tomadas y los cambios relevantes respecto a la planificaci\'on inicial.
+\end{itemize}
+
+\end{document}

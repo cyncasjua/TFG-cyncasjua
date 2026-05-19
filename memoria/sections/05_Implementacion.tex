@@ -20,7 +20,7 @@ El proyecto se organiza como un monorepositorio, separando el código del fronte
 
 Esta estructura permite mantener en un único repositorio todos los componentes principales del sistema, facilitando la instalación, el desarrollo y la coordinación entre frontend y backend.
 
-En la revisión final del repositorio, la aplicación contiene 166 ficheros TypeScript/TSX de producción dentro de \texttt{src}: 83 en el backend, con 9.022 líneas, y 83 en el frontend, con 17.774 líneas. A esta base se añaden 3 ficheros de pruebas unitarias del backend, con 1.033 líneas adicionales, por lo que el total auditado asciende a 169 ficheros y 27.829 líneas. La estructura funcional se resume en 13 módulos NestJS, 10 controladores, 11 entidades TypeORM, 12 DTOs principales, 31 pantallas móviles, 11 componentes reutilizables y 6 servicios de comunicación con la API.
+En la revisión final del repositorio, la aplicación contiene 165 ficheros TypeScript/TSX de producción dentro de \texttt{src}: 82 en el backend, con 10.289 líneas, y 83 en el frontend, con 18.992 líneas. A esta base se añaden 3 ficheros de pruebas unitarias del backend, con 1.269 líneas adicionales, por lo que el total auditado asciende a 168 ficheros y 30.550 líneas. La estructura funcional se resume en 13 módulos NestJS, 10 controladores, 11 entidades TypeORM, 12 DTOs principales, 31 pantallas móviles, 11 componentes reutilizables y 5 servicios de comunicación con la API.
 
 \section{Implementación del backend}
 
@@ -80,10 +80,10 @@ export class Event {
 El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado cuatro fuentes concretas:
 
 \begin{itemize}
-    \item \textbf{Eventbrite Sevilla}: el \texttt{SevillaScraperService} descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios} y parsea el HTML con \texttt{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD embebidos en la página.
+    \item \textbf{Eventbrite Sevilla}: el \texttt{SevillaScraperService} descarga la página de eventos de Sevilla en Eventbrite mediante \texttt{axios}~\cite{axios} y parsea el HTML con \texttt{cheerio}~\cite{cheerio}, extrayendo tarjetas de eventos y bloques JSON-LD embebidos en la página.
     \item \textbf{Ticketmaster API}: el \texttt{TicketmasterScraperService} consume la API oficial de Ticketmaster Discovery paginando los resultados en bloques de hasta 100 eventos, filtrando por ciudad y fecha de inicio.
     \item \textbf{Visita Sevilla}: el \texttt{VisitaSevillaScraperService} descarga directamente la agenda de \texttt{visitasevilla.es} y parsea el HTML con \texttt{cheerio}. Interpreta el formato de fechas propio del portal (\texttt{DD.MM.YY} y rangos \texttt{DD.MM.YY-DD.MM.YY}), descarta placeholders de eventos sin fecha concreta y marca como \textit{consultar fechas} aquellos con rangos superiores a catorce días, evitando así duraciones ficticias.
-    \item \textbf{Scraper multi-web con Gemini AI}: el \texttt{GeminiScraperService} procesa varias webs institucionales y de ocio de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras). Para cada URL, descarga el HTML, lo limpia con \texttt{cheerio} eliminando scripts, estilos y elementos de navegación, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que devuelve los eventos en formato JSON estructurado. Las coordenadas geográficas que Gemini no puede deducir se resuelven mediante geocodificación con la API de \textbf{Nominatim} (OpenStreetMap), con hasta tres variantes de búsqueda por dirección.
+    \item \textbf{Scraper multi-web con Gemini AI}: el \texttt{GeminiScraperService} procesa varias webs institucionales y de ocio de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras). Para cada URL, descarga el HTML, lo limpia con \texttt{cheerio}~\cite{cheerio} eliminando scripts, estilos y elementos de navegación, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google~\cite{gemini}, que devuelve los eventos en formato JSON estructurado. Las coordenadas geográficas que Gemini no puede deducir se resuelven mediante geocodificación con la API de \textbf{Nominatim}~\cite{nominatim} (OpenStreetMap), con hasta tres variantes de búsqueda por dirección.
 \end{itemize}
 
 La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de eventos externos, desde el \textit{cron job} hasta la persistencia en base de datos.
@@ -178,7 +178,7 @@ De esta forma, aunque el frontend trabaja con latitud y longitud por separado, l
 
 \subsection{Validación de datos}
 
-La validación de datos se realiza mediante DTOs. Por ejemplo, al crear un evento se exige que determinados campos estén presentes y tengan el tipo adecuado.
+La validación de datos se realiza mediante DTOs apoyados en la librería \texttt{class-validator}~\cite{classvalidator}, integrada en el \texttt{ValidationPipe} global de NestJS. Por ejemplo, al crear un evento se exige que determinados campos estén presentes y tengan el tipo adecuado.
 
 Esto permite evitar que lleguen a la base de datos eventos incompletos o con coordenadas inválidas. Además, centralizar estas validaciones en el backend garantiza que las reglas se apliquen aunque la petición no provenga directamente de la interfaz móvil.
 
@@ -196,7 +196,7 @@ Los administradores pueden cambiar el rol de cualquier usuario. Los moderadores 
 
 \subsection{Limitación de velocidad}
 
-Para proteger la API frente a abusos, el backend aplica throttling HTTP mediante \textbf{@nestjs/throttler}. Se definen tres niveles configurables mediante decoradores personalizados:
+Para proteger la API frente a abusos, el backend aplica throttling HTTP mediante \textbf{@nestjs/throttler}~\cite{nestjsthrottler}, una medida recomendada por OWASP frente a ataques de fuerza bruta y abuso de recursos~\cite{owasp2021}. Se definen tres niveles configurables mediante decoradores personalizados:
 
 \begin{itemize}
     \item \texttt{ThrottleStrict}: 5 peticiones por minuto. Se aplica a los endpoints de administración del scraping (\texttt{POST /scraping/run-all}, \texttt{POST /scraping/reset}, \texttt{POST /scraping/run/:name}), que son operaciones costosas reservadas a administradores.
@@ -327,7 +327,7 @@ El frontend contiene varias utilidades específicas para adaptar los datos del b
 \begin{itemize}
     \item \textbf{Precios}: \texttt{price.ts} formatea precios fijos y rangos. Si el evento procede del usuario técnico de scraping y tiene precio cero, se muestra como ``Consultar precio'' para evitar etiquetar como gratuitos eventos cuyo precio no venía especificado en la fuente original.
     \item \textbf{Fechas}: \texttt{sevillaTime.ts} formatea fechas en la zona \texttt{Europe/Madrid}, contemplando horario de verano. \texttt{dateTime.ts} convierte fechas introducidas en hora local de Sevilla a ISO con offset explícito para que el backend guarde el instante correcto.
-    \item \textbf{Mapas}: \texttt{map.ts} parsea puntos GeoJSON o WKT, calcula distancias y centraliza las coordenadas de referencia de Sevilla.
+    \item \textbf{Mapas}: \texttt{map.ts} parsea puntos GeoJSON o WKT, calcula distancias mediante la fórmula de Haversine~\cite{robusto1957cosine} y centraliza las coordenadas de referencia de Sevilla.
     \item \textbf{Errores}: \texttt{firebaseErrors.ts} y \texttt{getErrorMessage} traducen errores técnicos de Firebase, Axios y HTTP a mensajes comprensibles para el usuario.
 \end{itemize}
 
