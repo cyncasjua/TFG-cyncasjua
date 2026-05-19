@@ -57,5 +57,4 @@ export class SchedulerController {
     ]).catch((err: unknown) => this.logger.error('Error en notificaciones programadas:', err));
     return { status: 'ok', job: 'notifications' };
   }
-
 }
