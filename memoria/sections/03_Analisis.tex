@@ -2,7 +2,7 @@
 
 \section{Introducción}
 
-En este capítulo se identifican los actores del sistema, los requisitos funcionales y no funcionales, las reglas de negocio y las consideraciones de cumplimiento normativo que deben guiar el diseño e implementación de \textbf{Sevillaneando}.
+En este capítulo se analiza el dominio del problema y se especifican los requisitos del sistema \textbf{Sevillaneando}: actores involucrados, funcionalidad esperada, restricciones de calidad, reglas de negocio y normativa aplicable.
 
 \section{Actores del sistema}
 
@@ -18,7 +18,7 @@ Persona que llega a la aplicación sin cuenta o que aún no ha iniciado sesión.
 
 Persona registrada que utiliza la aplicación para descubrir y participar en la vida cultural y de ocio de Sevilla. Es el actor principal y el más frecuente. Sus motivaciones son encontrar planes que se adapten a sus intereses, compartir eventos con otras personas, conocer a gente con gustos similares y mantenerse informado de lo que sucede en la ciudad.
 
-Sus actividades principales incluyen: consultar el listado y el mapa de eventos, filtrar por sus preferencias, apuntarse a actividades, chatear con otros asistentes, buscar usuarios, consultar perfiles, gestionar el módulo de amistad mediante seguimiento, enviar mensajes privados, guardar eventos para más tarde, valorar los eventos a los que ha asistido y consultar las recomendaciones personalizadas y las rutas sugeridas.
+Sus actividades principales incluyen: consultar el listado y el mapa de eventos, filtrar por sus preferencias, apuntarse a actividades, compartir eventos, chatear con otros asistentes, buscar usuarios, consultar perfiles, gestionar el módulo de amistad mediante seguimiento, enviar mensajes privados, guardar eventos para más tarde, valorar los eventos a los que ha asistido, consultar las recomendaciones personalizadas, explorar las rutas sugeridas y las creadas por otros usuarios, y valorarlas.
 
 \textit{Casos de prueba relacionados:} \hyperref[cp:03]{CP-03} (perfil), \hyperref[cp:05]{CP-05} a \hyperref[cp:18]{CP-18} (consulta, búsqueda, mapa, participación, chat, recomendaciones y rutas), \hyperref[cp:29]{CP-29} y \hyperref[cp:30]{CP-30} (notificaciones).
 
@@ -26,13 +26,13 @@ Sus actividades principales incluyen: consultar el listado y el mapa de eventos,
 
 Todo ciudadano registrado puede crear y gestionar sus propios eventos, por lo que el rol de organizador no es un perfil técnico diferenciado sino un patrón de uso del mismo actor. Sin embargo, dentro de este perfil conviven motivaciones muy distintas: desde una persona particular que organiza una quedada o un taller esporádico, hasta un negocio local, una asociación cultural o un creador de contenido cuya actividad principal es precisamente la publicación de eventos. Este último grupo, aunque técnicamente igual al ciudadano estándar, hace un uso intensivo de las funcionalidades de creación, edición y gestión de visibilidad.
 
-Sus necesidades específicas incluyen publicar eventos públicos o privados, editarlos, gestionar los accesos y recibir información sobre el resultado de la moderación.
+Sus necesidades específicas incluyen publicar eventos públicos o privados, editarlos, gestionar los accesos, crear rutas y recibir información sobre el resultado de la moderación.
 
 \textit{Casos de prueba relacionados:} \hyperref[cp:08]{CP-08} y \hyperref[cp:09]{CP-09} (apuntarse a evento), \hyperref[cp:19]{CP-19} a \hyperref[cp:23]{CP-23} (creación, acceso y edición de eventos privados y cambio de visibilidad), \hyperref[cp:29]{CP-29} (notificación de moderación).
 
 \subsection{Moderador de contenido}
 
-Ciudadano con responsabilidad de revisión del contenido publicado por otros usuarios. Su función es garantizar la calidad y fiabilidad de los eventos que aparecen en el listado público. Puede revisar los eventos pendientes, editarlos directamente para corregir errores menores, aprobarlos o rechazarlos. Este rol es asignado por el administrador.
+Ciudadano con responsabilidad de revisión del contenido publicado por otros usuarios. Su función es garantizar la calidad y fiabilidad de los eventos que aparecen en el listado público. Puede revisar los eventos pendientes, editarlos directamente para corregir errores menores, aprobarlos o rechazarlos, y editar los eventos públicos ya aprobados. Este rol es asignado por el administrador.
 
 \textit{Casos de prueba relacionados:} \hyperref[cp:26]{CP-26} (panel de moderación), \hyperref[cp:27]{CP-27} (evento no visible durante moderación), \hyperref[cp:28]{CP-28} (acceso denegado a usuario sin rol).
 
@@ -219,21 +219,24 @@ En el sistema \textbf{Sevillaneando}, los principales elementos de información 
 \endhead
 \bottomrule
 \endfoot
-Usuarios & Información básica del usuario, incluyendo nombre de usuario, correo electrónico, contraseña, imagen de perfil, ubicación e intereses. La preferencia de tema visual se gestiona en el lado del cliente y no se persiste en la base de datos. También se almacena el rol del usuario: usuario, administrador o moderador. \\
+Usuarios & Información básica del usuario: identidad, credenciales, foto de perfil, ubicación, intereses y rol en el sistema (usuario, moderador o administrador). También se almacenan sus preferencias de navegación, la aceptación de la política de privacidad y las relaciones sociales con otros usuarios, así como los eventos con los que ha interactuado: asistidos, guardados, compartidos y visitados. La preferencia de tema visual se gestiona en el cliente y no se persiste en base de datos. \\
 Roles y permisos & Información asociada al tipo de usuario y a las acciones que puede realizar dentro del sistema, como crear eventos, moderarlos, gestionar usuarios o administrar categorías. \\
 Categorías & Clasificación de los eventos según su temática. Son gestionadas por el administrador y utilizadas por los usuarios para filtrar eventos y definir intereses para las recomendaciones. \\
-Eventos & Cada evento contiene título, descripción, categoría, ubicación, fecha, precio, imágenes, estado, creador y visibilidad pública o privada. \\
-Eventos privados & Información relativa al acceso restringido, incluyendo códigos o enlaces de acceso o invitación y usuarios autorizados, además de todos los datos propios de un evento. \\
-Moderación de eventos & Datos necesarios para controlar el estado de revisión de los eventos públicos propuestos por usuarios, incluyendo aprobación, rechazo y posibles modificaciones realizadas por el moderador. \\
+Eventos & Cada evento contiene su identificación, descripción, categoría, ubicación geográfica, fechas de inicio y fin, posibilidad de recurrencia, precio fijo o variable según tramo, galería de imágenes, estado de moderación, creador y visibilidad. Los eventos privados incluyen además un enlace de acceso por invitación. \\
+Solicitudes de edición de eventos & Cuando el creador edita un evento público ya aprobado, se registra una solicitud con los cambios propuestos que debe pasar de nuevo por moderación. Se almacena el estado de la solicitud y, en caso de rechazo, el motivo indicado por el moderador. \\
+Moderación de eventos & Datos necesarios para controlar el estado de revisión de los eventos públicos propuestos por usuarios, incluyendo aprobación, rechazo con motivo y posibles modificaciones realizadas por el moderador antes de publicar. \\
 Asistencia a eventos & Relación entre usuarios y eventos que permite conocer qué usuarios están apuntados a cada evento y obtener listados posteriores. \\
 Eventos guardados & Relación entre usuarios y eventos almacenados como guardados para su consulta posterior. \\
-Calendario & Información derivada de los eventos a los que un usuario se ha apuntado y que tienen una fecha definida. \\
-Mensajes & Datos asociados a la comunicación entre usuarios, tanto en chats de eventos como en conversaciones privadas: fecha, emisor, destinatario, evento asociado, contenido e imagen si procede. \\
+Eventos compartidos y visitados & Registro de los eventos que cada usuario ha compartido con terceros o ha consultado, utilizado como señal de comportamiento en el motor de recomendaciones. \\
+Calendario & Información derivada de los eventos con fecha a los que el usuario está apuntado, para su visualización agrupada por día. \\
+Mensajes de chat de evento & Datos asociados a la comunicación grupal dentro de un evento: contenido, imagen opcional, fecha de envío y usuario emisor. \\
+Mensajes privados & Datos asociados a las conversaciones directas entre dos usuarios: contenido, imagen opcional, fecha de envío, estado de lectura, emisor y receptor. \\
 Imágenes & Fotografías asociadas a eventos, chats o perfiles de usuario, incluyendo imágenes subidas en tiempo real durante los eventos. \\
-Valoraciones y reseñas & Puntuaciones y comentarios que los usuarios realizan sobre eventos y rutas. \\
-Notificaciones & Avisos enviados al usuario, como aprobación o rechazo de eventos creados o editados, recordatorios de eventos, eventos cercanos según ubicación y seguidores nuevos. \\
-Recomendaciones & Información utilizada para sugerir eventos en función de intereses, ubicación, eventos vistos, eventos guardados, eventos apuntados, eventos compartidos, fecha y valoraciones propias o globales. \\
-Rutas & Agrupaciones de eventos generadas automáticamente o creadas por usuarios, con secuencia de eventos, orden, franjas horarias y distancia entre eventos. También incluyen valoraciones o puntuaciones según el tipo de ruta. \\
+Reseñas de eventos & Puntuaciones y comentarios que los usuarios realizan sobre eventos a los que han asistido, con su fecha y autor. \\
+Calificaciones de rutas & Valoraciones numéricas que los usuarios asignan a las rutas. Cada usuario puede calificar una ruta como máximo una vez. \\
+Notificaciones & Avisos enviados al usuario sobre eventos relevantes del sistema: recordatorios de asistencia, eventos cercanos según ubicación, resultado de moderación y nuevos seguidores. Se registra el tipo de notificación, su fecha y si ha sido leída. \\
+Recomendaciones & Información utilizada para sugerir eventos en función de los intereses, ubicación y actividad previa del usuario. Se almacenan los criterios empleados en el cálculo y si la recomendación ya ha sido visualizada. \\
+Rutas & Agrupaciones de eventos con un itinerario definido, creadas por el sistema o por usuarios. Incluyen nombre, descripción, secuencia de eventos, trayecto geográfico, duración estimada, fecha de creación y puntuación media acumulada. \\
 Filtros de búsqueda & Información necesaria para buscar eventos por estado, categoría, título, descripción, precio, cercanía y radio de distancia. \\
 Datos geográficos & Coordenadas y ubicación de usuarios y eventos, utilizadas para mostrar eventos en el mapa, calcular cercanía, calcular recomendaciones y generar rutas recomendadas. \\
 \end{longtable}
@@ -302,15 +305,15 @@ RF-13 & Rutas de eventos & \textbf{Historia de usuario:} \textit{Como usuario au
 \addlinespace
 RF-14 & Notificaciones & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero recibir notificaciones sobre eventos cercanos, recordatorios, seguidores nuevos y resultados de moderación, para estar informado sin tener que consultar manualmente cada sección de la aplicación.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el usuario recibe notificaciones dentro de la aplicación cuando hay eventos cercanos, se acerca la fecha de un evento al que está apuntado, un evento suyo es aprobado o rechazado, o un usuario comienza a seguirlo. \\
 \addlinespace
-RF-15 & Gestión de roles & \textbf{Historia de usuario:} \textit{Como administrador, quiero gestionar el rol de los usuarios del sistema, para asignar responsabilidades de moderación y administración de forma controlada.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} un usuario sin permisos no puede acceder a las pantallas de administración ni moderación. Un administrador puede cambiar el rol de cualquier usuario. \\
+RF-15 & Gestión de usuarios y roles & \textbf{Historia de usuario:} \textit{Como administrador, quiero consultar estadísticas, gestionar el rol de los usuarios y eliminar cuentas, para mantener la integridad del sistema y gestionar el equipo de moderación.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} un usuario sin permisos no puede acceder a las pantallas de administración ni moderación. El administrador puede consultar totales de usuarios y eventos, cambiar el rol de cualquier usuario desde el panel de administración y eliminar cuentas. Un usuario eliminado no puede volver a iniciar sesión con esa cuenta. \\
 \addlinespace
 RF-16 & Gestión de categorías & \textbf{Historia de usuario:} \textit{Como administrador, quiero crear, editar y eliminar categorías de eventos, para mantener una taxonomía coherente y representativa de la oferta cultural de la ciudad.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} las categorías creadas por el administrador aparecen disponibles inmediatamente en el formulario de creación de eventos y en los filtros de búsqueda. \\
 \addlinespace
-RF-17 & Gestión de usuarios y panel de administración & \textbf{Historia de usuario:} \textit{Como administrador, quiero consultar estadísticas, editar el rol de los usuarios y eliminar cuentas, para mantener la integridad del sistema y gestionar el equipo de moderación.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el administrador puede consultar totales de usuarios y eventos, cambiar el rol de un usuario desde el panel de administración y eliminar cuentas. Un usuario eliminado no puede volver a iniciar sesión con esa cuenta. \\
+RF-17 & Organización de eventos & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero guardar eventos, apuntarme a ellos y consultarlos en mi calendario, para organizar mis planes y no perder de vista las actividades que me interesan.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} los eventos guardados y los eventos a los que el usuario se ha apuntado aparecen en la sección correspondiente. Los eventos con fecha a los que el usuario está apuntado aparecen en el calendario en su fecha correcta. \\
 \addlinespace
-RF-18 & Organización de eventos & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero guardar eventos, apuntarme a ellos y consultarlos en mi calendario, para organizar mis planes y no perder de vista las actividades que me interesan.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} los eventos guardados y los eventos a los que el usuario se ha apuntado aparecen en la sección correspondiente. Los eventos con fecha a los que el usuario está apuntado aparecen en el calendario en su fecha correcta. \\
+RF-18 & Actualización automática de eventos & \textbf{Historia de usuario:} \textit{Como sistema, quiero obtener y actualizar eventos de fuentes externas de forma periódica, para ampliar automáticamente el catálogo con eventos de plataformas institucionales y comerciales.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} los eventos importados aparecen en el listado como eventos aprobados. Si un evento ya existe, sus datos se actualizan en lugar de crear un duplicado. Los eventos sin ubicación válida no se almacenan. \\
 \addlinespace
-RF-19 & Actualización automática de eventos & \textbf{Historia de usuario:} \textit{Como sistema, quiero obtener y actualizar eventos de fuentes externas de forma periódica, para ampliar automáticamente el catálogo con eventos de plataformas institucionales y comerciales.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} los eventos importados aparecen en el listado como eventos aprobados. Si un evento ya existe, sus datos se actualizan en lugar de crear un duplicado. Los eventos sin ubicación válida no se almacenan. \\
+RF-19 & Restablecimiento del scraping & \textbf{Historia de usuario:} \textit{Como administrador, quiero poder restablecer los eventos importados por scraping, para limpiar el catálogo de eventos externos y forzar una reimportación limpia desde las fuentes.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el administrador puede eliminar todos los eventos importados por scraping desde el panel de administración. Tras el restablecimiento, el catálogo queda sin eventos de origen externo hasta la siguiente ejecución del proceso de scraping. \\
 \addlinespace
 RF-20 & Edición de eventos & \textbf{Historia de usuario:} \textit{Como usuario autenticado, quiero editar los eventos que he creado, para corregir errores o actualizar la información antes o después de la moderación.}\par\vspace{0.05cm}\textbf{Criterio de aceptación:} el creador de un evento puede modificar sus datos. Si el evento es público, la edición vuelve a pasar por moderación antes de publicarse. \\
 \addlinespace
@@ -320,7 +323,7 @@ RF-21 & Acceso a eventos privados & \textbf{Historia de usuario:} \textit{Como u
 
 \subsection{Matriz de trazabilidad de requisitos a objetivos}
 
-La tabla~\ref{tab:trazabilidad} muestra la relación entre los requisitos funcionales y los objetivos del sistema definidos en el capítulo~\ref{cap:planificación}.
+La tabla~\ref{tab:trazabilidad} muestra la relación entre los requisitos funcionales y los objetivos del sistema definidos en la Sección~\ref{sec:objetivos_sistema} del capítulo~\ref{cap:planificación}.
 
 \begin{table}[H]
 \centering
@@ -331,27 +334,27 @@ La tabla~\ref{tab:trazabilidad} muestra la relación entre los requisitos funcio
 \hline
 \textbf{Requisito funcional} & \textbf{Objetivo(s) del sistema relacionado(s)} \\
 \hline
-RF-01: Registro e inicio de sesión & Base habilitadora para todos los objetivos \\
-RF-02: Gestión de perfil & Recomendaciones personalizadas (OBJ-06) \\
-RF-03: Consulta de eventos & Listado y detalle de eventos (OBJ-01) \\
-RF-04: Búsqueda y filtrado & Listado y filtrado de eventos (OBJ-01) \\
-RF-05: Mapa de eventos & Geolocalización e interacción en mapa (OBJ-04) \\
-RF-06: Creación de eventos & Creación de eventos públicos y privados (OBJ-02) \\
-RF-07: Moderación de eventos & Sistema de moderación (OBJ-02) \\
-RF-08: Participación en eventos & Interacción social y asistencia (OBJ-05) \\
-RF-09: Chat y mensajería & Interacción social en tiempo real (OBJ-05) \\
-RF-10: Gestión de imágenes & Interacción social y contenido enriquecido (OBJ-05) \\
-RF-11: Valoraciones & Interacción social y contenido enriquecido (OBJ-05) \\
-RF-12: Recomendaciones & Sistema de recomendaciones personalizadas (OBJ-06) \\
-RF-13: Rutas de eventos & Sistema de rutas recomendadas y de usuario (OBJ-07, OBJ-08) \\
-RF-14: Notificaciones & Sistema de notificaciones (OBJ-09) \\
-RF-15: Gestión de roles & Moderación y administración (OBJ-02) \\
-RF-16: Gestión de categorías & Filtrado de eventos por temática (OBJ-01) \\
-RF-17: Gestión de usuarios & Moderación y administración (OBJ-02) \\
-RF-18: Organización de eventos & Asistencia y organización personal (OBJ-01, OBJ-05) \\
-RF-19: Actualización automática & Listado con eventos de fuentes externas (OBJ-01) \\
-RF-20: Edición de eventos & Gestión del ciclo de vida de eventos (OBJ-03) \\
-RF-21: Acceso a eventos privados & Eventos privados con acceso restringido (OBJ-02) \\
+RF-01: Registro e inicio de sesión & Base habilitadora para todos los objetivos (§\,\ref{sec:objetivos_sistema}) \\
+RF-02: Gestión de perfil & Recomendaciones personalizadas (\hyperref[obj:06]{OBJ-06}) \\
+RF-03: Consulta de eventos & Listado y detalle de eventos (\hyperref[obj:01]{OBJ-01}) \\
+RF-04: Búsqueda y filtrado & Listado y filtrado de eventos (\hyperref[obj:01]{OBJ-01}) \\
+RF-05: Mapa de eventos & Geolocalización e interacción en mapa (\hyperref[obj:04]{OBJ-04}) \\
+RF-06: Creación de eventos & Creación de eventos públicos y privados (\hyperref[obj:02]{OBJ-02}) \\
+RF-07: Moderación de eventos & Sistema de moderación (\hyperref[obj:02]{OBJ-02}) \\
+RF-08: Participación en eventos & Interacción social y asistencia (\hyperref[obj:05]{OBJ-05}) \\
+RF-09: Chat y mensajería & Interacción social en tiempo real (\hyperref[obj:05]{OBJ-05}) \\
+RF-10: Gestión de imágenes & Interacción social y contenido enriquecido (\hyperref[obj:05]{OBJ-05}) \\
+RF-11: Valoraciones & Interacción social y contenido enriquecido (\hyperref[obj:05]{OBJ-05}) \\
+RF-12: Recomendaciones & Sistema de recomendaciones personalizadas (\hyperref[obj:06]{OBJ-06}) \\
+RF-13: Rutas de eventos & Sistema de rutas recomendadas y de usuario (\hyperref[obj:07]{OBJ-07}, \hyperref[obj:08]{OBJ-08}) \\
+RF-14: Notificaciones & Sistema de notificaciones (\hyperref[obj:09]{OBJ-09}) \\
+RF-15: Gestión de usuarios y roles & Moderación y administración (\hyperref[obj:02]{OBJ-02}) \\
+RF-16: Gestión de categorías & Moderación y administración (\hyperref[obj:02]{OBJ-02}); filtrado de eventos por temática (\hyperref[obj:01]{OBJ-01}) \\
+RF-17: Organización de eventos & Asistencia y organización personal (\hyperref[obj:01]{OBJ-01}, \hyperref[obj:05]{OBJ-05}) \\
+RF-18: Actualización automática & Listado con eventos de fuentes externas (\hyperref[obj:01]{OBJ-01}) \\
+RF-19: Restablecimiento del scraping & Gestión del catálogo de eventos externos (\hyperref[obj:01]{OBJ-01}) \\
+RF-20: Edición de eventos & Gestión del ciclo de vida de eventos (\hyperref[obj:03]{OBJ-03}) \\
+RF-21: Acceso a eventos privados & Eventos privados con acceso restringido (\hyperref[obj:02]{OBJ-02}) \\
 \hline
 \end{tabular}%
 }
@@ -489,24 +492,23 @@ Las reglas de negocio definen las restricciones y condiciones del sistema, asegu
 \subsection{Scraping}
 
 \begin{itemize}
-    \item \textbf{RN-23}: Si un evento importado ya existe, el scraping debe actualizarlo en lugar de crear un duplicado.
-    \item \textbf{RN-24}: Los eventos sin ubicación válida no deben almacenarse.
-    \item \textbf{RN-25}: Los eventos importados mediante scraping se consideran públicos y se aprueban automáticamente.
+    \item \textbf{RN-23}: Los eventos sin ubicación válida no deben almacenarse.
+    \item \textbf{RN-24}: Los eventos importados mediante scraping se consideran públicos y se aprueban automáticamente.
 
 \end{itemize}
 
 \subsection{Restricciones de integridad de datos}
 
 \begin{itemize}
-    \item \textbf{RN-26}: Todo evento debe tener título, descripción y categoría.
-    \item \textbf{RN-27}: Todo evento debe tener una ubicación geográfica válida.
-    \item \textbf{RN-28}: La latitud y longitud deben ser valores numéricos y en el rango (latitud entre -90 y 90, longitud entre -180 y 180).
-    \item \textbf{RN-29}: La fecha de inicio no puede ser posterior a la fecha de finalización.
-    \item \textbf{RN-30}: El precio de un evento no puede ser negativo.
-    \item \textbf{RN-31}: El radio de búsqueda debe ser un valor positivo.
-    \item \textbf{RN-32}: Un evento no puede tener simultáneamente un precio fijo y un rango de precios mínimo y máximo.
-    \item \textbf{RN-33}: La dirección de un evento debe ser coherente con sus coordenadas geográficas.
-    \item \textbf{RN-34}: En un rango de precios, el precio mínimo no puede ser superior al precio máximo.
+    \item \textbf{RN-25}: Todo evento debe tener título, descripción y categoría.
+    \item \textbf{RN-26}: Todo evento debe tener una ubicación geográfica válida.
+    \item \textbf{RN-27}: La latitud y longitud deben ser valores numéricos y en el rango (latitud entre -90 y 90, longitud entre -180 y 180).
+    \item \textbf{RN-28}: La fecha de inicio no puede ser posterior a la fecha de finalización.
+    \item \textbf{RN-29}: El precio de un evento no puede ser negativo.
+    \item \textbf{RN-30}: El radio de búsqueda debe ser un valor positivo.
+    \item \textbf{RN-31}: Un evento no puede tener simultáneamente un precio fijo y un rango de precios mínimo y máximo.
+    \item \textbf{RN-32}: La dirección de un evento debe ser coherente con sus coordenadas geográficas.
+    \item \textbf{RN-33}: En un rango de precios, el precio mínimo no puede ser superior al precio máximo.
 
 
 \end{itemize}
@@ -514,9 +516,9 @@ Las reglas de negocio definen las restricciones y condiciones del sistema, asegu
 \subsection{Notificaciones}
 
 \begin{itemize}
-    \item \textbf{RN-35}: Las notificaciones de eventos cercanos solo pueden generarse si el usuario tiene una ubicación definida.
-    \item \textbf{RN-36}: Las notificaciones de recordatorio solo pueden generarse para eventos a los que el usuario esté apuntado.
-    \item \textbf{RN-37}: Las notificaciones de moderación solo deben enviarse al creador del evento aprobado o rechazado.
+    \item \textbf{RN-34}: Las notificaciones de eventos cercanos solo pueden generarse si el usuario tiene una ubicación definida.
+    \item \textbf{RN-35}: Las notificaciones de recordatorio solo pueden generarse para eventos a los que el usuario esté apuntado.
+    \item \textbf{RN-36}: Las notificaciones de moderación solo deben enviarse al creador del evento aprobado o rechazado.
 \end{itemize}
 
 \section{Cumplimiento del Reglamento General de Protección de Datos (RGPD)}\label{sec:rgpd}
@@ -568,7 +570,7 @@ De acuerdo con el RGPD, los usuarios tienen los siguientes derechos sobre sus da
     \item \textbf{Derecho de acceso} (art. 15): el usuario puede consultar todos sus datos desde su perfil.
     \item \textbf{Derecho de rectificación} (art. 16): el usuario puede modificar su nombre, correo, fotografía e intereses desde la pantalla de edición de perfil.
     \item \textbf{Derecho de supresión o ``derecho al olvido''} (art. 17): el usuario puede eliminar su cuenta desde la aplicación, lo que provoca la anonimización o eliminación de todos sus datos personales.
-    \item \textbf{Derecho a la portabilidad} (art. 20): los datos se almacenan en formatos estándar (JSON, PostgreSQL) que permiten su exportación.
+    \item \textbf{Derecho a la portabilidad} (art. 20): aunque la aplicación móvil no expone un mecanismo directo de exportación, los datos se almacenan en formatos estándar (PostgreSQL, JSON en la API REST), lo que facilita su extracción por parte del responsable del tratamiento a petición del usuario.
     \item \textbf{Derecho a retirar el consentimiento} (art. 7.3): el usuario puede retirar su consentimiento eliminando su cuenta en cualquier momento.
 \end{itemize}
 
@@ -591,4 +593,4 @@ La aplicación incorpora un mecanismo de consentimiento explícito en la pantall
 
 \section{Conclusiones}
 
-El análisis ha producido un conjunto completo de requisitos funcionales, no funcionales y reglas de negocio que sirve de contrato entre el problema identificado y la solución diseñada en el capítulo siguiente.
+En este capítulo se han identificado los actores del sistema y sus relaciones, elaborado los diagramas de casos de uso, especificado los requisitos de información, definido 21 requisitos funcionales, 8 requisitos no funcionales y 36 reglas de negocio, diseñado mockups de las pantallas principales y analizado el cumplimiento del RGPD. El conjunto resultante sirve de contrato entre el problema identificado y la solución diseñada en el capítulo siguiente.

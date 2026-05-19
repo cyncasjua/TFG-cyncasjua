@@ -66,6 +66,10 @@ export function getErrorMessage(error: unknown): string {
       return 'Error del servidor. Intenta más tarde.';
     }
 
+    if (axiosError.response?.status === 502 || axiosError.response?.status === 504) {
+      return '502';
+    }
+
     if (axiosError.code === 'ECONNABORTED') {
       return 'La solicitud tardó demasiado. Verifica tu conexión.';
     }

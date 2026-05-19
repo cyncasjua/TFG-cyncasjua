@@ -42,10 +42,37 @@
 \newblock Agenda cultural -- ayuntamiento de sevilla, 2024.
 \newblock Último acceso: mayo 2025.
 
-\bibitem{fiber}
-{Fiber App}.
-\newblock Fiber -- discover and share local plans and events, 2024.
+\bibitem{fever}
+{Fever Labs, Inc.}
+\newblock Fever -- discover the best experiences in your city, 2024.
 \newblock Último acceso: mayo 2025.
+
+\bibitem{scrumguide2020}
+Ken Schwaber and Jeff Sutherland.
+\newblock The scrum guide: The definitive guide to scrum: The rules of the
+  game, 2020.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{githubactions}
+{GitHub, Inc.}
+\newblock Github actions -- automate your workflow from idea to production,
+  2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{conventionalcommits}
+{Conventional Commits}.
+\newblock Conventional commits 1.0.0, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{clockify}
+{Cake.com d.o.o.}
+\newblock Clockify -- free time tracker and timesheet app, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{expoGoLoading2026}
+{Expo Technology, Inc.}
+\newblock Changes to project loading behavior in expo go, 2026.
+\newblock Último acceso: mayo 2026.
 
 \bibitem{junta2018perfiles}
 {Junta de Andalucía. Consejería de Agricultura, Pesca y Desarrollo Rural}.
@@ -54,5 +81,106 @@
 \newblock Documento PDF, 2018.
 \newblock Informe local consultado:
   references/informe\_precios\_perfiles\_informaticos.pdf.
+
+\bibitem{reactnative}
+{Meta Open Source}.
+\newblock React native -- learn once, write anywhere, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{expo}
+{Expo Technology, Inc.}
+\newblock Expo -- build one javascript/typescript project that runs natively on
+  all your users' devices, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{reactnavigation}
+{React Navigation contributors}.
+\newblock React navigation -- routing and navigation for expo and react native
+  apps, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{nestjs}
+{NestJS}.
+\newblock Nestjs -- a progressive node.js framework, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{socketio}
+{Socket.IO}.
+\newblock Socket.io -- bidirectional and low-latency communication for every
+  platform, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{postgisdocs}
+{PostGIS Project Steering Committee}.
+\newblock Postgis 3.3 manual, 2023.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{typeorm}
+{TypeORM}.
+\newblock Typeorm -- orm for typescript and javascript, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{firebase}
+{Google LLC}.
+\newblock Firebase authentication, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{cloudinary}
+{Cloudinary Ltd.}
+\newblock Cloudinary -- image and video api platform, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{openstreetmap}
+{OpenStreetMap contributors}.
+\newblock Openstreetmap, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{ticketmaster}
+{Ticketmaster Entertainment, Inc.}
+\newblock Ticketmaster -- tickets to concerts, sports, theatre and more, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{fielding2000rest}
+Roy~Thomas Fielding.
+\newblock {\em Architectural Styles and the Design of Network-based Software
+  Architectures}.
+\newblock PhD thesis, University of California, Irvine, 2000.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{ricci2015recommender}
+Francesco Ricci, Lior Rokach, and Bracha Shapira.
+\newblock {\em Recommender Systems Handbook}.
+\newblock Springer, New York, NY, 2 edition, 2015.
+
+\bibitem{gamma1994design}
+Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
+\newblock {\em Design Patterns: Elements of Reusable Object-Oriented Software}.
+\newblock Addison-Wesley, Reading, MA, 1994.
+
+\bibitem{postgresql}
+{The PostgreSQL Global Development Group}.
+\newblock Postgresql: The world's most advanced open source relational
+  database, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{jest}
+{OpenJS Foundation}.
+\newblock Jest -- delightful javascript testing, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{render}
+{Render Services, Inc.}
+\newblock Render -- cloud application hosting, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{expoeas}
+{Expo Technology, Inc.}
+\newblock Eas build -- expo application services, 2024.
+\newblock Último acceso: mayo 2025.
+
+\bibitem{supabase}
+{Supabase, Inc.}
+\newblock Supabase documentation, 2024.
+\newblock Último acceso: mayo 2025.
 
 \end{thebibliography}

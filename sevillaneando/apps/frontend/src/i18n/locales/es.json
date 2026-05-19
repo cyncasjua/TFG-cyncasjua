@@ -244,6 +244,8 @@
     "addressNotFound": "No se ha encontrado la dirección o lugar especificado.",
     "addressError": "No se pudo buscar la dirección o lugar.",
     "tapMapLocation": "Toca el mapa para seleccionar la ubicación",
+    "locationInfoTitle": "¿Para qué se usa tu ubicación?",
+    "locationInfoBody": "Tu ubicación se utiliza para mostrarte eventos cercanos, ordenar resultados por distancia y mejorar tus recomendaciones personalizadas. No se comparte con terceros ni se registra en tiempo real.",
     "interests": "Intereses",
     "noCategoriesLoaded": "No se pudieron cargar categorías.",
     "imageUploadError": "No se pudo subir la imagen.",
@@ -305,7 +307,8 @@
     "resetScrapingMsg": "Se borrarán todos los eventos scrapeados automáticamente y se volverán a generar. Esto puede tardar varios minutos. ¿Continuar?",
     "resetScraping_confirm": "Restablecer",
     "resetDone": "Completado",
-    "resetResult": "{{message}}\nEliminados: {{deleted}} | Guardados: {{saved}}"
+    "resetResult": "{{message}}\nEliminados: {{deleted}} | Guardados: {{saved}}",
+    "resetScrapingTimeout": "El servidor tardó demasiado en responder (502). El scraping puede haber continuado en segundo plano. Espera unos minutos y comprueba si los eventos se han actualizado antes de volver a intentarlo."
   },
   "categories": {
     "title": "Categorías",

@@ -133,7 +133,12 @@ export const AdminScreen: React.FC<Props> = () => {
               })
             );
           } catch (err) {
-            Alert.alert(t('common.error'), getErrorMessage(err));
+            const msg = getErrorMessage(err);
+            if (msg === '502') {
+              Alert.alert(t('admin.resetScrapingTitle'), t('admin.resetScrapingTimeout'));
+            } else {
+              Alert.alert(t('common.error'), msg);
+            }
             reportError('admin.reset-scraping', 'Error restableciendo eventos scrapeados', err);
           } finally {
             setResetting(false);

@@ -340,25 +340,6 @@ Expo muestra un código QR en la terminal. El evaluador o usuario que desee prob
 La aplicación se carga directamente en el dispositivo conectándose al servidor de desarrollo a través del túnel. Para que funcione, el equipo de desarrollo debe permanecer encendido y el proceso de Expo debe seguir ejecutándose. Este método se utiliza únicamente como mecanismo de demostración y validación, no como despliegue permanente de la aplicación.
 
 %--------------------------------------------------
-\section{Programación externa de la purga RGPD}
-
-La lógica de purga de mensajes privados huérfanos está implementada en el backend y se expone mediante el endpoint:
-
-\begin{lstlisting}
-POST https://sevillaneando-backend.onrender.com/scheduler/run-purga-datos
-\end{lstlisting}
-
-Para garantizar que esta tarea se ejecute de forma periódica aunque el proveedor de hosting suspenda el proceso del backend por inactividad, se configura un cron externo que invoque dicho endpoint una vez al día, en horario de baja actividad. La planificación recomendada es:
-
-\begin{lstlisting}
-0 4 * * *
-\end{lstlisting}
-
-Esta expresión ejecuta la purga diariamente a las 04:00. La frecuencia diaria es suficiente porque la política de retención elimina mensajes privados huérfanos únicamente cuando han superado los 30 días de antigüedad.
-
-En un despliegue real, este endpoint debería protegerse mediante un secreto compartido enviado en cabecera o mediante autenticación administrativa. En el contexto académico del proyecto se documenta la necesidad de dicha protección como medida previa a una publicación abierta al público.
-
-%--------------------------------------------------
 \section{Validación posterior al despliegue}
 
 Una vez desplegado el sistema, es necesario verificar el correcto funcionamiento de todos los componentes en producción.
@@ -403,7 +384,6 @@ Lista de verificación antes de dar por concluido el despliegue:
     \item[$\square$] El backend compila y arranca correctamente (\texttt{npm run build} sin errores).
     \item[$\square$] Todas las variables de entorno están configuradas en el proveedor de hosting.
     \item[$\square$] El endpoint \texttt{/scheduler/health} responde con estado \texttt{ok}.
-    \item[$\square$] El cron externo diario de purga RGPD invoca \texttt{POST /scheduler/run-purga-datos}.
     \item[$\square$] La conexión SSL con la base de datos está activa.
     \item[$\square$] Las credenciales de Firebase, Cloudinary, Ticketmaster y Gemini son válidas.
     \item[$\square$] El frontend apunta a la URL correcta del backend de producción.

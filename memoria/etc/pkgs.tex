@@ -48,6 +48,9 @@
 \usepackage{multirow}
 \usepackage{amssymb}
 
+% Columna p con alineación izquierda (evita el espaciado irregular en columnas estrechas)
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}

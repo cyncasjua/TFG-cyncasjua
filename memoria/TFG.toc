@@ -16,76 +16,65 @@
 \contentsline {section}{\numberline {2.4}Planificación}{7}{section.2.4}%
 \contentsline {subsection}{\numberline {2.4.1}Gestión de riesgos}{8}{subsection.2.4.1}%
 \contentsline {subsection}{\numberline {2.4.2}Desviaciones respecto a la planificación inicial}{10}{subsection.2.4.2}%
-\contentsline {paragraph}{Resumen cuantitativo de desviaciones.}{11}{paragraph*.9}%
-\contentsline {paragraph}{Lecciones extraídas de las desviaciones.}{12}{paragraph*.11}%
+\contentsline {paragraph}{Resumen cuantitativo de desviaciones.}{11}{paragraph*.25}%
+\contentsline {paragraph}{Lecciones extraídas de las desviaciones.}{12}{paragraph*.27}%
 \contentsline {subsection}{\numberline {2.4.3}Estructura de Desglose del Trabajo inicial}{13}{subsection.2.4.3}%
 \contentsline {subsection}{\numberline {2.4.4}Planificación por sprints}{15}{subsection.2.4.4}%
 \contentsline {subsection}{\numberline {2.4.5}Diagrama de planificación}{16}{subsection.2.4.5}%
-\contentsline {section}{\numberline {2.5}Presupuesto}{16}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Recursos humanos}{16}{subsection.2.5.1}%
+\contentsline {section}{\numberline {2.5}Presupuesto}{17}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Recursos humanos}{17}{subsection.2.5.1}%
 \contentsline {subsection}{\numberline {2.5.2}Distribución del esfuerzo}{17}{subsection.2.5.2}%
 \contentsline {subsection}{\numberline {2.5.3}Infraestructura y costes indirectos}{18}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.5.4}Coste total del proyecto}{18}{subsection.2.5.4}%
-\contentsline {subsection}{\numberline {2.5.5}Presupuesto}{19}{subsection.2.5.5}%
-\contentsline {chapter}{\numberline {3}Análisis del problema}{20}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Introducción}{20}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Actores del sistema}{20}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Visitante}{20}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Ciudadano}{20}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Organizador}{21}{subsection.3.2.3}%
-\contentsline {subsection}{\numberline {3.2.4}Moderador de contenido}{21}{subsection.3.2.4}%
-\contentsline {subsection}{\numberline {3.2.5}Administrador de la plataforma}{21}{subsection.3.2.5}%
-\contentsline {section}{\numberline {3.3}Diagrama de casos de uso}{22}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Requisitos de información}{24}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Requisitos funcionales}{27}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Matriz de trazabilidad de requisitos a objetivos}{32}{subsection.3.5.1}%
-\contentsline {section}{\numberline {3.6}Diseño de mockups}{32}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Vista general de mockups}{33}{subsection.3.6.1}%
-\contentsline {section}{\numberline {3.7}Requisitos no funcionales}{34}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Reglas de negocio}{35}{section.3.8}%
-\contentsline {subsection}{\numberline {3.8.1}Gestión de usuarios y roles}{35}{subsection.3.8.1}%
-\contentsline {subsection}{\numberline {3.8.2}Gestión de eventos}{36}{subsection.3.8.2}%
-\contentsline {subsection}{\numberline {3.8.3}Eventos privados}{36}{subsection.3.8.3}%
-\contentsline {subsection}{\numberline {3.8.4}Participación en eventos}{36}{subsection.3.8.4}%
-\contentsline {subsection}{\numberline {3.8.5}Comunicación y contenido}{36}{subsection.3.8.5}%
-\contentsline {subsection}{\numberline {3.8.6}Valoraciones y reseñas}{37}{subsection.3.8.6}%
-\contentsline {subsection}{\numberline {3.8.7}Recomendaciones y geolocalización}{37}{subsection.3.8.7}%
-\contentsline {subsection}{\numberline {3.8.8}Scraping}{37}{subsection.3.8.8}%
-\contentsline {subsection}{\numberline {3.8.9}Restricciones de integridad de datos}{37}{subsection.3.8.9}%
-\contentsline {subsection}{\numberline {3.8.10}Notificaciones}{37}{subsection.3.8.10}%
-\contentsline {section}{\numberline {3.9}Cumplimiento del Reglamento General de Protección de Datos (RGPD)}{38}{section.3.9}%
-\contentsline {subsection}{\numberline {3.9.1}Datos personales tratados}{38}{subsection.3.9.1}%
-\contentsline {subsection}{\numberline {3.9.2}Finalidad y base legal del tratamiento}{38}{subsection.3.9.2}%
-\contentsline {subsection}{\numberline {3.9.3}Terceros encargados del tratamiento}{39}{subsection.3.9.3}%
-\contentsline {subsection}{\numberline {3.9.4}Derechos de los usuarios}{39}{subsection.3.9.4}%
-\contentsline {subsection}{\numberline {3.9.5}Medidas técnicas y organizativas}{39}{subsection.3.9.5}%
-\contentsline {subsection}{\numberline {3.9.6}Consentimiento explícito en el registro}{40}{subsection.3.9.6}%
-\contentsline {section}{\numberline {3.10}Conclusiones}{40}{section.3.10}%
-\contentsline {chapter}{\numberline {4}Diseño de la solución}{41}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Introducción}{41}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Arquitectura del sistema}{41}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Aplicación móvil (frontend)}{43}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Servidor backend}{44}{subsection.4.2.2}%
-\contentsline {subsection}{\numberline {4.2.3}Base de datos}{45}{subsection.4.2.3}%
-\contentsline {subsection}{\numberline {4.2.4}Servicios externos}{46}{subsection.4.2.4}%
-\contentsline {section}{\numberline {4.3}Modelo de datos}{47}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Usuario (\texttt {User})}{47}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Evento (\texttt {Event})}{47}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}Categoría (\texttt {Categoria})}{48}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {4.3.4}Reseña (\texttt {Resena})}{48}{subsection.4.3.4}%
-\contentsline {subsection}{\numberline {4.3.5}Mensaje de evento (\texttt {Mensaje})}{48}{subsection.4.3.5}%
-\contentsline {subsection}{\numberline {4.3.6}Mensaje privado (\texttt {MensajePrivado})}{48}{subsection.4.3.6}%
-\contentsline {subsection}{\numberline {4.3.7}Notificación (\texttt {Notificacion})}{48}{subsection.4.3.7}%
-\contentsline {subsection}{\numberline {4.3.8}Ruta (\texttt {Ruta})}{48}{subsection.4.3.8}%
-\contentsline {subsection}{\numberline {4.3.9}Calificación de ruta (\texttt {CalificacionRuta})}{49}{subsection.4.3.9}%
-\contentsline {subsection}{\numberline {4.3.10}Recomendación (\texttt {Recomendacion})}{49}{subsection.4.3.10}%
-\contentsline {subsection}{\numberline {4.3.11}Solicitud de edición de evento (\texttt {EventEditRequest})}{49}{subsection.4.3.11}%
-\contentsline {subsection}{\numberline {4.3.12}Edición de eventos por moderación}{49}{subsection.4.3.12}%
-\contentsline {subsection}{\numberline {4.3.13}Diagrama entidad-relación}{49}{subsection.4.3.13}%
-\contentsline {section}{\numberline {4.4}Diseño de la API REST}{51}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Versionado}{51}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Autenticación y control de acceso}{51}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.4.3}Endpoints principales}{52}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {2.5.4}Coste total del proyecto}{19}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.5}Presupuesto estimado}{19}{subsection.2.5.5}%
+\contentsline {subsection}{\numberline {2.5.6}Coste real del proyecto}{20}{subsection.2.5.6}%
+\contentsline {chapter}{\numberline {3}Análisis del problema}{21}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Introducción}{21}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Actores del sistema}{21}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Visitante}{21}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Ciudadano}{21}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Organizador}{22}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Moderador de contenido}{22}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Administrador de la plataforma}{22}{subsection.3.2.5}%
+\contentsline {section}{\numberline {3.3}Diagrama de casos de uso}{23}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Requisitos de información}{25}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Requisitos funcionales}{28}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Matriz de trazabilidad de requisitos a objetivos}{33}{subsection.3.5.1}%
+\contentsline {section}{\numberline {3.6}Diseño de mockups}{34}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Vista general de mockups}{35}{subsection.3.6.1}%
+\contentsline {section}{\numberline {3.7}Requisitos no funcionales}{36}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Reglas de negocio}{37}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Gestión de usuarios y roles}{37}{subsection.3.8.1}%
+\contentsline {subsection}{\numberline {3.8.2}Gestión de eventos}{38}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.3}Eventos privados}{38}{subsection.3.8.3}%
+\contentsline {subsection}{\numberline {3.8.4}Participación en eventos}{38}{subsection.3.8.4}%
+\contentsline {subsection}{\numberline {3.8.5}Comunicación y contenido}{38}{subsection.3.8.5}%
+\contentsline {subsection}{\numberline {3.8.6}Valoraciones y reseñas}{39}{subsection.3.8.6}%
+\contentsline {subsection}{\numberline {3.8.7}Recomendaciones y geolocalización}{39}{subsection.3.8.7}%
+\contentsline {subsection}{\numberline {3.8.8}Scraping}{39}{subsection.3.8.8}%
+\contentsline {subsection}{\numberline {3.8.9}Restricciones de integridad de datos}{39}{subsection.3.8.9}%
+\contentsline {subsection}{\numberline {3.8.10}Notificaciones}{39}{subsection.3.8.10}%
+\contentsline {section}{\numberline {3.9}Cumplimiento del Reglamento General de Protección de Datos (RGPD)}{40}{section.3.9}%
+\contentsline {subsection}{\numberline {3.9.1}Datos personales tratados}{40}{subsection.3.9.1}%
+\contentsline {subsection}{\numberline {3.9.2}Finalidad y base legal del tratamiento}{40}{subsection.3.9.2}%
+\contentsline {subsection}{\numberline {3.9.3}Terceros encargados del tratamiento}{41}{subsection.3.9.3}%
+\contentsline {subsection}{\numberline {3.9.4}Derechos de los usuarios}{41}{subsection.3.9.4}%
+\contentsline {subsection}{\numberline {3.9.5}Medidas técnicas y organizativas}{41}{subsection.3.9.5}%
+\contentsline {subsection}{\numberline {3.9.6}Consentimiento explícito en el registro}{42}{subsection.3.9.6}%
+\contentsline {section}{\numberline {3.10}Conclusiones}{42}{section.3.10}%
+\contentsline {chapter}{\numberline {4}Diseño de la solución}{43}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introducción}{43}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Arquitectura del sistema}{43}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Aplicación móvil (frontend)}{44}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Servidor backend}{45}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Base de datos}{47}{subsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.2.4}Servicios externos}{47}{subsection.4.2.4}%
+\contentsline {section}{\numberline {4.3}Modelo de datos}{50}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Diagrama entidad-relación}{51}{subsection.4.3.1}%
+\contentsline {section}{\numberline {4.4}Diseño de la API REST}{53}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Versionado}{53}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Autenticación y control de acceso}{53}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Endpoints principales}{54}{subsection.4.4.3}%
 \contentsline {section}{\numberline {4.5}Flujo de interacción del usuario}{56}{section.4.5}%
 \contentsline {section}{\numberline {4.6}Diseño del sistema de moderación}{57}{section.4.6}%
 \contentsline {section}{\numberline {4.7}Flujo de interacción del administrador}{59}{section.4.7}%
@@ -93,268 +82,277 @@
 \contentsline {subsection}{\numberline {4.8.1}Principios de diseño}{61}{subsection.4.8.1}%
 \contentsline {subsection}{\numberline {4.8.2}Grafo de navegación}{61}{subsection.4.8.2}%
 \contentsline {subsection}{\numberline {4.8.3}Pantallas del sistema}{62}{subsection.4.8.3}%
-\contentsline {section}{\numberline {4.9}Diseño del sistema de comunicación en tiempo real}{63}{section.4.9}%
-\contentsline {subsection}{\numberline {4.9.1}Ciclo de vida de la conexión y los listeners}{63}{subsection.4.9.1}%
-\contentsline {section}{\numberline {4.10}Diseño del sistema de recomendaciones}{64}{section.4.10}%
-\contentsline {section}{\numberline {4.11}Patrones de diseño aplicados}{65}{section.4.11}%
-\contentsline {section}{\numberline {4.12}Decisiones de diseño relevantes}{66}{section.4.12}%
-\contentsline {subsection}{\numberline {4.12.1}Por qué tres roles y no más ni menos}{66}{subsection.4.12.1}%
-\contentsline {subsection}{\numberline {4.12.2}Por qué la eliminación de eventos es explícita y restringida}{67}{subsection.4.12.2}%
-\contentsline {subsection}{\numberline {4.12.3}Por qué los eventos finalizados no se borran}{67}{subsection.4.12.3}%
-\contentsline {subsection}{\numberline {4.12.4}Por qué el moderador puede editar un evento directamente antes de aprobarlo}{68}{subsection.4.12.4}%
-\contentsline {subsection}{\numberline {4.12.5}Por qué el administrador solo gestiona roles y categorías}{68}{subsection.4.12.5}%
-\contentsline {subsection}{\numberline {4.12.6}Por qué el chat incluye persistencia y no es solo en tiempo real}{68}{subsection.4.12.6}%
-\contentsline {subsection}{\numberline {4.12.7}Por qué los eventos privados se aprueban automáticamente}{69}{subsection.4.12.7}%
-\contentsline {subsection}{\numberline {4.12.8}Por qué los eventos privados usan un enlace UUID en lugar de una lista de control de acceso}{69}{subsection.4.12.8}%
-\contentsline {subsection}{\numberline {4.12.9}Por qué los eventos recurrentes generan instancias independientes en base de datos}{70}{subsection.4.12.9}%
-\contentsline {subsection}{\numberline {4.12.10}Por qué se usa PostGIS con tipo \textit {geography} y SRID 4326}{70}{subsection.4.12.10}%
-\contentsline {subsection}{\numberline {4.12.11}Por qué hay tres schedulers de notificaciones independientes}{71}{subsection.4.12.11}%
-\contentsline {subsection}{\numberline {4.12.12}Por qué el scraping se ejecuta a las 3:00 AM}{71}{subsection.4.12.12}%
-\contentsline {subsection}{\numberline {4.12.13}Por qué el cron job es externo y no interno al backend}{71}{subsection.4.12.13}%
-\contentsline {subsection}{\numberline {4.12.14}Flujo del sistema de scraping}{72}{subsection.4.12.14}%
-\contentsline {subsection}{\numberline {4.12.15}Por qué los scrapers siguen el patrón estrategia con interfaz \texttt {IScraper}}{72}{subsection.4.12.15}%
-\contentsline {subsection}{\numberline {4.12.16}Por qué se usan contextos de React en lugar de una librería de estado global}{73}{subsection.4.12.16}%
-\contentsline {subsection}{\numberline {4.12.17}Por qué la preferencia de tema se guarda en \texttt {AsyncStorage} y no en el servidor}{73}{subsection.4.12.17}%
-\contentsline {subsection}{\numberline {4.12.18}Por qué la conexión WebSocket se autentica en el \textit {handshake} y no por mensaje}{73}{subsection.4.12.18}%
-\contentsline {subsection}{\numberline {4.12.19}Por qué el historial de chat se limita a los últimos 50 mensajes}{74}{subsection.4.12.19}%
-\contentsline {subsection}{\numberline {4.12.20}Por qué las imágenes del evento usan un campo principal y un array adicional}{74}{subsection.4.12.20}%
-\contentsline {subsection}{\numberline {4.12.21}Por qué el token de Firebase se refresca cada 50 minutos en el frontend}{74}{subsection.4.12.21}%
-\contentsline {subsection}{\numberline {4.12.22}Por qué solo el administrador puede crear y gestionar categorías}{75}{subsection.4.12.22}%
-\contentsline {subsection}{\numberline {4.12.23}Por qué cualquier usuario autenticado puede crear eventos}{75}{subsection.4.12.23}%
-\contentsline {subsection}{\numberline {4.12.24}Por qué los roles de administrador y moderador no se han unificado}{75}{subsection.4.12.24}%
-\contentsline {subsection}{\numberline {4.12.25}Por qué se ha implementado scraping en lugar de usar únicamente APIs oficiales}{76}{subsection.4.12.25}%
-\contentsline {subsection}{\numberline {4.12.26}Por qué se usa Cloudinary para el almacenamiento de imágenes}{77}{subsection.4.12.26}%
-\contentsline {subsection}{\numberline {4.12.27}Por qué la aplicación ofrece modo claro y modo oscuro}{77}{subsection.4.12.27}%
-\contentsline {subsection}{\numberline {4.12.28}Por qué se usa Firebase Authentication en lugar de autenticación propia}{78}{subsection.4.12.28}%
-\contentsline {subsection}{\numberline {4.12.29}Por qué se usa React Native con Expo y no otra tecnología móvil}{78}{subsection.4.12.29}%
-\contentsline {subsection}{\numberline {4.12.30}Por qué se usa NestJS como framework de backend}{79}{subsection.4.12.30}%
-\contentsline {subsection}{\numberline {4.12.31}Por qué se usa PostgreSQL en lugar de una base de datos NoSQL}{79}{subsection.4.12.31}%
-\contentsline {subsection}{\numberline {4.12.32}Por qué se usa TypeORM en lugar de Prisma u otro ORM}{79}{subsection.4.12.32}%
-\contentsline {subsection}{\numberline {4.12.33}Por qué se usa OpenStreetMap en lugar de Google Maps}{80}{subsection.4.12.33}%
-\contentsline {subsection}{\numberline {4.12.34}Por qué se usa Axios en el frontend en lugar de \texttt {fetch}}{80}{subsection.4.12.34}%
-\contentsline {subsection}{\numberline {4.12.35}Por qué existen tanto rutas creadas por usuarios como rutas recomendadas automáticamente}{80}{subsection.4.12.35}%
-\contentsline {subsection}{\numberline {4.12.36}Por qué existe un módulo de amistad basado en seguimiento}{81}{subsection.4.12.36}%
-\contentsline {subsection}{\numberline {4.12.37}Por qué el precio de un evento puede ser fijo o expresarse como rango}{81}{subsection.4.12.37}%
-\contentsline {subsection}{\numberline {4.12.38}Por qué se implementa deep linking}{82}{subsection.4.12.38}%
-\contentsline {subsection}{\numberline {4.12.39}Qué ocurre al eliminar un usuario}{82}{subsection.4.12.39}%
-\contentsline {subsection}{\numberline {4.12.40}Qué ocurre al eliminar una categoría}{83}{subsection.4.12.40}%
-\contentsline {section}{\numberline {4.13}Conclusiones}{83}{section.4.13}%
-\contentsline {chapter}{\numberline {5}Implementación}{84}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Introducción}{84}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Herramientas}{84}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}ORM y datos geográficos}{84}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Scraping}{85}{subsection.5.2.2}%
-\contentsline {section}{\numberline {5.3}Estructura del proyecto}{86}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Implementación del backend}{86}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Organización modular}{86}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}API de eventos}{87}{subsection.5.4.2}%
-\contentsline {subsection}{\numberline {5.4.3}Validación de datos}{87}{subsection.5.4.3}%
-\contentsline {subsection}{\numberline {5.4.4}Actualización de eventos}{87}{subsection.5.4.4}%
-\contentsline {subsection}{\numberline {5.4.5}Control de roles}{88}{subsection.5.4.5}%
-\contentsline {subsection}{\numberline {5.4.6}Limitación de velocidad}{88}{subsection.5.4.6}%
-\contentsline {subsection}{\numberline {5.4.7}Autenticación en endpoints protegidos}{88}{subsection.5.4.7}%
-\contentsline {subsection}{\numberline {5.4.8}Eventos recurrentes}{89}{subsection.5.4.8}%
-\contentsline {section}{\numberline {5.5}Implementación del frontend}{89}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}Estructura de pantallas}{89}{subsection.5.5.1}%
-\contentsline {subsection}{\numberline {5.5.2}Estado global y proveedores}{90}{subsection.5.5.2}%
-\contentsline {subsection}{\numberline {5.5.3}Comunicación con la API}{90}{subsection.5.5.3}%
-\contentsline {subsection}{\numberline {5.5.4}Gestión de mapas}{92}{subsection.5.5.4}%
-\contentsline {subsection}{\numberline {5.5.5}Gestión de imágenes}{92}{subsection.5.5.5}%
-\contentsline {subsection}{\numberline {5.5.6}Utilidades de presentación y normalización}{92}{subsection.5.5.6}%
-\contentsline {section}{\numberline {5.6}Implementación de funcionalidades principales}{93}{section.5.6}%
-\contentsline {subsection}{\numberline {5.6.1}Creación y edición de eventos}{93}{subsection.5.6.1}%
-\contentsline {subsection}{\numberline {5.6.2}Panel de administración}{93}{subsection.5.6.2}%
-\contentsline {subsection}{\numberline {5.6.3}Moderación de eventos}{93}{subsection.5.6.3}%
-\contentsline {subsection}{\numberline {5.6.4}Eventos privados}{94}{subsection.5.6.4}%
-\contentsline {subsection}{\numberline {5.6.5}Participación y organización de eventos}{94}{subsection.5.6.5}%
-\contentsline {subsection}{\numberline {5.6.6}Recomendaciones}{94}{subsection.5.6.6}%
-\contentsline {subsection}{\numberline {5.6.7}Rutas}{95}{subsection.5.6.7}%
-\contentsline {subsection}{\numberline {5.6.8}Gestión de perfiles de usuario}{96}{subsection.5.6.8}%
-\contentsline {subsection}{\numberline {5.6.9}Módulo de amistad y seguimiento}{96}{subsection.5.6.9}%
-\contentsline {subsection}{\numberline {5.6.10}Chat y mensajería}{96}{subsection.5.6.10}%
-\contentsline {subsection}{\numberline {5.6.11}Notificaciones}{97}{subsection.5.6.11}%
-\contentsline {subsection}{\numberline {5.6.12}Scraping de eventos externos}{98}{subsection.5.6.12}%
-\contentsline {subsection}{\numberline {5.6.13}Tareas programadas}{98}{subsection.5.6.13}%
-\contentsline {section}{\numberline {5.7}Gestión de la base de datos}{99}{section.5.7}%
-\contentsline {section}{\numberline {5.8}Despliegue y entorno de desarrollo}{99}{section.5.8}%
-\contentsline {section}{\numberline {5.9}Conclusiones}{99}{section.5.9}%
-\contentsline {chapter}{\numberline {6}Pruebas}{100}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Introducción}{100}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Metodología y tipos de pruebas}{100}{section.6.2}%
-\contentsline {subsection}{\numberline {6.2.1}Pruebas unitarias del backend}{100}{subsection.6.2.1}%
-\contentsline {subsubsection}{EventsService}{100}{subsubsection*.41}%
-\contentsline {subsubsection}{RecomendacionesService}{101}{subsubsection*.42}%
-\contentsline {subsubsection}{UsersService}{102}{subsubsection*.43}%
-\contentsline {subsection}{\numberline {6.2.2}Resumen de pruebas unitarias}{104}{subsection.6.2.2}%
-\contentsline {subsection}{\numberline {6.2.3}Cobertura de código}{104}{subsection.6.2.3}%
-\contentsline {subsection}{\numberline {6.2.4}Pruebas de aceptación}{105}{subsection.6.2.4}%
-\contentsline {section}{\numberline {6.3}Entorno de pruebas}{105}{section.6.3}%
-\contentsline {subsection}{\numberline {6.3.1}Incidencias de compatibilidad con Android}{105}{subsection.6.3.1}%
-\contentsline {section}{\numberline {6.4}Plan de pruebas de aceptación}{106}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Pruebas de autenticación y perfil}{106}{subsection.6.4.1}%
-\contentsline {subsection}{\numberline {6.4.2}Pruebas de consulta, búsqueda y detalle de eventos}{106}{subsection.6.4.2}%
-\contentsline {subsection}{\numberline {6.4.3}Pruebas de geolocalización y mapa}{107}{subsection.6.4.3}%
-\contentsline {subsection}{\numberline {6.4.4}Pruebas de interacción social: chat, mensajería y valoraciones}{108}{subsection.6.4.4}%
-\contentsline {subsection}{\numberline {6.4.5}Pruebas de recomendaciones y rutas}{108}{subsection.6.4.5}%
-\contentsline {subsection}{\numberline {6.4.6}Pruebas de eventos privados y gestión de eventos creados}{109}{subsection.6.4.6}%
-\contentsline {subsection}{\numberline {6.4.7}Pruebas de administración y moderación}{109}{subsection.6.4.7}%
-\contentsline {subsection}{\numberline {6.4.8}Pruebas de notificaciones}{110}{subsection.6.4.8}%
-\contentsline {section}{\numberline {6.5}Resultados de las pruebas de aceptación}{110}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Conclusiones}{112}{section.6.6}%
-\contentsline {chapter}{\numberline {7}Conclusiones}{113}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Introducción}{113}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Objetivos alcanzados}{113}{section.7.2}%
-\contentsline {subsection}{\numberline {7.2.1}Objetivos del proyecto}{113}{subsection.7.2.1}%
-\contentsline {subsection}{\numberline {7.2.2}Objetivos del sistema}{114}{subsection.7.2.2}%
-\contentsline {section}{\numberline {7.3}Resultados obtenidos}{115}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Lecciones aprendidas}{116}{section.7.4}%
-\contentsline {section}{\numberline {7.5}Desviaciones respecto a la planificación}{117}{section.7.5}%
-\contentsline {section}{\numberline {7.6}Consideraciones de seguridad y privacidad}{118}{section.7.6}%
-\contentsline {subsection}{\numberline {7.6.1}Limitaciones respecto al RGPD}{118}{subsection.7.6.1}%
-\contentsline {section}{\numberline {7.7}Trabajo futuro}{120}{section.7.7}%
-\contentsline {subsection}{\numberline {7.7.1}Mejoras sobre funcionalidades existentes}{120}{subsection.7.7.1}%
-\contentsline {subsection}{\numberline {7.7.2}Nuevas funcionalidades}{120}{subsection.7.7.2}%
-\contentsline {section}{\numberline {7.8}Uso de herramientas de inteligencia artificial}{122}{section.7.8}%
-\contentsline {subsection}{\numberline {7.8.1}Herramientas utilizadas}{122}{subsection.7.8.1}%
-\contentsline {subsection}{\numberline {7.8.2}Alcance del uso}{123}{subsection.7.8.2}%
-\contentsline {subsection}{\numberline {7.8.3}Verificación}{123}{subsection.7.8.3}%
-\contentsline {section}{\numberline {7.9}Conclusión final}{123}{section.7.9}%
-\contentsline {chapter}{Bibliograf\'{\i }a}{125}{chapter*.76}%
-\contentsline {chapter}{Anexos}{126}{section*.77}%
-\contentsline {chapter}{\numberline {A}Glosario de términos}{127}{appendix.Alph1}%
-\contentsline {chapter}{\numberline {B}Manual de Desarrollo}{129}{appendix.Alph2}%
-\contentsline {section}{\numberline {B.1}Objetivo}{129}{section.Alph2.1}%
-\contentsline {section}{\numberline {B.2}Arquitectura del sistema}{129}{section.Alph2.2}%
-\contentsline {subsection}{\numberline {B.2.1}Visión general}{129}{subsection.Alph2.2.1}%
-\contentsline {subsection}{\numberline {B.2.2}Cliente móvil}{130}{subsection.Alph2.2.2}%
-\contentsline {subsection}{\numberline {B.2.3}Servidor backend}{130}{subsection.Alph2.2.3}%
-\contentsline {subsection}{\numberline {B.2.4}Base de datos}{131}{subsection.Alph2.2.4}%
-\contentsline {subsection}{\numberline {B.2.5}Servicios externos}{131}{subsection.Alph2.2.5}%
-\contentsline {section}{\numberline {B.3}Tecnologías y versiones}{131}{section.Alph2.3}%
-\contentsline {section}{\numberline {B.4}Prerrequisitos}{132}{section.Alph2.4}%
-\contentsline {section}{\numberline {B.5}Obtención del código fuente}{132}{section.Alph2.5}%
-\contentsline {section}{\numberline {B.6}Instalación de dependencias}{132}{section.Alph2.6}%
-\contentsline {section}{\numberline {B.7}Variables de entorno}{133}{section.Alph2.7}%
-\contentsline {subsection}{\numberline {B.7.1}Backend (\texttt {apps/backend/.env.development})}{133}{subsection.Alph2.7.1}%
-\contentsline {subsection}{\numberline {B.7.2}Frontend (\texttt {apps/frontend/.env.development})}{134}{subsection.Alph2.7.2}%
-\contentsline {section}{\numberline {B.8}Ejecución local}{134}{section.Alph2.8}%
-\contentsline {subsection}{\numberline {B.8.1}1. Base de datos}{135}{subsection.Alph2.8.1}%
-\contentsline {subsection}{\numberline {B.8.2}2. Backend}{135}{subsection.Alph2.8.2}%
-\contentsline {subsection}{\numberline {B.8.3}3. Frontend}{135}{subsection.Alph2.8.3}%
-\contentsline {section}{\numberline {B.9}Estructura del proyecto}{135}{section.Alph2.9}%
-\contentsline {subsection}{\numberline {B.9.1}Módulos del backend}{136}{subsection.Alph2.9.1}%
-\contentsline {subsection}{\numberline {B.9.2}Pantallas del frontend}{137}{subsection.Alph2.9.2}%
-\contentsline {section}{\numberline {B.10}Ecosistema de desarrollo}{138}{section.Alph2.10}%
-\contentsline {subsection}{\numberline {B.10.1}Herramientas de implementación}{138}{subsection.Alph2.10.1}%
-\contentsline {subsection}{\numberline {B.10.2}Herramientas de documentación}{138}{subsection.Alph2.10.2}%
-\contentsline {subsection}{\numberline {B.10.3}Herramientas de gestión del proyecto}{138}{subsection.Alph2.10.3}%
-\contentsline {subsection}{\numberline {B.10.4}Asistentes de IA}{138}{subsection.Alph2.10.4}%
-\contentsline {section}{\numberline {B.11}Política de gestión del código fuente}{138}{section.Alph2.11}%
-\contentsline {subsection}{\numberline {B.11.1}Estrategia de ramas}{139}{subsection.Alph2.11.1}%
-\contentsline {subsection}{\numberline {B.11.2}Convención de commits}{139}{subsection.Alph2.11.2}%
-\contentsline {section}{\numberline {B.12}Integración continua}{139}{section.Alph2.12}%
-\contentsline {section}{\numberline {B.13}Resolución de problemas comunes}{139}{section.Alph2.13}%
-\contentsline {subsection}{\numberline {B.13.1}Base de datos}{139}{subsection.Alph2.13.1}%
-\contentsline {subsection}{\numberline {B.13.2}Backend}{140}{subsection.Alph2.13.2}%
-\contentsline {subsection}{\numberline {B.13.3}Frontend}{140}{subsection.Alph2.13.3}%
-\contentsline {section}{\numberline {B.14}Referencias}{140}{section.Alph2.14}%
-\contentsline {chapter}{\numberline {C}Manual de despliegue}{141}{appendix.Alph3}%
-\contentsline {section}{\numberline {C.1}Objetivo}{141}{section.Alph3.1}%
-\contentsline {section}{\numberline {C.2}Arquitectura de despliegue}{141}{section.Alph3.2}%
-\contentsline {subsection}{\numberline {C.2.1}Componentes principales}{142}{subsection.Alph3.2.1}%
-\contentsline {section}{\numberline {C.3}Versiones}{142}{section.Alph3.3}%
-\contentsline {section}{\numberline {C.4}Despliegue de la base de datos}{142}{section.Alph3.4}%
-\contentsline {subsection}{\numberline {C.4.1}Opción recomendada: servicio gestionado}{143}{subsection.Alph3.4.1}%
-\contentsline {subsection}{\numberline {C.4.2}Configuración de SSL}{143}{subsection.Alph3.4.2}%
-\contentsline {subsection}{\numberline {C.4.3}Creación del esquema de base de datos en producción}{143}{subsection.Alph3.4.3}%
-\contentsline {subsection}{\numberline {C.4.4}Activación de Row-Level Security (RLS)}{144}{subsection.Alph3.4.4}%
-\contentsline {subsection}{\numberline {C.4.5}Alternativa: despliegue con Docker}{144}{subsection.Alph3.4.5}%
-\contentsline {section}{\numberline {C.5}Despliegue del backend}{145}{section.Alph3.5}%
-\contentsline {subsection}{\numberline {C.5.1}Construcción local previa}{145}{subsection.Alph3.5.1}%
-\contentsline {subsection}{\numberline {C.5.2}Variables de entorno de producción}{145}{subsection.Alph3.5.2}%
-\contentsline {subsection}{\numberline {C.5.3}Despliegue en Render}{146}{subsection.Alph3.5.3}%
-\contentsline {subsubsection}{Creación del servicio}{146}{subsubsection*.81}%
-\contentsline {subsubsection}{Configuración del proceso de build}{146}{subsubsection*.82}%
-\contentsline {subsubsection}{Configuración de variables de entorno}{146}{subsubsection*.83}%
-\contentsline {subsubsection}{Publicación}{147}{subsubsection*.84}%
-\contentsline {section}{\numberline {C.6}Distribución de la aplicación móvil}{147}{section.Alph3.6}%
-\contentsline {subsection}{\numberline {C.6.1}Variables de entorno del frontend}{147}{subsection.Alph3.6.1}%
-\contentsline {subsection}{\numberline {C.6.2}Opción 1: APK para Android}{148}{subsection.Alph3.6.2}%
-\contentsline {subsection}{\numberline {C.6.3}Opción 2: Expo Go con túnel}{148}{subsection.Alph3.6.3}%
-\contentsline {section}{\numberline {C.7}Programación externa de la purga RGPD}{149}{section.Alph3.7}%
-\contentsline {section}{\numberline {C.8}Validación posterior al despliegue}{149}{section.Alph3.8}%
-\contentsline {subsection}{\numberline {C.8.1}Verificación del backend}{149}{subsection.Alph3.8.1}%
-\contentsline {subsection}{\numberline {C.8.2}Funcionalidades a validar}{150}{subsection.Alph3.8.2}%
-\contentsline {section}{\numberline {C.9}Checklist de despliegue}{150}{section.Alph3.9}%
-\contentsline {section}{\numberline {C.10}Actualización del sistema}{151}{section.Alph3.10}%
-\contentsline {section}{\numberline {C.11}Rollback y recuperación}{151}{section.Alph3.11}%
-\contentsline {subsection}{\numberline {C.11.1}Rollback del backend en Render}{151}{subsection.Alph3.11.1}%
-\contentsline {subsection}{\numberline {C.11.2}Rollback de la aplicación móvil}{151}{subsection.Alph3.11.2}%
-\contentsline {subsection}{\numberline {C.11.3}Respaldo de la base de datos}{152}{subsection.Alph3.11.3}%
-\contentsline {section}{\numberline {C.12}Referencias}{152}{section.Alph3.12}%
-\contentsline {chapter}{\numberline {D}Manual de usuario}{153}{appendix.Alph4}%
-\contentsline {section}{\numberline {D.1}Introducción}{153}{section.Alph4.1}%
-\contentsline {section}{\numberline {D.2}Definición de entidades y funcionalidades}{154}{section.Alph4.2}%
-\contentsline {section}{\numberline {D.3}Requisitos técnicos}{157}{section.Alph4.3}%
-\contentsline {section}{\numberline {D.4}Guía de uso de la aplicación}{157}{section.Alph4.4}%
-\contentsline {subsection}{\numberline {D.4.1}Registro e inicio de sesión (para todos los roles)}{158}{subsection.Alph4.4.1}%
-\contentsline {subsection}{\numberline {D.4.2}Gestión del perfil (para todos los roles)}{160}{subsection.Alph4.4.2}%
-\contentsline {subsection}{\numberline {D.4.3}Mapa de eventos (para todos los roles)}{162}{subsection.Alph4.4.3}%
-\contentsline {subsection}{\numberline {D.4.4}Página principal y filtros (para todos los roles)}{163}{subsection.Alph4.4.4}%
-\contentsline {subsection}{\numberline {D.4.5}Detalle de evento}{164}{subsection.Alph4.4.5}%
-\contentsline {subsection}{\numberline {D.4.6}Listados de eventos}{166}{subsection.Alph4.4.6}%
-\contentsline {subsection}{\numberline {D.4.7}Gestión de administrador (rol de administrador)}{168}{subsection.Alph4.4.7}%
-\contentsline {subsection}{\numberline {D.4.8}Recomendaciones y rutas recomendadas (para todos los roles)}{170}{subsection.Alph4.4.8}%
-\contentsline {subsection}{\numberline {D.4.9}Rutas creadas por usuarios (para todos los roles)}{171}{subsection.Alph4.4.9}%
-\contentsline {subsection}{\numberline {D.4.10}Creación de eventos (rol de usuario)}{173}{subsection.Alph4.4.10}%
-\contentsline {subsection}{\numberline {D.4.11}Eventos privados (todos los roles)}{175}{subsection.Alph4.4.11}%
-\contentsline {subsection}{\numberline {D.4.12}Gestión de eventos privados (todos los roles)}{177}{subsection.Alph4.4.12}%
-\contentsline {subsection}{\numberline {D.4.13}Mis eventos (rol de usuario)}{178}{subsection.Alph4.4.13}%
-\contentsline {subsection}{\numberline {D.4.14}Moderación (rol de moderador)}{180}{subsection.Alph4.4.14}%
-\contentsline {subsection}{\numberline {D.4.15}Notificaciones (todos los roles)}{181}{subsection.Alph4.4.15}%
-\contentsline {subsection}{\numberline {D.4.16}Amistad y mensajería privada (todos los roles)}{182}{subsection.Alph4.4.16}%
-\contentsline {subsection}{\numberline {D.4.17}Eventos finalizados}{185}{subsection.Alph4.4.17}%
-\contentsline {subsection}{\numberline {D.4.18}Guía de uso integrada}{186}{subsection.Alph4.4.18}%
-\contentsline {section}{\numberline {D.5}Grafo de navegabilidad}{188}{section.Alph4.5}%
-\contentsline {section}{\numberline {D.6}Errores frecuentes}{188}{section.Alph4.6}%
-\contentsline {chapter}{\numberline {E}Reporte de horas}{190}{appendix.Alph5}%
-\contentsline {chapter}{\numberline {F}Informes de avance y cambios}{196}{appendix.Alph6}%
-\contentsline {section}{\numberline {F.1}Informe de avance 1: definición del alcance y análisis inicial}{196}{section.Alph6.1}%
-\contentsline {subsection}{\numberline {F.1.1}Trabajo realizado}{196}{subsection.Alph6.1.1}%
-\contentsline {subsection}{\numberline {F.1.2}Cambios y decisiones}{196}{subsection.Alph6.1.2}%
-\contentsline {section}{\numberline {F.2}Informe de avance 2: requisitos, planificación y diseño conceptual}{196}{section.Alph6.2}%
-\contentsline {subsection}{\numberline {F.2.1}Trabajo realizado}{196}{subsection.Alph6.2.1}%
-\contentsline {subsection}{\numberline {F.2.2}Cambios y decisiones}{197}{subsection.Alph6.2.2}%
-\contentsline {section}{\numberline {F.3}Informe de avance 3: arquitectura e implementación base}{197}{section.Alph6.3}%
-\contentsline {subsection}{\numberline {F.3.1}Trabajo realizado}{197}{subsection.Alph6.3.1}%
-\contentsline {subsection}{\numberline {F.3.2}Cambios y decisiones}{197}{subsection.Alph6.3.2}%
-\contentsline {section}{\numberline {F.4}Informe de avance 4: funcionalidades sociales, mapas y recomendaciones}{197}{section.Alph6.4}%
-\contentsline {subsection}{\numberline {F.4.1}Trabajo realizado}{197}{subsection.Alph6.4.1}%
-\contentsline {subsection}{\numberline {F.4.2}Cambios y decisiones}{198}{subsection.Alph6.4.2}%
-\contentsline {section}{\numberline {F.5}Informe de avance 5: scraping, moderación y despliegue}{198}{section.Alph6.5}%
-\contentsline {subsection}{\numberline {F.5.1}Trabajo realizado}{198}{subsection.Alph6.5.1}%
-\contentsline {subsection}{\numberline {F.5.2}Cambios y decisiones}{198}{subsection.Alph6.5.2}%
-\contentsline {section}{\numberline {F.6}Informe de avance 6: pruebas, validación y cierre}{198}{section.Alph6.6}%
-\contentsline {subsection}{\numberline {F.6.1}Trabajo realizado}{198}{subsection.Alph6.6.1}%
-\contentsline {subsection}{\numberline {F.6.2}Cambios y decisiones}{199}{subsection.Alph6.6.2}%
-\contentsline {section}{\numberline {F.7}Resumen de cambios relevantes}{199}{section.Alph6.7}%
-\contentsline {chapter}{\numberline {G}Declaración de autoría}{200}{appendix.Alph7}%
-\contentsline {chapter}{\numberline {H}Usuarios piloto}{203}{appendix.Alph8}%
-\contentsline {section}{\numberline {H.1}Introducción}{203}{section.Alph8.1}%
-\contentsline {section}{\numberline {H.2}Perfil de los usuarios}{203}{section.Alph8.2}%
-\contentsline {section}{\numberline {H.3}Metodología de recogida de feedback}{203}{section.Alph8.3}%
-\contentsline {section}{\numberline {H.4}Resultados e incidencias detectadas}{204}{section.Alph8.4}%
-\contentsline {subsection}{\numberline {H.4.1}Problemas de compatibilidad con Android}{204}{subsection.Alph8.4.1}%
-\contentsline {subsection}{\numberline {H.4.2}Sugerencias de mejora visual y de interacción}{205}{subsection.Alph8.4.2}%
-\contentsline {subsection}{\numberline {H.4.3}Ideas de nuevas funcionalidades}{205}{subsection.Alph8.4.3}%
-\contentsline {section}{\numberline {H.5}Valoración general de los usuarios}{206}{section.Alph8.5}%
-\contentsline {section}{\numberline {H.6}Conclusiones del proceso piloto}{206}{section.Alph8.6}%
-\contentsline {chapter}{\numberline {I}Actas de reunión}{208}{appendix.Alph9}%
-\contentsline {section}{Acta de Reunión 1}{208}{section*.114}%
-\contentsline {section}{Acta de Reunión 2}{211}{Item.26}%
-\contentsline {section}{Acta de Reunión 3}{214}{Item.29}%
-\contentsline {section}{Acta de Reunión 4}{218}{Item.38}%
-\contentsline {section}{Acta de Reunión 5}{222}{Item.38}%
-\contentsline {section}{Acta de Reunión 6}{225}{Item.38}%
-\contentsline {section}{Acta de Reunión 7}{228}{Item.38}%
-\contentsline {section}{Acta de Reunión 8}{232}{Item.38}%
+\contentsline {section}{\numberline {4.9}Diseño del sistema de comunicación en tiempo real}{64}{section.4.9}%
+\contentsline {subsection}{\numberline {4.9.1}Ciclo de vida de la conexión y los listeners}{64}{subsection.4.9.1}%
+\contentsline {section}{\numberline {4.10}Diseño del sistema de recomendaciones}{65}{section.4.10}%
+\contentsline {section}{\numberline {4.11}Patrones de diseño aplicados}{66}{section.4.11}%
+\contentsline {section}{\numberline {4.12}Decisiones de diseño relevantes}{67}{section.4.12}%
+\contentsline {subsection}{\numberline {4.12.1}Roles, permisos y responsabilidades}{68}{subsection.4.12.1}%
+\contentsline {subsubsection}{Por qué tres roles y no más ni menos}{68}{subsubsection*.57}%
+\contentsline {subsubsection}{Por qué la eliminación de eventos es explícita y restringida}{68}{subsubsection*.58}%
+\contentsline {subsection}{\numberline {4.12.2}Moderación y ciclo de vida de eventos}{69}{subsection.4.12.2}%
+\contentsline {subsubsection}{Por qué los eventos finalizados no se borran}{69}{subsubsection*.59}%
+\contentsline {subsubsection}{Por qué el moderador puede editar un evento directamente antes de aprobarlo}{69}{subsubsection*.60}%
+\contentsline {subsubsection}{Por qué el administrador gestiona la configuración y la operación del sistema}{70}{subsubsection*.61}%
+\contentsline {subsection}{\numberline {4.12.3}Comunicación, tiempo real y notificaciones}{70}{subsection.4.12.3}%
+\contentsline {subsubsection}{Por qué el chat incluye persistencia y no es solo en tiempo real}{70}{subsubsection*.62}%
+\contentsline {subsubsection}{Por qué las notificaciones programadas se separan en tres métodos}{71}{subsubsection*.63}%
+\contentsline {subsubsection}{Por qué la conexión WebSocket se autentica en el \textit {handshake} y no por mensaje}{71}{subsubsection*.64}%
+\contentsline {subsubsection}{Por qué el historial de chat se limita a los últimos 50 mensajes}{71}{subsubsection*.65}%
+\contentsline {subsection}{\numberline {4.12.4}Visibilidad, recurrencia y datos geográficos}{72}{subsection.4.12.4}%
+\contentsline {subsubsection}{Por qué los eventos privados se aprueban automáticamente}{72}{subsubsection*.66}%
+\contentsline {subsubsection}{Por qué los eventos privados usan un enlace UUID en lugar de una lista de control de acceso}{72}{subsubsection*.67}%
+\contentsline {subsubsection}{Por qué los eventos recurrentes generan instancias independientes en base de datos}{72}{subsubsection*.68}%
+\contentsline {subsubsection}{Por qué se usa PostGIS con tipo \textit {geography} y SRID 4326}{73}{subsubsection*.69}%
+\contentsline {subsection}{\numberline {4.12.5}Automatización y fuentes externas}{73}{subsection.4.12.5}%
+\contentsline {subsubsection}{Por qué el scraping se ejecuta a las 3:00 AM}{73}{subsubsection*.70}%
+\contentsline {subsubsection}{Por qué el cron job es externo y no interno al backend}{74}{subsubsection*.71}%
+\contentsline {subsubsection}{Por qué los scrapers siguen el patrón estrategia con interfaz \texttt {IScraper}}{74}{subsubsection*.72}%
+\contentsline {subsubsection}{Por qué se ha implementado scraping en lugar de usar únicamente APIs oficiales}{75}{subsubsection*.73}%
+\contentsline {subsection}{\numberline {4.12.6}Estado del frontend y experiencia de usuario}{76}{subsection.4.12.6}%
+\contentsline {subsubsection}{Por qué se usan contextos de React en lugar de una librería de estado global}{76}{subsubsection*.74}%
+\contentsline {subsubsection}{Por qué la preferencia de tema se guarda en \texttt {AsyncStorage} y no en el servidor}{76}{subsubsection*.75}%
+\contentsline {subsubsection}{Por qué las imágenes del evento usan un campo principal y un array adicional}{76}{subsubsection*.76}%
+\contentsline {subsection}{\numberline {4.12.7}Seguridad, administración y reglas de acceso}{77}{subsection.4.12.7}%
+\contentsline {subsubsection}{Por qué el token de Firebase se refresca cada 50 minutos en el frontend}{77}{subsubsection*.77}%
+\contentsline {subsubsection}{Por qué solo el administrador puede crear y gestionar categorías}{77}{subsubsection*.78}%
+\contentsline {subsubsection}{Por qué cualquier usuario autenticado puede crear eventos}{77}{subsubsection*.79}%
+\contentsline {subsubsection}{Por qué los roles de administrador y moderador no se han unificado}{78}{subsubsection*.80}%
+\contentsline {subsection}{\numberline {4.12.8}Elección de tecnologías e infraestructura}{78}{subsection.4.12.8}%
+\contentsline {subsubsection}{Por qué se usa Cloudinary para el almacenamiento de imágenes}{78}{subsubsection*.81}%
+\contentsline {subsubsection}{Por qué la aplicación ofrece modo claro y modo oscuro}{79}{subsubsection*.82}%
+\contentsline {subsubsection}{Por qué se usa Firebase Authentication en lugar de autenticación propia}{79}{subsubsection*.83}%
+\contentsline {subsubsection}{Por qué se usa React Native con Expo y no otra tecnología móvil}{80}{subsubsection*.84}%
+\contentsline {subsubsection}{Por qué se usa NestJS como framework de backend}{80}{subsubsection*.85}%
+\contentsline {subsubsection}{Por qué se usa PostgreSQL en lugar de una base de datos NoSQL}{80}{subsubsection*.86}%
+\contentsline {subsubsection}{Por qué se usa TypeORM en lugar de Prisma u otro ORM}{81}{subsubsection*.87}%
+\contentsline {subsubsection}{Por qué se usa OpenStreetMap en lugar de Google Maps}{81}{subsubsection*.88}%
+\contentsline {subsubsection}{Por qué se usa Axios en el frontend en lugar de \texttt {fetch}}{81}{subsubsection*.89}%
+\contentsline {subsection}{\numberline {4.12.9}Funcionalidades sociales y reglas de dominio}{82}{subsection.4.12.9}%
+\contentsline {subsubsection}{Por qué existen tanto rutas creadas por usuarios como rutas recomendadas automáticamente}{82}{subsubsection*.90}%
+\contentsline {subsubsection}{Por qué existe un módulo de amistad basado en seguimiento}{82}{subsubsection*.91}%
+\contentsline {subsubsection}{Por qué el precio de un evento puede ser fijo o expresarse como rango}{83}{subsubsection*.92}%
+\contentsline {subsubsection}{Por qué se implementa deep linking}{83}{subsubsection*.93}%
+\contentsline {subsubsection}{Qué ocurre al eliminar un usuario}{84}{subsubsection*.94}%
+\contentsline {subsubsection}{Qué ocurre al eliminar una categoría}{84}{subsubsection*.95}%
+\contentsline {section}{\numberline {4.13}Conclusiones}{84}{section.4.13}%
+\contentsline {chapter}{\numberline {5}Implementación}{86}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Introducción}{86}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Estructura del proyecto}{86}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Implementación del backend}{87}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Organización modular}{87}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Persistencia geográfica con TypeORM}{87}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Scraping de eventos externos}{88}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}Tareas programadas}{89}{subsection.5.3.4}%
+\contentsline {subsection}{\numberline {5.3.5}API de eventos}{90}{subsection.5.3.5}%
+\contentsline {subsection}{\numberline {5.3.6}Validación de datos}{90}{subsection.5.3.6}%
+\contentsline {subsection}{\numberline {5.3.7}Actualización de eventos}{90}{subsection.5.3.7}%
+\contentsline {subsection}{\numberline {5.3.8}Control de roles}{91}{subsection.5.3.8}%
+\contentsline {subsection}{\numberline {5.3.9}Limitación de velocidad}{91}{subsection.5.3.9}%
+\contentsline {subsection}{\numberline {5.3.10}Autenticación en endpoints protegidos}{91}{subsection.5.3.10}%
+\contentsline {subsection}{\numberline {5.3.11}Eventos recurrentes}{92}{subsection.5.3.11}%
+\contentsline {section}{\numberline {5.4}Implementación del frontend}{92}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Estructura de pantallas}{92}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Estado global y proveedores}{93}{subsection.5.4.2}%
+\contentsline {subsection}{\numberline {5.4.3}Comunicación con la API}{94}{subsection.5.4.3}%
+\contentsline {subsection}{\numberline {5.4.4}Gestión de mapas}{95}{subsection.5.4.4}%
+\contentsline {subsection}{\numberline {5.4.5}Gestión de imágenes}{95}{subsection.5.4.5}%
+\contentsline {subsection}{\numberline {5.4.6}Utilidades de presentación y normalización}{95}{subsection.5.4.6}%
+\contentsline {section}{\numberline {5.5}Implementación de funcionalidades principales}{96}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Eventos, administración y moderación}{96}{subsection.5.5.1}%
+\contentsline {subsubsection}{Creación y edición de eventos}{96}{subsubsection*.97}%
+\contentsline {subsubsection}{Panel de administración}{97}{subsubsection*.98}%
+\contentsline {subsubsection}{Moderación de eventos}{97}{subsubsection*.99}%
+\contentsline {subsubsection}{Eventos privados}{97}{subsubsection*.100}%
+\contentsline {subsubsection}{Participación y organización de eventos}{97}{subsubsection*.101}%
+\contentsline {subsection}{\numberline {5.5.2}Recomendaciones y rutas}{98}{subsection.5.5.2}%
+\contentsline {subsubsection}{Recomendaciones}{98}{subsubsection*.102}%
+\contentsline {subsubsection}{Rutas}{99}{subsubsection*.103}%
+\contentsline {subsection}{\numberline {5.5.3}Usuarios y funciones sociales}{99}{subsection.5.5.3}%
+\contentsline {subsubsection}{Gestión de perfiles de usuario}{99}{subsubsection*.104}%
+\contentsline {subsubsection}{Módulo de amistad y seguimiento}{100}{subsubsection*.105}%
+\contentsline {subsection}{\numberline {5.5.4}Comunicación y notificaciones}{100}{subsection.5.5.4}%
+\contentsline {subsubsection}{Chat y mensajería}{100}{subsubsection*.106}%
+\contentsline {subsubsection}{Notificaciones}{101}{subsubsection*.107}%
+\contentsline {section}{\numberline {5.6}Carga inicial y mantenimiento de datos}{102}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Despliegue y entorno de desarrollo}{102}{section.5.7}%
+\contentsline {section}{\numberline {5.8}Conclusiones}{102}{section.5.8}%
+\contentsline {chapter}{\numberline {6}Pruebas}{103}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Introducción}{103}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Metodología y tipos de pruebas}{103}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Pruebas unitarias del backend}{103}{subsection.6.2.1}%
+\contentsline {subsubsection}{EventsService}{103}{subsubsection*.108}%
+\contentsline {subsubsection}{RecomendacionesService}{105}{subsubsection*.109}%
+\contentsline {subsubsection}{UsersService}{106}{subsubsection*.110}%
+\contentsline {subsection}{\numberline {6.2.2}Resumen de pruebas unitarias}{107}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}Cobertura de código}{107}{subsection.6.2.3}%
+\contentsline {subsection}{\numberline {6.2.4}Pruebas de aceptación}{108}{subsection.6.2.4}%
+\contentsline {section}{\numberline {6.3}Entorno de pruebas}{108}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Incidencias de compatibilidad con Android}{109}{subsection.6.3.1}%
+\contentsline {section}{\numberline {6.4}Plan de pruebas de aceptación}{109}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Pruebas de autenticación y perfil}{109}{subsection.6.4.1}%
+\contentsline {subsection}{\numberline {6.4.2}Pruebas de consulta, búsqueda y detalle de eventos}{110}{subsection.6.4.2}%
+\contentsline {subsection}{\numberline {6.4.3}Pruebas de geolocalización y mapa}{111}{subsection.6.4.3}%
+\contentsline {subsection}{\numberline {6.4.4}Pruebas de interacción social: chat, mensajería y valoraciones}{111}{subsection.6.4.4}%
+\contentsline {subsection}{\numberline {6.4.5}Pruebas de recomendaciones y rutas}{111}{subsection.6.4.5}%
+\contentsline {subsection}{\numberline {6.4.6}Pruebas de eventos privados y gestión de eventos creados}{112}{subsection.6.4.6}%
+\contentsline {subsection}{\numberline {6.4.7}Pruebas de administración y moderación}{113}{subsection.6.4.7}%
+\contentsline {subsection}{\numberline {6.4.8}Pruebas de notificaciones}{114}{subsection.6.4.8}%
+\contentsline {subsection}{\numberline {6.4.9}Pruebas complementarias incorporadas en la revisión final}{114}{subsection.6.4.9}%
+\contentsline {section}{\numberline {6.5}Resultados de las pruebas de aceptación}{115}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Conclusiones}{118}{section.6.6}%
+\contentsline {chapter}{\numberline {7}Conclusiones}{119}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Introducción}{119}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Objetivos alcanzados}{119}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Objetivos del proyecto}{119}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}Objetivos del sistema}{120}{subsection.7.2.2}%
+\contentsline {section}{\numberline {7.3}Resultados obtenidos}{121}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Lecciones aprendidas}{122}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Desviaciones respecto a la planificación}{123}{section.7.5}%
+\contentsline {section}{\numberline {7.6}Consideraciones de seguridad y privacidad}{124}{section.7.6}%
+\contentsline {subsection}{\numberline {7.6.1}Limitaciones respecto al RGPD}{124}{subsection.7.6.1}%
+\contentsline {section}{\numberline {7.7}Trabajo futuro}{125}{section.7.7}%
+\contentsline {subsection}{\numberline {7.7.1}Mejoras sobre funcionalidades existentes}{125}{subsection.7.7.1}%
+\contentsline {subsection}{\numberline {7.7.2}Nuevas funcionalidades}{126}{subsection.7.7.2}%
+\contentsline {section}{\numberline {7.8}Uso de herramientas de inteligencia artificial}{128}{section.7.8}%
+\contentsline {subsection}{\numberline {7.8.1}Herramientas utilizadas}{128}{subsection.7.8.1}%
+\contentsline {subsection}{\numberline {7.8.2}Alcance del uso}{128}{subsection.7.8.2}%
+\contentsline {subsection}{\numberline {7.8.3}Verificación}{129}{subsection.7.8.3}%
+\contentsline {section}{\numberline {7.9}Conclusión final}{129}{section.7.9}%
+\contentsline {chapter}{Bibliograf\'{\i }a}{130}{chapter*.153}%
+\contentsline {chapter}{Anexos}{132}{section*.154}%
+\contentsline {chapter}{\numberline {A}Glosario de términos}{133}{appendix.Alph1}%
+\contentsline {chapter}{\numberline {B}Manual de Desarrollo}{135}{appendix.Alph2}%
+\contentsline {section}{\numberline {B.1}Objetivo}{135}{section.Alph2.1}%
+\contentsline {section}{\numberline {B.2}Arquitectura del sistema}{135}{section.Alph2.2}%
+\contentsline {subsection}{\numberline {B.2.1}Visión general}{135}{subsection.Alph2.2.1}%
+\contentsline {subsection}{\numberline {B.2.2}Cliente móvil}{136}{subsection.Alph2.2.2}%
+\contentsline {subsection}{\numberline {B.2.3}Servidor backend}{136}{subsection.Alph2.2.3}%
+\contentsline {subsection}{\numberline {B.2.4}Base de datos}{137}{subsection.Alph2.2.4}%
+\contentsline {subsection}{\numberline {B.2.5}Servicios externos}{137}{subsection.Alph2.2.5}%
+\contentsline {section}{\numberline {B.3}Tecnologías y versiones}{137}{section.Alph2.3}%
+\contentsline {section}{\numberline {B.4}Prerrequisitos}{138}{section.Alph2.4}%
+\contentsline {section}{\numberline {B.5}Obtención del código fuente}{138}{section.Alph2.5}%
+\contentsline {section}{\numberline {B.6}Instalación de dependencias}{138}{section.Alph2.6}%
+\contentsline {section}{\numberline {B.7}Variables de entorno}{139}{section.Alph2.7}%
+\contentsline {subsection}{\numberline {B.7.1}Backend (\texttt {apps/backend/.env.development})}{139}{subsection.Alph2.7.1}%
+\contentsline {subsection}{\numberline {B.7.2}Frontend (\texttt {apps/frontend/.env.development})}{140}{subsection.Alph2.7.2}%
+\contentsline {section}{\numberline {B.8}Ejecución local}{140}{section.Alph2.8}%
+\contentsline {subsection}{\numberline {B.8.1}1. Base de datos}{140}{subsection.Alph2.8.1}%
+\contentsline {subsection}{\numberline {B.8.2}2. Backend}{141}{subsection.Alph2.8.2}%
+\contentsline {subsection}{\numberline {B.8.3}3. Frontend}{141}{subsection.Alph2.8.3}%
+\contentsline {section}{\numberline {B.9}Estructura del proyecto}{141}{section.Alph2.9}%
+\contentsline {subsection}{\numberline {B.9.1}Módulos del backend}{142}{subsection.Alph2.9.1}%
+\contentsline {subsection}{\numberline {B.9.2}Pantallas del frontend}{143}{subsection.Alph2.9.2}%
+\contentsline {section}{\numberline {B.10}Ecosistema de desarrollo}{143}{section.Alph2.10}%
+\contentsline {subsection}{\numberline {B.10.1}Herramientas de implementación}{143}{subsection.Alph2.10.1}%
+\contentsline {subsection}{\numberline {B.10.2}Herramientas de documentación}{144}{subsection.Alph2.10.2}%
+\contentsline {subsection}{\numberline {B.10.3}Herramientas de gestión del proyecto}{144}{subsection.Alph2.10.3}%
+\contentsline {section}{\numberline {B.11}Política de gestión del código fuente}{144}{section.Alph2.11}%
+\contentsline {subsection}{\numberline {B.11.1}Estrategia de ramas}{144}{subsection.Alph2.11.1}%
+\contentsline {subsection}{\numberline {B.11.2}Convención de commits}{144}{subsection.Alph2.11.2}%
+\contentsline {section}{\numberline {B.12}Integración continua}{145}{section.Alph2.12}%
+\contentsline {section}{\numberline {B.13}Resolución de problemas comunes}{145}{section.Alph2.13}%
+\contentsline {subsection}{\numberline {B.13.1}Base de datos}{145}{subsection.Alph2.13.1}%
+\contentsline {subsection}{\numberline {B.13.2}Backend}{145}{subsection.Alph2.13.2}%
+\contentsline {subsection}{\numberline {B.13.3}Frontend}{146}{subsection.Alph2.13.3}%
+\contentsline {section}{\numberline {B.14}Referencias}{146}{section.Alph2.14}%
+\contentsline {chapter}{\numberline {C}Manual de despliegue}{147}{appendix.Alph3}%
+\contentsline {section}{\numberline {C.1}Objetivo}{147}{section.Alph3.1}%
+\contentsline {section}{\numberline {C.2}Arquitectura de despliegue}{147}{section.Alph3.2}%
+\contentsline {subsection}{\numberline {C.2.1}Componentes principales}{148}{subsection.Alph3.2.1}%
+\contentsline {section}{\numberline {C.3}Versiones}{148}{section.Alph3.3}%
+\contentsline {section}{\numberline {C.4}Despliegue de la base de datos}{148}{section.Alph3.4}%
+\contentsline {subsection}{\numberline {C.4.1}Opción recomendada: servicio gestionado}{149}{subsection.Alph3.4.1}%
+\contentsline {subsection}{\numberline {C.4.2}Configuración de SSL}{149}{subsection.Alph3.4.2}%
+\contentsline {subsection}{\numberline {C.4.3}Creación del esquema de base de datos en producción}{149}{subsection.Alph3.4.3}%
+\contentsline {subsection}{\numberline {C.4.4}Activación de Row-Level Security (RLS)}{150}{subsection.Alph3.4.4}%
+\contentsline {subsection}{\numberline {C.4.5}Alternativa: despliegue con Docker}{150}{subsection.Alph3.4.5}%
+\contentsline {section}{\numberline {C.5}Despliegue del backend}{151}{section.Alph3.5}%
+\contentsline {subsection}{\numberline {C.5.1}Construcción local previa}{151}{subsection.Alph3.5.1}%
+\contentsline {subsection}{\numberline {C.5.2}Variables de entorno de producción}{151}{subsection.Alph3.5.2}%
+\contentsline {subsection}{\numberline {C.5.3}Despliegue en Render}{152}{subsection.Alph3.5.3}%
+\contentsline {subsubsection}{Creación del servicio}{152}{subsubsection*.158}%
+\contentsline {subsubsection}{Configuración del proceso de build}{152}{subsubsection*.159}%
+\contentsline {subsubsection}{Configuración de variables de entorno}{152}{subsubsection*.160}%
+\contentsline {subsubsection}{Publicación}{153}{subsubsection*.161}%
+\contentsline {section}{\numberline {C.6}Distribución de la aplicación móvil}{153}{section.Alph3.6}%
+\contentsline {subsection}{\numberline {C.6.1}Variables de entorno del frontend}{153}{subsection.Alph3.6.1}%
+\contentsline {subsection}{\numberline {C.6.2}Opción 1: APK para Android}{154}{subsection.Alph3.6.2}%
+\contentsline {subsection}{\numberline {C.6.3}Opción 2: Expo Go con túnel}{154}{subsection.Alph3.6.3}%
+\contentsline {section}{\numberline {C.7}Validación posterior al despliegue}{155}{section.Alph3.7}%
+\contentsline {subsection}{\numberline {C.7.1}Verificación del backend}{155}{subsection.Alph3.7.1}%
+\contentsline {subsection}{\numberline {C.7.2}Funcionalidades a validar}{155}{subsection.Alph3.7.2}%
+\contentsline {section}{\numberline {C.8}Checklist de despliegue}{156}{section.Alph3.8}%
+\contentsline {section}{\numberline {C.9}Actualización del sistema}{156}{section.Alph3.9}%
+\contentsline {section}{\numberline {C.10}Rollback y recuperación}{156}{section.Alph3.10}%
+\contentsline {subsection}{\numberline {C.10.1}Rollback del backend en Render}{157}{subsection.Alph3.10.1}%
+\contentsline {subsection}{\numberline {C.10.2}Rollback de la aplicación móvil}{157}{subsection.Alph3.10.2}%
+\contentsline {subsection}{\numberline {C.10.3}Respaldo de la base de datos}{157}{subsection.Alph3.10.3}%
+\contentsline {section}{\numberline {C.11}Referencias}{157}{section.Alph3.11}%
+\contentsline {chapter}{\numberline {D}Manual de usuario}{158}{appendix.Alph4}%
+\contentsline {section}{\numberline {D.1}Introducción}{158}{section.Alph4.1}%
+\contentsline {section}{\numberline {D.2}Definición de entidades y funcionalidades}{159}{section.Alph4.2}%
+\contentsline {section}{\numberline {D.3}Requisitos técnicos}{162}{section.Alph4.3}%
+\contentsline {section}{\numberline {D.4}Guía de uso de la aplicación}{162}{section.Alph4.4}%
+\contentsline {subsection}{\numberline {D.4.1}Registro e inicio de sesión (para todos los roles)}{163}{subsection.Alph4.4.1}%
+\contentsline {subsection}{\numberline {D.4.2}Gestión del perfil (para todos los roles)}{165}{subsection.Alph4.4.2}%
+\contentsline {subsection}{\numberline {D.4.3}Mapa de eventos (para todos los roles)}{167}{subsection.Alph4.4.3}%
+\contentsline {subsection}{\numberline {D.4.4}Página principal y filtros (para todos los roles)}{168}{subsection.Alph4.4.4}%
+\contentsline {subsection}{\numberline {D.4.5}Detalle de evento}{169}{subsection.Alph4.4.5}%
+\contentsline {subsection}{\numberline {D.4.6}Listados de eventos}{171}{subsection.Alph4.4.6}%
+\contentsline {subsection}{\numberline {D.4.7}Gestión de administrador (rol de administrador)}{173}{subsection.Alph4.4.7}%
+\contentsline {subsection}{\numberline {D.4.8}Recomendaciones y rutas recomendadas (para todos los roles)}{175}{subsection.Alph4.4.8}%
+\contentsline {subsection}{\numberline {D.4.9}Rutas creadas por usuarios (para todos los roles)}{176}{subsection.Alph4.4.9}%
+\contentsline {subsection}{\numberline {D.4.10}Creación de eventos (rol de usuario)}{178}{subsection.Alph4.4.10}%
+\contentsline {subsection}{\numberline {D.4.11}Eventos privados (todos los roles)}{180}{subsection.Alph4.4.11}%
+\contentsline {subsection}{\numberline {D.4.12}Gestión de eventos privados (todos los roles)}{182}{subsection.Alph4.4.12}%
+\contentsline {subsection}{\numberline {D.4.13}Mis eventos (rol de usuario)}{183}{subsection.Alph4.4.13}%
+\contentsline {subsection}{\numberline {D.4.14}Moderación (rol de moderador)}{185}{subsection.Alph4.4.14}%
+\contentsline {subsection}{\numberline {D.4.15}Notificaciones (todos los roles)}{186}{subsection.Alph4.4.15}%
+\contentsline {subsection}{\numberline {D.4.16}Amistad y mensajería privada (todos los roles)}{187}{subsection.Alph4.4.16}%
+\contentsline {subsection}{\numberline {D.4.17}Eventos finalizados}{190}{subsection.Alph4.4.17}%
+\contentsline {subsection}{\numberline {D.4.18}Guía de uso integrada}{191}{subsection.Alph4.4.18}%
+\contentsline {section}{\numberline {D.5}Grafo de navegabilidad}{193}{section.Alph4.5}%
+\contentsline {section}{\numberline {D.6}Errores frecuentes}{193}{section.Alph4.6}%
+\contentsline {chapter}{\numberline {E}Reporte de horas}{195}{appendix.Alph5}%
+\contentsline {chapter}{\numberline {F}Informes de avance y cambios}{201}{appendix.Alph6}%
+\contentsline {section}{\numberline {F.1}Informe de avance 1: definición del alcance y análisis inicial}{201}{section.Alph6.1}%
+\contentsline {subsection}{\numberline {F.1.1}Trabajo realizado}{201}{subsection.Alph6.1.1}%
+\contentsline {subsection}{\numberline {F.1.2}Cambios y decisiones}{201}{subsection.Alph6.1.2}%
+\contentsline {section}{\numberline {F.2}Informe de avance 2: requisitos, planificación y diseño conceptual}{201}{section.Alph6.2}%
+\contentsline {subsection}{\numberline {F.2.1}Trabajo realizado}{201}{subsection.Alph6.2.1}%
+\contentsline {subsection}{\numberline {F.2.2}Cambios y decisiones}{202}{subsection.Alph6.2.2}%
+\contentsline {section}{\numberline {F.3}Informe de avance 3: arquitectura e implementación base}{202}{section.Alph6.3}%
+\contentsline {subsection}{\numberline {F.3.1}Trabajo realizado}{202}{subsection.Alph6.3.1}%
+\contentsline {subsection}{\numberline {F.3.2}Cambios y decisiones}{202}{subsection.Alph6.3.2}%
+\contentsline {section}{\numberline {F.4}Informe de avance 4: funcionalidades sociales, mapas y recomendaciones}{202}{section.Alph6.4}%
+\contentsline {subsection}{\numberline {F.4.1}Trabajo realizado}{202}{subsection.Alph6.4.1}%
+\contentsline {subsection}{\numberline {F.4.2}Cambios y decisiones}{203}{subsection.Alph6.4.2}%
+\contentsline {section}{\numberline {F.5}Informe de avance 5: scraping, moderación y despliegue}{203}{section.Alph6.5}%
+\contentsline {subsection}{\numberline {F.5.1}Trabajo realizado}{203}{subsection.Alph6.5.1}%
+\contentsline {subsection}{\numberline {F.5.2}Cambios y decisiones}{203}{subsection.Alph6.5.2}%
+\contentsline {section}{\numberline {F.6}Informe de avance 6: pruebas, validación y cierre}{203}{section.Alph6.6}%
+\contentsline {subsection}{\numberline {F.6.1}Trabajo realizado}{203}{subsection.Alph6.6.1}%
+\contentsline {subsection}{\numberline {F.6.2}Cambios y decisiones}{204}{subsection.Alph6.6.2}%
+\contentsline {section}{\numberline {F.7}Resumen de cambios relevantes}{204}{section.Alph6.7}%
+\contentsline {chapter}{\numberline {G}Declaración de autoría}{205}{appendix.Alph7}%
+\contentsline {chapter}{\numberline {H}Usuarios piloto}{206}{appendix.Alph8}%
+\contentsline {section}{\numberline {H.1}Introducción}{206}{section.Alph8.1}%
+\contentsline {section}{\numberline {H.2}Perfil de los usuarios}{206}{section.Alph8.2}%
+\contentsline {section}{\numberline {H.3}Metodología de recogida de feedback}{206}{section.Alph8.3}%
+\contentsline {section}{\numberline {H.4}Resultados e incidencias detectadas}{207}{section.Alph8.4}%
+\contentsline {subsection}{\numberline {H.4.1}Problemas de compatibilidad con Android}{207}{subsection.Alph8.4.1}%
+\contentsline {subsection}{\numberline {H.4.2}Sugerencias de mejora visual y de interacción}{208}{subsection.Alph8.4.2}%
+\contentsline {subsection}{\numberline {H.4.3}Ideas de nuevas funcionalidades}{208}{subsection.Alph8.4.3}%
+\contentsline {section}{\numberline {H.5}Valoración general de los usuarios}{209}{section.Alph8.5}%
+\contentsline {section}{\numberline {H.6}Conclusiones del proceso piloto}{209}{section.Alph8.6}%
+\contentsline {chapter}{\numberline {I}Actas de reunión}{211}{appendix.Alph9}%
+\contentsline {section}{Acta de Reunión 1}{211}{section*.191}%
+\contentsline {section}{Acta de Reunión 2}{214}{Item.26}%
+\contentsline {section}{Acta de Reunión 3}{217}{Item.29}%
+\contentsline {section}{Acta de Reunión 4}{221}{Item.38}%
+\contentsline {section}{Acta de Reunión 5}{225}{Item.38}%
+\contentsline {section}{Acta de Reunión 6}{228}{Item.38}%
+\contentsline {section}{Acta de Reunión 7}{231}{Item.38}%
+\contentsline {section}{Acta de Reunión 8}{235}{Item.38}%

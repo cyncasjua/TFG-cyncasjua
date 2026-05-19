@@ -363,7 +363,7 @@ export class EventsService {
   }
 
   private canModeratePublicEvent(event: Event, requester: EventRequester): boolean {
-    const canModerate = requester.rol === RolEnum.ADMIN || requester.rol === RolEnum.MODERATOR;
+    const canModerate = requester.rol === RolEnum.MODERATOR;
     return canModerate && event.privado !== true;
   }
 

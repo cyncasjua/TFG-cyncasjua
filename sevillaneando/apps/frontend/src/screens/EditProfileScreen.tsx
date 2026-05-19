@@ -246,6 +246,14 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           keyboardType="email-address"
           autoCapitalize="none"
         />
+        <View style={{ marginBottom: 12, padding: 10, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}>
+          <ThemedText style={{ fontWeight: 'bold', fontSize: 13, color: colors.text, marginBottom: 4 }}>
+            {t('editProfile.locationInfoTitle')}
+          </ThemedText>
+          <ThemedText style={{ fontSize: 12, color: colors.text + 'CC', lineHeight: 18 }}>
+            {t('editProfile.locationInfoBody')}
+          </ThemedText>
+        </View>
         <View style={{ marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
             <TextInput

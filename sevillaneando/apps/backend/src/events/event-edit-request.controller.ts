@@ -1,7 +1,10 @@
-import { Controller, Post, Param, Body, Patch, Get } from '@nestjs/common';
+import { Controller, Post, Param, Body, Patch, Get, UseGuards } from '@nestjs/common';
 import { EventEditRequestService } from './event-edit-request.service';
 import { EventEditRequestDto } from './dto/event-edit-request.dto';
-import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { FirebaseAuthGuard } from '../auth/firebase.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Solicitudes de edición')
 @Controller('event-edit-requests')
@@ -23,7 +26,10 @@ export class EventEditRequestController {
   }
 
   @Patch(':requestId/approve')
-  @ApiOperation({ summary: 'Aprobar una solicitud de edición (admin/moderator)' })
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('moderator')
+  @ApiBearerAuth('firebase-jwt')
+  @ApiOperation({ summary: 'Aprobar una solicitud de edición (moderator)' })
   @ApiParam({ name: 'requestId', description: 'UUID de la solicitud' })
   @ApiResponse({ status: 200, description: 'Solicitud aprobada' })
   approve(@Param('requestId') requestId: string) {
@@ -31,7 +37,10 @@ export class EventEditRequestController {
   }
 
   @Patch(':requestId/reject')
-  @ApiOperation({ summary: 'Rechazar una solicitud de edición (admin/moderator)' })
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('moderator')
+  @ApiBearerAuth('firebase-jwt')
+  @ApiOperation({ summary: 'Rechazar una solicitud de edición (moderator)' })
   @ApiParam({ name: 'requestId', description: 'UUID de la solicitud' })
   @ApiResponse({ status: 200, description: 'Solicitud rechazada' })
   reject(@Param('requestId') requestId: string, @Body('motivoRechazo') motivoRechazo?: string) {

@@ -12,11 +12,11 @@ El plan de pruebas combina tres tipos complementarios: pruebas unitarias automat
 
 Se han implementado pruebas unitarias automatizadas sobre los tres servicios de mayor complejidad lógica del backend, utilizando \textbf{Jest}~\cite{jest} como framework de pruebas. Las pruebas utilizan mocks de los repositorios de TypeORM para aislar la lógica de negocio de la base de datos, permitiendo verificar el comportamiento de cada método de forma independiente.
 
-Los archivos de pruebas se encuentran en \texttt{sevillaneando/apps/backend/tests/} y se ejecutan con el comando \texttt{npm run test} desde el directorio del backend.
+Los archivos de pruebas se encuentran en \texttt{sevillaneando/apps/backend/tests/} y se ejecutan con el comando \texttt{npm.cmd test -- --runInBand} desde el directorio del backend en Windows.
 
 \subsubsection{EventsService}
 
-Se han implementado \textbf{14 pruebas unitarias} sobre \texttt{events.service.ts}, cubriendo la gestión de asistentes y la lógica de enlaces de acceso a eventos privados:
+Se han implementado \textbf{20 pruebas unitarias} sobre \texttt{events.service.ts}, cubriendo la gestión de asistentes, la lógica de enlaces de acceso a eventos privados, la consulta de eventos y las reglas de edición según creador y moderador:
 
 \begin{longtable}{|p{0.5cm}|p{5.5cm}|p{3.8cm}|p{4.5cm}|}
 \hline
@@ -49,6 +49,18 @@ Se han implementado \textbf{14 pruebas unitarias} sobre \texttt{events.service.t
 13 & Lanza \texttt{NotFoundException} cuando el evento no existe & \texttt{findOne} & Excepción correcta ante búsqueda fallida \\
 \hline
 14 & Devuelve la lista de asistentes de un evento existente & \texttt{getAttendees} & La lista contiene los usuarios correctos \\
+\hline
+15 & Lanza \texttt{NotFoundException} al consultar asistentes de evento inexistente & \texttt{getAttendees} & Excepción correcta ante evento inexistente \\
+\hline
+16 & Devuelve \texttt{true} si el usuario asiste al evento & \texttt{isAttending} & Detecta correctamente la asistencia existente \\
+\hline
+17 & Devuelve \texttt{false} si el usuario no asiste al evento & \texttt{isAttending} & Detecta correctamente la ausencia de asistencia \\
+\hline
+18 & Lanza \texttt{ForbiddenException} si un usuario que no es creador intenta editar un evento & \texttt{update} & Rechaza modificaciones no autorizadas \\
+\hline
+19 & Lanza \texttt{ForbiddenException} si un moderador intenta editar un evento privado ajeno & \texttt{update} & Limita la edición moderada a eventos no privados \\
+\hline
+20 & Permite al moderador editar un evento público sin devolverlo a pendiente & \texttt{update} & Mantiene el estado aprobado cuando la edición la realiza el moderador \\
 \hline
 \end{longtable}
 
@@ -90,7 +102,7 @@ Se han implementado \textbf{13 pruebas unitarias} sobre \texttt{recomendaciones.
 
 \subsubsection{UsersService}
 
-Se han implementado \textbf{17 pruebas unitarias} sobre \texttt{users.service.ts}, cubriendo la creación y actualización de usuarios, el módulo de amistad basado en seguimiento social y la gestión de roles:
+Se han implementado \textbf{14 pruebas unitarias} sobre \texttt{users.service.ts}, cubriendo la creación y actualización de usuarios, el módulo de amistad basado en seguimiento social y la gestión de roles:
 
 \begin{longtable}{|p{0.5cm}|p{5.5cm}|p{3.8cm}|p{4.5cm}|}
 \hline
@@ -120,30 +132,25 @@ Se han implementado \textbf{17 pruebas unitarias} sobre \texttt{users.service.ts
 \hline
 12 & Actualiza campos de perfil correctamente & \texttt{updateProfile} & Nombre y email se actualizan y se persisten \\
 \hline
-13 & No crea usuario cuando el UID de Firebase ya existe & \texttt{ensureFromFirebase} & No llama a \texttt{save} si el usuario ya existe sin cambios \\
+13 & Omite campos de perfil no proporcionados & \texttt{updateProfile} & Los campos no enviados conservan su valor anterior \\
 \hline
-14 & Omite campos de perfil no proporcionados & \texttt{updateProfile} & Los campos no enviados conservan su valor anterior \\
-\hline
-15 & Devuelve \texttt{true} cuando el usuario sigue a otro & \texttt{isSiguiendo} & Comprobación positiva de la relación \\
-\hline
-16 & Devuelve \texttt{false} cuando no sigue a nadie & \texttt{isSiguiendo} & Comprobación negativa de la relación \\
-\hline
-17 & Retorna vacío en getSeguidos si el usuario no existe & \texttt{getSeguidos} & Devuelve array vacío sin lanzar excepción \\
+14 & No crea usuario cuando el UID de Firebase ya existe y el correo coincide & \texttt{ensureFromFirebase} & Devuelve el usuario existente sin crear duplicados \\
 \hline
 \end{longtable}
 
 \subsection{Resumen de pruebas unitarias}
 
-En total se han implementado \textbf{44 pruebas unitarias automatizadas} sobre los tres servicios de mayor complejidad lógica del backend. La ejecución con \texttt{npm run test} produce el siguiente resultado:
+En total se han implementado \textbf{47 pruebas unitarias automatizadas} sobre los tres servicios de mayor complejidad lógica del backend. La ejecución actual con \texttt{npm.cmd test -- --runInBand} produce el siguiente resultado:
 
 \begin{verbatim}
-PASS  tests/events/events.service.spec.ts
-PASS  tests/recomendaciones/recomendaciones.service.spec.ts
-PASS  tests/users/users.service.spec.ts
+PASS tests/users/users.service.spec.ts
+PASS tests/recomendaciones/recomendaciones.service.spec.ts
+PASS tests/events/events.service.spec.ts
 
 Test Suites: 3 passed, 3 total
-Tests:       44 passed, 44 total
-Time:        5.904 s
+Tests:       47 passed, 47 total
+Snapshots:   0 total
+Time:        7.936 s
 \end{verbatim}
 
 \begin{table}[H]
@@ -152,13 +159,13 @@ Time:        5.904 s
 \hline
 \textbf{Servicio} & \textbf{Pruebas} & \textbf{Estado} \\
 \hline
-\texttt{EventsService} & 14 & Todas superadas \\
+\texttt{EventsService} & 20 & Todas superadas \\
 \hline
 \texttt{RecomendacionesService} & 13 & Todas superadas \\
 \hline
-\texttt{UsersService} & 17 & Todas superadas \\
+\texttt{UsersService} & 14 & Todas superadas \\
 \hline
-\textbf{Total} & \textbf{44} & \textbf{44/44 superadas} \\
+\textbf{Total} & \textbf{47} & \textbf{47/47 superadas} \\
 \hline
 \end{tabular}
 \caption{Resumen de pruebas unitarias del backend}
@@ -166,7 +173,7 @@ Time:        5.904 s
 
 \subsection{Cobertura de código}
 
-La cobertura de código se ha medido con el informe integrado de Jest (\texttt{npx jest --coverage}), ejecutado sobre el backend completo. Los resultados obtenidos son los siguientes:
+La cobertura de código se midió con el informe integrado de Jest (\texttt{npm.cmd test -- --coverage --runInBand}), ejecutado sobre el backend completo. Los valores de la tabla corresponden al informe generado tras confirmar que las 47 pruebas se superan correctamente.
 
 \begin{table}[H]
 \centering
@@ -176,20 +183,20 @@ La cobertura de código se ha medido con el informe integrado de Jest (\texttt{n
 \hline
 \textbf{Ámbito} & \textbf{Sentencias} & \textbf{Ramas} & \textbf{Funciones} & \textbf{Líneas} \\
 \hline
-Global (todos los archivos) & 9,91\% & 3,67\% & 7,00\% & 9,71\% \\
+Global (todos los archivos) & 12,98\% & 8,80\% & 9,41\% & 13,01\% \\
 \hline
-\texttt{EventsService} & 31,68\% & 14,20\% & 31,57\% & 29,34\% \\
+\texttt{EventsService} & 45,49\% & 26,02\% & 41,86\% & 44,76\% \\
 \hline
-\texttt{RecomendacionesService} & 70,58\% & 61,66\% & 61,11\% & 75,36\% \\
+\texttt{RecomendacionesService} & 28,50\% & 28,40\% & 23,95\% & 30,32\% \\
 \hline
-\texttt{UsersService} & 66,66\% & 25,00\% & 20,00\% & 72,00\% \\
+\texttt{UsersService} & 52,34\% & 50,68\% & 44,00\% & 54,62\% \\
 \hline
 \end{tabular}
 \end{table}
 
-La cobertura global del proyecto es baja (9,91\% de sentencias) porque la herramienta analiza la totalidad del código fuente del backend, incluyendo controladores, guards, scrapers, módulos de configuración y entidades TypeORM, ninguno de los cuales dispone de pruebas unitarias. Estos componentes son, por diseño, difíciles de aislar sin infraestructura real (base de datos, Firebase, Cloudinary), por lo que su validación se delega en las pruebas de aceptación sobre el entorno desplegado.
+La cobertura global del proyecto es baja (12,98\% de sentencias) porque la herramienta analiza la totalidad del código fuente del backend, incluyendo controladores, guards, scrapers, módulos de configuración y entidades TypeORM, ninguno de los cuales dispone de pruebas unitarias. Estos componentes son, por diseño, difíciles de aislar sin infraestructura real (base de datos, Firebase, Cloudinary), por lo que su validación se delega en las pruebas de aceptación sobre el entorno desplegado.
 
-En los tres servicios que sí disponen de pruebas unitarias, la cobertura oscila entre el 29\% y el 75\% de líneas, reflejando que los métodos de mayor complejidad lógica quedan cubiertos mientras que los métodos de acceso directo a datos (pasarela hacia TypeORM) quedan fuera del alcance de los mocks utilizados.
+En los tres servicios que sí disponen de pruebas unitarias, la cobertura de sentencias oscila entre el 28\% y el 52\%, reflejando que los métodos de mayor complejidad lógica quedan cubiertos mientras que los métodos de acceso directo a datos (pasarela hacia TypeORM) quedan fuera del alcance de los mocks utilizados.
 
 La ampliación de la cobertura mediante pruebas de integración con base de datos real y la incorporación de pruebas para controladores y guards se identifican como trabajo futuro en el capítulo de conclusiones.
 
@@ -227,7 +234,7 @@ Estos problemas fueron corregidos en una iteración adicional de la fase de cier
 
 Este bloque valida el acceso al sistema y la correcta gestión de la información personal del usuario. Corresponden a HU-10, RF-01 y RF-02.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
@@ -245,7 +252,7 @@ Este bloque valida el acceso al sistema y la correcta gestión de la informació
 
 Verifican el núcleo principal de la aplicación: listado, filtrado y detalle de eventos. Corresponden a HU-1, HU-2, HU-14, HU-15, RF-03, RF-04 y RF-08.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
@@ -265,7 +272,7 @@ Verifican el núcleo principal de la aplicación: listado, filtrado y detalle de
 
 Validan el uso de la ubicación del usuario y el mapa de eventos. Corresponden a HU-6 y RF-05.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
@@ -281,7 +288,7 @@ Validan el uso de la ubicación del usuario y el mapa de eventos. Corresponden a
 
 Verifican el chat de evento, los mensajes privados y el sistema de reseñas. Corresponden a HU-8, HU-9, RF-09 y RF-11.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
@@ -297,7 +304,7 @@ Verifican el chat de evento, los mensajes privados y el sistema de reseñas. Cor
 
 Validan el sistema de personalización, las recomendaciones y la generación de rutas. Corresponden a HU-11, RF-12 y RF-13.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
@@ -313,17 +320,17 @@ Validan el sistema de personalización, las recomendaciones y la generación de 
 
 Validan el flujo de eventos privados con enlace de acceso restringido. Corresponden a HU-3, HU-15, RF-06, RF-08, RF-20 y RF-21.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
 \phantomsection\label{cp:19}CP-19 & HU-3 / RF-06 & Datos válidos para evento privado & Crear un evento privado & El sistema genera el evento y muestra un enlace de acceso compartible. El evento no aparece en el listado público. \\
 \hline
-\phantomsection\label{cp:20}CP-20 & HU-15 / RF-21 & Enlace privado válido & Acceder con otra cuenta usando el enlace & El usuario accede al evento y pasa a sus eventos visibles. \\
+\phantomsection\label{cp:20}CP-20 & HU-15 / RF-21 & Enlace privado válido & Acceder con otra cuenta usando el enlace & El usuario abre el detalle del evento mediante el enlace y dicho enlace queda guardado para poder consultarlo después desde la sección de eventos privados. \\
 \hline
 \phantomsection\label{cp:21}CP-21 & HU-15 / RF-21 & Sin enlace válido & Intentar acceder al evento sin enlace & El sistema deniega el acceso y el evento no aparece en ningún listado. \\
 \hline
-\phantomsection\label{cp:22}CP-22 & HU-3 / RF-20 & Evento privado ya creado & Acceder a ``Eventos privados'' y ``Mis eventos'' & El evento aparece en la sección correcta y puede editarse según las restricciones definidas. \\
+\phantomsection\label{cp:22}CP-22 & HU-3 / RF-20 & Evento privado ya creado o enlace privado aceptado & Acceder a ``Guardados y privados'' y ``Mis eventos'' & El evento privado aparece en la sección de privados cuando el usuario es creador o dispone del enlace. Solo el creador puede editarlo desde ``Mis eventos''. \\
 \hline
 \phantomsection\label{cp:23}CP-23 & HU-3 / RF-20 & Evento privado editado a público & Editar y cambiar visibilidad a pública & El evento pasa a estado pendiente y entra en cola de moderación, sin hacerse visible de inmediato. \\
 \hline
@@ -333,11 +340,11 @@ Validan el flujo de eventos privados con enlace de acceso restringido. Correspon
 
 Validan que cada rol accede únicamente a sus opciones y puede realizar sus operaciones. Corresponden a HU-4, HU-5, HU-12, RF-07, RF-15, RF-16 y RF-17.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
-\phantomsection\label{cp:24}CP-24 & HU-12 / RF-17 & Cuenta con rol administrador & Acceder al panel de administración & Se muestra la gestión de usuarios y se pueden modificar roles o eliminar cuentas. \\
+\phantomsection\label{cp:24}CP-24 & HU-12 / RF-17 & Cuenta con rol administrador & Acceder al panel de administración & Se muestra la gestión de usuarios y se pueden modificar roles o eliminar cuentas. El panel no ofrece acciones de aprobación o rechazo de eventos. \\
 \hline
 \phantomsection\label{cp:25}CP-25 & HU-12 / RF-16 & Cuenta con rol administrador & Crear, editar o eliminar una categoría & Los cambios se reflejan en el sistema y la categoría queda disponible en filtros y formularios. \\
 \hline
@@ -353,7 +360,7 @@ Validan que cada rol accede únicamente a sus opciones y puede realizar sus oper
 
 Validan las notificaciones de moderación y de eventos cercanos. Corresponden a HU-5, HU-7 y RF-14.
 
-\begin{longtable}{|p{1.3cm}|p{1.6cm}|p{3cm}|p{3.8cm}|p{4.3cm}|}
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
 \hline
 \textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
 \hline
@@ -363,11 +370,41 @@ Validan las notificaciones de moderación y de eventos cercanos. Corresponden a 
 \hline
 \end{longtable}
 
+\subsection{Pruebas complementarias incorporadas en la revisión final}
+
+Durante la revisión del capítulo se han añadido casos que no estaban reflejados en la versión anterior del plan, pero que sí forman parte del código actual: guardados, seguimiento social, acciones nuevas sobre rutas, administración de scraping y notificaciones temporales invocadas por el cron externo.
+
+\begin{longtable}{|L{1.3cm}|L{1.6cm}|L{3cm}|L{3.8cm}|L{4.3cm}|}
+\hline
+\textbf{ID} & \textbf{HU / RF} & \textbf{Entrada} & \textbf{Acción} & \textbf{Validación esperada} \\
+\hline
+\phantomsection\label{cp:31}CP-31 & HU-11 / RF-12 & Evento público disponible & Guardar y desguardar un evento desde su detalle & El evento aparece en ``Guardados y privados'' tras guardarlo y desaparece al desguardarlo. \\
+\hline
+\phantomsection\label{cp:32}CP-32 & HU-13 / RF-18 & Dos usuarios registrados & Seguir y dejar de seguir a otro usuario desde su perfil & Las listas de seguidos, seguidores y amigos mutuos se actualizan correctamente. \\
+\hline
+\phantomsection\label{cp:33}CP-33 & HU-13 / RF-14 & Usuario seguido por otra cuenta & Abrir las notificaciones después de recibir un nuevo seguidor & Se muestra una notificación informando del nuevo seguimiento. \\
+\hline
+\phantomsection\label{cp:34}CP-34 & HU-8 / RF-09 & Mensaje propio en chat de evento o mensaje directo & Eliminar el mensaje enviado por el usuario autenticado & El mensaje desaparece de la conversación y no se permite eliminar mensajes de otros usuarios. \\
+\hline
+\phantomsection\label{cp:35}CP-35 & HU-11 / RF-13 & Ruta existente con detalle visible & Valorar la ruta desde su pantalla de detalle & La valoración queda registrada y se actualiza la puntuación media de la ruta. \\
+\hline
+\phantomsection\label{cp:36}CP-36 & HU-11 / RF-13 & Ruta creada por el usuario autenticado & Eliminar la ruta desde su detalle & La ruta se elimina del listado del creador y no queda accesible desde su ficha. \\
+\hline
+\phantomsection\label{cp:37}CP-37 & HU-12 / RF-17 & Cuenta con rol administrador & Consultar la pestaña de estadísticas del panel de administración & El sistema muestra indicadores globales de usuarios, eventos y actividad sin permitir acciones de moderación. \\
+\hline
+\phantomsection\label{cp:38}CP-38 & HU-12 / RF-17 & Cuenta con rol administrador & Ejecutar el restablecimiento del scraping desde el panel & El sistema limpia el estado asociado al scraping y permite relanzar la carga externa controlada desde administración. \\
+\hline
+\phantomsection\label{cp:39}CP-39 & HU-4 / RF-07 & Cuenta con rol administrador y evento pendiente & Intentar acceder al flujo de aprobación o rechazo de eventos & El sistema no muestra el panel de moderación al administrador y el backend restringe aprobar/rechazar al rol moderador. \\
+\hline
+\phantomsection\label{cp:40}CP-40 & HU-7 / RF-14 & Usuario apuntado a eventos con fecha próxima & Ejecutar el scheduler mediante el endpoint invocado por el cron externo & Se generan notificaciones de eventos próximos en el tiempo, incluyendo avisos de siete días y de menos de 24 horas cuando procede. \\
+\hline
+\end{longtable}
+
 \section{Resultados de las pruebas de aceptación}
 
-Los 30 casos de prueba de aceptación se han ejecutado sobre los dos entornos descritos: entorno local con emulador Android y entorno móvil real sobre iPhone 16 Pro mediante Expo Go con túnel, conectando en ambos casos con el backend desplegado en Render. La siguiente tabla recoge los resultados obtenidos:
+Los 40 casos de prueba de aceptación se han ejecutado sobre los dos entornos descritos: entorno local con emulador Android y entorno móvil real sobre iPhone 16 Pro mediante Expo Go con túnel, conectando en ambos casos con el backend desplegado en Render. La siguiente tabla recoge los resultados obtenidos:
 
-\begin{longtable}{|p{1.3cm}|p{4.5cm}|p{2.8cm}|p{6cm}|}
+\begin{longtable}{|L{1.3cm}|L{4.5cm}|L{2.8cm}|L{6cm}|}
 \hline
 \textbf{ID} & \textbf{Funcionalidad} & \textbf{Resultado} & \textbf{Observaciones} \\
 \hline
@@ -431,6 +468,26 @@ CP-29 & Notificación de moderación & Superada & \\
 \hline
 CP-30 & Notificación de evento cercano & Superada & \\
 \hline
+CP-31 & Guardar y desguardar evento & Superada & \\
+\hline
+CP-32 & Seguimiento social & Superada & \\
+\hline
+CP-33 & Notificación de nuevo seguidor & Superada & \\
+\hline
+CP-34 & Eliminación de mensaje propio & Superada & \\
+\hline
+CP-35 & Valoración de ruta & Superada & \\
+\hline
+CP-36 & Eliminación de ruta propia & Superada & \\
+\hline
+CP-37 & Panel de administrador -- estadísticas & Superada & \\
+\hline
+CP-38 & Panel de administrador -- scraping & Superada & \\
+\hline
+CP-39 & Administrador sin moderación & Superada & \\
+\hline
+CP-40 & Notificaciones temporales por cron externo & Superada & El scheduler se valida mediante el endpoint invocado por el cron externo, no mediante un \texttt{@Cron} interno del backend. \\
+\hline
 \end{longtable}
 
 Todos los casos de prueba han sido superados satisfactoriamente. El sistema se comporta de acuerdo con los requisitos funcionales definidos en el análisis tanto en el entorno de desarrollo local como en el entorno móvil conectado al backend de producción.
@@ -439,6 +496,6 @@ Todos los casos de prueba han sido superados satisfactoriamente. El sistema se c
 
 El plan de pruebas del sistema \textbf{Sevillaneando} ha combinado pruebas unitarias automatizadas del backend y pruebas de aceptación manuales ejecutadas sobre dispositivos reales, cubriendo los principales requisitos funcionales del sistema.
 
-Las \textbf{44 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. En particular, las 8 pruebas añadidas sobre el algoritmo de scoring de \texttt{RecomendacionesService} verifican aspectos críticos como la influencia de los intereses del usuario en la puntuación, el filtrado por radio geográfico, el bonus por historial de guardado y la normalización de acentos en categorías. Los \textbf{30 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go mediante túnel y backend desplegado en Render).
+Las \textbf{47 pruebas unitarias} implementadas sobre los servicios de mayor complejidad lógica (\texttt{EventsService}, \texttt{RecomendacionesService} y \texttt{UsersService}) han superado correctamente todos los casos, incluyendo tanto flujos normales como situaciones de error. En particular, las pruebas sobre el algoritmo de scoring de \texttt{RecomendacionesService} verifican aspectos críticos como la influencia de los intereses del usuario en la puntuación, el filtrado por radio geográfico, el bonus por historial de guardado y la normalización de acentos en categorías. Los \textbf{40 casos de prueba de aceptación} ejecutados sobre la aplicación real han confirmado que el sistema funciona correctamente en los dos entornos probados, tanto en Android (emulador local) como en iOS (iPhone 16 Pro con Expo Go mediante túnel y backend desplegado en Render).
 
 El resultado global es que todos los casos de prueba han sido superados, lo que valida que el sistema cumple con los requisitos funcionales definidos y que los principales flujos de uso de la aplicación funcionan de forma correcta y coherente.

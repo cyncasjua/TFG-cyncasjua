@@ -1,3 +1,4 @@
+import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -27,6 +28,7 @@ async function bootstrap() {
       credentials: true,
     },
   });
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.set('trust proxy', 1);
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(

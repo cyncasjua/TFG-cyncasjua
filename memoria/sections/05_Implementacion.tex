@@ -8,11 +8,38 @@ La implementación se ha organizado siguiendo una arquitectura cliente-servidor.
 
 Además, el sistema integra servicios externos para resolver necesidades concretas como la autenticación, el almacenamiento de imágenes, la geolocalización y la gestión de la infraestructura local.
 
-\section{Herramientas}
+\section{Estructura del proyecto}
 
-Las tecnologías utilizadas en el sistema —TypeScript, React Native, Expo, NestJS, PostgreSQL con PostGIS, TypeORM, Docker, Firebase Authentication, Cloudinary y OpenStreetMap— se describen en detalle en el capítulo~\ref{cap:diseño}, dentro de la sección dedicada a la arquitectura del sistema. A continuación se recogen únicamente los aspectos específicos de su uso durante la implementación.
+El proyecto se organiza como un monorepositorio, separando el código del frontend y del backend dentro de una misma estructura.
 
-\subsection{ORM y datos geográficos}
+\begin{itemize}
+    \item \textbf{apps/frontend}: contiene la aplicación móvil desarrollada con React Native y Expo.
+    \item \textbf{apps/backend}: contiene la API REST desarrollada con NestJS.
+    \item \textbf{docker-compose.yml}: define los servicios necesarios para el entorno local, especialmente la base de datos PostgreSQL con PostGIS.
+\end{itemize}
+
+Esta estructura permite mantener en un único repositorio todos los componentes principales del sistema, facilitando la instalación, el desarrollo y la coordinación entre frontend y backend.
+
+En la revisión final del repositorio, la aplicación contiene 166 ficheros TypeScript/TSX de producción dentro de \texttt{src}: 83 en el backend, con 9.022 líneas, y 83 en el frontend, con 17.774 líneas. A esta base se añaden 3 ficheros de pruebas unitarias del backend, con 1.033 líneas adicionales, por lo que el total auditado asciende a 169 ficheros y 27.829 líneas. La estructura funcional se resume en 13 módulos NestJS, 10 controladores, 11 entidades TypeORM, 12 DTOs principales, 31 pantallas móviles, 11 componentes reutilizables y 6 servicios de comunicación con la API.
+
+\section{Implementación del backend}
+
+\subsection{Organización modular}
+
+El backend se organiza en módulos de NestJS. Cada módulo agrupa controladores, servicios y entidades relacionadas con una parte concreta del dominio.
+
+La estructura básica sigue el siguiente patrón:
+
+\begin{itemize}
+    \item \textbf{Controladores}: reciben las peticiones HTTP y definen los endpoints.
+    \item \textbf{Servicios}: contienen la lógica de negocio.
+    \item \textbf{Entidades}: representan las tablas de la base de datos.
+    \item \textbf{DTOs}: definen y validan los datos recibidos desde el frontend.
+\end{itemize}
+
+Esta separación permite que la lógica de cada funcionalidad esté localizada y sea más sencilla de mantener.
+
+\subsection{Persistencia geográfica con TypeORM}
 
 La ubicación de los eventos se almacena en PostgreSQL~\cite{postgresql} como un punto geográfico compatible con PostGIS~\cite{postgisdocs} mediante TypeORM~\cite{typeorm}, utilizando el sistema de referencia SRID 4326. El siguiente fragmento muestra la definición del campo en la entidad \texttt{Event}:
 
@@ -48,7 +75,7 @@ export class Event {
 }
 \end{lstlisting}
 
-\subsection{Scraping}
+\subsection{Scraping de eventos externos}
 
 El sistema incluye una funcionalidad de scraping para incorporar eventos procedentes de fuentes externas. Se han integrado cuatro fuentes concretas:
 
@@ -59,38 +86,83 @@ El sistema incluye una funcionalidad de scraping para incorporar eventos procede
     \item \textbf{Scraper multi-web con Gemini AI}: el \texttt{GeminiScraperService} procesa varias webs institucionales y de ocio de Sevilla (portal municipal, Teatro de la Maestranza, Fundación Cajasol, guías de ocio locales, entre otras). Para cada URL, descarga el HTML, lo limpia con \texttt{cheerio} eliminando scripts, estilos y elementos de navegación, y envía el texto resultante al modelo \textbf{Gemini 2.5 Flash} de Google, que devuelve los eventos en formato JSON estructurado. Las coordenadas geográficas que Gemini no puede deducir se resuelven mediante geocodificación con la API de \textbf{Nominatim} (OpenStreetMap), con hasta tres variantes de búsqueda por dirección.
 \end{itemize}
 
+La figura~\ref{fig:flujo_scraping} muestra cómo se orquesta la obtención de eventos externos, desde el \textit{cron job} hasta la persistencia en base de datos.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\small},
+    box/.style={draw, rounded corners=3pt, minimum width=3.2cm, minimum height=0.75cm, align=center, fill=white},
+    ext/.style={draw, rounded corners=3pt, minimum width=3.0cm, minimum height=0.75cm, align=center, fill=gray!12},
+    arr/.style={-{Stealth[length=5pt]}, thick},
+]
+
+% Fila 1: Cron job (centro)
+\node[box] (cron) at (0, 0.0) {Cron Job (3:00 AM)\\cron-job.org};
+
+% Fila 2: Orquestador (centro)
+\node[box] (orch) at (0,-1.6) {ScrapingService\\(orquestador)};
+
+% Fila 3: Scrapers (cuatro columnas)
+\node[box] (s1) at (-6.3,-3.4) {SevillaScraper\\(cheerio + JSON-LD)};
+\node[box] (s2) at (-2.1,-3.4) {TicketmasterScraper\\(API oficial)};
+\node[box] (s3) at ( 2.1,-3.4) {VisitaScraper\\(cheerio + fechas)};
+\node[box] (s4) at ( 6.3,-3.4) {GeminiScraper\\(extracción con IA)};
+
+% Fila 4: Fuentes externas (bajo cada scraper)
+\node[ext] (evtb) at (-6.3,-5.0) {Eventbrite\\(HTML + JSON-LD)};
+\node[ext] (tick) at (-2.1,-5.0) {Ticketmaster API};
+\node[ext] (visa) at ( 2.1,-5.0) {visitasevilla.es};
+\node[ext] (gem)  at ( 6.3,-5.0) {webs inst. + Gemini AI};
+
+% Fila 5: Normalización (centro)
+\node[box] (norm) at (0,-6.8) {Normalización al\\modelo Event};
+
+% Fila 6: BD (centro)
+\node[box] (db)   at (0,-8.4) {PostgreSQL\\(usuario scraper-bot)};
+
+% Flechas orch -> scrapers
+\draw[arr] (cron) -- (orch);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s1.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s2.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s3.north);
+\draw[arr] (orch.south) -- ++(0,-0.5) -| (s4.north);
+
+% Flechas scrapers -> fuentes
+\draw[arr] (s1) -- (evtb);
+\draw[arr] (s2) -- (tick);
+\draw[arr] (s3) -- (visa);
+\draw[arr] (s4) -- (gem);
+
+% Punto de confluencia entre fuentes y normalización
+\coordinate (merge) at (0,-6.1);
+\draw (evtb.south) -- ++(0,-0.35) -| (merge);
+\draw (tick.south) -- ++(0,-0.35) -| (merge);
+\draw (visa.south) -- ++(0,-0.35) -| (merge);
+\draw (gem.south)  -- ++(0,-0.35) -| (merge);
+\draw[arr] (merge) -- (norm.north);
+
+\draw[arr] (norm) -- (db);
+
+\end{tikzpicture}
+\caption{Flujo del sistema de scraping: orquestación, fuentes externas y persistencia}
+\label{fig:flujo_scraping}
+\end{figure}
+
 Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida, descartando aquellos sin coordenadas o con datos incompletos.
 
-\section{Estructura del proyecto}
+\subsection{Tareas programadas}\label{sec:scheduler}
 
-El proyecto se organiza como un monorepositorio, separando el código del frontend y del backend dentro de una misma estructura.
-
-\begin{itemize}
-    \item \textbf{apps/frontend}: contiene la aplicación móvil desarrollada con React Native y Expo.
-    \item \textbf{apps/backend}: contiene la API REST desarrollada con NestJS.
-    \item \textbf{docker-compose.yml}: define los servicios necesarios para el entorno local, especialmente la base de datos PostgreSQL con PostGIS.
-\end{itemize}
-
-Esta estructura permite mantener en un único repositorio todos los componentes principales del sistema, facilitando la instalación, el desarrollo y la coordinación entre frontend y backend.
-
-En la revisión final del repositorio, la aplicación contiene 166 ficheros TypeScript/TSX de producción dentro de \texttt{src}: 83 en el backend, con 9.022 líneas, y 83 en el frontend, con 17.774 líneas. A esta base se añaden 3 ficheros de pruebas unitarias del backend, con 1.033 líneas adicionales, por lo que el total auditado asciende a 169 ficheros y 27.829 líneas. La estructura funcional se resume en 13 módulos NestJS, 10 controladores, 11 entidades TypeORM, 12 DTOs principales, 31 pantallas móviles, 11 componentes reutilizables y 6 servicios de comunicación con la API.
-
-\section{Implementación del backend}
-
-\subsection{Organización modular}
-
-El backend se organiza en módulos de NestJS. Cada módulo agrupa controladores, servicios y entidades relacionadas con una parte concreta del dominio.
-
-La estructura básica sigue el siguiente patrón:
+El backend incluye un \texttt{SchedulerModule} que agrupa la lógica de scraping y notificaciones automáticas. En despliegue, estas tareas se lanzan mediante un cron externo que invoca endpoints HTTP del backend, lo que evita depender de que el proceso permanezca siempre activo.
 
 \begin{itemize}
-    \item \textbf{Controladores}: reciben las peticiones HTTP y definen los endpoints.
-    \item \textbf{Servicios}: contienen la lógica de negocio.
-    \item \textbf{Entidades}: representan las tablas de la base de datos.
-    \item \textbf{DTOs}: definen y validan los datos recibidos desde el frontend.
+    \item \textbf{Scraping diario}: el endpoint \texttt{POST /scheduler/run-scraping} invoca el \texttt{ScrapingScheduler}, que ejecuta \texttt{ScrapingService.scrapeAll()} para actualizar el catálogo de eventos externos.
+    \item \textbf{Notificaciones automáticas}: el cron externo invoca cada hora el endpoint \texttt{POST /scheduler/run-notifications}, que ejecuta los tres métodos de \texttt{NotificacionesScheduler}: eventos cercanos a la ubicación del usuario, eventos a los que el usuario está apuntado y que ocurren en los próximos siete días, y eventos que ocurren en menos de 24 horas. En cada caso, el sistema evita crear notificaciones duplicadas.
 \end{itemize}
 
-Esta separación permite que la lógica de cada funcionalidad esté localizada y sea más sencilla de mantener.
+La eliminación de mensajes privados al borrar un usuario se gestiona directamente mediante la política \texttt{CASCADE} en la base de datos: al eliminar cualquiera de los dos participantes (emisor o receptor), sus mensajes se borran automáticamente sin necesidad de lógica adicional.
+
+El mismo controlador expone \texttt{GET /scheduler/health}, utilizado como comprobación de disponibilidad del backend y como apoyo al sistema externo de activación periódica.
 
 \subsection{API de eventos}
 
@@ -172,11 +244,13 @@ La aplicación móvil se organiza en 31 pantallas conectadas mediante React Navi
 Las pantallas principales se agrupan funcionalmente de la siguiente forma:
 
 \begin{itemize}
-    \item \textbf{Descubrimiento}: \texttt{HomeScreen}, \texttt{EventDetailScreen}, \texttt{EventDetailLinkScreen} y \texttt{EventsMapScreen}. La pantalla principal concentra el listado, filtros, eventos recomendados, rutas sugeridas, menú lateral y acceso a eventos privados.
+    \item \textbf{Acceso público}: \texttt{LoginScreen}, \texttt{SignUpScreen} y \texttt{PrivacyPolicyScreen}. Cubren autenticación, registro y consulta de la política de privacidad antes de iniciar sesión.
+    \item \textbf{Descubrimiento}: \texttt{HomeScreen}, \texttt{EventDetailScreen}, \texttt{EventDetailLinkScreen}, \texttt{AccessPrivateEventScreen} y \texttt{EventsMapScreen}. La pantalla principal concentra el listado, filtros, eventos recomendados, rutas sugeridas, menú lateral y acceso a eventos privados.
     \item \textbf{Gestión de eventos}: \texttt{CreateEventScreen}, \texttt{UserEditEventScreen}, \texttt{UserEventsScreen}, \texttt{CalendarEventsScreen}, \texttt{SavedAndPrivateEventsScreen}, \texttt{ModeratorEventsScreen} y \texttt{ModeratorEditEventScreen}. Estas pantallas cubren creación, edición, eventos propios, calendario, guardados, privados y moderación.
     \item \textbf{Rutas}: \texttt{RoutesListScreen}, \texttt{RouteDetailScreen}, \texttt{RoutePreviewScreen} y \texttt{CreateRouteScreen}. Permiten consultar rutas de usuarios, crear nuevas rutas, valorar itinerarios y previsualizar rutas recomendadas por el sistema.
     \item \textbf{Social}: \texttt{FriendsScreen}, \texttt{UserProfileScreen}, \texttt{ProfileConnectionsScreen}, \texttt{MessagesScreen}, \texttt{DirectMessageScreen} y \texttt{NotificacionesScreen}. Implementan búsqueda de usuarios, seguimiento, perfiles públicos, mensajería privada y notificaciones.
-    \item \textbf{Administración e información}: \texttt{AdminScreen}, \texttt{CategoriesScreen}, \texttt{HelpScreen}, \texttt{PrivacyPolicyScreen} y \texttt{LegalAttributionsScreen}.
+    \item \textbf{Cuenta}: \texttt{EditProfileScreen} y \texttt{EditPasswordScreen}. Permiten modificar datos personales, preferencias, foto de perfil y contraseña.
+    \item \textbf{Administración e información}: \texttt{AdminScreen}, \texttt{CategoriesScreen}, \texttt{HelpScreen} y \texttt{LegalAttributionsScreen}.
 \end{itemize}
 
 Esta organización permite separar la interfaz según los casos de uso principales de la aplicación, manteniendo tipadas las rutas mediante \texttt{RootStackParamList} y \texttt{AuthStackParamList}. El sistema de \textit{deep linking} conecta URLs externas con pantallas internas, especialmente para abrir detalles de eventos compartidos y resolver enlaces de acceso a eventos privados.
@@ -259,9 +333,13 @@ El frontend contiene varias utilidades específicas para adaptar los datos del b
 
 \section{Implementación de funcionalidades principales}
 
-\subsection{Creación y edición de eventos}
+\subsection{Eventos, administración y moderación}
 
-Los usuarios pueden crear eventos introduciendo datos como título, descripción, categoría, ubicación, fechas, precio e imágenes. El sistema distingue entre eventos públicos y privados.
+Este bloque recoge las funcionalidades que giran alrededor del ciclo de vida de los eventos: creación, edición, revisión, privacidad, asistencia y herramientas administrativas.
+
+\subsubsection{Creación y edición de eventos}
+
+En la aplicación, la creación de eventos está expuesta al rol \texttt{user}. El formulario permite introducir datos como título, descripción, categoría, ubicación, fechas, precio e imágenes. El sistema distingue entre eventos públicos y privados.
 
 Los eventos públicos quedan pendientes de moderación antes de ser visibles para el resto de usuarios. En cambio, los eventos privados se gestionan mediante enlace de invitación y no aparecen en el listado general.
 
@@ -269,31 +347,35 @@ En la creación y edición se incluye un selector de recurrencia con las opcione
 
 En la edición de eventos se mantienen las reglas de negocio definidas en el análisis, como la coherencia de fechas, la coherencia de precios y la validez de la ubicación geográfica.
 
-\subsection{Panel de administración}
+\subsubsection{Panel de administración}
 
 El panel de administración se implementa en \texttt{AdminScreen} mediante tres pestañas: \textit{Estadísticas}, \textit{Usuarios} y \textit{Scraping}. La primera consume el endpoint \texttt{GET /users/admin/stats} y muestra indicadores globales de la plataforma: número total de usuarios, total de eventos, eventos aprobados, pendientes y rechazados, eventos importados por scraping y eventos creados por usuarios.
 
 La pestaña \textit{Usuarios} permite consultar las cuentas registradas, cambiar su rol entre usuario, moderador y administrador, y eliminar cuentas cuando sea necesario. La pestaña \textit{Scraping} expone la acción administrativa de restablecer los eventos importados automáticamente, invocando \texttt{POST /scraping/reset} y limpiando la caché local de eventos para que el cliente vuelva a solicitar datos actualizados.
 
-\subsection{Moderación de eventos}
+\subsubsection{Moderación de eventos}
 
-Los moderadores pueden revisar eventos públicos pendientes. Durante este proceso pueden aprobarlos, rechazarlos o realizar modificaciones antes de su publicación.
+Los moderadores pueden revisar eventos públicos pendientes. Durante este proceso pueden aprobarlos, rechazarlos o realizar modificaciones antes de su publicación. Esta funcionalidad no forma parte del flujo de administración: el administrador gestiona usuarios, roles, categorías, estadísticas y scraping, pero no interviene en la aprobación o rechazo de eventos desde la aplicación.
 
 Esta funcionalidad permite controlar la calidad de la información publicada y evita que eventos incompletos o incorrectos aparezcan directamente en el sistema.
 
-\subsection{Eventos privados}
+\subsubsection{Eventos privados}
 
-Los eventos privados se implementan mediante un mecanismo de acceso restringido. El creador del evento puede compartir un enlace de invitación con otros usuarios. Solo los usuarios que acceden mediante dicho enlace pueden consultar el evento.
+Los eventos privados se implementan mediante un mecanismo de acceso restringido por enlace. El creador del evento puede compartir un enlace de invitación, y cualquier persona que disponga de ese enlace puede resolver el detalle del evento mediante el endpoint público de acceso privado.
 
 Estos eventos no aparecen en el listado general y se mantienen separados de los eventos públicos.
 
-\subsection{Participación y organización de eventos}
+\subsubsection{Participación y organización de eventos}
 
 El sistema permite que los usuarios se apunten a eventos, los guarden y los consulten posteriormente. Además, los eventos con fecha definida pueden aparecer en el calendario del usuario.
 
 Estas acciones también sirven como información de entrada para el sistema de recomendaciones, ya que reflejan los intereses reales del usuario.
 
-\subsection{Recomendaciones}
+\subsection{Recomendaciones y rutas}
+
+Estas funcionalidades generan sugerencias personalizadas y permiten construir itinerarios a partir de eventos disponibles.
+
+\subsubsection{Recomendaciones}
 
 Las recomendaciones se generan mediante un algoritmo de puntuación que evalúa cada evento candidato en función de múltiples factores ponderados. La puntuación final de cada evento se calcula sumando las contribuciones de cada factor, y los eventos se ordenan de mayor a menor puntuación para devolver los más relevantes al usuario.
 
@@ -330,7 +412,7 @@ private readonly weights = {
 };
 \end{lstlisting}
 
-\subsection{Rutas}
+\subsubsection{Rutas}
 
 El sistema permite trabajar con rutas de eventos. Estas rutas pueden ser generadas automáticamente a partir del motor de recomendaciones o creadas manualmente por los usuarios para compartir recorridos de interés.
 
@@ -346,13 +428,17 @@ La generación automática admite tres estrategias seleccionables:
 
 Para construir rutas coherentes se comprueban además restricciones de solapamiento temporal entre eventos y separaciones máximas entre ellos.
 
-\subsection{Gestión de perfiles de usuario}
+\subsection{Usuarios y funciones sociales}
+
+Este bloque agrupa la implementación del perfil, las relaciones entre usuarios y los mecanismos de interacción social fuera de un evento concreto.
+
+\subsubsection{Gestión de perfiles de usuario}
 
 Al autenticarse por primera vez, el backend crea automáticamente el registro de usuario en la base de datos a partir de los datos del token de Firebase (UID, email y nombre). Si el usuario ya existe por email pero aún no tiene \texttt{firebaseUid} asignado, el sistema lo vincula automáticamente.
 
 El perfil almacena, además de los datos básicos, la ubicación geográfica del usuario (utilizada por las notificaciones de cercanía y las recomendaciones), una foto de perfil, un array de categorías de interés (\texttt{intereses}), un orden de categorías preferido (\texttt{categoryOrder}) y los radios de búsqueda configurados por el usuario (\texttt{radiusOptions}).
 
-\subsection{Módulo de amistad y seguimiento}
+\subsubsection{Módulo de amistad y seguimiento}
 
 El sistema implementa un módulo de amistad basado en seguimiento entre usuarios. Un usuario puede buscar a otras personas, acceder a su perfil público, seguirlas o dejar de seguirlas, iniciar una conversación privada y consultar los eventos a los que asisten. La relación se almacena en la tabla intermedia \texttt{user\_seguidores} como una relación muchos a muchos reflexiva sobre la entidad \texttt{User}, distinguiendo entre \texttt{seguidores} (quienes siguen al usuario) y \texttt{seguidos} (a quienes sigue el usuario).
 
@@ -360,13 +446,17 @@ En la interfaz se muestran tres pestañas sociales: \textit{Seguidos}, con los u
 
 Cuando un usuario empieza a seguir a otro, el sistema genera automáticamente una notificación de tipo \textbf{NuevoSeguidor} para el destinatario.
 
-\subsection{Chat y mensajería}
+\subsection{Comunicación y notificaciones}
+
+Las funcionalidades de comunicación combinan mensajes persistentes, eventos WebSocket y notificaciones consultables desde la aplicación.
+
+\subsubsection{Chat y mensajería}
 
 La aplicación incorpora dos tipos de comunicación distintos entre usuarios:
 
 \begin{itemize}
     \item \textbf{Chat de evento}: canal de mensajes asociado a un evento concreto. Cualquier usuario con acceso al evento puede leer y enviar mensajes en ese hilo. Los mensajes se almacenan en la tabla \texttt{mensajes} con referencia al evento y al usuario emisor, y pueden incluir imagen adjunta.
-    \item \textbf{Mensajes privados}: conversaciones directas entre dos usuarios. Se almacenan en la tabla \texttt{mensajes\_privados} con los campos \texttt{emisor}, \texttt{receptor} y un indicador de lectura (\texttt{leido}), lo que permite implementar notificaciones de mensajes no leídos.
+    \item \textbf{Mensajes privados}: conversaciones directas entre dos usuarios. Se almacenan en la tabla \texttt{mensajes\_privados} con los campos \texttt{emisor}, \texttt{receptor} y un indicador de lectura (\texttt{leido}), lo que permite calcular conversaciones con mensajes no leídos.
 \end{itemize}
 
 Esta distinción permite separar la comunicación pública ligada a un evento de la comunicación personal entre usuarios, reforzando el componente social del sistema.
@@ -384,7 +474,7 @@ El chat se implementa en tiempo real mediante \textbf{Socket.IO}, integrado dire
 
 Para prevenir el abuso, el servidor aplica un límite de velocidad por socket: máximo 10 mensajes por ventana de 10 segundos. Si se supera, el servidor rechaza el mensaje con un error \texttt{rate\_limit} sin desconectar al usuario.
 
-\subsection{Notificaciones}
+\subsubsection{Notificaciones}
 
 El sistema implementa notificaciones persistentes almacenadas en base de datos. Cada notificación pertenece a uno de los siguientes tipos, definidos mediante un enumerado:
 
@@ -392,37 +482,18 @@ El sistema implementa notificaciones persistentes almacenadas en base de datos. 
     \item \textbf{Aprobacion} / \textbf{Rechazado}: informan al creador de un evento del resultado de la moderación.
     \item \textbf{EventoProximo}: recuerda a los usuarios apuntados que el evento ocurre dentro de los próximos siete días o en menos de 24 horas.
     \item \textbf{EventoCercano}: avisa al usuario cuando un evento aprobado se encuentra a menos de 1 km de su ubicación registrada.
+    \item \textbf{MensajePrivado}: tipo reservado para avisos asociados a conversaciones privadas.
     \item \textbf{NuevoSeguidor}: informa cuando otro usuario comienza a seguir al destinatario.
     \item \textbf{Recomendacion}: reservado para notificaciones generadas por el motor de recomendaciones.
 \end{itemize}
 
-Las notificaciones de tipo \textbf{EventoProximo} y \textbf{EventoCercano} se generan automáticamente mediante tareas programadas que se ejecutan cada hora (véase la sección~\ref{sec:scheduler}). Las notificaciones de moderación se generan en el momento en que el moderador aprueba o rechaza el evento.
+Las notificaciones de tipo \textbf{EventoProximo} y \textbf{EventoCercano} se generan automáticamente desde los métodos de \texttt{NotificacionesScheduler}, invocados cada hora por el cron externo a través del endpoint de tareas programadas (véase la sección~\ref{sec:scheduler}). Las notificaciones de moderación se generan en el momento en que se aprueba o rechaza el evento.
 
 Cada notificación tiene un campo \texttt{leida} que permite al usuario marcarla como leída y filtrar las pendientes.
 
-\subsection{Scraping de eventos externos}
-
-La funcionalidad de scraping permite incorporar eventos desde fuentes externas. Antes de almacenar los eventos obtenidos, el sistema comprueba que no existan duplicados y que la información de ubicación sea válida.
-
-Los eventos importados se consideran públicos y aprobados automáticamente, lo que permite ampliar el catálogo disponible dentro de la aplicación.
-
-\subsection{Tareas programadas}\label{sec:scheduler}
-
-El backend incorpora un módulo de tareas programadas (\texttt{SchedulerModule}) basado en \textbf{@nestjs/schedule}. Este módulo ejecuta de forma autónoma dos tipos de tareas y expone una tercera tarea para ser invocada desde un disparador externo:
-
-\begin{itemize}
-    \item \textbf{Scraping diario}: se ejecuta automáticamente todos los días a las 3:00 AM mediante la expresión cron \texttt{EVERY\_DAY\_AT\_3AM}. Además, al arrancar el servidor se lanza una primera ejecución inmediata para garantizar que el catálogo esté actualizado desde el inicio.
-    \item \textbf{Notificaciones automáticas}: se ejecutan cada hora y comprueban tres condiciones: eventos cercanos a la ubicación del usuario (radio de 1 km), eventos a los que el usuario está apuntado y que ocurren en los próximos siete días, y eventos que ocurren en menos de 24 horas. En cada caso, el sistema crea la notificación correspondiente solo si el usuario no ha sido notificado ya sobre ese evento, evitando duplicados.
-    \item \textbf{Purga de datos RGPD}: implementada en \texttt{PurgaDatosScheduler} y expuesta mediante \texttt{POST /scheduler/run-purga-datos}. El proceso elimina los mensajes privados huérfanos —aquellos en los que tanto el emisor como el receptor tienen \texttt{NULL} porque ambas cuentas han sido eliminadas— con más de 30 días de antigüedad. En el despliegue se programa un cron externo diario, en horario de baja actividad, para invocar este endpoint y garantizar que la purga se ejecute aunque el proveedor suspenda el proceso del backend por inactividad.
-\end{itemize}
-
-El módulo también expone un controlador HTTP que permite lanzar las tres tareas manualmente durante el desarrollo o desde un sistema de orquestación externo, incluyendo los endpoints \texttt{POST /scheduler/run-scraping}, \texttt{POST /scheduler/run-notifications} y \texttt{POST /scheduler/run-purga-datos}. Para la purga RGPD se utiliza una planificación diaria con la expresión cron \texttt{0 4 * * *}, equivalente a una ejecución cada día a las 04:00.
-
-\section{Gestión de la base de datos}
+\section{Carga inicial y mantenimiento de datos}
 
 La base de datos almacena las entidades principales del sistema: usuarios, eventos, categorías, asistencia, eventos guardados, valoraciones, mensajes, rutas, notificaciones y datos geográficos.
-
-En el caso de los eventos, la ubicación se almacena mediante un campo geográfico de PostGIS. Esto permite realizar consultas espaciales de forma eficiente, especialmente para funcionalidades basadas en cercanía.
 
 Durante el arranque del backend se puede ejecutar un proceso de carga inicial de datos, evitando duplicados si ya existen registros. Esta carga facilita disponer de datos de prueba durante el desarrollo y validación de la aplicación.
 

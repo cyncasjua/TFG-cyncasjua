@@ -73,7 +73,7 @@ Sus responsabilidades son:
     \item Control de roles (usuario, moderador y administrador).
     \item Gestión de comunicación en tiempo real con Socket.IO.
     \item Web scraping de eventos externos (Eventbrite Sevilla, Ticketmaster, visitasevilla.es y webs procesadas con Gemini AI).
-    \item Ejecución de tareas programadas (cron jobs) para scraping, notificaciones y purga RGPD de mensajes privados huérfanos.
+    \item Ejecución de tareas programadas (cron jobs) para scraping y notificaciones.
 \end{itemize}
 
 El backend se organiza en módulos funcionales e infraestructurales independientes: \texttt{app}, \texttt{auth}, \texttt{events}, \texttt{users}, \texttt{rutas}, \texttt{chat}, \texttt{notificaciones}, \texttt{recomendaciones}, \texttt{categorias}, \texttt{scraping}, \texttt{scheduler}, \texttt{database} y \texttt{cloudinary}. El endpoint de comprobación de disponibilidad se expone desde el controlador de \texttt{scheduler}.
@@ -109,10 +109,17 @@ El sistema integra los siguientes servicios externos:
 
 Las tecnologías utilizadas y sus versiones exactas son las siguientes:
 
-\begin{longtable}{|l|l|l|}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.40\textwidth}|}
 \hline
 \textbf{Componente} & \textbf{Versión} & \textbf{Portal de descarga} \\
 \hline
+\endfirsthead
+\hline
+\textbf{Componente} & \textbf{Versión} & \textbf{Portal de descarga} \\
+\hline
+\endhead
+\hline
+\endfoot
 Node.js & 20.x LTS & \href{https://nodejs.org}{nodejs.org} \\
 npm & 10.x & \href{https://www.npmjs.com}{npmjs.com} \\
 TypeScript & 5.3.x (backend) / 5.9.x (frontend) & \href{https://www.typescriptlang.org}{typescriptlang.org} \\
@@ -124,10 +131,9 @@ React Native & 0.81.5 & \href{https://reactnative.dev}{reactnative.dev} \\
 React & 19.1.0 & \href{https://react.dev}{react.dev} \\
 PostgreSQL & 15 & \href{https://www.postgresql.org/download}{postgresql.org/download} \\
 PostGIS & 3.3 & \href{https://postgis.net/install}{postgis.net/install} \\
-Docker & 4.x & \href{https://www.docker.com/products/docker-desktop}{docker.com/products/docker-desktop} \\
-Firebase Admin SDK & 12.7.0 & \href{https://firebase.google.com/docs/admin/setup}{firebase.google.com/docs/admin/setup} \\
+Docker & 4.x & \href{https://www.docker.com/products/docker-desktop}{docker.com/products/\allowbreak docker-desktop} \\
+Firebase Admin SDK & 12.7.0 & \href{https://firebase.google.com/docs/admin/setup}{firebase.google.com/\allowbreak docs/admin/setup} \\
 Cloudinary & 2.9.0 & \href{https://cloudinary.com}{cloudinary.com} \\
-\hline
 \end{longtable}
 
 %--------------------------------------------------
@@ -286,7 +292,7 @@ Este script copia \texttt{.env.development} a \texttt{.env} y lanza el servidor 
 
 El proyecto sigue una arquitectura monorepo con dos aplicaciones principales:
 
-\begin{verbatim}
+\begin{lstlisting}[basicstyle=\ttfamily\small, breaklines=true, breakatwhitespace=false, columns=flexible]
 sevillaneando/
 |-- apps/
 |   |-- backend/
@@ -301,8 +307,8 @@ sevillaneando/
 |   |   |   |-- notificaciones/ (sistema de notificaciones)
 |   |   |   |-- recomendaciones/(motor de recomendaciones)
 |   |   |   |-- categorias/     (categorias de eventos)
-|   |   |   |-- scraping/       (scrapers Eventbrite, Ticketmaster, Gemini, VisitaSevilla)
-|   |   |   |-- scheduler/      (cron jobs scraping/notificaciones/purga y health check)
+|   |   |   |-- scraping/       (Eventbrite, Ticketmaster, Gemini, VisitaSevilla)
+|   |   |   |-- scheduler/      (cron jobs scraping/notificaciones y health)
 |   |   |   |-- database/       (configuracion y seed de datos)
 |   |   |   |-- common/         (utilidades, filtros, cloudinary)
 |   |   |-- Dockerfile
@@ -312,7 +318,7 @@ sevillaneando/
 |       |   |-- screens/        (31 pantallas de la aplicacion)
 |       |   |-- components/     (componentes reutilizables)
 |       |   |-- navigation/     (navegacion + deep linking)
-|       |   |-- context/        (AuthContext, SocketContext, ThemeContext, NotificacionesContext)
+|       |   |-- context/        (Auth, Socket, Theme, Notificaciones)
 |       |   |-- hooks/          (useAuth, useTheme, useEvents)
 |       |   |-- services/       (llamadas a la API REST)
 |       |   |-- types/          (tipos TypeScript compartidos)
@@ -321,7 +327,7 @@ sevillaneando/
 |       `-- package.json
 |-- docker-compose.yml
 `-- package.json
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{Módulos del backend}
 
@@ -336,7 +342,7 @@ El backend sigue la convención de módulos de NestJS. Cada módulo contiene su 
     \item \textbf{notificaciones}: generación y entrega de notificaciones en tiempo real mediante WebSockets, incluyendo referencias contextuales a usuarios o eventos cuando la notificación permite navegar al contenido relacionado.
     \item \textbf{recomendaciones}: motor de recomendaciones basado en preferencias de categoría y valoraciones previas.
     \item \textbf{scraping}: scrapers para importar eventos de Eventbrite Sevilla, Ticketmaster, visitasevilla.es y webs procesadas mediante Gemini AI. Implementa el patrón estrategia con la interfaz \texttt{ScraperInterface}.
-    \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente, envía recordatorios de eventos próximos y realiza la purga RGPD de mensajes privados de cuentas eliminadas.
+    \item \textbf{scheduler}: tareas programadas con \texttt{@nestjs/schedule}. Ejecuta scrapers periódicamente y envía recordatorios de eventos próximos.
 \end{itemize}
 
 \subsection{Pantallas del frontend}
@@ -364,6 +370,7 @@ El frontend organiza las vistas en grupos funcionales:
     \item \textbf{Expo CLI / EAS CLI}: desarrollo y construcción de la aplicación móvil.
     \item \textbf{Docker Desktop}: contenedores para la base de datos en local.
     \item \textbf{Postman}: pruebas manuales de la API REST.
+    \item \textbf{Swagger / OpenAPI}: documentación interactiva de la API REST, accesible en \texttt{/api/docs} mediante \texttt{@nestjs/swagger}.
     \item \textbf{TablePlus / pgAdmin}: administración visual de la base de datos.
     \item \textbf{React Native Debugger}: depuración del cliente móvil.
 \end{itemize}
@@ -382,10 +389,6 @@ El frontend organiza las vistas en grupos funcionales:
     \item \textbf{GitHub Projects}: seguimiento del backlog y planificación de sprints.
     \item \textbf{GitHub Actions}: integración continua (linting y formateo automático).
 \end{itemize}
-
-\subsection{Asistentes de IA}
-
-Durante el desarrollo se ha utilizado \textbf{Claude Code} (Anthropic) como asistente de programación para la generación de código, refactorización y resolución de problemas técnicos. El uso de IA se ha limitado a tareas de apoyo; toda decisión de diseño y arquitectura ha sido tomada por la autora del proyecto.
 
 %--------------------------------------------------
 \section{Política de gestión del código fuente}

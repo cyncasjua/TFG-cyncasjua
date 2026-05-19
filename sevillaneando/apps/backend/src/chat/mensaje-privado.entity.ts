@@ -12,11 +12,11 @@ export class MensajePrivado {
   @Column({ type: 'text', nullable: true })
   imageUrl?: string | null;
 
-  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  emisor!: User | null;
+  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  emisor!: User;
 
-  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  receptor!: User | null;
+  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  receptor!: User;
 
   @CreateDateColumn({ type: 'timestamptz' })
   fechaCreacion!: Date;

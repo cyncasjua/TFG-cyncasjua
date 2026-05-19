@@ -144,13 +144,13 @@ export class EventsController {
 
   @Patch(':id/aprobar')
   @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles('moderator')
   @ApiBearerAuth('firebase-jwt')
-  @ApiOperation({ summary: 'Aprobar un evento (admin/moderator)' })
+  @ApiOperation({ summary: 'Aprobar un evento (moderator)' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
   @ApiResponse({ status: 200, description: 'Evento aprobado', type: Event })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'Sin permiso de admin/moderator o evento ya aprobado' })
+  @ApiResponse({ status: 403, description: 'Sin permiso de moderator o evento ya aprobado' })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
   async aprobar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
@@ -173,13 +173,13 @@ export class EventsController {
 
   @Patch(':id/rechazar')
   @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles('moderator')
   @ApiBearerAuth('firebase-jwt')
-  @ApiOperation({ summary: 'Rechazar un evento (admin/moderator)' })
+  @ApiOperation({ summary: 'Rechazar un evento (moderator)' })
   @ApiParam({ name: 'id', description: 'UUID del evento' })
   @ApiResponse({ status: 200, description: 'Evento rechazado', type: Event })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'Sin permiso de admin/moderator o evento ya rechazado' })
+  @ApiResponse({ status: 403, description: 'Sin permiso de moderator o evento ya rechazado' })
   @ApiResponse({ status: 404, description: 'Evento no encontrado' })
   async rechazar(@Param('id') id: string): Promise<Event> {
     const event = await this.eventsService.findOne(id);
@@ -362,7 +362,7 @@ export class EventsController {
 
   @Get('moderacion/list')
   @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles('moderator')
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Listar eventos pendientes de moderación' })
   @ApiResponse({ status: 200, description: 'Lista de eventos pendientes', type: [Event] })
@@ -372,7 +372,7 @@ export class EventsController {
 
   @Get('moderacion/publicos')
   @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles('moderator')
   @ApiBearerAuth('firebase-jwt')
   @ApiOperation({ summary: 'Listar eventos publicos editables por moderacion' })
   @ApiResponse({ status: 200, description: 'Lista de eventos publicos', type: [Event] })

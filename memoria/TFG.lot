@@ -3,36 +3,38 @@
 \contentsline {table}{\numberline {1.1}{\ignorespaces Comparativa de soluciones existentes}}{3}{table.caption.8}%
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {2.1}{\ignorespaces Tabla de riesgos identificados}}{8}{table.2.1}%
-\contentsline {table}{\numberline {2.2}{\ignorespaces Resumen cuantitativo de desviaciones por área}}{12}{table.caption.10}%
-\contentsline {table}{\numberline {2.4}{\ignorespaces Estimación del coste base de personal}}{17}{table.caption.13}%
-\contentsline {table}{\numberline {2.5}{\ignorespaces Costes sociales y coste total de personal}}{17}{table.caption.14}%
-\contentsline {table}{\numberline {2.6}{\ignorespaces Distribución estimada del esfuerzo y coste base por fase}}{17}{table.2.6}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Resumen cuantitativo de desviaciones por área}}{12}{table.caption.26}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Estimación del coste base de personal}}{17}{table.caption.30}%
+\contentsline {table}{\numberline {2.5}{\ignorespaces Costes sociales y coste total de personal}}{17}{table.caption.31}%
+\contentsline {table}{\numberline {2.6}{\ignorespaces Distribución estimada del esfuerzo y coste base por fase}}{18}{table.2.6}%
 \contentsline {table}{\numberline {2.7}{\ignorespaces Infraestructura y costes indirectos}}{18}{table.2.7}%
-\contentsline {table}{\numberline {2.8}{\ignorespaces Coste total del proyecto}}{18}{table.2.8}%
-\contentsline {table}{\numberline {2.9}{\ignorespaces Partidas adicionales del presupuesto}}{19}{table.caption.15}%
+\contentsline {table}{\numberline {2.8}{\ignorespaces Coste total del proyecto}}{19}{table.2.8}%
+\contentsline {table}{\numberline {2.9}{\ignorespaces Partidas adicionales del presupuesto}}{19}{table.caption.32}%
 \contentsline {table}{\numberline {2.10}{\ignorespaces Presupuesto final del proyecto}}{19}{table.2.10}%
+\contentsline {table}{\numberline {2.11}{\ignorespaces Comparativa estimación hipotética vs.\ coste real}}{20}{table.caption.33}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Requisitos de información del sistema}}{25}{table.3.1}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Requisitos funcionales del sistema}}{27}{table.3.2}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Matriz de trazabilidad: requisitos funcionales y objetivos del sistema}}{32}{table.caption.20}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Requisitos no funcionales del sistema}}{35}{table.3.4}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Requisitos de información del sistema}}{26}{table.3.1}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Requisitos funcionales del sistema}}{29}{table.3.2}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Matriz de trazabilidad: requisitos funcionales y objetivos del sistema}}{34}{table.caption.38}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Requisitos no funcionales del sistema}}{37}{table.3.4}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Endpoints de la API REST (fuente: OpenAPI 3.0)}}{52}{table.4.1}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{63}{table.caption.36}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Patrones de diseño aplicados en el sistema}}{66}{table.caption.39}%
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{104}{table.caption.44}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{104}{table.caption.45}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Entidades del modelo de datos}}{50}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Endpoints de la API REST (fuente: OpenAPI 3.0)}}{54}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Pantallas del sistema y roles que pueden acceder}}{62}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Patrones de diseño aplicados en el sistema}}{67}{table.caption.56}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Glosario de términos del proyecto}}{127}{table.A.1}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Resumen de pruebas unitarias del backend}}{107}{table.caption.111}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Métricas de cobertura de código del backend}}{108}{table.caption.112}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Glosario de términos del proyecto}}{133}{table.A.1}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {H.1}{\ignorespaces Completitud de flujos principales por los usuarios piloto (n = 11)}}{204}{table.caption.113}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {H.1}{\ignorespaces Completitud de flujos principales por los usuarios piloto (n = 11)}}{207}{table.caption.190}%
 \addvspace {10\p@ }
