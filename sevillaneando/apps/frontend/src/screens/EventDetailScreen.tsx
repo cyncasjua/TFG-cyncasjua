@@ -770,7 +770,7 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             color="#6c2eb7"
           />
         </TouchableOpacity>
-        {(role === 'moderator' || role === 'admin') && (
+        {role === 'moderator' && (
           <TouchableOpacity
             onPress={() => navigation.navigate('ModeratorEditEvent', { event })}
             style={[
