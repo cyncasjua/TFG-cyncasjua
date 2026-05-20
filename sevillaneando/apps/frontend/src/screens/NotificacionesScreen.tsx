@@ -41,38 +41,62 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [marcandoTodas, setMarcandoTodas] = useState(false);
 
-  const fetchNotificaciones = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const res = await api.get(`/notificaciones/usuario/${user.id}`);
-      setNotificaciones(res.data);
-    } catch (err) {
-      reportError(
-        'notifications.fetch',
-        `Error cargando notificaciones: ${getErrorMessage(err)}`,
-        err
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  const fetchNotificaciones = useCallback(
+    async ({ showLoader = false }: { showLoader?: boolean } = {}) => {
+      if (!user) return;
+      if (showLoader) setLoading(true);
+      try {
+        const res = await api.get(`/notificaciones/usuario/${user.id}`);
+        setNotificaciones(res.data);
+      } catch (err) {
+        reportError(
+          'notifications.fetch',
+          `Error cargando notificaciones: ${getErrorMessage(err)}`,
+          err
+        );
+      } finally {
+        if (showLoader) setLoading(false);
+      }
+    },
+    [user]
+  );
 
   useFocusEffect(
     useCallback(() => {
-      fetchNotificaciones();
+      fetchNotificaciones({ showLoader: notificaciones.length === 0 });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchNotificaciones])
   );
 
   const marcarLeida = async (id: string) => {
-    await api.patch(`/notificaciones/${id}/leida`);
-    await Promise.all([fetchNotificaciones(), refresh()]);
+    setNotificaciones((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true } : n)));
+    try {
+      await api.patch(`/notificaciones/${id}/leida`);
+      await refresh();
+    } catch (err) {
+      reportError(
+        'notifications.mark-read',
+        `Error marcando notificación como leída: ${getErrorMessage(err)}`,
+        err
+      );
+    }
   };
 
   const abrirDestino = async (item: Notificacion) => {
     if (!item.leida) {
-      await api.patch(`/notificaciones/${item.id}/leida`);
-      await refresh();
+      setNotificaciones((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, leida: true } : n))
+      );
+      try {
+        await api.patch(`/notificaciones/${item.id}/leida`);
+        await refresh();
+      } catch (err) {
+        reportError(
+          'notifications.mark-read',
+          `Error marcando notificación como leída: ${getErrorMessage(err)}`,
+          err
+        );
+      }
     }
 
     if (item.targetUserId) {
@@ -96,7 +120,8 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
     try {
       const noLeidas = notificaciones.filter((n) => !n.leida);
       await Promise.all(noLeidas.map((n) => api.patch(`/notificaciones/${n.id}/leida`)));
-      await Promise.all([fetchNotificaciones(), refresh()]);
+      setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
+      await refresh();
     } catch (err) {
       reportError(
         'notifications.mark-all',
