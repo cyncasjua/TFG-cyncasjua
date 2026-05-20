@@ -84,9 +84,7 @@ export const NotificacionesScreen: React.FC<Props> = ({ navigation }) => {
 
   const abrirDestino = async (item: Notificacion) => {
     if (!item.leida) {
-      setNotificaciones((prev) =>
-        prev.map((n) => (n.id === item.id ? { ...n, leida: true } : n))
-      );
+      setNotificaciones((prev) => prev.map((n) => (n.id === item.id ? { ...n, leida: true } : n)));
       try {
         await api.patch(`/notificaciones/${item.id}/leida`);
         await refresh();
