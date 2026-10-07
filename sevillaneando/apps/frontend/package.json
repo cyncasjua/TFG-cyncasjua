@@ -7,6 +7,7 @@
     "start": "expo start",
     "start:dev": "node -e \"require('fs').copyFileSync('.env.development','.env')\" && expo start",
     "start:prod": "node -e \"require('fs').copyFileSync('.env.production','.env')\" && expo start",
+    "postinstall": "node ./scripts/patch-react-native-codegen.js",
     "start:no-ts-setup": "cross-env EXPO_NO_TYPESCRIPT_SETUP=1 expo start",
     "android": "expo run:android",
     "android:dev": "node -e \"require('fs').copyFileSync('.env.development','.env')\" && expo run:android",
@@ -20,6 +21,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",
+    "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/slider": "5.2.0",
     "@react-native-picker/picker": "2.11.4",
@@ -72,5 +74,9 @@
     "expo-module-scripts": "^5.0.8",
     "prettier": "^3.1.1",
     "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "@react-native/babel-plugin-codegen": "0.86.2",
+    "@react-native/codegen": "0.86.2"
   }
 }
