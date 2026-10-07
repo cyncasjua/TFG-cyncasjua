@@ -425,7 +425,7 @@ export class EventsService {
     }
     event.externalRegistrationUrl =
       dto.externalRegistrationUrl !== undefined
-        ? dto.externalRegistrationUrl ?? null
+        ? (dto.externalRegistrationUrl ?? null)
         : event.externalRegistrationUrl;
 
     // Normalizar imagenes - convertir a array común format

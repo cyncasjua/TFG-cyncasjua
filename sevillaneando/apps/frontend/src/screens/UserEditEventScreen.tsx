@@ -595,8 +595,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
             ]}
           />
           <ThemedTextSecondary style={{ marginBottom: 16 }}>
-            Añade un enlace externo para derivar la inscripción a Eventbrite, un formulario propio
-            o cualquier otra plataforma.
+            Añade un enlace externo para derivar la inscripción a Eventbrite, un formulario propio o
+            cualquier otra plataforma.
           </ThemedTextSecondary>
 
           <FieldLabel title="Dirección o lugar" status="required" />

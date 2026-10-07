@@ -1096,7 +1096,8 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 })}
               </View>
             ) : null}
-            {isEventCreator && event.attendanceQrEnabled &&
+            {isEventCreator &&
+              event.attendanceQrEnabled &&
               renderActionButton({
                 icon: 'qr-code',
                 title: t('eventDetail.attendanceQr'),
@@ -1353,7 +1354,9 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   backgroundColor: colors.card,
                 }}
               >
-                <ThemedTitle style={{ marginBottom: 8 }}>{t('eventDetail.attendanceQr')}</ThemedTitle>
+                <ThemedTitle style={{ marginBottom: 8 }}>
+                  {t('eventDetail.attendanceQr')}
+                </ThemedTitle>
                 <ThemedTextSecondary style={{ marginBottom: 16 }}>
                   {t('eventDetail.attendanceQrDescription')}
                 </ThemedTextSecondary>
