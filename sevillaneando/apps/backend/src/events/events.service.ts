@@ -258,7 +258,9 @@ export class EventsService {
       precioMin: dto.precioMin !== undefined ? dto.precioMin : null,
       precioMax: dto.precioMax !== undefined ? dto.precioMax : null,
       privado: isPrivado,
+      attendanceQrEnabled: dto.attendanceQrEnabled === true,
       linkAcceso: isPrivado ? uuidv4() : null,
+      externalRegistrationUrl: dto.externalRegistrationUrl ?? null,
       categoria: dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : undefined,
       estado: isPrivado ? EstadoEnum.Aprobado : EstadoEnum.Pendiente,
       creador: dto.creadorId ? ({ id: dto.creadorId } as User) : undefined,
@@ -303,7 +305,9 @@ export class EventsService {
         precioMin: base.precioMin,
         precioMax: base.precioMax,
         privado: base.privado,
+        attendanceQrEnabled: base.attendanceQrEnabled,
         linkAcceso: base.privado ? uuidv4() : null,
+        externalRegistrationUrl: base.externalRegistrationUrl ?? null,
         categoria: base.categoria,
         estado: base.estado,
         creador: base.creador,
@@ -416,6 +420,13 @@ export class EventsService {
     }
     event.categoria = dto.categoriaId ? ({ id: dto.categoriaId } as Categoria) : event.categoria;
     event.imagen = dto.imagen !== undefined ? dto.imagen : event.imagen;
+    if (dto.attendanceQrEnabled !== undefined) {
+      event.attendanceQrEnabled = dto.attendanceQrEnabled;
+    }
+    event.externalRegistrationUrl =
+      dto.externalRegistrationUrl !== undefined
+        ? dto.externalRegistrationUrl ?? null
+        : event.externalRegistrationUrl;
 
     // Normalizar imagenes - convertir a array común format
     if (dto.imagenes !== undefined) {

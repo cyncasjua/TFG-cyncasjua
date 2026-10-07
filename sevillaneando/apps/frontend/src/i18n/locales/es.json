@@ -193,6 +193,12 @@
     "shareDirectLink": "Acceso directo: {{link}}",
     "shareOpenApp": "Abrir en la app: {{link}}",
     "shareNoApp": "Si no tienes la app, usa el enlace web.",
+    "attendanceQr": "QR de asistencia",
+    "attendanceQrHint": "Muestra este QR en el evento.",
+    "attendanceQrDescription": "El QR se muestra al entrar para que los asistentes confirmen su asistencia desde el móvil.",
+    "externalRegistration": "Inscripción externa",
+    "externalRegistrationHint": "Abrir enlace externo",
+    "errorOpenRegistration": "No se pudo abrir el enlace de inscripción externa.",
     "errorShare": "No se pudo compartir el evento.",
     "errorSave": "No se pudo actualizar el guardado del evento.",
     "errorAttendance": "No se pudo actualizar tu asistencia",
@@ -592,6 +598,12 @@
   "eventDetailLink": {
     "opening": "Abriendo evento...",
     "error": "No se pudo abrir el evento."
+  },
+  "eventCheckIn": {
+    "loading": "Registrando asistencia...",
+    "success": "Asistencia confirmada correctamente.",
+    "doneHint": "Ya puedes cerrar esta pantalla.",
+    "error": "No se pudo registrar la asistencia."
   },
   "help": {
     "intro": "Aquí encontrarás respuestas a las preguntas más frecuentes sobre el funcionamiento de Sevillaneando.",

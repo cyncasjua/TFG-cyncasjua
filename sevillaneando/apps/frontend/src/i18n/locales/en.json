@@ -193,6 +193,12 @@
     "shareDirectLink": "Direct access: {{link}}",
     "shareOpenApp": "Open in app: {{link}}",
     "shareNoApp": "If you don't have the app, use the web link.",
+    "attendanceQr": "Attendance QR",
+    "attendanceQrHint": "Show this QR at the event.",
+    "attendanceQrDescription": "The QR is shown at the entrance so attendees can confirm their attendance from their phone.",
+    "externalRegistration": "External registration",
+    "externalRegistrationHint": "Open external link",
+    "errorOpenRegistration": "Could not open the external registration link.",
     "errorShare": "Could not share the event.",
     "errorSave": "Could not update saved event.",
     "errorAttendance": "Could not update your attendance",
@@ -592,6 +598,12 @@
   "eventDetailLink": {
     "opening": "Opening event...",
     "error": "Could not open the event."
+  },
+  "eventCheckIn": {
+    "loading": "Registering attendance...",
+    "success": "Attendance confirmed successfully.",
+    "doneHint": "You can now close this screen.",
+    "error": "Could not register attendance."
   },
   "help": {
     "intro": "Here you'll find answers to the most frequently asked questions about how Sevillaneando works.",

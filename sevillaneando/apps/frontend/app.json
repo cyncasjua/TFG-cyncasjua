@@ -44,6 +44,10 @@
         "projectId": "fc31833c-1165-492c-b635-129a38215d51"
       }
     },
-    "owner": "cyncasjua1"
+    "owner": "cyncasjua1",
+    "plugins": [
+      "expo-localization",
+      "expo-status-bar"
+    ]
   }
 }

@@ -118,6 +118,12 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriasLoading, setCategoriasLoading] = useState(true);
   const [privado, setPrivado] = useState(event.privado || false);
+  const [attendanceQrEnabled, setAttendanceQrEnabled] = useState(
+    event.attendanceQrEnabled || false
+  );
+  const [externalRegistrationUrl, setExternalRegistrationUrl] = useState(
+    event.externalRegistrationUrl || ''
+  );
 
   const descriptionRef = useRef<TextInput>(null);
   const addressRef = useRef<TextInput>(null);
@@ -342,6 +348,8 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
         ...(precioMinVal != null ? { precioMin: precioMinVal } : {}),
         ...(precioMaxVal != null ? { precioMax: precioMaxVal } : {}),
         privado,
+        attendanceQrEnabled,
+        externalRegistrationUrl: externalRegistrationUrl.trim() || undefined,
         categoriaId,
         estado,
         imagenes: imageUrls || [],
@@ -543,6 +551,53 @@ const UserEditEventScreen: React.FC<Props> = ({ route, navigation }) => {
               {privado && <Icon name="check" size={16} color="#fff" />}
             </View>
           </TouchableOpacity>
+
+          <FieldLabel title="Asistencia con QR" status="optional" />
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setAttendanceQrEnabled(!attendanceQrEnabled)}
+            activeOpacity={0.8}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: colors.primary,
+                  backgroundColor: attendanceQrEnabled ? colors.primary : colors.card,
+                },
+              ]}
+            >
+              {attendanceQrEnabled && <Icon name="check" size={16} color="#fff" />}
+            </View>
+          </TouchableOpacity>
+          <ThemedTextSecondary style={{ marginBottom: 16 }}>
+            El creador podrá mostrar un QR para confirmar la asistencia de los usuarios en la
+            entrada.
+          </ThemedTextSecondary>
+
+          <FieldLabel title="Inscripción externa" status="optional" />
+          <TextInput
+            value={externalRegistrationUrl}
+            onChangeText={setExternalRegistrationUrl}
+            placeholder="https://eventbrite.com/..."
+            placeholderTextColor={colors.text + '99'}
+            autoCapitalize="none"
+            keyboardType="url"
+            autoCorrect={false}
+            style={[
+              styles.input,
+              {
+                color: colors.text,
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+                marginBottom: 12,
+              },
+            ]}
+          />
+          <ThemedTextSecondary style={{ marginBottom: 16 }}>
+            Añade un enlace externo para derivar la inscripción a Eventbrite, un formulario propio
+            o cualquier otra plataforma.
+          </ThemedTextSecondary>
 
           <FieldLabel title="Dirección o lugar" status="required" />
           <View style={{ marginBottom: 12 }}>

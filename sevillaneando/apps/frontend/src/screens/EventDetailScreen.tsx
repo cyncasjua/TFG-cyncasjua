@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import QRCode from 'react-native-qrcode-svg';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -133,12 +134,21 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [hasExistingRating, setHasExistingRating] = useState(false);
   const [reviews, setReviews] = useState<EventReview[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showAttendanceQrModal, setShowAttendanceQrModal] = useState(false);
   const visitTrackedRef = useRef(false);
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
   const lastScaleRef = useRef(1);
   const imageScale = Animated.multiply(baseScale, pinchScale);
   const { socket, sendMessage, isConnected } = useSocket();
+  const isEventCreator = Boolean(user?.id && event.creador?.id === user.id);
+
+  const attendanceQrTarget = useMemo(() => {
+    const shareBaseUrl = (process.env.EXPO_PUBLIC_SHARE_BASE_URL || '').replace(/\/$/, '');
+    return shareBaseUrl
+      ? `${shareBaseUrl}/evento/${event.id}/checkin`
+      : `sevillaneando://evento/${event.id}/checkin`;
+  }, [event.id]);
 
   const refreshEventDetails = useCallback(async () => {
     const freshEvent =
@@ -536,6 +546,13 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       android: `${scheme}${latLng}(${label})`,
     });
     if (url) Linking.openURL(url);
+  };
+
+  const openExternalRegistration = () => {
+    if (!event.externalRegistrationUrl) return;
+    Linking.openURL(event.externalRegistrationUrl).catch(() => {
+      Alert.alert(t('common.error'), t('eventDetail.errorOpenRegistration'));
+    });
   };
 
   const uploadChatImage = async (asset: ImagePicker.ImagePickerAsset) => {
@@ -1068,6 +1085,24 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 disabled: Boolean(event.privado && event.creador?.id !== user?.id),
               })}
             </View>
+            {event.externalRegistrationUrl ? (
+              <View style={styles.actionsRow}>
+                {renderActionButton({
+                  icon: 'open-in-new',
+                  title: t('eventDetail.externalRegistration'),
+                  subtitle: t('eventDetail.externalRegistrationHint'),
+                  onPress: openExternalRegistration,
+                  accent: true,
+                })}
+              </View>
+            ) : null}
+            {isEventCreator && event.attendanceQrEnabled &&
+              renderActionButton({
+                icon: 'qr-code',
+                title: t('eventDetail.attendanceQr'),
+                subtitle: t('eventDetail.attendanceQrHint'),
+                onPress: () => setShowAttendanceQrModal(true),
+              })}
             {renderActionButton({
               icon: 'star-rate',
               title: hasExistingRating ? t('eventDetail.editRating') : t('eventDetail.rateEvent'),
@@ -1291,6 +1326,57 @@ export const EventDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     disabled={ratingSubmitting}
                   />
                 </ThemedView>
+              </View>
+            </View>
+          </Modal>
+          <Modal
+            visible={showAttendanceQrModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowAttendanceQrModal(false)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 20,
+              }}
+            >
+              <View
+                style={{
+                  width: '100%',
+                  maxWidth: 380,
+                  borderRadius: 32,
+                  padding: 20,
+                  backgroundColor: colors.card,
+                }}
+              >
+                <ThemedTitle style={{ marginBottom: 8 }}>{t('eventDetail.attendanceQr')}</ThemedTitle>
+                <ThemedTextSecondary style={{ marginBottom: 16 }}>
+                  {t('eventDetail.attendanceQrDescription')}
+                </ThemedTextSecondary>
+                <View
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 16,
+                    borderRadius: 24,
+                    backgroundColor: '#fff',
+                    marginBottom: 16,
+                  }}
+                >
+                  <QRCode value={attendanceQrTarget} size={220} />
+                </View>
+                <ThemedTextSecondary style={{ fontSize: 12, marginBottom: 16 }}>
+                  {attendanceQrTarget}
+                </ThemedTextSecondary>
+                <ThemedButton
+                  title={t('common.close')}
+                  variant="secondary"
+                  onPress={() => setShowAttendanceQrModal(false)}
+                />
               </View>
             </View>
           </Modal>

@@ -21,6 +21,8 @@ export interface Event {
   imagenes?: string[];
   ratingAverage?: number | null;
   ratingsCount?: number;
+  attendanceQrEnabled?: boolean;
+  externalRegistrationUrl?: string | null;
   recurrencia?: 'diario' | 'semanal' | 'quincenal' | 'mensual' | null;
   recurrenciaFin?: string | null;
 }

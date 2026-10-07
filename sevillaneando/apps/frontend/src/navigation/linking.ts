@@ -14,6 +14,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Home: '',
       EventDetailLink: 'evento/:eventId',
+      EventCheckInLink: 'evento/:eventId/checkin',
       AccessPrivateEvent: 'acceso/:linkAcceso',
     },
   },

@@ -79,9 +79,17 @@ export class Event {
   @Column({ type: 'boolean', nullable: true })
   privado?: boolean | null;
 
+  @ApiProperty({ description: 'Si la asistencia se confirma mediante QR' })
+  @Column({ type: 'boolean', default: false })
+  attendanceQrEnabled!: boolean;
+
   @ApiPropertyOptional({ description: 'Token de acceso para eventos privados' })
   @Column({ type: 'varchar', length: 255, nullable: true })
   linkAcceso?: string | null;
+
+  @ApiPropertyOptional({ description: 'Enlace externo de inscripción al evento' })
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  externalRegistrationUrl?: string | null;
 
   @ApiProperty({ description: 'Categoría del evento', type: () => Categoria })
   @ManyToOne(() => Categoria, (categoria) => categoria.eventos)

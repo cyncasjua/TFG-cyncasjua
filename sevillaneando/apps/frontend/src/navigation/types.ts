@@ -5,6 +5,7 @@ export type RootStackParamList = {
   Home: undefined;
   EventDetail: { event: Event };
   EventDetailLink: { eventId: string };
+  EventCheckInLink: { eventId: string };
   Admin: undefined;
   EditProfile: undefined;
   EditPassword: undefined;

@@ -12,6 +12,7 @@ import {
   ArrayMaxSize,
   IsBoolean,
   IsEnum,
+  IsUrl,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -87,11 +88,24 @@ export class CreateEventDto {
   @IsOptional()
   privado?: boolean;
 
+  @ApiPropertyOptional({ description: 'Si la asistencia se confirma con QR' })
+  @IsBoolean({ message: 'El campo de asistencia con QR debe ser un valor booleano.' })
+  @IsOptional()
+  attendanceQrEnabled?: boolean;
+
   @ApiPropertyOptional({ description: 'Token de acceso para eventos privados', maxLength: 255 })
   @IsString({ message: 'El link de acceso debe ser un texto.' })
   @MaxLength(255, { message: 'El link de acceso no puede superar los 255 caracteres.' })
   @IsOptional()
   linkAcceso?: string;
+
+  @ApiPropertyOptional({ description: 'Enlace externo de inscripción al evento', maxLength: 1024 })
+  @IsUrl({}, { message: 'El enlace de inscripción externa debe ser una URL válida.' })
+  @MaxLength(1024, {
+    message: 'El enlace de inscripción externa no puede superar los 1024 caracteres.',
+  })
+  @IsOptional()
+  externalRegistrationUrl?: string;
 
   @ApiProperty({ description: 'UUID de la categoría del evento' })
   @IsUUID()

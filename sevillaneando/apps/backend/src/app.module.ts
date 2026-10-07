@@ -27,6 +27,7 @@ import { EventEditRequest } from './events/event-edit-request.entity';
 import { RecomendacionesModule } from './recomendaciones/recomendaciones.module';
 import { RutasModule } from './rutas/rutas.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
       }),
     }),
     DatabaseModule,
+    HealthModule,
     EventsModule,
     UsersModule,
     AuthModule,

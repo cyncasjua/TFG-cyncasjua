@@ -11,6 +11,7 @@ import { useTheme } from '../hooks/useTheme';
 import { linking } from './linking';
 import type { AuthStackParamList, RootStackParamList } from './types';
 import { EventDetailLinkScreen } from '../screens/EventDetailLinkScreen';
+import { EventCheckInLinkScreen } from '../screens/EventCheckInLinkScreen';
 
 import { HomeScreen } from '../screens/HomeScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
@@ -112,6 +113,11 @@ export function AppNavigator() {
           <AppStack.Screen
             name="EventDetailLink"
             component={EventDetailLinkScreen}
+            options={{ title: t('nav.openingEvent') }}
+          />
+          <AppStack.Screen
+            name="EventCheckInLink"
+            component={EventCheckInLinkScreen}
             options={{ title: t('nav.openingEvent') }}
           />
           <AppStack.Screen
